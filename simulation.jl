@@ -32,9 +32,12 @@ function sim!(simulation::Simulation{T};debug::Bool=false,disp::Bool=false) wher
     while simulation.t<simulation.tend
         x, φ = getState(robot)
         simulation.trajS[1:Nl*nP,counter] = x
-        simulation.trajS[Nl*nP+1:Nl*(nP+1),counter] = φ # Standard
+        simulation.trajS[Nl*nP+1:Nl*(nP+1),counter] = φ
 
-        updateRobot!(robot,newton(robot,warning=debug)[1])
+        ### ZAC_BEGIN
+        sol = newton(robot,warning=debug)[1]
+        updateRobot!(robot,sol)
+        ### ZAC_END
 
         counter+=1;
         simulation.t += simulation.dt;

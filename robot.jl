@@ -216,19 +216,6 @@ function gradient(robot::Robot{T,Nl}) where {T,Nl}
     return [∂dyn∂v Z1 -Gx';Z1 ∂dyn∂ω -Gq';∂g∂v ∂g∂ω Z2]
 end
 
-# function gradientneg(robot::Robot{T,Nl}) where {T,Nl}
-#     nLl = robot.nLl
-#     nCl = robot.nCl
-#     nP = 3
-#
-#     Z1 = @SMatrix zeros(T,Nl*nP,Nl*nP)
-#     Z2 = @SMatrix zeros(T,nCl,nCl)
-#     ∂dyn∂v, ∂dyn∂ω = dynDerivative(robot)
-#     ∂g∂v, ∂g∂ω, Gx, Gq = constrDerivative(robot)
-#
-#     return ([∂dyn∂v Z1 Gx';Z1 ∂dyn∂ω Gq';-∂g∂v -∂g∂ω Z2],[∂dyn∂v Z1;∂dyn∂ω Z1],[∂g∂v ∂g∂ω], [Gx Gq])
-# end
-
 function dynDerivative(robot::Robot{T,Nl}) where {T,Nl}
     nLl = robot.nLl
     nP = 3

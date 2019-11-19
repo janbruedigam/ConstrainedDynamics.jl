@@ -45,7 +45,6 @@ x4 = initialPosition(link3,link4,q4,[2;1],1)
 setInit!(link4,x=x4,q=q4)
 
 # Constraints
-
 jointb = [SocketConstraint(baseLink,1); RotationConstraint(baseLink)]
 jointb1 = [SocketConstraint(baseLink,link1,[1;1]); RotationConstraint(baseLink,link1,ax)]
 joint12 = [SocketConstraint(link1,link2,[2;1]); RotationConstraint(link1,link2,ax)]
@@ -53,12 +52,20 @@ jointb3 = [SocketConstraint(baseLink,link3,[1;1]); RotationConstraint(baseLink,l
 joint34 = [SocketConstraint(link3,link4,[2;1]); RotationConstraint(link3,link4,ax)]
 joint24 = SocketConstraint(link2,link4,[2;2])
 
-
-
+### ZAC_BEGIN
+## Closed Chain
 links = [baseLink; link1; link2; link3; link4]
 constraints = [jointb; jointb1; joint12; jointb3; joint34; joint24]
+
+## Open Chain (2 double pendulums)
+# links = [baseLink; link1; link2; link3; link4]
+# constraints = [jointb; jointb1; joint12; jointb3; joint34]
+
+## Single Pendulum
 # links = [baseLink; link1]
 # constraints = [jointb; jointb1]
+
+## Single Body
 # links = [baseLink]
 # constraints = jointb
 
@@ -67,6 +74,10 @@ bot = Robot(links, constraints)
 
 simul = Simulation(bot)
 
+# sim! is the main function. Call this with the debugger
+# sim!(simul,debug=false,disp=true) # Set debug=true to see all warning messages
+# trajS = simul.trajS
 
-sim!(simul,debug=false,disp=true)
-trajS = simul.trajS
+# include("visualizeTwoTwoBar.jl")  # To visualize the Closed or Open Chain with four links
+
+### ZAC_END
