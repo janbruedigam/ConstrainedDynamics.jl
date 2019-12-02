@@ -4,8 +4,8 @@ using RigidBodyDynamics, MeshCatMechanisms, Blink, LinearAlgebra, StaticArrays
 #urdf = joinpath(srcdir, "..", "test", "urdf", "Acrobot.urdf")
 urdf = "twoTwoBarDiffLength.urdf";
 
-g = -9.81 # gravitational acceleration in z-direction
-mechanism = parse_urdf(urdf; gravity = SVector(0, 0, g))
+grav = -9.81 # gravitational acceleration in z-direction
+mechanism = parse_urdf(urdf; gravity = SVector(0, 0, grav))
 
 # shoulder, elbow = joints(mechanism)
 # function simple_control!(torques::AbstractVector, t, state::MechanismState)
@@ -29,12 +29,22 @@ final_time = 10.
 ts, qs, vs = simulate(state, final_time);
 ts2, qs2, vs2 = simulate(state, final_time);
 
-for i=1:100002
-    qs2[i][1] = trajS[17,Int(ceil(i/100))];
-    qs2[i][3] = trajS[18,Int(ceil(i/100))]-trajS[17,Int(ceil(i/100))];
-    qs2[i][2] = trajS[19,Int(ceil(i/100))];
-    qs2[i][4] = trajS[20,Int(ceil(i/100))]-trajS[19,Int(ceil(i/100))];
+for i=1:100000
+    qs2[i][1] = trajS[2,Int(ceil(i/100))];
+    qs2[i][3] = trajS[3,Int(ceil(i/100))]-trajS[2,Int(ceil(i/100))];
+    qs2[i][2] = trajS[4,Int(ceil(i/100))];
+    qs2[i][4] = trajS[5,Int(ceil(i/100))]-trajS[4,Int(ceil(i/100))];
 end
+qs2[100001][1] = qs2[100000][1]
+qs2[100001][3] = qs2[100000][3]
+qs2[100001][2] = qs2[100000][2]
+qs2[100001][4] = qs2[100000][4]
+
+qs2[100002][1] = qs2[100000][1]
+qs2[100002][3] = qs2[100000][3]
+qs2[100002][2] = qs2[100000][2]
+qs2[100002][4] = qs2[100000][4]
+
 
 
 # mvis = MechanismVisualizer(mechanism, URDFVisuals(urdf));

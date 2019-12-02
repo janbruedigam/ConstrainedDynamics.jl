@@ -1,287 +1,197 @@
 using StaticArrays
+using Base.Threads
 
-struct Robot{T,Nl,Nc}
+include("util/quaternion.jl")
+include("link.jl")
+include("constraints/constraint.jl")
+include("util/graph.jl")
+
+mutable struct Robot{T,Nl,Nc,N}
+    tend::T
     dt::T
-    g::T
+    steps::UnitRange{Int64}
 
-    nLl::Int64 # Parameters
-    nCl::Int64 # Number of constraint equation lines (One constraint typically has several equations)
+    nodes::Vector{Node{T}}
+    nodesRange::Vector{UnitRange{Int64}}
+    normf::T
+    normDiff::T
 
-    links::SVector{Nl,Link{T}}
-    constraints::SVector{Nc,Constraint{T}}
+    adjacency::Vector{SVector{N,Bool}}
+    dfsgraph::Vector{SVector{N,Bool}}
+    nodeList::SVector{N,Int64}
+    parentList::SVector{N,Int64}
 end
 
-function Base.show(io::IO, robot::Robot{T,Nl,Nc}) where {T,Nl,Nc}
-    heading = string("Robot{",T,",",Nl,",",Nc,"} with ",Nl," links and ",Nc," constraints:")
-    links = string("\n Links (links): ",robot.links)
-    constraints = string("\n Constraints (constraints): ",robot.constraints)
-
-    print(io,heading,links,constraints)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T,Nl,Nc}) where {T,Nl,Nc}
+    summary(io, R); println(io, " with ", Nl, " links and ", Nc, " constraints")
 end
 
 
-function Robot(linksIn::AbstractVector{<:Link{T}}, constraintsIn::AbstractVector{<:Constraint}; dt::T=.01, g::T=9.81) where T
-    Nl = length(linksIn)
-    nLl = 6*Nl
-    Nc = 0
-    nCl = 0
+function Robot(links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=9.81, root=1) where T
+    Nl = length(links)
+    Nc = length(constraints)
+    N = Nl+Nc
+    steps = Int(ceil(tend/dt))
 
-    for (i,link) in enumerate(linksIn)
-        link.id[1] = i
-        link.dt[1] = dt
-        link.g[1] = g
+    for (i,link) in enumerate(links)
+        link.data.id = i
+        link.dt = dt
+        link.g = g
+        link.trajectoryX = repeat([@SVector zeros(T,3)],steps)
+        link.trajectoryQ = repeat([Quaternion{T}()],steps)
+        link.trajectoryΦ = zeros(T,steps)
     end
 
-    for constraint in constraintsIn
-        Nc += 1
-        nCl += getNc(constraint)
+    for (i,constraint) in enumerate(constraints)
+        constraint.data.id = i+Nl
     end
 
-    links = convert(SVector{Nl,Link{T}},linksIn)
-    constraints = convert(SVector{Nc,Constraint{T}},constraintsIn)
+    nodes = [links;constraints]
+    nodesRange = [[1:Nl];[Nl+1:N]]
+    normf = zero(T)
+    normDiff = zero(T)
 
+    adjacency = adjacencyMat(constraints,N)
+    dfsgraph, list = dfs(adjacency,root=root)
+    parentList = Vector{T}(undef,N)
+    for i=1:N
+        parentList[i] = parentNode(dfsgraph,i)
+    end
 
-    Robot{T,Nl,Nc}(dt,g,nLl,nCl,links,constraints)
+    Robot{T,Nl,Nc,N}(tend,dt,1:steps,nodes,nodesRange,normf,normDiff,adjacency,dfsgraph,list,parentList)
 end
 
-Robot(links::AbstractVector{<:Link{T}}; dt=.01, g=9.81) where T = Robot(links, Array{Constraint{T},1}(undef,0), dt=dt, g=g)
 
+function factor!(robot::Robot)
+    list = robot.nodeList
+    parentList = robot.parentList
+    dfsgraph = robot.dfsgraph
+    nodes = robot.nodes
 
-function getState(robot::Robot{T,Nl}) where {T,Nl}
-    k = 2
-    nP = 3
+    for n in list
+        node = nodes[n]
+        p = parentList[n]
 
-    x = @MVector zeros(T,Nl*nP)
-    φ = @MVector zeros(T,Nl)
-    for (i,link) in enumerate(robot.links)
-        x[sind3(i)] = link.x[k]
-        φ[sind1(i)] = angleAxis(link.q[k])[1]*sign(angleAxis(link.q[k])[2][1])
+        setD!(node)
+        p!=0 ? setJ!(node,nodes[p]) : nothing
     end
 
-    return x, φ
-end
+    for n in list
+        node = nodes[n]
+        p = parentList[n]
 
-function getDynamics(robot::Robot{T,Nl}) where {T,Nl}
-    nP = 3
-    fv = @MVector zeros(T,Nl*nP)
-    fω = @MVector zeros(T,Nl*nP)
-    for (i,link) in enumerate(robot.links)
-        fv[sind3(i)] = link.dynT()
-        fω[sind3(i)] = link.dynR()
-    end
 
-    return [fv-Gxλ(robot);fω-Gqλ(robot)]
-end
-
-function Gxλ(robot::Robot{T,Nl}) where {T,Nl}
-    nP = 3
-    Gλ = @MVector zeros(T,Nl*nP)
-
-    for (i, constraint) in enumerate(robot.constraints)
-            id1, id2 = constraint.linkids()
-            Gλ[sind3(id1)] += constraint.∂g∂xa()'*constraint.λ
-            Gλ[sind3(id2)] += constraint.∂g∂xb()'*constraint.λ
-    end
-
-    return Gλ
-end
-
-function Gqλ(robot::Robot{T,Nl}) where {T,Nl}
-    nP = 3
-    Gλ = @MVector zeros(T,Nl*nP)
-
-    for (i, constraint) in enumerate(robot.constraints)
-        id1, id2 = constraint.linkids()
-        Gλ[sind3(id1)] += constraint.∂g∂qa()'*constraint.λ
-        Gλ[sind3(id2)] += constraint.∂g∂qb()'*constraint.λ
-    end
-
-    return Gλ
-end
-
-function getConstraints(robot::Robot{T}) where T
-    nCl = robot.nCl
-
-    g = @MVector zeros(T,nCl)
-
-    startpos = 1
-    endpos = 0
-    for (i,constraint) in enumerate(robot.constraints)
-        endpos += getNc(constraint)
-        g[sind(startpos,endpos)] = constraint.g()
-        startpos = endpos+1
-    end
-
-    return g
-end
-
-function initialGuess(robot::Robot{T,Nl}) where {T,Nl}
-    nLl = robot.nLl
-    nCl = robot.nCl
-    nP = 3
-
-    vvec = @MVector zeros(T,Nl*nP)
-    ωvec = @MVector zeros(T,Nl*nP)
-    λvec = @MVector zeros(T,nCl)
-
-    for (i,link) in enumerate(robot.links)
-        vvec[sind3(i)] = link.vnew
-        ωvec[sind3(i)] = link.ωnew
-    end
-    startpos = 1
-    endpos = 0
-    for (i,constraint) in enumerate(robot.constraints)
-        endpos += getNc(constraint)
-        λvec[sind(startpos,endpos)] = constraint.λ
-        startpos = endpos+1
-    end
-
-    return [vvec;ωvec;λvec]
-end
-
-function setvars!(robot::Robot{T,Nl},x0::AbstractArray{T}) where {T,Nl}
-    nLl = robot.nLl
-    nCl = robot.nCl
-    nP = 3
-
-    vvec = x0[sind(1,Nl*nP)]
-    ωvec = x0[sind(Nl*nP+1,nLl)]
-    λvec = x0[sind(nLl+1,nLl+nCl)]
-
-    for (i,link) in enumerate(robot.links)
-        link.vnew[sind3(1)] = vvec[sind3(i)]
-        link.ωnew[sind3(1)] = ωvec[sind3(i)]
-    end
-    startpos = 1
-    endpos = 0
-    for (i,constraint) in enumerate(robot.constraints)
-        Nc = getNc(constraint)
-        endpos += Nc
-        constraint.λ = λvec[sind(startpos,endpos)]
-        startpos = endpos+1
+        for (i,child) in enumerate(dfsgraph[n])
+            child ? updateD!(node,nodes[i]) : nothing
+        end
+        invertD!(node)
+        p!=0 ? updateJ!(node) : nothing
     end
 end
 
-function updateRobot!(robot::Robot{T,Nl,Nc}, solution::AbstractVector{T}) where {T,Nl,Nc}
-    nLl = robot.nLl
-    nP = 3
-    nCl = robot.nCl
+function solve!(robot::Robot{T,Nl}) where {T,Nl}
+    list = robot.nodeList
+    parentList = robot.parentList
+    dfsgraph = robot.dfsgraph
+    adjacency = robot.adjacency
+    nodes = robot.nodes
+    nodesRange = robot.nodesRange
 
-    vnew = convert(SVector{Nl*nP,T},solution[1:Nl*nP])
-    ωnew = convert(SVector{Nl*nP,T},solution[Nl*3+1:nLl])
-    λnew = convert(SVector{nCl,T},solution[nLl+1:nLl+nCl])
+    for n in list
+        node = nodes[n]
 
-    updateState!(robot,vnew,ωnew)
-    updateλ!(robot,λnew)
+        setSol!(node)
+        # (A) For extended equations
+        # if n in robot.nodesRange[1]
+        #     for (i,connected) in enumerate(adjacency[n])
+        #         connected ? addGtλ!(node,nodes[i]) : nothing # this only changes sth for a link
+        #     end
+        # end
+        # end (A)
+        for (i,child) in enumerate(dfsgraph[n])
+            child ? LSol!(node,nodes[i]) : nothing
+        end
+    end
+
+    for n in reverse(list)
+        node = nodes[n]
+        p = parentList[n]
+
+        DSol!(node)
+        p!=0 ? USol!(node,nodes[p]) : nothing
+    end
+    # (A) For simplified equations
+    for n = nodesRange[2]
+        addλ0!(nodes[n])
+    end
+    # end (A)
 end
 
-function updateState!(robot::Robot{T}, v2::AbstractVector{T}, ω2::AbstractVector{T}) where T
-    nP = 3
+function normf(robot::Robot{T}) where T
+    robot.normf = 0
+    nodes = robot.nodes
 
-    for (i,link) in enumerate(robot.links)
-        link.x[1] = link.x[2]
-        link.q[1] = link.q[2]
+    foreach(setNormf!,nodes,robot)
+    foreach(addNormf!,nodes,robot)
+    return sqrt(robot.normf)
+end
 
-        v2T = v2[sind3(i)]
-        ω2T = ω2[sind3(i)]
+@inline addNormf!(node,robot::Robot) = (robot.normf += node.data.normf; nothing)
 
-        link.vnew[sind(1,nP)] = v2T
-        link.ωnew[sind(1,nP)] = ω2T
+function normDiff(robot::Robot)
+    robot.normDiff = 0
+    nodes = robot.nodes
 
-        link.x[2] += v2T.*link.dt[1]
-        link.q[2] = Quaternion(link.dt[1]/2 .*Lmat(link.q[2])*ωbar(ω2T,link.dt[1]))
+    foreach(setNormDiff!,nodes)
+    foreach(addNormDiff!,nodes,robot)
+    return sqrt(robot.normDiff)
+end
+
+@inline addNormDiff!(node,robot::Robot) = (robot.normDiff += node.data.normDiff; nothing)
+
+
+@inline function saveToTraj!(link::Link,i)
+    No = link.No
+    link.trajectoryX[i] = link.x[No]
+    link.trajectoryQ[i] = link.q[No]
+    link.trajectoryΦ[i] = angleAxis(link.q[No])[1]*sign(angleAxis(link.q[No])[2][1])
+    return nothing
+end
+
+@inline function updatePos!(link::Link)
+    link.x[1] = link.x[2]
+    link.x[2] += getvnew(link)*link.dt
+    link.q[1] = link.q[2]
+    link.q[2] = link.dt/2*(Lmat(link.q[2])*ωbar(link))
+    return nothing
+end
+
+
+function sim!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
+    foreach(s0tos1!,robot.nodes)
+    for i=robot.steps
+        newton!(robot,warning=debug)
+        for n=robot.nodesRange[1]
+            save ? saveToTraj!(robot.nodes[n],i) : nothing
+            updatePos!(robot.nodes[n])
+        end
+
+        disp && (i*robot.dt)%1<robot.dt*(1.0-.1) ? display(i*robot.dt) : nothing
     end
 end
 
-function updateλ!(robot::Robot{T},λ::AbstractVector{T}) where T
-    startpos=1
-    endpos=0
-    for (i,constraint) in enumerate(robot.constraints)
-        endpos += getNc(constraint)
-        constraint.λ = λ[sind(startpos,endpos)]
-        startpos = endpos+1
+function trajSFunc(robot::Robot{T,Nl}) where {T,Nl}
+    t = zeros(T,Nl,robot.steps[end])
+    for i=1:Nl
+            t[i,:] = robot.nodes[i].trajectoryΦ
     end
+    return t
 end
 
-function gradient(robot::Robot{T,Nl}) where {T,Nl}
-    nLl = robot.nLl
-    nCl = robot.nCl
-    nP = 3
-
-    Z1 = @SMatrix zeros(T,Nl*nP,Nl*nP)
-    Z2 = @SMatrix zeros(T,nCl,nCl)
-    ∂dyn∂v, ∂dyn∂ω = dynDerivative(robot)
-    ∂g∂v, ∂g∂ω, Gx, Gq = constrDerivative(robot)
-
-    return [∂dyn∂v Z1 -Gx';Z1 ∂dyn∂ω -Gq';∂g∂v ∂g∂ω Z2]
-end
-
-function dynDerivative(robot::Robot{T,Nl}) where {T,Nl}
-    nLl = robot.nLl
-    nP = 3
-
-    ∂dyn∂v = @MMatrix zeros(T,Nl*nP,Nl*nP)
-    ∂dyn∂ω = @MMatrix zeros(T,Nl*nP,Nl*nP)
-
-    for (i,link) in enumerate(robot.links)
-        ∂dyn∂v[sind3(i),sind3(i)] = link.∂dynT∂vnew()
-        ∂dyn∂ω[sind3(i),sind3(i)] = link.∂dynR∂ωnew()
+function plotTraj(robot,trajS,id)
+    p = plot(collect(0:robot.dt:robot.tend-robot.dt),trajS[id[1],:])
+    for ind in Iterators.rest(id,2)
+        plot!(collect(0:robot.dt:robot.tend-robot.dt),trajS[ind,:])
     end
-
-    return ∂dyn∂v, ∂dyn∂ω
+    return p
 end
-
-function constrDerivative(robot::Robot{T,Nl}) where {T,Nl}
-    nLl = robot.nLl
-    nCl = robot.nCl
-    nP = 3
-
-    ∂g∂v = @MMatrix zeros(T,nCl,Nl*nP)
-    ∂g∂ω = @MMatrix zeros(T,nCl,Nl*nP)
-
-    Gx = @MMatrix zeros(T,robot.nCl,Nl*nP)
-    Gq = @MMatrix zeros(T,robot.nCl,Nl*nP)
-
-    startpos=1
-    endpos=0
-    for constraint in robot.constraints
-        id1, id2 = constraint.linkids()
-        endpos += getNc(constraint)
-
-        ∂g∂v[sind(startpos,endpos),sind3(id1)] += constraint.∂g∂va()
-        ∂g∂v[sind(startpos,endpos),sind3(id2)] += constraint.∂g∂vb()
-        ∂g∂ω[sind(startpos,endpos),sind3(id1)] += constraint.∂g∂ωa()
-        ∂g∂ω[sind(startpos,endpos),sind3(id2)] += constraint.∂g∂ωb()
-        Gx[sind(startpos,endpos),sind3(id1)] += constraint.∂g∂xa()
-        Gx[sind(startpos,endpos),sind3(id2)] += constraint.∂g∂xb()
-        Gq[sind(startpos,endpos),sind3(id1)] += constraint.∂g∂qa()
-        Gq[sind(startpos,endpos),sind3(id2)] += constraint.∂g∂qb()
-
-        startpos=endpos+1
-    end
-
-    return ∂g∂v, ∂g∂ω, Gx, Gq
-end
-
-
-function invDynGrad(robot::Robot{T,Nl}) where {T,Nl}
-    nLl = robot.nLl
-    nP = 3
-
-    Ginv = @MMatrix zeros(T,nLl,nLl)
-
-    for (i,link) in enumerate(robot.links)
-        Ginv[sind3(i),sind3(i)] = inv(link.∂dynT∂vnew())
-        Ginv[sind3(i+Nl),sind3(i+Nl)] = inv(link.∂dynR∂ωnew())
-    end
-
-    return Ginv
-end
-
-sind1(i::T) where T = SVector{1,T}(i)
-sindn(i::T,n::T) where T = SVector{n,T}(collect((i-1)*n+1:i*n)...)
-sind3(i::T) where T =  SVector{3,T}((i-1)*3+1,(i-1)*3+2,i*3)
-sind(startpos::T,endpos::T) where T = SVector{endpos-startpos+1,T}(collect(startpos:endpos)...)
-sind(::Constraint{T,Nc}) where {T,Nc} = SVector{Nc,Int64}(collect(1:Nc)...)
-
-getNc(::Constraint{T,Nc}) where {T,Nc} = Nc

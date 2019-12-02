@@ -1,93 +1,83 @@
 using StaticArrays
 
-mutable struct Link{T,No,Np}
-    # Properties Assigned when added to a robot
-    id::MVector{1,Int64}
-    dt::MVector{1,T}
-    g::MVector{1,T}
+include("util/quaternion.jl")
+include("node.jl")
 
-    # Inertia Properties
+mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N,Nc,N²,NNc}
+    No::Int64
+
+    dt::T
+    g::T
     m::T
-    J::SMatrix{3,3,T}
+    J::SMatrix{3,3,T,9}
 
-    # Position, quaternion, force, torque
-    x::MVector{No,SVector{3,T}}
-    q::MVector{No,Quaternion{T}}
-    F::MVector{No,SVector{3,T}}
-    τ::MVector{No,SVector{3,T}}
+    x::Vector{SVector{3,T}}
+    q::Vector{Quaternion{T}}
 
-    # New velocity, new angular velocity
-    vnew::MVector{3,T}
-    ωnew::MVector{3,T}
+    F::Vector{SVector{3,T}}
+    τ::Vector{SVector{3,T}}
 
-    # Attachment points for joints/constraints
-    p::SVector{Np,SVector{3,T}}
+    trajectoryX::Vector{SVector{3,T}}
+    trajectoryQ::Vector{Quaternion{T}}
+    trajectoryΦ::Vector{T}
 
-    # Dynamics
-    dynT::Function
-    dynR::Function
+    p::Vector{SVector{3,T}}
 
-    # Gradients
-    ∂dynT∂vnew::Function
-    ∂dynR∂ωnew::Function
+    data::NodeData{T,N,Nc,N²,NNc}
 end
 
-function Base.show(io::IO, link::Link{T,No,Np}) where {T,No,Np}
-    heading = string("Link{",T,",",No,",",Np,"}:")
-    id = string("\n Unique ID (id): ",link.id[1])
-    m = string("\n Mass (m): ",link.m)
-    J = string("\n Intertia (J): ",link.J)
-    p = string("\n Attachment points (p): ",link.p...)
-
-    print(io,heading,id,m,J,p)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, L::Link)
+    summary(io, L); println(io)
+    print(io, "\nx_",L.No,": ")
+    show(io, mime, L.x[L.No])
+    print(io, "\nq_",L.No,": ")
+    show(io, mime, L.q[L.No])
 end
 
-function Link{T,No}(m::T, J::Array{T,2}, p::Array{Array{T,1},1}) where {T,No}
+Base.show(io::IO, L::Link) = summary(io, L)
+
+# function Base.getproperty(L::Link{T,N,Nc,N²,NNc,No},x::Symbol) where {T,N,Nc,N²,NNc,No}
+#     if x == :No
+#         return No
+#     else
+#         return getfield(L,x)
+#     end
+# end
+
+
+function Link(m::T,J::Array{T,2},p::Array{Array{T,1},1},dof::Int64;No=2) where T
+    Nc = 6-dof
+    N = 6
+    N² = N^2
+    NNc = N*Nc
     Np = length(p)
 
-    J = convert(SMatrix{3,3,T}, J)
-    p = convert(SVector{Np,SVector{3,T}},p)
+    dt = 0
+    g = 0
+    J = convert(SMatrix{3,3,T,9},J)
 
-    x = mrepeat(sbracket(SVector{3,T}(0,0,0)),No)
-    q = mrepeat(sbracket(Quaternion{T}()),No)
-    F = mrepeat(sbracket(SVector{3,T}(0,0,0)),No)
-    τ = mrepeat(sbracket(SVector{3,T}(0,0,0)),No)
+    x = repeat([@SVector zeros(T,3)],No)
+    q = repeat([Quaternion{T}()],No)
 
-    vnew = MVector{3,T}(0,0,0)
-    ωnew = MVector{3,T}(0,0,0)
+    F = repeat([@SVector zeros(T,3)],No)
+    τ = repeat([@SVector zeros(T,3)],No)
 
-    id = MVector{1,Int64}(0)
-    dt = MVector{1,T}(0)
-    g = MVector{1,T}(0)
+    trajX = [@SVector zeros(T,3)]
+    trajQ = [Quaternion{T}()]
+    trajΦ = [0]
 
-    dynT = function()
-        ez = SVector{3,T}(0,0,1)
-        v1 = (x[2]-x[1])./dt[1]
+    p = convert(Vector{SVector{3,T}},p)
 
-        return m.*((vnew - v1)./dt[1] + g[1].*ez) - F[2]
-    end
-    dynR = function()
-        ω1 = 2/dt[1].*Vmat(T)*LTmat(q[1])*q[2]
-        sq1 = sqrt(4/dt[1]^2 - ω1'*ω1)*J*ω1
-        sq2 = sqrt(4/dt[1]^2 - ωnew'*ωnew)*J*ωnew
-        return sq2 + skew(ωnew)*(J*ωnew) - (sq1 - skew(ω1)*(J*ω1)) - 2*τ[2]
-    end
+    data = NodeData{T,N,Nc}()
 
-    ∂dynT∂vnew = () -> m/dt[1].*SMatrix{3,3,T}(I)
-    ∂dynR∂ωnew = () -> sqrt(4/dt[1]^2 - ωnew'*ωnew)*J - J*ωnew*ωnew'/sqrt(4/dt[1]^2 - ωnew'*ωnew) + skew(ωnew)*J - skew(J*ωnew)
-
-    Link{T,No,Np}(id,dt,g,m,J,x,q,F,τ,vnew,ωnew,p,dynT,dynR,∂dynT∂vnew,∂dynR∂ωnew)
+    Link{T,N,Nc,N²,NNc}(No,dt,g,m,J,x,q,F,τ,trajX,trajQ,trajΦ,p,data)
 end
-function Link{T}(m::T, J::Array{T,2}, p::Array{Array{T,1},1}) where T
-    No = 2
-    Link{T,No}(m, J, p)
-end
-Link(m::T, J::Array{T,2}, p::Array{Array{T,1},1}) where T = Link{T}(m, J, p)
-Link(m::T, J::Array{T,2}) where T = Link(m, J, [zeros(T,3)])
-Link(T::Type) = Link(one(T), Matrix{T}(I,3,3), [zeros(T,3)])
+Link(T::Type,dof;No=2,Np=1) = Link(one(T),diagm(ones(T,3)),repeat([zeros(T,3)],Np),dof;No=No)
 
 
-function setInit!(link::Link{T,No}; x::AbstractVector{T}=zeros(T,3), q::Quaternion{T}=Quaternion{T}(), F::AbstractVector{T}=zeros(T,3), τ::AbstractVector{T}=zeros(T,3)) where {T,No}
+function setInit!(link::Link{T}; x::AbstractVector{T}=zeros(T,3), q::Quaternion{T}=Quaternion{T}(),
+    F::AbstractVector{T}=zeros(T,3), τ::AbstractVector{T}=zeros(T,3)) where T
+    No = link.No
     for i=1:No
         link.x[i] = convert(SVector{3,T},x)
         link.q[i] = q
@@ -96,17 +86,51 @@ function setInit!(link::Link{T,No}; x::AbstractVector{T}=zeros(T,3), q::Quaterni
     end
 end
 
-function initialPosition(link1::Link{T},link2::Link{T},q2::Quaternion{T},pId::AbstractVector{Int64},k::Int) where T
-    p1 = Quaternion(link1.p[pId[1]])
-    p2 = Quaternion(link2.p[pId[2]])
+function initialPosition(link1::Link{T},link2::Link{T},q2::Quaternion{T},pId::Vector{Int64}) where T
+    No = link1.No
+    p1 = link1.p[pId[1]]
+    p2 = link2.p[pId[2]]
 
-    x2 = link1.x[k] + rotate(p1,link1.q[k]) - rotate(p2,q2)
+    x2 = link1.x[No] + rotate(p1,link1.q[No]) - rotate(p2,q2)
 end
 
-getv1(link) = (link.x[2]-link.x[1])./link.dt[1]
-getω1(link::Link{T}) where T = 2/link.dt[1].*Vmat(T)*LTmat(link.q[1])*link.q[2]
-getx3(link) = link.vnew*link.dt[1] + link.x[2]
-getq3(link) = Quaternion(link.dt[1]/2 .*Lmat(link.q[2])*ωbar(link))
-derivωbar(link::Link{T}) where T = [-(link.ωnew./(ωbar(link)[1]))';SMatrix{3,3,T}(I)]
-ωbar(link::Link) = Quaternion(sqrt(4/link.dt[1]^2 - link.ωnew'*link.ωnew),link.ωnew)
-ωbar(ω::AbstractVector{T},dt::T) where T = Quaternion(sqrt(4/dt^2 - ω'*ω),ω)
+@inline getv1(link) = (link.x[2]-link.x[1])/link.dt
+@inline getvnew(link) = link.data.s1[SVector{3}(1:3)]
+@inline function getω1(link) # 2/link.dt*Vmat()*LTmat(link.q[1])*link.q[2]
+    q1 = link.q[1]
+    q2 = link.q[2]
+    2/link.dt*(q1.w*q2.v-q2.w*q1.v-cross(q1.v,q2.v))
+end
+@inline getωnew(link) = link.data.s1[SVector{3}(4:6)]
+@inline getx3(link) = getvnew(link)*link.dt + link.x[2]
+@inline getq3(link) = Quaternion(link.dt/2*(Lmat(link.q[2])*ωbar(link)))
+@inline derivωbar(link::Link{T}) where T = [-(getωnew(link)/(ωbar(link)[1]))';SMatrix{3,3,T,9}(I)]
+@inline ωbar(link) = Quaternion(sqrt(4/link.dt^2 - getωnew(link)'*getωnew(link)),getωnew(link))
+
+@inline function dynamics(link::Link{T}) where T
+    No = link.No
+    dt = link.dt
+    ezg = SVector{3,T}(0,0,link.g)
+    dynT = link.m*((getvnew(link) - getv1(link))/dt + ezg) - link.F[No]
+
+    J = link.J
+    ω1 = getω1(link)
+    ωnew = getωnew(link)
+    sq1 = sqrt(4/dt^2 - ω1'*ω1)
+    sq2 = sqrt(4/dt^2 - ωnew'*ωnew)
+    dynR = skewplusdiag(ωnew,sq2)*(J*ωnew) - skewplusdiag(ω1,sq1)*(J*ω1) - 2*link.τ[No]
+
+    return [dynT;dynR]
+end
+
+@inline function ∂dyn∂vel(link::Link{T}) where T
+    dt = link.dt
+    J = link.J
+    ωnew = getωnew(link)
+    sq = sqrt(4/dt^2 - ωnew'*ωnew)
+
+    dynT = SMatrix{3,3,T,9}(link.m/dt*I)
+    dynR = skewplusdiag(ωnew,sq)*J - J*ωnew*(ωnew'/sq) - skew(J*ωnew)
+
+    return dynT, dynR
+end
