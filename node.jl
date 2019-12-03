@@ -1,6 +1,3 @@
-using StaticArrays
-using BenchmarkTools
-
 abstract type Node{T,N1,N2,N1²,N1N2} end
 
 mutable struct NodeData{T,N1,N2,N1²,N1N2}

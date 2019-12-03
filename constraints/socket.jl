@@ -1,6 +1,3 @@
-include("../node.jl")
-include("../link.jl")
-
 struct Socket{T,Nc,N,Nc²,NcN,Nl,L1,L2} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
     link1::L1
     link2::L2

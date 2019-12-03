@@ -1,11 +1,3 @@
-using StaticArrays
-using Base.Threads
-
-include("util/quaternion.jl")
-include("link.jl")
-include("constraints/constraint.jl")
-include("util/graph.jl")
-
 mutable struct Robot{T,Nl,Nc,N}
     tend::T
     dt::T

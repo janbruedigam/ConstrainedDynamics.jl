@@ -1,8 +1,3 @@
-using StaticArrays
-
-include("util/quaternion.jl")
-include("node.jl")
-
 mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N,Nc,N²,NNc}
     No::Int64
 

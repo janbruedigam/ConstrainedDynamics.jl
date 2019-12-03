@@ -1,11 +1,13 @@
+using Rotations
 using BenchmarkTools
 using TimerOutputs
+using Plots
 
-include("util/quaternion.jl")
-include("robot.jl")
-include("util/shapes.jl")
-include("sparseldu.jl")
-include("newton.jl")
+if !@isdefined includeFlag
+    include("FullCordDynamics.jl")
+    includeFlag = true
+end
+using Main.FullCordDynamics
 
 # const to = TimerOutput()
 
@@ -62,5 +64,6 @@ constraints = [jointb; jointb1; joint12; jointb3; joint34]
 
 bot = Robot(links, constraints, root=length(links)+1)
 
-# sim!(bot,debug=false,disp=true)
-# trajS = trajSFunc(bot)
+sim!(bot,save=true)
+trajS = trajSFunc(bot)
+include("visualizeTwoTwoBar.jl")

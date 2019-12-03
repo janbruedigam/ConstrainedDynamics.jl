@@ -1,9 +1,3 @@
-using LinearAlgebra
-using StaticArrays
-
-include("link.jl")
-include("constraints/constraint.jl")
-
 @inline function setD!(link::Link{T}) where T
     dynT,dynR = ∂dyn∂vel(link)
     Z = @SMatrix zeros(T,3,3)

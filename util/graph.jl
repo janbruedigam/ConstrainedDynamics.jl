@@ -1,7 +1,3 @@
-using StaticArrays
-
-include("../constraints/constraint.jl")
-
 function adjacencyMat(constraints::Vector{<:Constraint},N::Int64)
     A = zeros(Bool,N,N)
 

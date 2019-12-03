@@ -1,6 +1,3 @@
-include("../node.jl")
-include("../link.jl")
-
 struct FixedOrientation{T,Nc,N,Nc²,NcN,Nl,L} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
     link::L
 

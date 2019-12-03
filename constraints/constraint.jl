@@ -1,17 +1,4 @@
-using StaticArrays
-
-include("../util/quaternion.jl")
-include("../node.jl")
-include("../link.jl")
-
 abstract type Constraint{T,Nc,N,Nc²,NcN,Nl} <: Node{T,Nc,N,Nc²,NcN} end
-
-include("fixedposition.jl")
-include("fixedorientation.jl")
-include("socket.jl")
-include("axis.jl")
-include("combined.jl")
-
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, C::Constraint)
     summary(io, C); println(io)

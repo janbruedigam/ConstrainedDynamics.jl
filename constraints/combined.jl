@@ -1,5 +1,3 @@
-include("../node.jl")
-
 struct Combined{T,Nc,N,Nc²,NcN,Nl,C1,C2} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
     constr1::C1
     constr2::C2

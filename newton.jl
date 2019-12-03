@@ -1,9 +1,3 @@
-using LinearAlgebra
-
-include("robot.jl")
-include("sparseldu.jl")
-
-
 function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter=20, warning::Bool=false) where {T,Nl}
     n = 1
     nodes = robot.nodes

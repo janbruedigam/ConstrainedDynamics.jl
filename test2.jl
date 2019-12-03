@@ -1,10 +1,13 @@
+using Rotations
 using BenchmarkTools
+using TimerOutputs
+using Plots
 
-include("quaternion.jl")
-include("robot.jl")
-include("shapes.jl")
-include("sparseldu.jl")
-include("newton.jl")
+if !@isdefined includeFlag
+    include("FullCordDynamics.jl")
+    includeFlag = true
+end
+using Main.FullCordDynamics
 
 # Parameters
 ex = [1.;0.;0.]
@@ -86,4 +89,4 @@ constraints = [jointb; jointb1;joint12;joint23;joint34;joint45;joint56;joint67;j
 
 bot = Robot(links, constraints, root=length(links)+1)
 
-# sim!(bot,debug=false,disp=true)
+# sim!(bot)

@@ -1,7 +1,3 @@
-using StaticArrays
-using LinearAlgebra
-using Rotations
-
 struct Quaternion{T} <: FieldVector{4, T}
     w::T
     v1::T
