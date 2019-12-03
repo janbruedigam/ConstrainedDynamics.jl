@@ -3,10 +3,7 @@ using BenchmarkTools
 using TimerOutputs
 using Plots
 
-if !@isdefined includeFlag
-    include("FullCordDynamics.jl")
-    includeFlag = true
-end
+(@isdefined FullCordDynamics) ? nothing : include("FullCordDynamics.jl")
 using Main.FullCordDynamics
 
 # const to = TimerOutput()
@@ -66,4 +63,4 @@ bot = Robot(links, constraints, root=length(links)+1)
 
 sim!(bot,save=true)
 trajS = trajSFunc(bot)
-include("visualizeTwoTwoBar.jl")
+# include("visualizeTwoTwoBar.jl")

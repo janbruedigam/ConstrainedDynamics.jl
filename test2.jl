@@ -3,10 +3,7 @@ using BenchmarkTools
 using TimerOutputs
 using Plots
 
-if !@isdefined includeFlag
-    include("FullCordDynamics.jl")
-    includeFlag = true
-end
+(@isdefined FullCordDynamics) ? nothing : include("FullCordDynamics.jl")
 using Main.FullCordDynamics
 
 # Parameters
@@ -89,4 +86,4 @@ constraints = [jointb; jointb1;joint12;joint23;joint34;joint45;joint56;joint67;j
 
 bot = Robot(links, constraints, root=length(links)+1)
 
-# sim!(bot)
+sim!(bot)
