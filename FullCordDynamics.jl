@@ -4,6 +4,8 @@ using LinearAlgebra
 using StaticArrays
 using Rotations
 using Plots
+using Base.Threads
+
 
 export
     Quaternion,

@@ -44,7 +44,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, N::NodeData)
 end
 
 Base.show(io::IO, N::Node) = summary(io, N)
-Base.foreach(f,itr::Vector{<:Node},arg) = (for x in itr; f(x,arg); end; nothing)
+@inline Base.foreach(f,itr::Vector{<:Node},arg) = (for x in itr; f(x,arg); end; nothing)
 
 @inline update!(node) = (d = node.data; d.s1 = d.s0 - d.ŝ; nothing)
 

@@ -3,6 +3,7 @@ mutable struct Robot{T,Nl,Nc,N}
     dt::T
     steps::UnitRange{Int64}
 
+    root::Link{T,6,6,36,36}
     nodes::Vector{Node{T}}
     nodesRange::Vector{UnitRange{Int64}}
     normf::T
@@ -19,12 +20,16 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T,Nl,Nc}) 
 end
 
 
-function Robot(links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=9.81, root=1) where T
+function Robot(root::Link{T,6,6,36,36},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=0) where T
+    root
+
     Nl = length(links)
     Nc = length(constraints)
     N = Nl+Nc
     steps = Int(ceil(tend/dt))
 
+    root.dt = dt
+    root.g = g
     for (i,link) in enumerate(links)
         link.data.id = i
         link.dt = dt
@@ -43,14 +48,18 @@ function Robot(links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; te
     normf = zero(T)
     normDiff = zero(T)
 
-    adjacency = adjacencyMat(constraints,N)
-    dfsgraph, list = dfs(adjacency,root=root)
-    parentList = Vector{T}(undef,N)
-    for i=1:N
-        parentList[i] = parentNode(dfsgraph,i)
+    adjacency = adjacencyMat(constraints,N+1)
+    dfsgraph, list = dfs(adjacency,rootid)
+    parentList = Vector{Int64}(undef,N)
+    for i=2:N+1
+        parentList[i-1] = parentNode(dfsgraph,i)-1
     end
 
-    Robot{T,Nl,Nc,N}(tend,dt,1:steps,nodes,nodesRange,normf,normDiff,adjacency,dfsgraph,list,parentList)
+    list = SVdeleteat(list,N+1)
+    adjacency = SVdeleteat.(adjacency,1)[2:N+1]
+    dfsgraph = SVdeleteat.(dfsgraph,1)[2:N+1]
+
+    Robot{T,Nl,Nc,N}(tend,dt,1:steps,root,nodes,nodesRange,normf,normDiff,adjacency,dfsgraph,list,parentList)
 end
 
 
@@ -65,19 +74,20 @@ function factor!(robot::Robot)
         p = parentList[n]
 
         setD!(node)
-        p!=0 ? setJ!(node,nodes[p]) : nothing
+        p!=0 ? setJ!(node,nodes[p]) : setJ!(node,robot.root)
     end
 
     for n in list
         node = nodes[n]
-        p = parentList[n]
+        # p = parentList[n]
 
 
         for (i,child) in enumerate(dfsgraph[n])
             child ? updateD!(node,nodes[i]) : nothing
         end
         invertD!(node)
-        p!=0 ? updateJ!(node) : nothing
+        # p!=0 ? updateJ!(node) : nothing
+        updateJ!(node)
     end
 end
 
@@ -110,7 +120,7 @@ function solve!(robot::Robot{T,Nl}) where {T,Nl}
         p = parentList[n]
 
         DSol!(node)
-        p!=0 ? USol!(node,nodes[p]) : nothing
+        p!=0 ? USol!(node,nodes[p]) : USol!(node,robot.root)
     end
     # (A) For simplified equations
     for n = nodesRange[2]
@@ -160,12 +170,13 @@ end
 
 
 function sim!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
-    foreach(s0tos1!,robot.nodes)
+    nodes = robot.nodes
+    foreach(s0tos1!,nodes)
     for i=robot.steps
         newton!(robot,warning=debug)
         for n=robot.nodesRange[1]
-            save ? saveToTraj!(robot.nodes[n],i) : nothing
-            updatePos!(robot.nodes[n])
+            save ? saveToTraj!(nodes[n],i) : nothing
+            updatePos!(nodes[n])
         end
 
         disp && (i*robot.dt)%1<robot.dt*(1.0-.1) ? display(i*robot.dt) : nothing

@@ -67,7 +67,7 @@ function Link(m::T,J::Array{T,2},p::Array{Array{T,1},1},dof::Int64;No=2) where T
 
     Link{T,N,Nc,N²,NNc}(No,dt,g,m,J,x,q,F,τ,trajX,trajQ,trajΦ,p,data)
 end
-Link(T::Type,dof;No=2,Np=1) = Link(one(T),diagm(ones(T,3)),repeat([zeros(T,3)],Np),dof;No=No)
+Link(T::Type;No=2) = Link(zero(T),diagm(zeros(T,3)),[zeros(T,3)],0;No=No)
 
 
 function setInit!(link::Link{T}; x::AbstractVector{T}=zeros(T,3), q::Quaternion{T}=Quaternion{T}(),
@@ -81,13 +81,23 @@ function setInit!(link::Link{T}; x::AbstractVector{T}=zeros(T,3), q::Quaternion{
     end
 end
 
-function initialPosition(link1::Link{T},link2::Link{T},q2::Quaternion{T},pId::Vector{Int64}) where T
+function setInit!(link2::Link{T}, link1::Link{T}, pids::Vector{Int64}; q::Quaternion{T}=Quaternion{T}(),
+    F::AbstractVector{T}=zeros(T,3), τ::AbstractVector{T}=zeros(T,3)) where T
     No = link1.No
-    p1 = link1.p[pId[1]]
-    p2 = link2.p[pId[2]]
+    p1 = link1.p[pids[1]]
+    p2 = link2.p[pids[2]]
+    x2 = link1.x[No] + rotate(p1,link1.q[No]) - rotate(p2,q)
 
-    x2 = link1.x[No] + rotate(p1,link1.q[No]) - rotate(p2,q2)
+    setInit!(link2; x=x2, q=q, F=F, τ=τ)
 end
+
+# function initialPosition(link1::Link{T},link2::Link{T},q2::Quaternion{T},pId::Vector{Int64}) where T
+#     No = link1.No
+#     p1 = link1.p[pId[1]]
+#     p2 = link2.p[pId[2]]
+#
+#     x2 = link1.x[No] + rotate(p1,link1.q[No]) - rotate(p2,q2)
+# end
 
 @inline getv1(link) = (link.x[2]-link.x[1])/link.dt
 @inline getvnew(link) = link.data.s1[SVector{3}(1:3)]
@@ -105,7 +115,7 @@ end
 @inline function dynamics(link::Link{T}) where T
     No = link.No
     dt = link.dt
-    ezg = SVector{3,T}(0,0,link.g)
+    ezg = SVector{3,T}(0,0,-link.g)
     dynT = link.m*((getvnew(link) - getv1(link))/dt + ezg) - link.F[No]
 
     J = link.J

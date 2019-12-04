@@ -3,7 +3,7 @@ function adjacencyMat(constraints::Vector{<:Constraint},N::Int64)
 
     for constraint in constraints
         for linkid in linkids(constraint)
-            A[constraint.data.id,linkid] = true
+            A[constraint.data.id+1,linkid+1] = true
         end
     end
 
@@ -16,20 +16,22 @@ function adjacencyMat(constraints::Vector{<:Constraint},N::Int64)
     return Avec
 end
 
-function dfs(A::Vector{SVector{N,T}};root=1) where {N,T}
+function dfs(A::Vector{SVector{N,T}},rootid) where {N,T}
+    rootid+=1
     Adfs = zeros(Bool,N,N)
     list = zeros(Int64,N)
     visited = zeros(Bool,N)
     index = N
 
-    list[index] = root
-    visited[root] = true
-    dfs!(A,Adfs,root,list,visited,N)
+    list[index] = rootid
+    visited[rootid] = true
+    dfs!(A,Adfs,rootid,list,visited,N)
 
     Adfsvec = repeat([@SVector zeros(Bool,N)],N)
     for i=1:N
         Adfsvec[i] = convert(SVector{N,Bool},Adfs[i,:])
     end
+    list.-=1
     return Adfsvec, convert(SVector{N},list)
 end
 
@@ -52,3 +54,5 @@ function parentNode(dfsgraph::Vector{SVector{N,T}},n) where {N,T}
     end
     return 0
 end
+
+SVdeleteat(a::SVector{N,T},i) where {T,N} = convert(SVector{N-1,T},deleteat!(convert(Vector,a),i))
