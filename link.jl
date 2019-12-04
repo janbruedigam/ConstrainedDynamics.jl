@@ -21,6 +21,19 @@ mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N,Nc,N²,NNc}
     data::NodeData{T,N,Nc,N²,NNc}
 end
 
+mutable struct XMLLink{T}
+    # From link tag
+    name::String
+    id::Int64
+    x::Vector{T}
+    q::Quaternion{T}
+    mass::T
+    inertia::Matrix{T}
+
+    dof::Int64
+    p::Vector{Vector{T}}
+end
+
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, L::Link)
     summary(io, L); println(io)
     print(io, "\nx_",L.No,": ")
@@ -68,6 +81,7 @@ function Link(m::T,J::Array{T,2},p::Array{Array{T,1},1},dof::Int64;No=2) where T
     Link{T,N,Nc,N²,NNc}(No,dt,g,m,J,x,q,F,τ,trajX,trajQ,trajΦ,p,data)
 end
 Link(T::Type;No=2) = Link(zero(T),diagm(zeros(T,3)),[zeros(T,3)],0;No=No)
+Link{T}(link::XMLLink{T};No=2) where T = Link(link.mass,link.inertia,link.p,link.dof;No=No)
 
 
 function setInit!(link::Link{T}; x::AbstractVector{T}=zeros(T,3), q::Quaternion{T}=Quaternion{T}(),
@@ -81,7 +95,7 @@ function setInit!(link::Link{T}; x::AbstractVector{T}=zeros(T,3), q::Quaternion{
     end
 end
 
-function setInit!(link2::Link{T}, link1::Link{T}, pids::Vector{Int64}; q::Quaternion{T}=Quaternion{T}(),
+function setInit!(link1::Link{T}, link2::Link{T}, pids::Vector{Int64}; q::Quaternion{T}=Quaternion{T}(),
     F::AbstractVector{T}=zeros(T,3), τ::AbstractVector{T}=zeros(T,3)) where T
     No = link1.No
     p1 = link1.p[pids[1]]

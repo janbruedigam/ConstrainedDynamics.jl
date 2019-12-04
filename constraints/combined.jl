@@ -20,6 +20,10 @@ function Combined(constr1::C1, constr2::C2) where {C1,C2}
     Combined{T,Nc,N,Nc²,NcN,Nl,C1,C2}(constr1,constr2,data)
 end
 
+function Combined(joint::XMLJoint, link1::Link, link2::Link)
+    Combined(Socket(link1,link2,joint.pids...),Axis(link1,link2,joint.axis))
+end
+
 
 @inline g(C::Combined) = [g(C.constr1);g(C.constr2)]
 

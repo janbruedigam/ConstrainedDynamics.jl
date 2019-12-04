@@ -5,6 +5,7 @@ using StaticArrays
 using Rotations
 using Plots
 using Base.Threads
+using LightXML
 
 
 export
@@ -25,7 +26,9 @@ export
     setInit!,
     sim!,
     trajSFunc,
-    plotTraj
+    plotTraj,
+
+    parse_urdf
 
 
 include(joinpath("util", "quaternion.jl"))
@@ -46,4 +49,6 @@ include("robot.jl")
 include("sparseldu.jl")
 
 include("newton.jl")
+
+include(joinpath("util", "parseurdf.jl"))
 end

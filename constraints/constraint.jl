@@ -1,5 +1,21 @@
 abstract type Constraint{T,Nc,N,Nc²,NcN,Nl} <: Node{T,Nc,N,Nc²,NcN} end
 
+mutable struct XMLJoint{T}
+    # From joint tag
+    name::String
+    type::String
+    x::Vector{T}
+    q::Quaternion{T}
+    axis::Vector{T}
+    parent::String
+    child::String
+    parentid::Int64
+    childid::Int64
+    pids::Tuple{Int64,Int64}
+
+    dof::Int64
+end
+
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, C::Constraint)
     summary(io, C); println(io)
     print(io, "\nConnected links: ")

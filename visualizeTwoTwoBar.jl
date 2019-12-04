@@ -5,7 +5,7 @@ using RigidBodyDynamics, MeshCatMechanisms, Blink, LinearAlgebra, StaticArrays
 urdf = "twoTwoBarDiffLength.urdf";
 
 grav = -9.81 # gravitational acceleration in z-direction
-mechanism = parse_urdf(urdf; gravity = SVector(0, 0, grav))
+mechanism = RigidBodyDynamics.parse_urdf(urdf; gravity = SVector(0, 0, grav))
 
 # shoulder, elbow = joints(mechanism)
 # function simple_control!(torques::AbstractVector, t, state::MechanismState)
@@ -30,10 +30,10 @@ ts, qs, vs = simulate(state, final_time);
 ts2, qs2, vs2 = simulate(state, final_time);
 
 for i=1:100000
-    qs2[i][1] = trajS[2,Int(ceil(i/100))];
-    qs2[i][3] = trajS[3,Int(ceil(i/100))]-trajS[2,Int(ceil(i/100))];
-    qs2[i][2] = trajS[4,Int(ceil(i/100))];
-    qs2[i][4] = trajS[5,Int(ceil(i/100))]-trajS[4,Int(ceil(i/100))];
+    qs2[i][1] = trajS[1,Int(ceil(i/100))];
+    qs2[i][3] = trajS[2,Int(ceil(i/100))]-trajS[1,Int(ceil(i/100))];
+    qs2[i][2] = trajS[3,Int(ceil(i/100))];
+    qs2[i][4] = trajS[4,Int(ceil(i/100))]-trajS[3,Int(ceil(i/100))];
 end
 qs2[100001][1] = qs2[100000][1]
 qs2[100001][3] = qs2[100000][3]
