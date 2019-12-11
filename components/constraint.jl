@@ -1,25 +1,23 @@
-abstract type Constraint{T,Nc,N,Nc²,NcN,Nl} <: Node{T,Nc} end
+abstract type Constraint{T,Nc,Nc²,Nl} <: Node{T,Nc} end
 
-struct Combined{T,Nc,N,Nc²,NcN,Nl,C1,C2} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
+struct Combined{T,Nc,Nc²,Nl,C1,C2} <: Constraint{T,Nc,Nc²,Nl}
     constr1::C1
     constr2::C2
 
     linkids::SVector{Nl,Int64}
 
-    data::NodeData{T,Nc,N,Nc²,NcN}
+    data::NodeData{T,Nc,Nc²}
 
     function Combined(constr1::C1, constr2::C2) where {C1,C2}
         ids = unique([linkids(constr1);linkids(constr2)])
 
         T = constr1.T
         Nc = constr1.Nc+constr2.Nc
-        N = 6
         Nc² = Nc^2
-        NcN = Nc*N
         Nl = length(ids)
-        data = NodeData{T,Nc,N}()
+        data = NodeData{T,Nc}()
 
-        new{T,Nc,N,Nc²,NcN,Nl,C1,C2}(constr1,constr2,ids,data)
+        new{T,Nc,Nc²,Nl,C1,C2}(constr1,constr2,ids,data)
     end
 end
 

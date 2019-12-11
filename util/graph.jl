@@ -133,29 +133,15 @@ function pattern(dfsgraph::Vector{SVector{N,T}},rootid;offset::Int64=0) where {N
     return patternvec, id
 end
 
-# function createfillins(graph::Graph,origin::Link{T},nodes::Vector) where T
-#     idlist = graph.idlist
-#     fillins = Vector{FillIn}(undef,0)
-#     for n in graph.dfslist
-#         if !isroot(graph,n)
-#             p = parent(graph,n)
-#
-#             node = nodes[idlist[n]]
-#             isroot(graph,p) ? parentnode=origin : parentnode=nodes[idlist[p]]
-#             push!(fillins,FillIn{T,length(node),length(parentnode)}(parentnode.data.id,node.data.id))
-#         end
-#     end
-#     return fillins
-# end
-
 function createfillins(graph::Graph,origin::Link{T},nodes::Vector) where T
     idlist = graph.idlist
     fillins = Vector{FillIn}(undef,0)
     for (i,row) in enumerate(graph.pattern)
         for (j,id) in enumerate(row)
             if id!=0
-                childnode = nodes[idlist[i]]
-                parentnode = nodes[idlist[j]]
+                parentnode = nodes[idlist[i]]
+                childnode = nodes[idlist[j]]
+
 
                 push!(fillins,FillIn{T,length(childnode),length(parentnode)}(id,childnode.data.id,parentnode.data.id))
             end

@@ -11,7 +11,7 @@ mutable struct XMLLink{T}
     p::Vector{Vector{T}}
 end
 
-mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N}
+mutable struct Link{T,N,N²} <: Node{T,N}
     No::Int64
 
     dt::T
@@ -31,12 +31,10 @@ mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N}
 
     p::Vector{SVector{3,T}}
 
-    data::NodeData{T,N,Nc,N²,NNc}
+    data::NodeData{T,N,N²}
 
-    function Link(m::T,J::Array{T,2},p::Array{Array{T,1},1},dof::Int64;No=2,N=6) where T
-        Nc = N-dof
+    function Link(m::T,J::Array{T,2},p::Array{Array{T,1},1};No=2,N=6) where T
         N² = N^2
-        NNc = N*Nc
         Np = length(p)
 
         dt = 0
@@ -55,12 +53,12 @@ mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N}
 
         p = convert(Vector{SVector{3,T}},p)
 
-        data = NodeData{T,N,Nc}()
+        data = NodeData{T,N}()
 
-        new{T,N,Nc,N²,NNc}(No,dt,g,m,J,x,q,F,τ,trajX,trajQ,trajΦ,p,data)
+        new{T,N,N²}(No,dt,g,m,J,x,q,F,τ,trajX,trajQ,trajΦ,p,data)
     end
 
-    Link(T::Type;No=2,N=0) = Link(zero(T),diagm(zeros(T,3)),[zeros(T,3)],0;No=No,N=N)
+    Link(T::Type;No=2,N=0) = Link(zero(T),diagm(zeros(T,3)),[zeros(T,3)];No=No,N=N)
     Link{T}(link::XMLLink{T};No=2) where T = Link(link.mass,link.inertia,link.p,link.dof;No=No)
 end
 

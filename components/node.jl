@@ -6,34 +6,30 @@ getGlobalID() = (global CURRENTID+=1;return CURRENTID-1)
 # currentGlobalID() = (global CURRENTID; return CURRENTID-1)
 resetGlobalID() = (global CURRENTID=1; nothing)
 
-mutable struct NodeData{T,N1,N2,N1²,N1N2}
+mutable struct NodeData{T,N,N²}
     id::Int64
-    s0::SVector{N1,T}
-    s1::SVector{N1,T}
-    ŝ::SVector{N1,T}
-    f::SVector{N1,T}
+    s0::SVector{N,T}
+    s1::SVector{N,T}
+    ŝ::SVector{N,T}
+    f::SVector{N,T}
     normf::T
     normΔs::T
-    D::SMatrix{N1,N1,T,N1²}
-    Dinv::SMatrix{N1,N1,T,N1²}
-    JL::SMatrix{N2,N1,T,N1N2}
-    JU::SMatrix{N1,N2,T,N1N2}
+    D::SMatrix{N,N,T,N²}
+    Dinv::SMatrix{N,N,T,N²}
 
-    function NodeData{T,N1,N2}() where {T,N1,N2}
-        N1² = N1^2
-        N1N2 = N1*N2
+    function NodeData{T,N}() where {T,N}
+        N² = N^2
+
         id = getGlobalID()
-        s0 = @SVector zeros(T,N1)
-        s1 = @SVector zeros(T,N1)
-        ŝ = @SVector zeros(T,N1)
-        f = @SVector zeros(T,N1)
+        s0 = @SVector zeros(T,N)
+        s1 = @SVector zeros(T,N)
+        ŝ = @SVector zeros(T,N)
+        f = @SVector zeros(T,N)
         normf = zero(T)
         normΔs = zero(T)
-        D = @SMatrix zeros(T,N1,N1)
-        Dinv = @SMatrix zeros(T,N1,N1)
-        JL = @SMatrix zeros(T,N2,N1)
-        JU = @SMatrix zeros(T,N1,N2)
-        new{T,N1,N2,N1²,N1N2}(id,s0,s1,ŝ,f,normf,normΔs,D,Dinv,JL,JU)
+        D = @SMatrix zeros(T,N,N)
+        Dinv = @SMatrix zeros(T,N,N)
+        new{T,N,N²}(id,s0,s1,ŝ,f,normf,normΔs,D,Dinv)
     end
 end
 
@@ -44,10 +40,6 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, N::NodeData)
     show(io, mime, N.D)
     print(io, "\nDinv: ")
     show(io, mime, N.Dinv)
-    print(io, "\nJL: ")
-    show(io, mime, N.JL)
-    print(io, "\nJU: ")
-    show(io, mime, N.JU)
 end
 
 

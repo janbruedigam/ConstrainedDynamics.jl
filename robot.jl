@@ -3,7 +3,7 @@ mutable struct Robot{T,N,F,NpF}
     dt::T
     steps::UnitRange{Int64}
 
-    origin::Link{T,0,0,0,0}
+    origin::Link{T,0,0}
     nodes::Vector{Node{T}}
     fillins::Vector{FillIn{T}}
     nodesrange::Vector{UnitRange{Int64}}
@@ -12,7 +12,7 @@ mutable struct Robot{T,N,F,NpF}
 
     graph::Graph{N,F,NpF}
 
-    function Robot(origin::Link{T,0,0,0,0},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1) where T
+    function Robot(origin::Link{T,0,0},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1) where T
         Nl = length(links)
         Nc = length(constraints)
         N = Nl+Nc+1
@@ -66,19 +66,20 @@ function factor!(robot::Robot)
             pid = parent(graph,id)
 
             setD!(node)
-            !isroot(graph,pid) && setJ!(node,getnode(robot,pid))
+            !isroot(graph,pid) && setJ!(node,getnode(robot,pid),getfillin(robot,id,pid))
         end
     end
 
     for id in list
         if !isroot(graph,id)
             node = getnode(robot,id)
+            pid = parent(graph,id)
 
             for (cid,ischild) in enumchildren(graph,id)
-                ischild && updateD!(node,getnode(robot,cid))
+                ischild && updateD!(node,getnode(robot,cid),getfillin(robot,cid,id))
             end
             invertD!(node)
-            updateJ!(node)
+            !isroot(graph,pid) && updateJ!(node,getfillin(robot,id,pid))
         end
     end
 end
@@ -94,7 +95,7 @@ function solve!(robot::Robot)
 
             setSol!(node)
             for (cid,ischild) in enumchildren(graph,id)
-                ischild && LSol!(node,getnode(robot,cid))
+                ischild && LSol!(node,getnode(robot,cid),getfillin(robot,cid,id))
             end
         end
     end
@@ -105,7 +106,7 @@ function solve!(robot::Robot)
             pid = parent(graph,id)
 
             DSol!(node)
-            !isroot(graph,pid) && USol!(node,getnode(robot,pid))
+            !isroot(graph,pid) && USol!(node,getnode(robot,pid),getfillin(robot,id,pid))
         end
     end
 
@@ -121,7 +122,7 @@ end
     isroot(graph,id) ? robot.origin : robot.nodes[graph.idlist[id]]
 end
 
-@inline function getfillin(robot::Robot,pid::Int64,cid::Int64)
+@inline function getfillin(robot::Robot,cid::Int64,pid::Int64)
     graph = robot.graph
     fid = graph.pattern[pid][cid]
     robot.fillins[graph.fillinid[fid]]
