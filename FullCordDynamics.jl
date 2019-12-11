@@ -11,6 +11,7 @@ using LightXML
 export
     Quaternion,
     Node,
+    FillIn,
     JointNode,
     Link,
     Constraint,
@@ -35,6 +36,7 @@ export
 
 include(joinpath("util", "quaternion.jl"))
 include(joinpath("components", "node.jl"))
+include(joinpath("components", "fillin.jl"))
 include(joinpath("components", "link.jl"))
 
 include(joinpath("joints", "joint.jl"))

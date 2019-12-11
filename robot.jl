@@ -5,11 +5,10 @@ mutable struct Robot{T,N}
 
     origin::Link{T,0,0,0,0}
     nodes::Vector{Node{T}}
+    fillins::Vector{FillIn{T}}
     nodesrange::Vector{UnitRange{Int64}}
     normf::T
     normΔs::T
-
-    idlist::SVector{N,Int64} # matches ids to "nodes" index, 0 is for root
 
     graph::Graph{N}
 
@@ -35,21 +34,19 @@ mutable struct Robot{T,N}
             constraint.data.id = i+1+Nl
         end
 
-        nodes = [links;constraints]
+        #TODO do constraint properly
+        resetGlobalID()
 
-        idlist = zeros(Int64,N)
-        idlist[1] = 0
-        for i=1:N-1
-            idlist[i+1] = i
-        end
+        nodes = [links;constraints]
 
         nodesrange = [[1:Nl];[Nl+1:Nl+Nc]]
         normf = zero(T)
         normΔs = zero(T)
 
-        graph = Graph(constraints)
+        graph = Graph(origin,links,constraints)
+        fillins = createfillins(graph,origin,nodes)
 
-        new{T,N}(tend,dt,1:steps,origin,nodes,nodesrange,normf,normΔs,idlist,graph)
+        new{T,N}(tend,dt,1:steps,origin,nodes,fillins,nodesrange,normf,normΔs,graph)
     end
 end
 
@@ -120,7 +117,7 @@ end
 
 @inline function getnode(robot::Robot,id::Int64)
     graph = robot.graph
-    isroot(graph,id) ? robot.origin : robot.nodes[robot.idlist[id]]
+    isroot(graph,id) ? robot.origin : robot.nodes[graph.idlist[id]]
 end
 
 function normf(robot::Robot{T}) where T

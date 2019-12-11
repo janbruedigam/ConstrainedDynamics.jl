@@ -3,11 +3,12 @@ struct Graph{N}
     dfsgraph::Vector{SVector{N,Bool}}
     dfslist::SVector{N,Int64}
     parentlist::SVector{N,Int64}
+    idlist::SVector{N,Int64} # matches ids to "nodes" index, 0 is for root
     root::Int64
 
-    sizes::SVector{N,Int64}
+    # sizes::SVector{N,Int64}
 
-    function Graph(constraints::Vector{<:Constraint};offset::Int64=0,root::Int64=1)
+    function Graph(origin::Link,links::Vector{<:Link},constraints::Vector{<:Constraint};offset::Int64=0,root::Int64=1)
         adjacency = adjacencyMatrix(constraints,offset=offset)
         dfsgraph, dfslist = dfs(adjacency,root)
 
@@ -17,16 +18,26 @@ struct Graph{N}
             parentlist[i] = parent(dfsgraph,i)
         end
 
-        sizes = zeros(Int64,N)
-        for constraint in constraints
-            sizes[constraint.data.id] = length(constraint)
-            links = getlinks(constraint)
-            for link in links
-                sizes[link.data.id] = length(link)
-            end
+        idlist = zeros(Int64,N)
+        idlist[origin.data.id] = 0
+        Nl = length(links)
+        for (i,link) in enumerate(links)
+            idlist[link.data.id] = i
+        end
+        for (i,constraint) in enumerate(constraints)
+            idlist[constraint.data.id] = i+Nl
         end
 
-        new{N}(adjacency,dfsgraph,dfslist,parentlist,root,sizes)
+        # sizes = zeros(Int64,N)
+        # for constraint in constraints
+        #     sizes[constraint.data.id] = length(constraint)
+        #     links = getlinks(constraint)
+        #     for link in links
+        #         sizes[link.data.id] = length(link)
+        #     end
+        # end
+
+        new{N}(adjacency,dfsgraph,dfslist,parentlist,idlist,root)
     end
 end
 
@@ -36,7 +47,7 @@ function adjacencyMatrix(constraints::Vector{<:Constraint};offset::Int64=0)
     n = 1
 
     for (i,constraint) in enumerate(constraints)
-        for linkid in linkids(constraint)
+        for linkid in constraint.linkids#linkids(constraint)
             cid = constraint.data.id
             m = maximum([linkid;cid])
             if m>n
@@ -98,4 +109,19 @@ function parent(dfsgraph::Vector{SVector{N,T}},n) where {N,T}
         dfsgraph[i][n] && (return i)
     end
     return 0
+end
+
+function createfillins(graph::Graph,origin::Link{T},nodes::Vector) where T
+    idlist = graph.idlist
+    fillins = Vector{FillIn}(undef,0)
+    for n in graph.dfslist
+        if !isroot(graph,n)
+            p = parent(graph,n)
+
+            node = nodes[idlist[n]]
+            isroot(graph,p) ? parentnode=origin : parentnode=nodes[idlist[p]]
+            push!(fillins,FillIn{T,length(node),length(parentnode)}(parentnode.data.id,node.data.id))
+        end
+    end
+    return fillins
 end

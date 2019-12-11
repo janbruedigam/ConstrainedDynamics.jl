@@ -1,5 +1,10 @@
-# abstract type Node{T,N1,N2,N1²,N1N2} end
 abstract type Node{T,N} end
+
+#TODO do constraint properly
+CURRENTID = 1
+getGlobalID() = (global CURRENTID+=1;return CURRENTID-1)
+# currentGlobalID() = (global CURRENTID; return CURRENTID-1)
+resetGlobalID() = (global CURRENTID=1; nothing)
 
 mutable struct NodeData{T,N1,N2,N1²,N1N2}
     id::Int64
@@ -17,7 +22,7 @@ mutable struct NodeData{T,N1,N2,N1²,N1N2}
     function NodeData{T,N1,N2}() where {T,N1,N2}
         N1² = N1^2
         N1N2 = N1*N2
-        id = 0
+        id = getGlobalID()
         s0 = @SVector zeros(T,N1)
         s1 = @SVector zeros(T,N1)
         ŝ = @SVector zeros(T,N1)

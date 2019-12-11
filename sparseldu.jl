@@ -13,7 +13,7 @@ end
 @inline function setJ!(L::Link,C::Constraint)
     data = L.data
 
-    if data.id==linkids(C)[1]
+    if data.id==C.linkids[1]
         data.JL = ∂g∂vela(C)
         data.JU = -∂g∂posa(C)'
     else
@@ -27,7 +27,7 @@ end
 @inline function setJ!(C::Constraint,L::Link)
     data = C.data
 
-    if L.data.id==linkids(C)[1]
+    if L.data.id==C.linkids[1]
         data.JL = -∂g∂posa(C)'
         data.JU = ∂g∂vela(C)
     else
