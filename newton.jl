@@ -10,9 +10,13 @@ function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter
         normf1 = normf(robot)
         normf1>normf0 ? lineSearch!(robot,normf0;iter=lineIter, warning=warning) : nothing
 
-        foreach(s1tos0!,nodes)
-
-        normDiff(robot)<ε && normf1 < ε ? (return n) : normf0=normf1
+        if normΔs(robot) < ε && normf1 < ε
+            foreach(s1tos0!,nodes)
+            return n
+        else
+            foreach(s1tos0!,nodes)
+            normf0=normf1
+        end
     end
 
     if warning

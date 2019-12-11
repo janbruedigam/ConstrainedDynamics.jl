@@ -1,17 +1,13 @@
-struct FixedOrientation{T,Nc,N,Nc²,NcN,Nl,L} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
+#TODO update
+
+struct FixedOrientation{T,Nc,Nl,L} <: Joint{T,Nc,Nl}
     link::L
 
-    data::NodeData{T,Nc,N,Nc²,NcN}
-end
-
-function FixedOrientation(link::Link{T,N}) where {T,N}
-    Nc = 3
-    Nc² = Nc^2
-    NcN = Nc*N
-    Nl = 1
-    data = NodeData{T,Nc,N}()
-
-    FixedOrientation{T,Nc,N,Nc²,NcN,Nl,typeof(link)}(link,data)
+    function FixedOrientation(link::Link{T}) where T
+        Nc = 3
+        Nl = 1
+        FixedOrientation{T,Nc,Nl,typeof(link)}(link)
+    end
 end
 
 

@@ -1,58 +1,151 @@
-function adjacencyMat(constraints::Vector{<:Constraint},N::Int64)
-    A = zeros(Bool,N,N)
+struct Graph{N,F,NpF}
+    root::Int64
+    adjacency::Vector{SVector{N,Bool}}
+    dfsgraph::Vector{SVector{N,Bool}}
+    dfslist::SVector{N,Int64}
+    parentlist::SVector{N,Int64}
+    idlist::SVector{N,Int64} # matches ids to "nodes" index, 0 is for root
 
-    for constraint in constraints
-        for linkid in linkids(constraint)
-            A[constraint.data.id+1,linkid+1] = true
+    pattern::Vector{SVector{N,Int64}} # includes fillins with ids of fillins at positions
+    fillinid::SVector{NpF,Int64} # matches ids to "fillins" index in robot struct
+
+    function Graph(origin::Link,links::Vector{<:Link},constraints::Vector{<:Constraint};offset::Int64=0,root::Int64=1)
+        adjacency = adjacencyMatrix(constraints,offset=offset)
+        dfsgraph, dfslist = dfs(adjacency,root)
+
+        N = length(adjacency)
+        parentlist = zeros(Int64,N)
+        for i=1:N
+            parentlist[i] = parent(dfsgraph,i)
+        end
+
+        idlist = zeros(Int64,N)
+        idlist[origin.data.id] = 0
+        Nl = length(links)
+        for (i,link) in enumerate(links)
+            idlist[link.data.id] = i
+        end
+        for (i,constraint) in enumerate(constraints)
+            idlist[constraint.data.id] = i+Nl
+        end
+
+        # TODO do fillinid propertly without offset
+        pat,F = pattern(dfsgraph,root,offset=N)
+        NpF = N+F
+        fillinid = zeros(Int64,NpF)
+        for i=N+1:NpF
+            fillinid[i]=i-N
+        end
+
+        new{N,F,NpF}(root,adjacency,dfsgraph,dfslist,parentlist,idlist,pat,fillinid)
+    end
+end
+
+@inline Base.size(g::Graph{N,F}) where {N,F} = N,F
+@inline Base.length(g::Graph{N}) where N = N
+
+
+function adjacencyMatrix(constraints::Vector{<:Constraint};offset::Int64=0)
+    A = zero(Bool)
+    n = 1
+
+    for (i,constraint) in enumerate(constraints)
+        for linkid in constraint.linkids#linkids(constraint)
+            cid = constraint.data.id
+            m = maximum([linkid;cid])
+            if m>n
+                A = [A zeros(Bool,n,m-n); zeros(Bool,m-n,n) zeros(Bool,m-n,m-n)]
+                n = m
+            end
+            A[cid,linkid] = true
         end
     end
 
     A=A.|A'
-    Avec = repeat([@SVector zeros(Bool,N)],N)
-    for i=1:N
-        Avec[i] = convert(SVector{N,Bool},A[i,:])
+    Avec = repeat([@SVector zeros(Bool,n)],n)
+    for i=1:n
+        Avec[i] = convert(SVector{n,Bool},A[i,:])
     end
 
     return Avec
 end
 
-function dfs(A::Vector{SVector{N,T}},rootid) where {N,T}
-    rootid+=1
-    Adfs = zeros(Bool,N,N)
-    list = zeros(Int64,N)
+function dfs(adjacency::Vector{SVector{N,T}},rootid) where {N,T}
+    dfsgraph = zeros(Bool,N,N)
+    dfslist = zeros(Int64,N)
     visited = zeros(Bool,N)
     index = N
 
-    list[index] = rootid
+    dfslist[index] = rootid
     visited[rootid] = true
-    dfs!(A,Adfs,rootid,list,visited,N)
+    dfs!(adjacency,dfsgraph,rootid,dfslist,visited,N)
 
-    Adfsvec = repeat([@SVector zeros(Bool,N)],N)
+    dfsgraphvec = repeat([@SVector zeros(Bool,N)],N)
     for i=1:N
-        Adfsvec[i] = convert(SVector{N,Bool},Adfs[i,:])
+        dfsgraphvec[i] = convert(SVector{N,Bool},dfsgraph[i,:])
     end
-    list.-=1
-    return Adfsvec, convert(SVector{N},list)
+    return dfsgraphvec, convert(SVector{N},dfslist)
 end
 
-function dfs!(A::Vector{SVector{N,T}},Adfs::Matrix,i::Int64,list::Vector,visited::Vector,index::Int64) where {N,T}
+function dfs!(A::Vector{SVector{N,T}},Adfs::Matrix,nodeid::Int64,list::Vector,visited::Vector,index::Int64) where {N,T}
     for j=1:N
-        if A[i][j] && !visited[j]
+        if A[nodeid][j] && !visited[j]
             index-=1
             visited[j] = true
             list[index] = j
-            Adfs[i,j] = true
+            Adfs[nodeid,j] = true
             index = dfs!(A,Adfs,j,list,visited,index)
         end
     end
     return index
 end
 
-function parentNode(dfsgraph::Vector{SVector{N,T}},n) where {N,T}
+@inline children(graph::Graph,n) = graph.dfsgraph[n]
+@inline enumchildren(graph::Graph,n) = enumerate(graph.dfsgraph[n])
+@inline parent(graph::Graph,n) = graph.parentlist[n]
+@inline connected(graph::Graph,n) = graph.adjacency[n]
+@inline enumconnected(graph::Graph,n) = enumerate(graph.adjacency[n])
+@inline isroot(graph::Graph,n) = n==graph.root ? true : false
+
+function parent(dfsgraph::Vector{SVector{N,T}},n) where {N,T}
     for i=1:N
-        dfsgraph[i][n] ? (return i) : nothing
+        dfsgraph[i][n] && (return i)
     end
     return 0
 end
 
-SVdeleteat(a::SVector{N,T},i) where {T,N} = convert(SVector{N-1,T},deleteat!(convert(Vector,a),i))
+#TODO include loops
+function pattern(dfsgraph::Vector{SVector{N,T}},rootid;offset::Int64=0) where {N,T}
+    pat = zeros(Int64,N,N)
+    id = 0
+    for i=1:N
+        if i!=rootid
+            for j=1:N
+                j!=rootid && dfsgraph[i][j]==true && (id+=1;pat[i,j]=id+offset)
+            end
+        end
+    end
+
+    patternvec = repeat([@SVector zeros(Int64,N)],N)
+    for i=1:N
+        patternvec[i] = convert(SVector{N,Int64},pat[i,:])
+    end
+    return patternvec, id
+end
+
+function createfillins(graph::Graph,origin::Link{T},nodes::Vector) where T
+    idlist = graph.idlist
+    fillins = Vector{FillIn}(undef,0)
+    for (i,row) in enumerate(graph.pattern)
+        for (j,id) in enumerate(row)
+            if id!=0
+                parentnode = nodes[idlist[i]]
+                childnode = nodes[idlist[j]]
+
+
+                push!(fillins,FillIn{T,length(childnode),length(parentnode)}(id,childnode.data.id,parentnode.data.id))
+            end
+        end
+    end
+    return fillins
+end

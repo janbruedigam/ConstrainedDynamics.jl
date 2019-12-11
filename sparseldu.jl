@@ -7,13 +7,16 @@
 end
 
 @inline setD!(C::Constraint{T,Nc}) where {T,Nc} = (C.data.D = @SMatrix zeros(T,Nc,Nc); nothing)
-@inline updateD!(node,child) = (d = child.data; node.data.D -= d.JL*d.D*d.JU; nothing)
+@inline function updateD!(node::Node,child::Node,fillin::FillIn)
+    node.data.D -= fillin.data.JL*child.data.D*fillin.data.JU
+    return nothing
+end
 @inline invertD!(node) = (d = node.data; d.Dinv = inv(d.D); nothing)
 
-@inline function setJ!(L::Link,C::Constraint)
-    data = L.data
+@inline function setJ!(L::Link,C::Constraint,F::FillIn)
+    data = F.data
 
-    if data.id==linkids(C)[1]
+    if L.data.id==C.linkids[1]
         data.JL = ∂g∂vela(C)
         data.JU = -∂g∂posa(C)'
     else
@@ -24,10 +27,10 @@ end
     return nothing
 end
 
-@inline function setJ!(C::Constraint,L::Link)
-    data = C.data
+@inline function setJ!(C::Constraint,L::Link,F::FillIn)
+    data = F.data
 
-    if L.data.id==linkids(C)[1]
+    if L.data.id==C.linkids[1]
         data.JL = -∂g∂posa(C)'
         data.JU = ∂g∂vela(C)
     else
@@ -38,10 +41,10 @@ end
     return nothing
 end
 
-@inline function updateJ!(node)
-    d = node.data
-    d.JL = d.JL*d.Dinv
-    d.JU = d.Dinv*d.JU
+@inline function updateJ!(node::Node,F::FillIn)
+    d = F.data
+    d.JL = d.JL*node.data.Dinv
+    d.JU = node.data.Dinv*d.JU
     return nothing
 end
 
@@ -52,24 +55,28 @@ end
 # @inline addGtλ!(L::Link,C::Constraint) = (L.data.ŝ -= Gtλ(L,C); nothing)
 @inline addλ0!(C::Constraint) = (C.data.ŝ += C.data.s0; nothing)
 
-@inline LSol!(node,child) = (d = child.data; node.data.ŝ -= d.JL*d.ŝ; nothing)
+@inline function LSol!(node::Node,child::Node,fillin::FillIn)
+    node.data.ŝ -= fillin.data.JL*child.data.ŝ
+    return nothing
+end
 @inline DSol!(node) = (d = node.data; d.ŝ = d.Dinv*d.ŝ; nothing)
-@inline USol!(node,parent) = (d = node.data; d.ŝ -= d.JU*parent.data.ŝ; nothing)
-
-
+@inline function USol!(node::Node,parent::Node,fillin::FillIn)
+    node.data.ŝ -= fillin.data.JU*parent.data.ŝ
+    return nothing
+end
 
 
 @inline function setNormf!(link::Link,robot::Robot)
     data = link.data
     data.f = dynamics(link)
-    for (i,connected) in enumerate(robot.adjacency[data.id])
-        connected ? GtλTof!(link,robot.nodes[i]) : nothing
+    for (cid,isconnected) in enumconnected(robot.graph,data.id)
+        isconnected && GtλTof!(link,getnode(robot,cid))
     end
     data.normf = data.f'*data.f
     return nothing
 end
 
-@inline function setNormf!(C::Constraint,::Robot)
+@inline function setNormf!(C::Constraint,robot::Robot)
     data = C.data
     data.f = g(C)
     data.normf = data.f'*data.f

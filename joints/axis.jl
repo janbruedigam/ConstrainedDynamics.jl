@@ -1,21 +1,16 @@
-struct Axis{T,Nc,N,Nc²,NcN,Nl,L1,L2} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
+struct Axis{T,Nc,Nl,L1,L2} <: Joint{T,Nc,Nl}
     link1::L1
     link2::L2
 
     V12::SMatrix{2,3,T,6}
 
-    data::NodeData{T,Nc,N,Nc²,NcN}
-end
+    function Axis(link1::Link{T},link2::Link{T},axis::AbstractVector{T}) where T
+        Nc = 2
+        Nl = 2
+        V12 = (@SMatrix [1 0 0; 0 1 0])*svd(skew(axis)).Vt
 
-function Axis(link1::Link{T,N},link2::Link{T,N},axis::AbstractVector{T}) where {T,N}
-    Nc = 2
-    Nc² = Nc^2
-    NcN = Nc*N
-    Nl = 2
-    V12 = (@SMatrix [1 0 0; 0 1 0])*svd(skew(axis)).Vt
-    data = NodeData{T,Nc,N}()
-
-    Axis{T,Nc,N,Nc²,NcN,Nl,typeof(link1),typeof(link2)}(link1,link2,V12,data)
+        new{T,Nc,Nl,typeof(link1),typeof(link2)}(link1,link2,V12)
+    end
 end
 
 

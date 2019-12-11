@@ -21,7 +21,6 @@ Quaternion(v::Vector{T}) where T = Quaternion{T}(0,v[1],v[2],v[3])
 Quaternion(v::SVector{3,T}) where T = Quaternion{T}(0,v[1],v[2],v[3])
 Quaternion(q::SVector{4,T}) where T = Quaternion{T}(q)
 Quaternion{T}() where T = Quaternion{T}(1,0,0,0)
-Quaternion() = Quaternion{Float64}()
 
 
 @inline skew(v::AbstractVector{T}) where T = SMatrix{3,3,T,9}(0,v[3],-v[2], -v[3],0,v[1], v[2],-v[1],0)

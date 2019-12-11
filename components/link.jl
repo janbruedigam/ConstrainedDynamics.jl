@@ -1,4 +1,17 @@
-mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N,Nc,N²,NNc}
+mutable struct XMLLink{T}
+    # From link tag
+    name::String
+    id::Int64
+    x::Vector{T}
+    q::Quaternion{T}
+    mass::T
+    inertia::Matrix{T}
+
+    dof::Int64
+    p::Vector{Vector{T}}
+end
+
+mutable struct Link{T,N,N²} <: Node{T,N}
     No::Int64
 
     dt::T
@@ -18,22 +31,38 @@ mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N,Nc,N²,NNc}
 
     p::Vector{SVector{3,T}}
 
-    data::NodeData{T,N,Nc,N²,NNc}
+    data::NodeData{T,N,N²}
+
+    function Link(m::T,J::Array{T,2},p::Array{Array{T,1},1};No=2,N=6) where T
+        N² = N^2
+        Np = length(p)
+
+        dt = 0
+        g = 0
+        J = convert(SMatrix{3,3,T,9},J)
+
+        x = repeat([@SVector zeros(T,3)],No)
+        q = repeat([Quaternion{T}()],No)
+
+        F = repeat([@SVector zeros(T,3)],No)
+        τ = repeat([@SVector zeros(T,3)],No)
+
+        trajX = [@SVector zeros(T,3)]
+        trajQ = [Quaternion{T}()]
+        trajΦ = [0]
+
+        p = convert(Vector{SVector{3,T}},p)
+
+        data = NodeData{T,N}()
+
+        new{T,N,N²}(No,dt,g,m,J,x,q,F,τ,trajX,trajQ,trajΦ,p,data)
+    end
+
+    Link(T::Type;No=2,N=0) = Link(zero(T),diagm(zeros(T,3)),[zeros(T,3)];No=No,N=N)
+    Link{T}(link::XMLLink{T};No=2) where T = Link(link.mass,link.inertia,link.p,link.dof;No=No)
 end
 
-mutable struct XMLLink{T}
-    # From link tag
-    name::String
-    id::Int64
-    x::Vector{T}
-    q::Quaternion{T}
-    mass::T
-    inertia::Matrix{T}
-
-    dof::Int64
-    p::Vector{Vector{T}}
-end
-
+Base.show(io::IO, L::Link) = summary(io, L)
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, L::Link)
     summary(io, L); println(io)
     print(io, "\nx_",L.No,": ")
@@ -41,47 +70,6 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, L::Link)
     print(io, "\nq_",L.No,": ")
     show(io, mime, L.q[L.No])
 end
-
-Base.show(io::IO, L::Link) = summary(io, L)
-
-# function Base.getproperty(L::Link{T,N,Nc,N²,NNc,No},x::Symbol) where {T,N,Nc,N²,NNc,No}
-#     if x == :No
-#         return No
-#     else
-#         return getfield(L,x)
-#     end
-# end
-
-
-function Link(m::T,J::Array{T,2},p::Array{Array{T,1},1},dof::Int64;No=2) where T
-    Nc = 6-dof
-    N = 6
-    N² = N^2
-    NNc = N*Nc
-    Np = length(p)
-
-    dt = 0
-    g = 0
-    J = convert(SMatrix{3,3,T,9},J)
-
-    x = repeat([@SVector zeros(T,3)],No)
-    q = repeat([Quaternion{T}()],No)
-
-    F = repeat([@SVector zeros(T,3)],No)
-    τ = repeat([@SVector zeros(T,3)],No)
-
-    trajX = [@SVector zeros(T,3)]
-    trajQ = [Quaternion{T}()]
-    trajΦ = [0]
-
-    p = convert(Vector{SVector{3,T}},p)
-
-    data = NodeData{T,N,Nc}()
-
-    Link{T,N,Nc,N²,NNc}(No,dt,g,m,J,x,q,F,τ,trajX,trajQ,trajΦ,p,data)
-end
-Link(T::Type;No=2) = Link(zero(T),diagm(zeros(T,3)),[zeros(T,3)],0;No=No)
-Link{T}(link::XMLLink{T};No=2) where T = Link(link.mass,link.inertia,link.p,link.dof;No=No)
 
 
 function setInit!(link::Link{T}; x::AbstractVector{T}=zeros(T,3), q::Quaternion{T}=Quaternion{T}(),
@@ -113,7 +101,7 @@ end
 #     x2 = link1.x[No] + rotate(p1,link1.q[No]) - rotate(p2,q2)
 # end
 
-@inline getv1(link) = (link.x[2]-link.x[1])/link.dt
+@inline getv1(link::Link) = (link.x[2]-link.x[1])/link.dt
 @inline getvnew(link) = link.data.s1[SVector{3}(1:3)]
 @inline function getω1(link) # 2/link.dt*Vmat()*LTmat(link.q[1])*link.q[2]
     q1 = link.q[1]
@@ -125,6 +113,15 @@ end
 @inline getq3(link) = Quaternion(link.dt/2*(Lmat(link.q[2])*ωbar(link)))
 @inline derivωbar(link::Link{T}) where T = [-(getωnew(link)/(ωbar(link)[1]))';SMatrix{3,3,T,9}(I)]
 @inline ωbar(link) = Quaternion(sqrt(4/link.dt^2 - getωnew(link)'*getωnew(link)),getωnew(link))
+
+
+@inline getv1(link::Link{T,0}) where T = @SVector zeros(T,3)
+@inline getvnew(link::Link{T,0}) where T = @SVector zeros(T,3)
+@inline getω1(link::Link{T,0}) where T = @SVector zeros(T,3)
+@inline getx3(link::Link{T,0}) where T = @SVector zeros(T,3)
+@inline getq3(link::Link{T,0}) where T = Quaternion{T}()
+@inline derivωbar(link::Link{T,0}) where T = @SMatrix zeros(T,4,3)
+@inline ωbar(link::Link{T,0}) where T = Quaternion{T}()
 
 @inline function dynamics(link::Link{T}) where T
     No = link.No
