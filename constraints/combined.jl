@@ -32,5 +32,11 @@ end
 @inline ∂g∂vela(C::Combined) = [∂g∂vela(C.constr1);∂g∂vela(C.constr2)]
 @inline ∂g∂velb(C::Combined) = [∂g∂velb(C.constr1);∂g∂velb(C.constr2)]
 
+#TODO metaprogramming
 @inline linkids(C::Combined{T,Nc,N,Nc²,NcN,1}) where {T,Nc,N,Nc²,NcN} = @SVector [C.constr1.link.data.id]
 @inline linkids(C::Combined{T,Nc,N,Nc²,NcN,2}) where {T,Nc,N,Nc²,NcN} = @SVector [C.constr1.link1.data.id, C.constr1.link2.data.id]
+
+#TODO proper!
+function getlinks(C::Combined)
+    [C.constr1.link1;C.constr1.link1]
+end

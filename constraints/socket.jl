@@ -7,7 +7,7 @@ struct Socket{T,Nc,N,Nc²,NcN,Nl,L1,L2} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
     data::NodeData{T,Nc,N,Nc²,NcN}
 end
 
-function Socket(link1::Link{T,N},link2::Link{T,N},pid1::Int64,pid2::Int64) where {T,N}
+function Socket(link1::Link{T,N},link2::Link{T},pid1::Int64,pid2::Int64) where {T,N}
     Nc = 3
     Nc² = Nc^2
     NcN = Nc*N

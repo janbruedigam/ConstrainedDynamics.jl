@@ -7,7 +7,7 @@ struct Axis{T,Nc,N,Nc²,NcN,Nl,L1,L2} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
     data::NodeData{T,Nc,N,Nc²,NcN}
 end
 
-function Axis(link1::Link{T,N},link2::Link{T,N},axis::AbstractVector{T}) where {T,N}
+function Axis(link1::Link{T,N},link2::Link{T},axis::AbstractVector{T}) where {T,N}
     Nc = 2
     Nc² = Nc^2
     NcN = Nc*N

@@ -7,7 +7,7 @@ mutable struct NodeData{T,N1,N2,N1²,N1N2}
     ŝ::SVector{N1,T}
     f::SVector{N1,T}
     normf::T
-    normDiff::T
+    normΔs::T
     D::SMatrix{N1,N1,T,N1²}
     Dinv::SMatrix{N1,N1,T,N1²}
     JL::SMatrix{N2,N1,T,N1N2}
@@ -23,12 +23,12 @@ function NodeData{T,N1,N2}() where {T,N1,N2}
     ŝ = @SVector zeros(T,N1)
     f = @SVector zeros(T,N1)
     normf = zero(T)
-    normDiff = zero(T)
+    normΔs = zero(T)
     D = @SMatrix zeros(T,N1,N1)
     Dinv = @SMatrix zeros(T,N1,N1)
     JL = @SMatrix zeros(T,N2,N1)
     JU = @SMatrix zeros(T,N1,N2)
-    NodeData{T,N1,N2,N1²,N1N2}(id,s0,s1,ŝ,f,normf,normDiff,D,Dinv,JL,JU)
+    NodeData{T,N1,N2,N1²,N1N2}(id,s0,s1,ŝ,f,normf,normΔs,D,Dinv,JL,JU)
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, N::NodeData)
@@ -44,6 +44,8 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, N::NodeData)
 end
 
 Base.show(io::IO, N::Node) = summary(io, N)
+
+@inline Base.length(::Node{T,N}) where {T,N} = N
 @inline Base.foreach(f,itr::Vector{<:Node},arg) = (for x in itr; f(x,arg); end; nothing)
 
 @inline update!(node) = (d = node.data; d.s1 = d.s0 - d.ŝ; nothing)
@@ -51,9 +53,9 @@ Base.show(io::IO, N::Node) = summary(io, N)
 @inline s0tos1!(node) = (d = node.data; d.s1 = d.s0; nothing)
 @inline s1tos0!(node) = (d = node.data; d.s0 = d.s1; nothing)
 
-@inline function setNormDiff!(node)
+@inline function setNormΔs!(node)
     data = node.data
     diff = data.s1-data.s0
-    data.normDiff = diff'*diff
+    data.normΔs= diff'*diff
     return nothing
 end

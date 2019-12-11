@@ -58,4 +58,4 @@ bot = Robot(origin,links, constraints)
 
 sim!(bot,save=true)
 trajS = trajSFunc(bot)
-# include("visualizeTwoTwoBar.jl")
+include("visualizeTwoTwoBar.jl")

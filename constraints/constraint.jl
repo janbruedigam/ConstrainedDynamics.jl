@@ -42,7 +42,17 @@ end
 @inline ∂g∂vela(C::Constraint) = zeroBlock(C)
 @inline ∂g∂velb(C::Constraint) = zeroBlock(C)
 
-@inline linkids(C::Constraint{T,Nc,N,Nc²,NcN,1}) where {T,Nc,N,Nc²,NcN} = @SVector [C.link.data.id]
-@inline linkids(C::Constraint{T,Nc,N,Nc²,NcN,2}) where {T,Nc,N,Nc²,NcN} = @SVector [C.link1.data.id, C.link2.data.id]
+# @inline linkids(C::Constraint{T,Nc,N,Nc²,NcN,1}) where {T,Nc,N,Nc²,NcN} = @SVector [C.link.data.id]
+# @inline linkids(C::Constraint{T,Nc,N,Nc²,NcN,2}) where {T,Nc,N,Nc²,NcN} = @SVector [C.link1.data.id, C.link2.data.id]
+
+@generated function linkids(C::Constraint{T,Nc,N,Nc²,NcN,Nl}) where {T,Nc,N,Nc²,NcN,Nl}
+    ids = [:(C.$(Symbol("link",i)).data.id) for i=1:Nl]
+    :(SVector{Nl,Int64}($(ids...)))
+end
+
+@generated function getlinks(C::Constraint{T,Nc,N,Nc²,NcN,Nl}) where {T,Nc,N,Nc²,NcN,Nl}
+    links = [:(C.$(Symbol("link",i))) for i=1:Nl]
+    :([$(links...)])
+end
 
 @inline Gtλ(L::Link,C::Constraint) = L.data.id==linkids(C)[1] ? ∂g∂posa(C)'*C.data.s1 : ∂g∂posb(C)'*C.data.s1

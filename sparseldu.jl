@@ -62,14 +62,14 @@ end
 @inline function setNormf!(link::Link,robot::Robot)
     data = link.data
     data.f = dynamics(link)
-    for (i,connected) in enumerate(robot.adjacency[data.id])
-        connected ? GtλTof!(link,robot.nodes[i]) : nothing
+    for (cid,isconnected) in enumconnected(robot.graph,data.id)
+        isconnected && GtλTof!(link,getnode(robot,cid))
     end
     data.normf = data.f'*data.f
     return nothing
 end
 
-@inline function setNormf!(C::Constraint,::Robot)
+@inline function setNormf!(C::Constraint,robot::Robot)
     data = C.data
     data.f = g(C)
     data.normf = data.f'*data.f
