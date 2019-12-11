@@ -12,25 +12,26 @@ mutable struct NodeData{T,N1,N2,N1²,N1N2}
     Dinv::SMatrix{N1,N1,T,N1²}
     JL::SMatrix{N2,N1,T,N1N2}
     JU::SMatrix{N1,N2,T,N1N2}
+
+    function NodeData{T,N1,N2}() where {T,N1,N2}
+        N1² = N1^2
+        N1N2 = N1*N2
+        id = 0
+        s0 = @SVector zeros(T,N1)
+        s1 = @SVector zeros(T,N1)
+        ŝ = @SVector zeros(T,N1)
+        f = @SVector zeros(T,N1)
+        normf = zero(T)
+        normΔs = zero(T)
+        D = @SMatrix zeros(T,N1,N1)
+        Dinv = @SMatrix zeros(T,N1,N1)
+        JL = @SMatrix zeros(T,N2,N1)
+        JU = @SMatrix zeros(T,N1,N2)
+        new{T,N1,N2,N1²,N1N2}(id,s0,s1,ŝ,f,normf,normΔs,D,Dinv,JL,JU)
+    end
 end
 
-function NodeData{T,N1,N2}() where {T,N1,N2}
-    N1² = N1^2
-    N1N2 = N1*N2
-    id = 0
-    s0 = @SVector zeros(T,N1)
-    s1 = @SVector zeros(T,N1)
-    ŝ = @SVector zeros(T,N1)
-    f = @SVector zeros(T,N1)
-    normf = zero(T)
-    normΔs = zero(T)
-    D = @SMatrix zeros(T,N1,N1)
-    Dinv = @SMatrix zeros(T,N1,N1)
-    JL = @SMatrix zeros(T,N2,N1)
-    JU = @SMatrix zeros(T,N1,N2)
-    NodeData{T,N1,N2,N1²,N1N2}(id,s0,s1,ŝ,f,normf,normΔs,D,Dinv,JL,JU)
-end
-
+Base.show(io::IO, N::Node) = summary(io, N)
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, N::NodeData)
     summary(io, N); println(io)
     print(io, "\nD: ")
@@ -43,7 +44,6 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, N::NodeData)
     show(io, mime, N.JU)
 end
 
-Base.show(io::IO, N::Node) = summary(io, N)
 
 @inline Base.length(::Node{T,N}) where {T,N} = N
 @inline Base.foreach(f,itr::Vector{<:Node},arg) = (for x in itr; f(x,arg); end; nothing)

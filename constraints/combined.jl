@@ -3,22 +3,24 @@ struct Combined{T,Nc,N,Nc²,NcN,Nl,C1,C2} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
     constr2::C2
 
     data::NodeData{T,Nc,N,Nc²,NcN}
+
+    function Combined(constr1::C1, constr2::C2) where {C1,C2}
+        # @assert constr1.T == constr2.T
+        @assert linkids(constr1) == linkids(constr2)
+
+        T = constr1.T
+        Nc = constr1.Nc+constr2.Nc
+        N = 6
+        Nc² = Nc^2
+        NcN = Nc*N
+        Nl = length(linkids(constr1))
+        data = NodeData{T,Nc,N}()
+
+        new{T,Nc,N,Nc²,NcN,Nl,C1,C2}(constr1,constr2,data)
+    end
 end
 
-function Combined(constr1::C1, constr2::C2) where {C1,C2}
-    # @assert constr1.T == constr2.T
-    @assert linkids(constr1) == linkids(constr2)
 
-    T = constr1.T
-    Nc = constr1.Nc+constr2.Nc
-    N = 6
-    Nc² = Nc^2
-    NcN = Nc*N
-    Nl = length(linkids(constr1))
-    data = NodeData{T,Nc,N}()
-
-    Combined{T,Nc,N,Nc²,NcN,Nl,C1,C2}(constr1,constr2,data)
-end
 
 function Combined(joint::XMLJoint, link1::Link, link2::Link)
     Combined(Socket(link1,link2,joint.pids...),Axis(link1,link2,joint.axis))

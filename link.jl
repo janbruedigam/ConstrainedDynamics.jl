@@ -1,3 +1,16 @@
+mutable struct XMLLink{T}
+    # From link tag
+    name::String
+    id::Int64
+    x::Vector{T}
+    q::Quaternion{T}
+    mass::T
+    inertia::Matrix{T}
+
+    dof::Int64
+    p::Vector{Vector{T}}
+end
+
 mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N,Nc,N²,NNc}
     No::Int64
 
@@ -19,21 +32,39 @@ mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N,Nc,N²,NNc}
     p::Vector{SVector{3,T}}
 
     data::NodeData{T,N,Nc,N²,NNc}
+
+    function Link(m::T,J::Array{T,2},p::Array{Array{T,1},1},dof::Int64;No=2,N=6) where T
+        Nc = N-dof
+        N² = N^2
+        NNc = N*Nc
+        Np = length(p)
+
+        dt = 0
+        g = 0
+        J = convert(SMatrix{3,3,T,9},J)
+
+        x = repeat([@SVector zeros(T,3)],No)
+        q = repeat([Quaternion{T}()],No)
+
+        F = repeat([@SVector zeros(T,3)],No)
+        τ = repeat([@SVector zeros(T,3)],No)
+
+        trajX = [@SVector zeros(T,3)]
+        trajQ = [Quaternion{T}()]
+        trajΦ = [0]
+
+        p = convert(Vector{SVector{3,T}},p)
+
+        data = NodeData{T,N,Nc}()
+
+        new{T,N,Nc,N²,NNc}(No,dt,g,m,J,x,q,F,τ,trajX,trajQ,trajΦ,p,data)
+    end
+
+    Link(T::Type;No=2,N=0) = Link(zero(T),diagm(zeros(T,3)),[zeros(T,3)],0;No=No,N=N)
+    Link{T}(link::XMLLink{T};No=2) where T = Link(link.mass,link.inertia,link.p,link.dof;No=No)
 end
 
-mutable struct XMLLink{T}
-    # From link tag
-    name::String
-    id::Int64
-    x::Vector{T}
-    q::Quaternion{T}
-    mass::T
-    inertia::Matrix{T}
-
-    dof::Int64
-    p::Vector{Vector{T}}
-end
-
+Base.show(io::IO, L::Link) = summary(io, L)
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, L::Link)
     summary(io, L); println(io)
     print(io, "\nx_",L.No,": ")
@@ -41,46 +72,6 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, L::Link)
     print(io, "\nq_",L.No,": ")
     show(io, mime, L.q[L.No])
 end
-
-Base.show(io::IO, L::Link) = summary(io, L)
-
-# function Base.getproperty(L::Link{T,N,Nc,N²,NNc,No},x::Symbol) where {T,N,Nc,N²,NNc,No}
-#     if x == :No
-#         return No
-#     else
-#         return getfield(L,x)
-#     end
-# end
-
-
-function Link(m::T,J::Array{T,2},p::Array{Array{T,1},1},dof::Int64;No=2,N=6) where T
-    Nc = N-dof
-    N² = N^2
-    NNc = N*Nc
-    Np = length(p)
-
-    dt = 0
-    g = 0
-    J = convert(SMatrix{3,3,T,9},J)
-
-    x = repeat([@SVector zeros(T,3)],No)
-    q = repeat([Quaternion{T}()],No)
-
-    F = repeat([@SVector zeros(T,3)],No)
-    τ = repeat([@SVector zeros(T,3)],No)
-
-    trajX = [@SVector zeros(T,3)]
-    trajQ = [Quaternion{T}()]
-    trajΦ = [0]
-
-    p = convert(Vector{SVector{3,T}},p)
-
-    data = NodeData{T,N,Nc}()
-
-    Link{T,N,Nc,N²,NNc}(No,dt,g,m,J,x,q,F,τ,trajX,trajQ,trajΦ,p,data)
-end
-Link(T::Type;No=2,N=0) = Link(zero(T),diagm(zeros(T,3)),[zeros(T,3)],0;No=No,N=N)
-Link{T}(link::XMLLink{T};No=2) where T = Link(link.mass,link.inertia,link.p,link.dof;No=No)
 
 
 function setInit!(link::Link{T}; x::AbstractVector{T}=zeros(T,3), q::Quaternion{T}=Quaternion{T}(),

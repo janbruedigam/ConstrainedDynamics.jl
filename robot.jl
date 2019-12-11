@@ -12,50 +12,49 @@ mutable struct Robot{T,N}
     idlist::SVector{N,Int64} # matches ids to "nodes" index, 0 is for root
 
     graph::Graph{N}
+
+    function Robot(origin::Link{T,0,0,0,0},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1) where T
+        Nl = length(links)
+        Nc = length(constraints)
+        N = Nl+Nc+1
+        steps = Int(ceil(tend/dt))
+
+        origin.dt = dt
+        origin.g = g
+        origin.data.id = 1
+        for (i,link) in enumerate(links)
+            link.data.id = i+1
+            link.dt = dt
+            link.g = g
+            link.trajectoryX = repeat([@SVector zeros(T,3)],steps)
+            link.trajectoryQ = repeat([Quaternion{T}()],steps)
+            link.trajectoryΦ = zeros(T,steps)
+        end
+
+        for (i,constraint) in enumerate(constraints)
+            constraint.data.id = i+1+Nl
+        end
+
+        nodes = [links;constraints]
+
+        idlist = zeros(Int64,N)
+        idlist[1] = 0
+        for i=1:N-1
+            idlist[i+1] = i
+        end
+
+        nodesrange = [[1:Nl];[Nl+1:Nl+Nc]]
+        normf = zero(T)
+        normΔs = zero(T)
+
+        graph = Graph(constraints)
+
+        new{T,N}(tend,dt,1:steps,origin,nodes,nodesrange,normf,normΔs,idlist,graph)
+    end
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T}) where {T}
     summary(io, R); println(io, " with ", length(robot.nodesrange[1]), " links and ", length(robot.nodesrange[2]), " constraints")
-end
-
-
-function Robot(origin::Link{T,0,0,0,0},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1) where T
-    Nl = length(links)
-    Nc = length(constraints)
-    N = Nl+Nc+1
-    steps = Int(ceil(tend/dt))
-
-    origin.dt = dt
-    origin.g = g
-    origin.data.id = 1
-    for (i,link) in enumerate(links)
-        link.data.id = i+1
-        link.dt = dt
-        link.g = g
-        link.trajectoryX = repeat([@SVector zeros(T,3)],steps)
-        link.trajectoryQ = repeat([Quaternion{T}()],steps)
-        link.trajectoryΦ = zeros(T,steps)
-    end
-
-    for (i,constraint) in enumerate(constraints)
-        constraint.data.id = i+1+Nl
-    end
-
-    nodes = [links;constraints]
-
-    idlist = zeros(Int64,N)
-    idlist[1] = 0
-    for i=1:N-1
-        idlist[i+1] = i
-    end
-
-    nodesrange = [[1:Nl];[Nl+1:Nl+Nc]]
-    normf = zero(T)
-    normΔs = zero(T)
-
-    graph = Graph(constraints)
-
-    Robot{T,N}(tend,dt,1:steps,origin,nodes,nodesrange,normf,normΔs,idlist,graph)
 end
 
 

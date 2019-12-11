@@ -17,7 +17,6 @@ struct Graph{N}
             parentlist[i] = parent(dfsgraph,i)
         end
 
-        # sizes = zeros(Int64,currentGlobalID())
         sizes = zeros(Int64,N)
         for constraint in constraints
             sizes[constraint.data.id] = length(constraint)
