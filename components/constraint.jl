@@ -32,7 +32,7 @@ end
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, C::Constraint)
     summary(io, C); println(io)
     print(io, "\nConnected links: ")
-    show(io, mime, linkids(C))
+    show(io, mime, C.linkids)
 end
 
 Base.show(io::IO, C::Constraint) = summary(io, C)

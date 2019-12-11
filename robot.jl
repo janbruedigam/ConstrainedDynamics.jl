@@ -1,4 +1,4 @@
-mutable struct Robot{T,N}
+mutable struct Robot{T,N,F,NpF}
     tend::T
     dt::T
     steps::UnitRange{Int64}
@@ -10,7 +10,7 @@ mutable struct Robot{T,N}
     normf::T
     normΔs::T
 
-    graph::Graph{N}
+    graph::Graph{N,F,NpF}
 
     function Robot(origin::Link{T,0,0,0,0},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1) where T
         Nl = length(links)
@@ -45,8 +45,9 @@ mutable struct Robot{T,N}
 
         graph = Graph(origin,links,constraints)
         fillins = createfillins(graph,origin,nodes)
+        F = length(fillins)
 
-        new{T,N}(tend,dt,1:steps,origin,nodes,fillins,nodesrange,normf,normΔs,graph)
+        new{T,N,F,N+F}(tend,dt,1:steps,origin,nodes,fillins,nodesrange,normf,normΔs,graph)
     end
 end
 
@@ -119,6 +120,13 @@ end
     graph = robot.graph
     isroot(graph,id) ? robot.origin : robot.nodes[graph.idlist[id]]
 end
+
+@inline function getfillin(robot::Robot,pid::Int64,cid::Int64)
+    graph = robot.graph
+    fid = graph.pattern[pid][cid]
+    robot.fillins[graph.fillinid[fid]]
+end
+
 
 function normf(robot::Robot{T}) where T
     robot.normf = 0
