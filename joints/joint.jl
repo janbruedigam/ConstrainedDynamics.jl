@@ -1,4 +1,4 @@
-abstract type Joint{T,Nc,Nl} <: Node{T,Nc} end
+abstract type Joint{T,Nc,Nl} end
 
 mutable struct XMLJoint{T}
     # From joint tag

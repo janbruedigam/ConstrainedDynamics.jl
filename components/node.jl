@@ -51,8 +51,9 @@ end
 
 @inline update!(node) = (d = node.data; d.s1 = d.s0 - d.ŝ; nothing)
 
-@inline s0tos1!(node) = (d = node.data; d.s1 = d.s0; nothing)
-@inline s1tos0!(node) = (d = node.data; d.s0 = d.s1; nothing)
+# TODO understand why the + is necessary for zero alloc???
+@inline s0tos1!(node) = (d = node.data; d.s1 = +d.s0; nothing)
+@inline s1tos0!(node) = (d = node.data; d.s0 = +d.s1; nothing)
 
 @inline function setNormΔs!(node)
     data = node.data
