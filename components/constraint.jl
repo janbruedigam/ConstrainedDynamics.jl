@@ -1,3 +1,5 @@
+abstract type Constraint{T,Nc,N,Nc²,NcN,Nl} <: Node{T,Nc} end
+
 struct Combined{T,Nc,N,Nc²,NcN,Nl,C1,C2} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
     constr1::C1
     constr2::C2
@@ -26,6 +28,14 @@ function Combined(joint::XMLJoint, link1::Link, link2::Link)
     Combined(Socket(link1,link2,joint.pids...),Axis(link1,link2,joint.axis))
 end
 
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, C::Constraint)
+    summary(io, C); println(io)
+    print(io, "\nConnected links: ")
+    show(io, mime, linkids(C))
+end
+
+Base.show(io::IO, C::Constraint) = summary(io, C)
+
 
 @inline g(C::Combined) = [g(C.constr1);g(C.constr2)]
 
@@ -42,3 +52,5 @@ end
 function getlinks(C::Combined)
     [C.constr1.link1;C.constr1.link1]
 end
+
+@inline Gtλ(L::Link,C::Constraint) = L.data.id==linkids(C)[1] ? ∂g∂posa(C)'*C.data.s1 : ∂g∂posb(C)'*C.data.s1

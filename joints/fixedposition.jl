@@ -1,21 +1,14 @@
 #TODO update
 
-struct FixedPosition{T,Nc,N,Nc²,NcN,Nl,L} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
+struct FixedPosition{T,Nc,Nl,L} <: Joint{T,Nc,Nl}
     link::L
-
     pid::Int64
 
-    data::NodeData{T,Nc,N,Nc²,NcN}
-end
-
-function FixedPosition(link::Link{T,N},pid) where {T,N}
-    Nc = 3
-    Nc² = Nc^2
-    NcN = Nc*N
-    Nl = 1
-    data = NodeData{T,Nc,N}()
-
-    FixedPosition{T,Nc,N,Nc²,NcN,Nl,typeof(link)}(link,pid,data)
+    function FixedPosition(link::Link{T},pid) where T
+        Nc = 3
+        Nl = 1
+        FixedPosition{T,Nc,Nl,typeof(link)}(link,pid)
+    end
 end
 
 

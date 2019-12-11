@@ -1,4 +1,5 @@
-abstract type Node{T,N1,N2,N1²,N1N2} end
+# abstract type Node{T,N1,N2,N1²,N1N2} end
+abstract type Node{T,N} end
 
 mutable struct NodeData{T,N1,N2,N1²,N1N2}
     id::Int64

@@ -11,7 +11,7 @@ mutable struct XMLLink{T}
     p::Vector{Vector{T}}
 end
 
-mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N,Nc,N²,NNc}
+mutable struct Link{T,N,Nc,N²,NNc} <: Node{T,N}
     No::Int64
 
     dt::T

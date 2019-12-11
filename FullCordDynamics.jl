@@ -11,8 +11,10 @@ using LightXML
 export
     Quaternion,
     Node,
+    JointNode,
     Link,
     Constraint,
+    Joint,
     Robot,
 
     Axis,
@@ -32,15 +34,15 @@ export
 
 
 include(joinpath("util", "quaternion.jl"))
-include("node.jl")
-include("link.jl")
+include(joinpath("components", "node.jl"))
+include(joinpath("components", "link.jl"))
 
-include(joinpath("constraints", "constraint.jl"))
-include(joinpath("constraints", "fixedposition.jl"))
-include(joinpath("constraints", "fixedorientation.jl"))
-include(joinpath("constraints", "socket.jl"))
-include(joinpath("constraints", "axis.jl"))
-include(joinpath("constraints", "combined.jl"))
+include(joinpath("joints", "joint.jl"))
+include(joinpath("joints", "fixedposition.jl"))
+include(joinpath("joints", "fixedorientation.jl"))
+include(joinpath("joints", "socket.jl"))
+include(joinpath("joints", "axis.jl"))
+include(joinpath("components", "constraint.jl"))
 
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "shapes.jl"))

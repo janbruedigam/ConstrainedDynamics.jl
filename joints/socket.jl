@@ -1,20 +1,15 @@
-struct Socket{T,Nc,N,Nc²,NcN,Nl,L1,L2} <: Constraint{T,Nc,N,Nc²,NcN,Nl}
+struct Socket{T,Nc,Nl,L1,L2} <: Joint{T,Nc,Nl}
     link1::L1
     link2::L2
 
     pids::SVector{2,Int64}
 
-    data::NodeData{T,Nc,N,Nc²,NcN}
-
-    function Socket(link1::Link{T,N},link2::Link{T},pid1::Int64,pid2::Int64) where {T,N}
+    function Socket(link1::Link{T},link2::Link{T},pid1::Int64,pid2::Int64) where T
         Nc = 3
-        Nc² = Nc^2
-        NcN = Nc*N
         Nl = 2
         pids = SVector(pid1,pid2)
-        data = NodeData{T,Nc,N}()
 
-        new{T,Nc,N,Nc²,NcN,Nl,typeof(link1),typeof(link2)}(link1,link2,pids,data)
+        new{T,Nc,Nl,typeof(link1),typeof(link2)}(link1,link2,pids)
     end
 end
 

@@ -54,7 +54,7 @@ mutable struct Robot{T,N}
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T}) where {T}
-    summary(io, R); println(io, " with ", length(robot.nodesrange[1]), " links and ", length(robot.nodesrange[2]), " constraints")
+    summary(io, R); println(io, " with ", length(R.nodesrange[1]), " links and ", length(R.nodesrange[2]), " constraints")
 end
 
 
