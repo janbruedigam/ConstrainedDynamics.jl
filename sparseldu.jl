@@ -13,16 +13,20 @@ end
 end
 @inline invertD!(node) = (d = node.data; d.Dinv = inv(d.D); nothing)
 
+# TODO pass in the two connected links
 @inline function setJ!(L::Link,C::Constraint,F::FillIn)
     data = F.data
 
-    if L.data.id==C.linkids[1]
-        data.JL = ∂g∂vela(C)
-        data.JU = -∂g∂posa(C)'
-    else
-        data.JL = ∂g∂velb(C)
-        data.JU = -∂g∂posb(C)'
-    end
+    data.JL = ∂g∂vel(C,L)
+    data.JU = -∂g∂pos(C,L)'
+
+    # if L.data.id==C.linkids[1]
+    #     data.JL = ∂g∂vela(C)
+    #     data.JU = -∂g∂posa(C)'
+    # else
+    #     data.JL = ∂g∂velb(C)
+    #     data.JU = -∂g∂posb(C)'
+    # end
 
     return nothing
 end
@@ -30,13 +34,16 @@ end
 @inline function setJ!(C::Constraint,L::Link,F::FillIn)
     data = F.data
 
-    if L.data.id==C.linkids[1]
-        data.JL = -∂g∂posa(C)'
-        data.JU = ∂g∂vela(C)
-    else
-        data.JL = -∂g∂posb(C)'
-        data.JU = ∂g∂velb(C)
-    end
+    data.JL = -∂g∂pos(C,L)'
+    data.JU = ∂g∂vel(C,L)
+
+    # if L.data.id==C.linkids[1]
+    #     data.JL = -∂g∂posa(C)'
+    #     data.JU = ∂g∂vela(C)
+    # else
+    #     data.JL = -∂g∂posb(C)'
+    #     data.JU = ∂g∂velb(C)
+    # end
 
     return nothing
 end
@@ -83,4 +90,4 @@ end
     return nothing
 end
 
-@inline GtλTof!(L::Link,C::Constraint) = (L.data.f -= Gtλ(L,C); nothing)
+@inline GtλTof!(L::Link,C::Constraint) = (L.data.f -= Gtλ(C,L); nothing)

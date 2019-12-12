@@ -1,62 +1,51 @@
-struct Socket{T,Nc,Nl,L1,L2} <: Joint{T,Nc,Nl}
-    link1::L1
-    link2::L2
-
+struct Socket{T,Nc} <: Joint{T,Nc}
     pids::SVector{2,Int64}
 
     function Socket(link1::Link{T},link2::Link{T},pid1::Int64,pid2::Int64) where T
         Nc = 3
-        Nl = 2
         pids = SVector(pid1,pid2)
 
-        new{T,Nc,Nl,typeof(link1),typeof(link2)}(link1,link2,pids)
+        new{T,Nc}(pids), link1, link2
     end
 end
 
-
-@inline function g(C::Socket)
-    link1 = C.link1
-    link2 = C.link2
-    pids = C.pids
+@inline function g(J::Socket,link1::Link,link2::Link)
+    pids = J.pids
     getx3(link1) + rotate(link1.p[pids[1]],getq3(link1)) - (getx3(link2) + rotate(link2.p[pids[2]],getq3(link2)))
 end
 
-@inline function ∂g∂posa(C::Socket{T}) where T
-    link = C.link1
+@inline function ∂g∂posa(C::Socket{T},link1::Link,link2::Link) where T
     X = SMatrix{3,3,T,9}(I)
 
-    q = link.q[link.No]
-    R = 2*Vmat(VTmat(RTmat(q)*Rmat(Quaternion(link.p[C.pids[1]]))*Lmat(q)))
+    q = link1.q[link1.No]
+    R = 2*Vmat(VTmat(RTmat(q)*Rmat(Quaternion(link1.p[C.pids[1]]))*Lmat(q)))
 
     return [X R]
 end
 
-@inline function ∂g∂posb(C::Socket{T}) where T
-    link = C.link2
+@inline function ∂g∂posb(C::Socket{T},link1::Link,link2::Link) where T
     X = SMatrix{3,3,T,9}(-I)
 
-    q = link.q[link.No]
-    R = -2*Vmat(VTmat(RTmat(q)*Rmat(Quaternion(link.p[C.pids[2]]))*Lmat(q)))
+    q = link2.q[link2.No]
+    R = -2*Vmat(VTmat(RTmat(q)*Rmat(Quaternion(link2.p[C.pids[2]]))*Lmat(q)))
 
     return [X R]
 end
 
-@inline function ∂g∂vela(C::Socket{T}) where T
-    link = C.link1
-    V = link.dt*SMatrix{3,3,T,9}(I)
+@inline function ∂g∂vela(C::Socket{T},link1::Link,link2::Link) where T
+    V = link1.dt*SMatrix{3,3,T,9}(I)
 
-    q = link.q[link.No]
-    Ω = 2*link.dt^2/4*Vmat(RTmat(q)*Lmat(q)*RTmat(ωbar(link))*Rmat(Quaternion(link.p[C.pids[1]])))*derivωbar(link)
+    q = link1.q[link1.No]
+    Ω = 2*link1.dt^2/4*Vmat(RTmat(q)*Lmat(q)*RTmat(ωbar(link1))*Rmat(Quaternion(link1.p[C.pids[1]])))*derivωbar(link1)
 
     return [V Ω]
 end
 
-@inline function ∂g∂velb(C::Socket{T}) where T
-    link = C.link2
-    V = link.dt*SMatrix{3,3,T,9}(-I)
+@inline function ∂g∂velb(C::Socket{T},link1::Link,link2::Link) where T
+    V = link2.dt*SMatrix{3,3,T,9}(-I)
 
-    q = link.q[link.No]
-    Ω = -2*link.dt^2/4*Vmat(RTmat(q)*Lmat(q)*RTmat(ωbar(link))*Rmat(Quaternion(link.p[C.pids[2]])))*derivωbar(link)
+    q = link2.q[link2.No]
+    Ω = -2*link2.dt^2/4*Vmat(RTmat(q)*Lmat(q)*RTmat(ωbar(link2))*Rmat(Quaternion(link2.p[C.pids[2]])))*derivωbar(link2)
 
     return [V Ω]
 end

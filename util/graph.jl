@@ -52,7 +52,7 @@ function adjacencyMatrix(constraints::Vector{<:Constraint};offset::Int64=0)
     n = 1
 
     for (i,constraint) in enumerate(constraints)
-        for linkid in constraint.linkids#linkids(constraint)
+        for linkid in linkids(constraint)
             cid = constraint.data.id
             m = maximum([linkid;cid])
             if m>n
