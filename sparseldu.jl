@@ -20,14 +20,6 @@ end
     data.JL = ∂g∂vel(C,L)
     data.JU = -∂g∂pos(C,L)'
 
-    # if L.data.id==C.linkids[1]
-    #     data.JL = ∂g∂vela(C)
-    #     data.JU = -∂g∂posa(C)'
-    # else
-    #     data.JL = ∂g∂velb(C)
-    #     data.JU = -∂g∂posb(C)'
-    # end
-
     return nothing
 end
 
@@ -36,14 +28,6 @@ end
 
     data.JL = -∂g∂pos(C,L)'
     data.JU = ∂g∂vel(C,L)
-
-    # if L.data.id==C.linkids[1]
-    #     data.JL = -∂g∂posa(C)'
-    #     data.JU = ∂g∂vela(C)
-    # else
-    #     data.JL = -∂g∂posb(C)'
-    #     data.JU = ∂g∂velb(C)
-    # end
 
     return nothing
 end
@@ -77,7 +61,7 @@ end
     data = link.data
     data.f = dynamics(link)
     for (cid,isconnected) in enumconnected(robot.graph,data.id)
-        isconnected && GtλTof!(link,getnode(robot,cid))
+        isconnected && GtλTof!(getnode(robot,cid),link)
     end
     data.normf = data.f'*data.f
     return nothing
@@ -90,4 +74,4 @@ end
     return nothing
 end
 
-@inline GtλTof!(L::Link,C::Constraint) = (L.data.f -= Gtλ(C,L); nothing)
+@inline GtλTof!(C::Constraint,L::Link) = (L.data.f -= ∂g∂pos(C,L)'*C.data.s1; nothing)
