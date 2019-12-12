@@ -20,11 +20,11 @@ export
 
     Axis,
     Socket,
-    # SocketYZ,
+    SocketYZ,
     # FixedOrientation,
     # FixedPosition,
     Combined2,
-    # Combined3,
+    Combined3,
 
     box,
     initialPosition,
@@ -45,10 +45,11 @@ include(joinpath("joints", "joint.jl"))
 # include(joinpath("joints", "fixedposition.jl"))
 # include(joinpath("joints", "fixedorientation.jl"))
 include(joinpath("joints", "socket.jl"))
-# include(joinpath("joints", "socketyz.jl"))
+include(joinpath("joints", "socketyz.jl"))
 include(joinpath("joints", "axis.jl"))
 include(joinpath("components", "constraint.jl"))
-# include(joinpath("components", "constraint2.jl"))
+include(joinpath("components", "combined2.jl"))
+include(joinpath("components", "combined3.jl"))
 
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "shapes.jl"))

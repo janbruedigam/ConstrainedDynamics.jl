@@ -40,7 +40,13 @@ end
 end
 
 @inline setSol!(link::Link) = (link.data.ŝ = dynamics(link); nothing)
-@inline setSol!(C::Constraint) = (C.data.ŝ = g(C); nothing)
+@inline function setSol!(C::Constraint{T,Nc,Nc²,Nl}) where {T,Nc,Nc²,Nl}
+    C.data.ŝ = g(C)
+    # for i=1:Nl
+    #     gŝ(C.constr[i],C.link1,C.link2,C.datavec[i])
+    # end
+    return nothing
+end
 
 # (A) For extended equations
 # @inline addGtλ!(L::Link,C::Constraint) = (L.data.ŝ -= Gtλ(L,C); nothing)
@@ -67,9 +73,12 @@ end
     return nothing
 end
 
-@inline function setNormf!(C::Constraint,robot::Robot)
+@inline function setNormf!(C::Constraint{T,Nc,Nc²,Nl},robot::Robot) where {T,Nc,Nc²,Nl}
     data = C.data
     data.f = g(C)
+    # for i=1:Nl
+    #     gf(C.constr[i],C.link1,C.link2,C.datavec[i])
+    # end
     data.normf = data.f'*data.f
     return nothing
 end
