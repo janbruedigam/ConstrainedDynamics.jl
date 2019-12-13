@@ -59,27 +59,36 @@ end
 function factor!(robot::Robot)
     graph = robot.graph
     list = graph.dfslist
+    pattern = graph.pattern
 
     for id in list
         if !isroot(graph,id)
             node = getnode(robot,id)
-            pid = parent(graph,id)
+
+            for cid in list # in correct order
+                cid==id && break
+                if pattern[id][cid]!=0 # is actually a (loop) child
+                    cfillin = getfillin(robot,cid,id)
+                    childnode = getnode(robot,cid)
+                    setJ!(childnode,node,cfillin)
+                    for gcid in list # in correct order
+                        gcid==cid && break
+                        if pattern[id][gcid]!=0 && pattern[cid][gcid]!=0# is actually a (loop child)
+                            gcfillin = getfillin(robot,gcid,id)
+                            cgcfillin = getfillin(robot,gcid,cid)
+                            grandchildnode = getnode(robot,gcid)
+                            updateJ1!(grandchildnode,gcfillin,cgcfillin,cfillin)
+                        end
+                    end
+                    updateJ2!(childnode,cfillin)
+                end
+            end
 
             setD!(node)
-            !isroot(graph,pid) && setJ!(node,getnode(robot,pid),getfillin(robot,id,pid))
-        end
-    end
-
-    for id in list
-        if !isroot(graph,id)
-            node = getnode(robot,id)
-            pid = parent(graph,id)
-
-            for (cid,ischild) in enumchildren(graph,id)
-                ischild && updateD!(node,getnode(robot,cid),getfillin(robot,cid,id))
+            for (cid,ischild) in enumpattern(graph,id)
+                ischild!=0 && updateD!(node,getnode(robot,cid),getfillin(robot,cid,id))
             end
             invertD!(node)
-            !isroot(graph,pid) && updateJ!(node,getfillin(robot,id,pid))
         end
     end
 end
@@ -88,14 +97,19 @@ function solve!(robot::Robot)
     graph = robot.graph
     list = graph.dfslist
     nodes = robot.nodes
+    pattern = graph.pattern
 
     for id in list
         if !isroot(graph,id)
             node = getnode(robot,id)
 
             setSol!(node)
-            for (cid,ischild) in enumchildren(graph,id)
-                ischild && LSol!(node,getnode(robot,cid),getfillin(robot,cid,id))
+
+            for cid in list # in correct order (shouldnt matter here)
+                cid==id && break
+                if pattern[id][cid]!=0 # is actually a (loop) child
+                    LSol!(node,getnode(robot,cid),getfillin(robot,cid,id))
+                end
             end
         end
     end
@@ -103,10 +117,15 @@ function solve!(robot::Robot)
     for id in reverse(list)
         if !isroot(graph,id)
             node = getnode(robot,id)
-            pid = parent(graph,id)
 
             DSol!(node)
-            !isroot(graph,pid) && USol!(node,getnode(robot,pid),getfillin(robot,id,pid))
+            
+            for pid in reverse(list)
+                pid==id && break
+                if pattern[pid][id]!=0 # is a (loop) parent
+                    USol!(node,getnode(robot,pid),getfillin(robot,id,pid))
+                end
+            end
         end
     end
 

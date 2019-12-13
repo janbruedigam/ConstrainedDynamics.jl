@@ -110,6 +110,7 @@ end
 
 @inline children(graph::Graph,n) = graph.dfsgraph[n]
 @inline enumchildren(graph::Graph,n) = enumerate(graph.dfsgraph[n])
+@inline enumpattern(graph::Graph,n) = enumerate(graph.pattern[n])
 @inline parent(graph::Graph,n) = graph.parentlist[n]
 @inline connected(graph::Graph,n) = graph.adjacency[n]
 @inline enumconnected(graph::Graph,n) = enumerate(graph.adjacency[n])

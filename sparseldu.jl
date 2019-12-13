@@ -32,7 +32,16 @@ end
     return nothing
 end
 
-@inline function updateJ!(node::Node,F::FillIn)
+@inline setJ!(L::Constraint,C::Constraint,F::FillIn) = nothing
+
+@inline function updateJ1!(node::Node,gcfillin::FillIn,cgcfillin::FillIn,F::FillIn)
+    d = F.data
+    d.JL -= gcfillin.data.JL*node.data.D*cgcfillin.data.JU
+    d.JU -= gcfillin.data.JU*node.data.D*cgcfillin.data.JL
+    return nothing
+end
+
+@inline function updateJ2!(node::Node,F::FillIn)
     d = F.data
     d.JL = d.JL*node.data.Dinv
     d.JU = node.data.Dinv*d.JU
