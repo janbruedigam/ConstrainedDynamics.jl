@@ -32,7 +32,14 @@ end
     return nothing
 end
 
-@inline setJ!(L::Constraint,C::Constraint,F::FillIn) = nothing
+@inline function setJ!(C1::Constraint,C2::Constraint,F::FillIn{T,N1,N2}) where {T,N1,N2}
+    data = F.data
+
+    data.JL = @SMatrix zeros(T,N2,N1)
+    data.JU = @SMatrix zeros(T,N1,N2)
+
+    return nothing
+end
 
 @inline function updateJ1!(node::Node,gcfillin::FillIn,cgcfillin::FillIn,F::FillIn)
     d = F.data

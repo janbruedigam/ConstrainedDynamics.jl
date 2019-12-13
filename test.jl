@@ -62,6 +62,6 @@ constraints = [joint0to1; joint1to23; joint3to4; joint2to4]
 
 bot = Robot(origin,links, constraints)
 
-sim!(bot,save=true)
+sim!(bot,save=true,debug=true)
 trajS = trajSFunc(bot)
 # include("visualizeTwoTwoBar.jl")

@@ -205,7 +205,7 @@ function sim!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
     nodes = robot.nodes
     foreach(s0tos1!,nodes)
     for i=robot.steps
-        display(newton!(robot,warning=debug))
+        newton!(robot,warning=debug)
         for n=robot.nodesrange[1]
             save ? saveToTraj!(nodes[n],i) : nothing
             updatePos!(nodes[n])
