@@ -33,25 +33,33 @@ function Combined3(joint::XMLJoint, link1::Link, link2::Link)
     Combined3(Socket(link1,link2,joint.pids...),Axis(link1,link2,joint.axis))
 end
 
-@inline g(C::Combined3) = [g(C.constr1,C.link1,C.link2);g(C.constr2,C.link1,C.link2)]
+@inline g(C::Combined3) = [g(C.constr1,C.link1,C.link2);g(C.constr2,C.link1,C.link2);g(C.constr3,C.link1,C.link3)]
 
 @inline function ∂g∂pos(C::Combined3,L::Link)
     if L.data.id == linkids(C)[1]
-        return [∂g∂posa(C.constr1,L,C.link2);∂g∂posa(C.constr2,L,C.link2)]
+        return [∂g∂posa(C.constr1,L,C.link2);∂g∂posa(C.constr2,L,C.link2);∂g∂posa(C.constr3,L,C.link3)]
+    elseif L.data.id == linkids(C)[2]
+        return [∂g∂posb(C.constr1,C.link1,L);∂g∂posb(C.constr2,C.link1,L); ∂g∂posb(C.constr3)] #[...,...,0]
+    elseif L.data.id == linkids(C)[3]
+        return [∂g∂posb(C.constr1);∂g∂posb(C.constr2); ∂g∂posb(C.constr3,C.link1,L)] #[0,0,...]
     else
-        return [∂g∂posb(C.constr1,C.link1,L);∂g∂posb(C.constr2,C.link1,L)]
+        return [∂g∂posb(C.constr1);∂g∂posb(C.constr2);∂g∂posb(C.constr3)] #[0,0,0]
     end
 end
 
 @inline function ∂g∂vel(C::Combined3,L::Link)
     if L.data.id == linkids(C)[1]
-        return [∂g∂vela(C.constr1,L,C.link2);∂g∂vela(C.constr2,L,C.link2)]
+        return [∂g∂vela(C.constr1,L,C.link2);∂g∂vela(C.constr2,L,C.link2);∂g∂vela(C.constr3,L,C.link3)]
+    elseif L.data.id == linkids(C)[2]
+        return [∂g∂velb(C.constr1,C.link1,L);∂g∂velb(C.constr2,C.link1,L); ∂g∂velb(C.constr3)] #[...,...,0]
+    elseif L.data.id == linkids(C)[3]
+        return [∂g∂velb(C.constr1);∂g∂velb(C.constr2); ∂g∂velb(C.constr3,C.link1,L)] #[0,0,...]
     else
-        return [∂g∂velb(C.constr1,C.link1,L);∂g∂velb(C.constr2,C.link1,L)]
+        return [∂g∂velb(C.constr1);∂g∂velb(C.constr2);∂g∂velb(C.constr3)] #[0,0,0]
     end
 end
 
-linkids(C::Combined3) = SVector{2,Int64}(C.link1.data.id,C.link2.data.id)
+linkids(C::Combined3) = SVector{3,Int64}(C.link1.data.id,C.link2.data.id,C.link3.data.id)
 # @generated function linkids(C::Combined3{T,Nc,Nc²,Nl}) where {T,Nc,Nc²,Nl}
 #     ids = [:(C.links[$i].data.id) for i=1:Nl]
 #     :(SVector{Nl,Int64}($(ids...)))

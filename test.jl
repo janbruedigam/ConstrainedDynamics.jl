@@ -43,19 +43,25 @@ link4 = Link(m2,J2,vert2)
 setInit!(link3,link4,[2;1],q=q4)
 
 # Constraints
-jointb1 = Combined(Socket(origin,link1,1,1),Axis(origin,link1,ex))
-joint12 = Combined(Socket(link1,link2,2,1),Axis(link1,link2,ex))
-jointb3 = Combined(Socket(origin,link3,1,1),Axis(origin,link3,ex))
-joint34 = Combined(Socket(link3,link4,2,1),Axis(link3,link4,ex))
+joint0to1 = Combined2(Socket(origin,link1,1,1),Axis(origin,link1,ex))
+joint1to23 = Combined3(Socket(link1,link2,2,1),Axis(link1,link2,ex),SocketYZ(link1,link3,1,1))
+# joint1to2 = Combined2(Socket(link1,link2,2,1),Axis(link1,link2,ex))
+# joint1to3 = Combined2(Socket(link1,link3,1,1),Axis(link1,link3,ex))
+
+joint3to4 = Combined2(Socket(link3,link4,2,1),Axis(link3,link4,ex))
+joint2to4 = Combined2(Socket(link2,link4,2,2),Axis(link2,link4,ex))
+
 
 links = [link1; link2; link3; link4]
-constraints = [jointb1; joint12; jointb3; joint34]
+constraints = [joint0to1; joint1to23; joint3to4; joint2to4]
+# constraints = [joint0to1; joint1to23; joint3to4]
+# constraints = [joint0to1; joint1to2; joint1to3; joint3to4]
 # links = [link1]
-# constraints = [jointb1]
+# constraints = [joint0to1]
 
 
 bot = Robot(origin,links, constraints)
 
 sim!(bot,save=true)
 trajS = trajSFunc(bot)
-include("visualizeTwoTwoBar.jl")
+# include("visualizeTwoTwoBar.jl")

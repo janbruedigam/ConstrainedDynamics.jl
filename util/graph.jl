@@ -1,13 +1,13 @@
-struct Graph{N,F,NpF}
+struct Graph{N}
     root::Int64
     adjacency::Vector{SVector{N,Bool}}
     dfsgraph::Vector{SVector{N,Bool}}
     dfslist::SVector{N,Int64}
     parentlist::SVector{N,Int64}
-    idlist::SVector{N,Int64} # matches ids to "nodes" index, 0 is for root
+    # idlist::SVector{N,Int64} # matches ids to "nodes" index, 0 is for root
 
     pattern::Vector{SVector{N,Int64}} # includes fillins with ids of fillins at positions
-    fillinid::SVector{NpF,Int64} # matches ids to "fillins" index in robot struct
+    # fillinid::SVector{NpF,Int64} # matches ids to "fillins" index in robot struct
 
     loops::Vector{Vector{Int64}}
 
@@ -21,29 +21,28 @@ struct Graph{N,F,NpF}
             parentlist[i] = parent(dfsgraph,i)
         end
 
-        idlist = zeros(Int64,N)
-        idlist[origin.data.id] = 0
-        Nl = length(links)
-        for (i,link) in enumerate(links)
-            idlist[link.data.id] = i
-        end
-        for (i,constraint) in enumerate(constraints)
-            idlist[constraint.data.id] = i+Nl
-        end
+        # idlist = zeros(Int64,N)
+        # idlist[origin.data.id] = 0
+        # Nl = length(links)
+        # for (i,link) in enumerate(links)
+        #     idlist[link.data.id] = i
+        # end
+        # for (i,constraint) in enumerate(constraints)
+        #     idlist[constraint.data.id] = i+Nl
+        # end
 
         # TODO do fillinid propertly without offset
-        pat,F = pattern(dfsgraph,root,loops,offset=N)
-        NpF = N+F
-        fillinid = zeros(Int64,NpF)
-        for i=N+1:NpF
-            fillinid[i]=i-N
-        end
+        pat = pattern(dfsgraph,root,loops,offset=N)
+        # NpF = N+F
+        # fillinid = zeros(Int64,NpF)
+        # for i=N+1:NpF
+        #     fillinid[i]=i-N
+        # end
 
-        new{N,F,NpF}(root,adjacency,dfsgraph,dfslist,parentlist,idlist,pat,fillinid,loops)
+        new{N}(root,adjacency,dfsgraph,dfslist,parentlist,pat,loops)
     end
 end
 
-@inline Base.size(g::Graph{N,F}) where {N,F} = N,F
 @inline Base.length(g::Graph{N}) where N = N
 
 
@@ -158,11 +157,11 @@ function pattern(dfsgraph::Vector{SVector{N,T}},rootid,loops;offset::Int64=0) wh
     for i=1:N
         patternvec[i] = convert(SVector{N,Int64},pat[i,:])
     end
-    return patternvec, id
+    return patternvec
 end
 
-function createfillins(graph::Graph,origin::Link{T},nodes::Vector) where T
-    idlist = graph.idlist
+function createfillins(graph::Graph,idlist,origin::Link{T},nodes::Vector) where T
+    # idlist = graph.idlist
     fillins = Vector{FillIn}(undef,0)
     for (i,row) in enumerate(graph.pattern)
         for (j,id) in enumerate(row)

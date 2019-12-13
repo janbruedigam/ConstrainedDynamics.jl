@@ -37,7 +37,7 @@ end
 @inline function updateJ1!(node::Node,gcfillin::FillIn,cgcfillin::FillIn,F::FillIn)
     d = F.data
     d.JL -= gcfillin.data.JL*node.data.D*cgcfillin.data.JU
-    d.JU -= gcfillin.data.JU*node.data.D*cgcfillin.data.JL
+    d.JU -= cgcfillin.data.JL*node.data.D*gcfillin.data.JU
     return nothing
 end
 
