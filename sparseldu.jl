@@ -1,8 +1,9 @@
 @inline function setD!(link::Link{T}) where T
+    μ = 1e-4
     dynT,dynR = ∂dyn∂vel(link)
     Z = @SMatrix zeros(T,3,3)
 
-    link.data.D = [[dynT Z];[Z dynR]]
+    link.data.D = [[dynT Z];[Z dynR]] + SMatrix{6,6,Float64,36}(μ*I)
     return nothing
 end
 

@@ -14,6 +14,8 @@ mutable struct Robot{T,N,NpF}
 
     graph::Graph{N}
 
+    storage::Storage
+
     function Robot(origin::Link{T,0,0},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1) where T
         Nl = length(links)
         Nc = length(constraints)
@@ -27,9 +29,6 @@ mutable struct Robot{T,N,NpF}
             link.data.id = i+1
             link.dt = dt
             link.g = g
-            link.trajectoryX = repeat([@SVector zeros(T,3)],steps)
-            link.trajectoryQ = repeat([Quaternion{T}()],steps)
-            link.trajectoryΦ = zeros(T,steps)
         end
 
         for (i,constraint) in enumerate(constraints)
@@ -62,7 +61,9 @@ mutable struct Robot{T,N,NpF}
             idlist[fillins[i].data.id] = i
         end
 
-        new{T,N,N+F}(tend,dt,1:steps,origin,nodes,fillins,nodesrange,normf,normΔs,idlist,graph)
+        storage = Storage{T}(steps,Nl)
+
+        new{T,N,N+F}(tend,dt,1:steps,origin,nodes,fillins,nodesrange,normf,normΔs,idlist,graph,storage)
     end
 end
 
@@ -183,12 +184,13 @@ end
 
 @inline addNormΔs!(node,robot::Robot) = (robot.normΔs += node.data.normΔs; nothing)
 
+@inline function saveToTraj!(robot::Robot{T,N},t) where {T,N}
+    No = robot.origin.No
 
-@inline function saveToTraj!(link::Link,i)
-    No = link.No
-    link.trajectoryX[i] = link.x[No]
-    link.trajectoryQ[i] = link.q[No]
-    link.trajectoryΦ[i] = angleAxis(link.q[No])[1]*sign(angleAxis(link.q[No])[2][1])
+    for i=robot.nodesrange[1]
+        robot.storage.x[i][t]=robot.nodes[i].x[No]
+        robot.storage.q[i][t]=robot.nodes[i].q[No]
+    end
     return nothing
 end
 
@@ -206,12 +208,12 @@ function sim!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
     foreach(s0tos1!,nodes)
     for i=robot.steps
         newton!(robot,warning=debug)
+        save && saveToTraj!(robot,i)
         for n=robot.nodesrange[1]
-            save ? saveToTraj!(nodes[n],i) : nothing
             updatePos!(nodes[n])
         end
 
-        disp && (i*robot.dt)%1<robot.dt*(1.0-.1) ? display(i*robot.dt) : nothing
+        disp && (i*robot.dt)%1<robot.dt*(1.0-.1) && display(i*robot.dt)
     end
 end
 
