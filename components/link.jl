@@ -25,10 +25,6 @@ mutable struct Link{T,N,N²} <: Node{T,N}
     F::Vector{SVector{3,T}}
     τ::Vector{SVector{3,T}}
 
-    trajectoryX::Vector{SVector{3,T}}
-    trajectoryQ::Vector{Quaternion{T}}
-    trajectoryΦ::Vector{T}
-
     p::Vector{SVector{3,T}}
 
     data::NodeData{T,N,N²}
@@ -47,15 +43,11 @@ mutable struct Link{T,N,N²} <: Node{T,N}
         F = repeat([@SVector zeros(T,3)],No)
         τ = repeat([@SVector zeros(T,3)],No)
 
-        trajX = [@SVector zeros(T,3)]
-        trajQ = [Quaternion{T}()]
-        trajΦ = [0]
-
         p = convert(Vector{SVector{3,T}},p)
 
         data = NodeData{T,N}()
 
-        new{T,N,N²}(No,dt,g,m,J,x,q,F,τ,trajX,trajQ,trajΦ,p,data)
+        new{T,N,N²}(No,dt,g,m,J,x,q,F,τ,p,data)
     end
 
     Link(T::Type;No=2,N=0) = Link(zero(T),diagm(zeros(T,3)),[zeros(T,3)];No=No,N=N)
