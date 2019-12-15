@@ -1,10 +1,12 @@
 #TODO vectorize constraints and links
-struct Combined2{T,Nc,Nc²,Nl,C1,C2,L1,L2} <: Constraint{T,Nc,Nc²,Nl}
+struct Combined2{T,Nl,C1,C2,L1,L2} <: Constraint{T,Nl}
+    id::Int64
+    linkids::SVector{Nl,Int64}
+
     constr1::C1
     constr2::C2
     link1::L1
     link2::L2
-    data::NodeData{T,Nc,Nc²}
 
     function Combined2(c1, c2)
         constr1,l1,l2 = c1
@@ -13,15 +15,12 @@ struct Combined2{T,Nc,Nc²,Nl,C1,C2,L1,L2} <: Constraint{T,Nc,Nc²,Nl}
         links = unique([l1;l2;l3;l4])
 
         T = constr1.T
-        Nc = constr1.Nc+constr2.Nc
-        Nc² = Nc^2
         Nl = length(links)
 
-        ids = unique([links[i].data.id for i=1:Nl])
+        id = getGlobalID()
+        linkids = unique([links[i].id for i=1:Nl])
 
-        data = NodeData{T,Nc}()
-
-        new{T,Nc,Nc²,Nl,typeof(constr[1]),typeof(constr[2]),typeof(links[1]),typeof(links[2])}(constr...,links...,data)
+        new{T,Nl,typeof(constr[1]),typeof(constr[2]),typeof(links[1]),typeof(links[2])}(id,linkids,constr...,links...)
     end
 end
 
@@ -48,7 +47,7 @@ end
     end
 end
 
-linkids(C::Combined2) = SVector{2,Int64}(C.link1.data.id,C.link2.data.id)
+getNc(C::Combined2) = C.constr1.Nc+C.constr2.Nc
 # @generated function linkids(C::Combined2{T,Nc,Nc²,Nl}) where {T,Nc,Nc²,Nl}
 #     ids = [:(C.links[$i].data.id) for i=1:Nl]
 #     :(SVector{Nl,Int64}($(ids...)))

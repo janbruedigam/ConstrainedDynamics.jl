@@ -1,6 +1,6 @@
 abstract type Node{T,N} end
 
-#TODO do constraint properly
+#TODO do id differently?
 CURRENTID = 1
 getGlobalID() = (global CURRENTID+=1;return CURRENTID-1)
 # currentGlobalID() = (global CURRENTID; return CURRENTID-1)

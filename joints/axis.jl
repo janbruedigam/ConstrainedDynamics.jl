@@ -1,7 +1,7 @@
 struct Axis{T,Nc} <: Joint{T,Nc}
     V12::SMatrix{2,3,T,6}
 
-    function Axis(link1::Link{T},link2::Link{T},axis::AbstractVector{T}) where T
+    function Axis(link1::AbstractLink{T},link2::AbstractLink{T},axis::AbstractVector{T}) where T
         Nc = 2
         V12 = (@SMatrix [1 0 0; 0 1 0])*svd(skew(axis)).Vt
 

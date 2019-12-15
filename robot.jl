@@ -1,74 +1,60 @@
-mutable struct Robot{T,N,NpF}
+mutable struct Robot{T,N,No}
     tend::T
     dt::T
-    steps::UnitRange{Int64}
+    steps::Base.OneTo{Int64}
 
-    origin::Link{T,0,0}
-    nodes::Vector{Node{T}}
-    fillins::Vector{FillIn{T}}
-    nodesrange::Vector{UnitRange{Int64}}
+    origin::Origin{T}
+    links::Vector{Link{T}}
+    constraints::Vector{Constraint{T}}
+    ldict::Dict{Int64,Int64}
+    cdict::Dict{Int64,Int64}
+    #???
     normf::T
     normΔs::T
 
-    idlist::SVector{NpF,Int64}
-
     graph::Graph{N}
 
+    # ldu::SparseLDU{}
     storage::Storage
 
-    function Robot(origin::Link{T,0,0},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1) where T
+    #TODO no constraints input
+    function Robot(origin::Origin{T},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1, No=2) where T
         Nl = length(links)
         Nc = length(constraints)
-        N = Nl+Nc+1
+        N = Nl+Nc
         steps = Int(ceil(tend/dt))
 
-        origin.dt = dt
-        origin.g = g
-        origin.data.id = 1
-        for (i,link) in enumerate(links)
-            link.data.id = i+1
-            link.dt = dt
-            link.g = g
+        ldict = Dict{Int64,Int64}()
+        for (ind,link) in enumerate(links)
+            push!(link.x, [link.x[1] for i=1:No-1]...)
+            push!(link.q, [link.q[1] for i=1:No-1]...)
+            push!(link.F, [link.F[1] for i=1:No-1]...)
+            push!(link.τ, [link.τ[1] for i=1:No-1]...)
+
+            ldict[link.id] = ind
         end
 
-        for (i,constraint) in enumerate(constraints)
-            constraint.data.id = i+1+Nl
+        cdict = Dict{Int64,Int64}()
+        for (ind,constraint) in enumerate(constraints)
+            cdict[constraint.id] = ind
         end
 
-        #TODO do constraint properly
         resetGlobalID()
 
-        nodes = [links;constraints]
-
-        nodesrange = [[1:Nl];[Nl+1:Nl+Nc]]
         normf = zero(T)
         normΔs = zero(T)
 
         graph = Graph(origin,links,constraints)
-
-        idlist = zeros(Int64,N)
-        idlist[origin.data.id] = 0
-        for i=1:N-1
-            idlist[nodes[i].data.id] = i
-        end
-
-        fillins = createfillins(graph,idlist,origin,nodes)
-        F = length(fillins)
-
-        idlist = [idlist;zeros(Int64,F)]
-
-        for i=1:F
-            idlist[fillins[i].data.id] = i
-        end
+        # ldu = SparseLDU(graph)
 
         storage = Storage{T}(steps,Nl)
 
-        new{T,N,N+F}(tend,dt,1:steps,origin,nodes,fillins,nodesrange,normf,normΔs,idlist,graph,storage)
+        new{T,N,No}(tend,dt,Base.OneTo(steps),origin,links,constraints,ldict,cdict,normf,normΔs,graph,storage)
     end
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T}) where {T}
-    summary(io, R); println(io, " with ", length(R.nodesrange[1]), " links and ", length(R.nodesrange[2]), " constraints")
+    summary(io, R); println(io, " with ", length(R.links), " links and ", length(R.constraints), " constraints")
 end
 
 
@@ -153,7 +139,7 @@ function solve!(robot::Robot)
 end
 
 @inline function getnode(robot::Robot,id::Int64)
-    isroot(robot.graph,id) ? robot.origin : robot.nodes[robot.idlist[id]]
+    robot.nodes[robot.idlist[id]]
 end
 
 @inline function getfillin(robot::Robot,cid::Int64,pid::Int64)
@@ -194,6 +180,15 @@ end
     return nothing
 end
 
+# @inline function saveToTraj!(robot::Robot,link::Link,i,t)
+#     robot.storage.x[i][t]=link.x[2]
+#     robot.storage.q[i][t]=link.q[2]
+# end
+#
+# @inline function saveToTraj!(robot::Robot,constraint::Link,i,t)
+#     robot.storage.λ[i][t]=constraint.data.s1
+# end
+
 @inline function updatePos!(link::Link)
     link.x[1] = link.x[2]
     link.x[2] += getvnew(link)*link.dt
@@ -215,14 +210,6 @@ function sim!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
 
         disp && (i*robot.dt)%1<robot.dt*(1.0-.1) && display(i*robot.dt)
     end
-end
-
-function trajSFunc(robot::Robot{T}) where {T}
-    t = zeros(T,length(robot.nodesrange[1]),length(robot.steps))
-    for i=robot.nodesrange[1]
-            t[i,:] = robot.nodes[i].trajectoryΦ
-    end
-    return t
 end
 
 function plotTraj(robot,trajS,id)
