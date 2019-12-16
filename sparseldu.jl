@@ -41,20 +41,22 @@ end
 end
 
 @inline function setJ!(F::OffDiagonalEntry,L::Link,C::Constraint)
-    # data = F.data
-
     F.JL = -∂g∂pos(C,L)'
     F.JU = ∂g∂vel(C,L)
 
     return nothing
 end
 
-@inline function setJ!(F::OffDiagonalEntry{T,N1,N2},C1::Constraint,C2::Constraint,) where {T,N1,N2}
-    # data = F.data
-
+@inline function setJ!(F::OffDiagonalEntry{T,N1,N2},C1::Constraint,C2::Constraint) where {T,N1,N2}
     F.JL = @SMatrix zeros(T,N2,N1)
     F.JU = @SMatrix zeros(T,N1,N2)
 
+    return nothing
+end
+
+@inline function setJ!(entry::OffDiagonalEntry{T,N1,N2}) where {T,N1,N2}
+    entry.JL = @SMatrix zeros(T,N2,N1)
+    entry.JU = @SMatrix zeros(T,N1,N2)
     return nothing
 end
 
@@ -70,7 +72,7 @@ end
     return nothing
 end
 
-@inline setSol!(diagonal,link::Link) = (diagonal.ŝ = dynamics(link); nothing)
+@inline setSol!(diagonal,link::Link) = (diagonal.ŝ = diagonal.ŝ -diagonal.ŝ +dynamics(link); nothing)
 @inline setSol!(diagonal,C::Constraint) = (diagonal.ŝ = g(C); nothing)
 
 # (A) For extended equations

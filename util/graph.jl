@@ -4,6 +4,11 @@ struct Graph{N}
     pattern::Vector{SVector{N,Bool}} # includes fillins
     fillins::Vector{SVector{N,Bool}}
 
+    successors::Vector{SVector{N,Int64}}
+    predecessors::Vector{SVector{N,Int64}}
+    # directchildren::Vector{SVector}
+    # loopchildren::Vector{SVector}
+
     dfslist::SVector{N,Int64}
 
     dict::Dict{Int64,Int64}
@@ -29,12 +34,15 @@ struct Graph{N}
 
         N = length(dict)
         #TODO make properly to convert
-        adjacency = convert(SVector{N,SVector{N,Bool}},adjacency)
-        dfsgraph = convert(SVector{N,SVector{N,Bool}},dfsgraph)
-        pat = convert(SVector{N,SVector{N,Bool}},pat)
-        fillins = convert(SVector{N,SVector{N,Bool}},fillins)
+        adjacency = convert(Vector{SVector{N,Bool}},adjacency)
+        dfsgraph = convert(Vector{SVector{N,Bool}},dfsgraph)
+        pat = convert(Vector{SVector{N,Bool}},pat)
+        fillins = convert(Vector{SVector{N,Bool}},fillins)
 
-        new{N}(adjacency,dfsgraph,pat,fillins,dfslist,dict,rdict)
+        sucs = successors(dfslist,pat,dict)
+        preds = predecessors(dfslist,pat,dict)
+
+        new{N}(adjacency,dfsgraph,pat,fillins,sucs,preds,dfslist,dict,rdict)
     end
 end
 
@@ -124,4 +132,59 @@ function parent(dfsgraph::Matrix,dict::Dict,childid::Int64) where {N,T}
         dfsgraph[i,j] && (return parentid)
     end
     return -1
+end
+
+# this is done in order!
+function successors(dfslist,pattern,dict::Dict)
+    N = length(dfslist)
+    sucs = [Vector{Int64}(undef,0) for i=1:N]
+    for i=1:N
+        for cid in dfslist
+            pattern[i][dict[cid]] && push!(sucs[i],cid)
+        end
+        while length(sucs[i])<N
+            push!(sucs[i],-1)
+        end
+    end
+
+    return convert.(SVector{N,Int64},sucs)
+end
+
+# this is done in reverse order (but this is not really important for predecessors)
+function predecessors(dfslist,pattern,dict::Dict)
+    N = length(dfslist)
+    preds = [Vector{Int64}(undef,0) for i=1:N]
+    for i=1:N
+        for cid in reverse(dfslist)
+            pattern[dict[cid]][i] && push!(preds[i],cid)
+        end
+        while length(preds[i])<N
+            push!(preds[i],-1)
+        end
+    end
+
+    return convert.(SVector{N,Int64},preds)
+end
+
+@inline successors(graph,id::Int64) = graph.successors[graph.dict[id]]
+@inline predecessors(graph,id::Int64) = graph.predecessors[graph.dict[id]]
+
+@inline function hassuccessor(graph::Graph{N},id,cid) where N
+    successors = graph.successors[graph.dict[id]]
+    for i = 1:N
+        val = successors[i]
+        val == -1 && (return false)
+        val == cid && (return true)
+    end
+    return false
+end
+
+@inline function haspredecessor(graph::Graph{N},id,pid) where N
+    predecessor = graph.predecessor[graph.dict[id]]
+    for i = 1:N
+        val = predecessor[i]
+        val == -1 && (return false)
+        val == pid && (return true)
+    end
+    return false
 end

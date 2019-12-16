@@ -65,8 +65,8 @@ struct SparseLDU{T}
     end
 end
 
-# @inline getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[ldu.ddict[id]]
-# @inline getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ldu.odict[ids]]
+@inline getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[ldu.ddict[id]]
+@inline getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ldu.odict[ids]]
 #
 # @inline function setD!(entry::DiagonalEntry,link::Link,dt)
 #     entry.data.D = ∂dyn∂vel(link,dt)

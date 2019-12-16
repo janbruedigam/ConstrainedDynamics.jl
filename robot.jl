@@ -5,12 +5,8 @@ mutable struct Robot{T,N,No}
     g::T
 
     origin::Link{T,0}
-    # links::Vector{Link{T}}
-    # constraints::Vector{Constraint{T}}
     nodes::Vector{Node{T}}
     nodesrange::Vector{UnitRange{Int64}}
-    # ldict::Dict{Int64,Int64}
-    # cdict::Dict{Int64,Int64}
     dict::Dict{Int64,Int64}
 
     #???
@@ -57,13 +53,9 @@ mutable struct Robot{T,N,No}
 
         nodes = [links;constraints]
         nodesrange = [[1:Nl];[Nl+1:Nl+Nc]]
-        # diagonals = Vector{DiagonalEntry{T}}(undef,0)
         dict = Dict{Int64,Int64}()
-        # ddict = Dict{Int64,Int64}()
         for (ind,node) in enumerate(nodes)
             dict[node.id] = ind
-            # ddict[node.id] = ind
-            # push!(diagonals,DiagonalEntry{T,length(node)}())
         end
 
         resetGlobalID()
@@ -73,8 +65,6 @@ mutable struct Robot{T,N,No}
 
         graph = Graph(origin,links,constraints)
         ldu = SparseLDU(graph,links,constraints,ldict,cdict)
-
-        # fillins,fdict = createfillins(graph,dict,origin,nodes)
 
         storage = Storage{T}(steps,Nl)
 
@@ -86,89 +76,19 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T}) where 
     summary(io, R); println(io, " with ", length(R.nodesrange[1]), " links and ", length(R.nodesrange[2]), " constraints")
 end
 
-# function setentries!(robot::Robot{T,N,No}) where {T,N,No}
-#     ldu = robot.ldu
-#     ldict = robot.ldict
-#     cdict = robot.cdict
-#
-#     links = robot.links
-#     constraints = robot.constraints
-#     dt = robot.dt
-#     g = robot.g
-#
-#     graph = robot.graph
-#     dfsgraph = graph.dfsgraph
-#     fillins = graph.fillins
-#     dict = graph.dict
-#     rdict = graph.rdict
-#
-#     diagonals = ldu.diagonals
-#     offdiagonals = ldu.offdiagonals
-#
-#     for link in links
-#         id = link.id
-#         entry = getentry(ldu,id)
-#         setD!(entry,link,dt)
-#         # setSol!(entry,link,dt,g,No)
-#         # for (ind,ischild) in enumerate(dfsgraph[dict[id]])
-#         #     if ischild
-#         #         childid = rdict[ind]
-#         #         childind = cdict[childid]
-#         #         setJ!(getentry(ldu,(id,childid)),link,constraints[childind],dt,No)
-#         #     end
-#         # end
-#         # for (ind,ischild) in enumerate(fillins[dict[id]])
-#         #     if ischild
-#         #         childid = rdict[ind]
-#         #         setJ!(getentry(ldu,(id,childid)))
-#         #     end
-#         # end
-#     end
-#
-#     # for constraint in constraints
-#     #     id = constraint.id
-#     #     entry = getentry(ldu,id)
-#     #     setD!(entry,constraint)
-#     #     setSol!(entry,constraint,dt)
-#     #     for (ind,ischild) in enumerate(dfsgraph[dict[id]])
-#     #         if ischild
-#     #             childid = rdict[ind]
-#     #             childind = ldict[childid]
-#     #             setJ!(getentry(ldu,(id,childid)),constraint,links[childind],dt,No)
-#     #         end
-#     #     end
-#     #     for (ind,ischild) in enumerate(fillins[dict[id]])
-#     #         if ischild
-#     #             childid = rdict[ind]
-#     #             setJ!(getentry(ldu,(id,childid)))
-#     #         end
-#     #     end
-#     # end
-# end
-
 function setentries!(robot::Robot)
+    ldu = robot.ldu
     graph = robot.graph
-    list = graph.dfslist
-    pattern = graph.pattern
-    nodes = robot.nodes
-    diagonals = robot.ldu.diagonals
-    dict = robot.dict
-    ddict = robot.ldu.ddict
-    gdict = graph.dict
-    fdict = robot.ldu.odict
-    fillins = robot.ldu.offdiagonals
 
-    for id in list
-        node = nodes[dict[id]]
-        diagonal = diagonals[ddict[id]]
+    for id in graph.dfslist
+        node = getnode(robot,id)
+        diagonal = getentry(ldu,id)
 
-        for cid in list # in correct order
-            cid==id && break
-            if pattern[gdict[id]][gdict[cid]] # is actually a (loop) child
-                cfillin = fillins[fdict[(id,cid)]]#getfillin(robot,cid,id)
-                childnode = nodes[dict[cid]]#getnode(robot,cid)
-                setJ!(cfillin,node,childnode)
-            end
+        for cid in successors(graph,id)
+            cid == -1 && break
+            offdiagonal = getentry(ldu,(id,cid))
+            cnode =  getnode(robot,cid)
+            setJ!(offdiagonal,node,cnode)
         end
 
         setD!(diagonal,node)
@@ -178,41 +98,27 @@ end
 
 function factor!(robot::Robot)
     graph = robot.graph
-    list = graph.dfslist
-    pattern = graph.pattern
-    diagonals = robot.ldu.diagonals
-    ddict = robot.ldu.ddict
-    gdict = graph.dict
-    grdict = graph.rdict
-    fdict = robot.ldu.odict
-    fillins = robot.ldu.offdiagonals
+    ldu = robot.ldu
 
-    for id in list
-        diagonal = diagonals[ddict[id]]#getnode(robot,id)
+    for id in graph.dfslist
+        diagonal = getentry(ldu,id)
 
-        for cid in list # in correct order
-            cid==id && break
-            if pattern[gdict[id]][gdict[cid]] # is actually a (loop) child
-                cfillin = fillins[fdict[(id,cid)]]#getfillin(robot,cid,id)
-                childdiag = diagonals[ddict[cid]]#getnode(robot,cid)
-                for gcid in list # in correct order
-                    gcid==cid && break
-                    if pattern[gdict[id]][gdict[gcid]] && pattern[gdict[cid]][gdict[gcid]] # is actually a (loop child)
-                        gcfillin = fillins[fdict[(id,gcid)]]#getfillin(robot,gcid,id)
-                        cgcfillin = fillins[fdict[(cid,gcid)]]#getfillin(robot,gcid,cid)
-                        grandchilddiag = diagonals[ddict[gcid]]#getnode(robot,gcid)
-                        updateJ1!(cfillin,grandchilddiag,gcfillin,cgcfillin)
-                    end
+        for cid in successors(graph,id)
+            cid == -1 && break
+            offdiagonal = getentry(ldu,(id,cid))
+            cdiagonal =  getentry(ldu,cid)
+            for gcid in successors(graph,cid)
+                gcid == -1 && break
+                if hassuccessor(graph,id,gcid) # is actually a loop child
+                    updateJ1!(offdiagonal,getentry(ldu,gcid),getentry(ldu,(id,gcid)),getentry(ldu,(cid,gcid)))
                 end
-                updateJ2!(cfillin,childdiag)
             end
+            updateJ2!(offdiagonal,cdiagonal)
         end
 
-        for (cind,ischild) in enumerate(pattern[gdict[id]])
-            if ischild
-                cid = grdict[cind]
-                updateD!(diagonal,diagonals[ddict[cid]],fillins[fdict[(id,cid)]])
-            end
+        for cid in successors(graph,id)
+            cid == -1 && break
+            updateD!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
         end
         invertD!(diagonal)
     end
@@ -220,40 +126,32 @@ end
 
 function solve!(robot::Robot)
     graph = robot.graph
-    list = graph.dfslist
-    nodes = robot.nodes
-    pattern = graph.pattern
-    diagonals = robot.ldu.diagonals
-    ddict = robot.ldu.ddict
-    fdict = robot.ldu.odict
-    gdict = graph.dict
-    grdict = graph.rdict
-    fillins = robot.ldu.offdiagonals
+    ldu = robot.ldu
 
-    for id in list
-        diagonal = diagonals[ddict[id]]#getnode(robot,id)
+    dfslist = graph.dfslist
 
-        for cid in list # in correct order (shouldnt matter here)
-            cid==id && break
-            if pattern[gdict[id]][gdict[cid]] # is actually a (loop) child
-                LSol!(diagonal,diagonals[ddict[cid]],fillins[fdict[(id,cid)]])
-            end
+    for id in dfslist
+        diagonal = getentry(ldu,id)
+
+        for cid in successors(graph,id) # in correct order (shouldnt matter here)
+            cid == -1 && break
+            LSol!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
         end
     end
 
-    for id in reverse(list)
-        diagonal = diagonals[ddict[id]]#getnode(robot,id)
+    for id in reverse(dfslist)
+        diagonal = getentry(ldu,id)
 
         DSol!(diagonal)
 
-        for pid in reverse(list)
-            pid==id && break
-            if pattern[gdict[pid]][gdict[id]] # is a (loop) parent
-                USol!(diagonal,diagonals[ddict[pid]],fillins[fdict[(pid,id)]])
-            end
+        for pid in predecessors(graph,id)
+            pid == -1 && break
+            USol!(diagonal,getentry(ldu,pid),getentry(ldu,(pid,id)))
         end
     end
 
+    nodes = robot.nodes
+    diagonals = ldu.diagonals
     # (A) For simplified equations
     for indn = robot.nodesrange[2]
         addλ0!(diagonals[indn],nodes[indn])
@@ -261,14 +159,7 @@ function solve!(robot::Robot)
     # end (A)
 end
 
-# @inline function getnode(robot::Robot,id::Int64)
-#     robot.nodes[robot.idlist[id]]
-# end
-#
-# @inline function getfillin(robot::Robot,cid::Int64,pid::Int64)
-#     fid = robot.graph.pattern[pid][cid]
-#     robot.fillins[robot.idlist[fid]]
-# end
+@inline getnode(robot::Robot,id::Int64) = robot.nodes[robot.dict[id]]
 
 
 function normf(robot::Robot{T}) where T
