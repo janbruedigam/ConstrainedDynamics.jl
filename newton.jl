@@ -1,11 +1,16 @@
 function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter=20, warning::Bool=false) where {T,Nl}
     n = 1
     nodes = robot.nodes
+    diagonals = robot.diagonals
     normf0 = normf(robot)
     for outer n=1:newtonIter
+        setentries!(robot)
         factor!(robot)
         solve!(robot) # x̂1 for each link and constraint
-        foreach(update!,nodes) # x1 = x0 - x̂1 for each link and constraint
+        # foreach(update!,nodes) # x1 = x0 - x̂1 for each link and constraint
+        for (i,node) in enumerate(nodes)
+            update!(node,diagonals[i])
+        end
 
         normf1 = normf(robot)
         normf1>normf0 ? lineSearch!(robot,normf0;iter=lineIter, warning=warning) : nothing
@@ -29,11 +34,20 @@ end
 function lineSearch!(robot,normf0;iter=20, warning::Bool=false)
     α = 1
     nodes = robot.nodes
-    foreach(lineStep!,nodes,α) # x1 = x0 + 1/(2^α)*d
+    diagonals = robot.diagonals
+    for (i,node) in enumerate(nodes)
+        lineStep!(node,diagonals[i],α)# x1 = x0 + 1/(2^α)*d
+    end
 
     for n=1:iter
         α += 1
-        normf(robot) >= normf0 ? foreach(lineStep!,nodes,α) : (return nothing)
+        if normf(robot) >= normf0
+            for (i,node) in enumerate(nodes)
+                lineStep!(node,diagonals[i],α)# x1 = x0 + 1/(2^α)*d
+            end
+        else
+            return nothing
+        end
     end
 
     if warning
@@ -41,4 +55,4 @@ function lineSearch!(robot,normf0;iter=20, warning::Bool=false)
     end
 end
 
-@inline lineStep!(node,α) = (d = node.data; d.s1 = d.s0 - 1/(2^α)*d.ŝ; nothing)
+@inline lineStep!(node,diagonal,α) = (d = node.data; d.s1 = d.s0 - 1/(2^α)*diagonal.ŝ; nothing)

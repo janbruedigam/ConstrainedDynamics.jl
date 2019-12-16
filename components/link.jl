@@ -1,6 +1,6 @@
 # abstract type AbstractLink{T} end
 
-mutable struct Link{T,N,N²} <: Node{T,N}
+mutable struct Link{T,N} <: Node{T,N}
     id::Int64
 
     #TODO remove
@@ -19,7 +19,7 @@ mutable struct Link{T,N,N²} <: Node{T,N}
 
     p::Vector{SVector{3,T}}
 
-    data::NodeData{T,N,N²}
+    data::NodeData{T,N}
 
     function Link{N}(m::T,J::Array{T,2},p::Vector{<:AbstractVector{T}}) where {T,N}
         J = convert(SMatrix{3,3,T,9},J)
@@ -38,7 +38,7 @@ mutable struct Link{T,N,N²} <: Node{T,N}
         dt = 0
         No = 0
 
-        new{T,N,N^2}(getGlobalID(),g,dt,No,m,J,x,q,F,τ,p,data)
+        new{T,N}(getGlobalID(),g,dt,No,m,J,x,q,F,τ,p,data)
     end
 
     Link(p::Vector{<:AbstractVector{T}}) where T = Link{0}(zero(T),zeros(T,3,3),p)

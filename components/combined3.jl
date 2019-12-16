@@ -1,5 +1,5 @@
 #TODO vectorize constraints and links
-struct Combined3{T,Nc,Nc²,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,Nc,Nc²,Nl}
+struct Combined3{T,Nc,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,Nc,Nl}
     id::Int64
     linkids::SVector{Nl,Int64}
 
@@ -9,7 +9,7 @@ struct Combined3{T,Nc,Nc²,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,Nc,Nc²,Nl}
     link1::L1
     link2::L2
     link3::L3
-    data::NodeData{T,Nc,Nc²}
+    data::NodeData{T,Nc}
 
     function Combined3(c1, c2, c3)
         constr1,l1,l2 = c1
@@ -27,7 +27,7 @@ struct Combined3{T,Nc,Nc²,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,Nc,Nc²,Nl}
 
         data = NodeData{T,Nc}()
 
-        new{T,Nc,Nc^2,Nl,typeof(constr[1]),typeof(constr[2]),typeof(constr[3]),typeof(links[1]),typeof(links[2]),typeof(links[3])}(id,linkids,constr...,links...,data)
+        new{T,Nc,Nl,typeof(constr[1]),typeof(constr[2]),typeof(constr[3]),typeof(links[1]),typeof(links[2]),typeof(links[3])}(id,linkids,constr...,links...,data)
     end
 end
 
