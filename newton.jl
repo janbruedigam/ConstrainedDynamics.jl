@@ -1,7 +1,7 @@
 function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter=20, warning::Bool=false) where {T,Nl}
     n = 1
     nodes = robot.nodes
-    diagonals = robot.diagonals
+    diagonals = robot.ldu.diagonals
     normf0 = normf(robot)
     for outer n=1:newtonIter
         setentries!(robot)
@@ -34,7 +34,7 @@ end
 function lineSearch!(robot,normf0;iter=20, warning::Bool=false)
     α = 1
     nodes = robot.nodes
-    diagonals = robot.diagonals
+    diagonals = robot.ldu.diagonals
     for (i,node) in enumerate(nodes)
         lineStep!(node,diagonals[i],α)# x1 = x0 + 1/(2^α)*d
     end

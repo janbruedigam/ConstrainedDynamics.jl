@@ -26,44 +26,44 @@ mutable struct OffDiagonalEntry{T,N1,N2,N1N2} <: Entry{T}
     end
 end
 
-# struct SparseLDU{T}
-#     diagonals::Vector{DiagonalEntry{T}}
-#     offdiagonals::Vector{OffDiagonalEntry{T}}
-#
-#     ddict::Dict{Int64,Int64}
-#     odict::Dict{Tuple{Int64,Int64},Int64}
-#
-#     function SparseLDU(graph::Graph{N},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}},ldict::Dict,cdict::Dict) where {T,N}
-#         diagonals = Vector{DiagonalEntry{T}}(undef,0)
-#         ddict = Dict{Int64,Int64}()
-#         for (ind,link) in enumerate(links)
-#             push!(diagonals,DiagonalEntry{T,6}())
-#             ddict[link.id] = length(diagonals)
-#         end
-#         Nl = length(links)
-#         for (ind,constraint) in enumerate(constraints)
-#             push!(diagonals,DiagonalEntry{T,constraint.Nc}())
-#             ddict[constraint.id] = length(diagonals)
-#         end
-#
-#         offdiagonals = Vector{OffDiagonalEntry{T}}(undef,0)
-#         odict = Dict{Tuple{Int64,Int64},Int64}()
-#         for (parentid,i) in pairs(graph.dict)
-#             for (childid,j) in pairs(graph.dict)
-#                 if graph.pattern[i][j]
-#                     haskey(ldict,parentid) ? n1=links[ldict[parentid]] : n1=constraints[cdict[parentid]]
-#                     haskey(ldict,childid) ? n2=links[ldict[childid]] : n2=constraints[cdict[childid]]
-#
-#                     typeof(n1)<:Link ? N1=6 : N1=n1.Nc
-#                     typeof(n2)<:Link ? N2=6 : N2=n2.Nc
-#                     push!(offdiagonals,OffDiagonalEntry{T,N1,N2}())
-#                     odict[(parentid,childid)] = length(offdiagonals)
-#                 end
-#             end
-#         end
-#         new{T}(diagonals,offdiagonals,ddict,odict)
-#     end
-# end
+struct SparseLDU{T}
+    diagonals::Vector{DiagonalEntry{T}}
+    offdiagonals::Vector{OffDiagonalEntry{T}}
+
+    ddict::Dict{Int64,Int64}
+    odict::Dict{Tuple{Int64,Int64},Int64}
+
+    function SparseLDU(graph::Graph{N},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}},ldict::Dict,cdict::Dict) where {T,N}
+        diagonals = Vector{DiagonalEntry{T}}(undef,0)
+        ddict = Dict{Int64,Int64}()
+        for (ind,link) in enumerate(links)
+            push!(diagonals,DiagonalEntry{T,6}())
+            ddict[link.id] = length(diagonals)
+        end
+        Nl = length(links)
+        for (ind,constraint) in enumerate(constraints)
+            push!(diagonals,DiagonalEntry{T,getNc(constraint)}())
+            ddict[constraint.id] = length(diagonals)
+        end
+
+        offdiagonals = Vector{OffDiagonalEntry{T}}(undef,0)
+        odict = Dict{Tuple{Int64,Int64},Int64}()
+        for (parentid,i) in pairs(graph.dict)
+            for (childid,j) in pairs(graph.dict)
+                if graph.pattern[i][j]
+                    haskey(ldict,parentid) ? n1=links[ldict[parentid]] : n1=constraints[cdict[parentid]]
+                    haskey(ldict,childid) ? n2=links[ldict[childid]] : n2=constraints[cdict[childid]]
+
+                    N1 = length(n1)
+                    N2 = length(n2)
+                    push!(offdiagonals,OffDiagonalEntry{T,N2,N1}())
+                    odict[(parentid,childid)] = length(offdiagonals)
+                end
+            end
+        end
+        new{T}(diagonals,offdiagonals,ddict,odict)
+    end
+end
 
 # @inline getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[ldu.ddict[id]]
 # @inline getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ldu.odict[ids]]

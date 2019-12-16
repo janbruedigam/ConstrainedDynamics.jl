@@ -8,14 +8,10 @@ mutable struct Robot{T,N,No}
     # links::Vector{Link{T}}
     # constraints::Vector{Constraint{T}}
     nodes::Vector{Node{T}}
-    diagonals::Vector{DiagonalEntry{T}}
-    fillins::Vector{OffDiagonalEntry{T}}
     nodesrange::Vector{UnitRange{Int64}}
     # ldict::Dict{Int64,Int64}
     # cdict::Dict{Int64,Int64}
     dict::Dict{Int64,Int64}
-    ddict::Dict{Int64,Int64}
-    fdict::Dict{Tuple{Int64,Int64},Int64}
 
     #???
     normf::T
@@ -23,7 +19,7 @@ mutable struct Robot{T,N,No}
 
     graph::Graph{N}
 
-    # ldu::SparseLDU{T}
+    ldu::SparseLDU{T}
     storage::Storage{T}
 
     #TODO no constraints input
@@ -33,7 +29,7 @@ mutable struct Robot{T,N,No}
         N = Nl+Nc
         steps = Int(ceil(tend/dt))
 
-        # ldict = Dict{Int64,Int64}()
+        ldict = Dict{Int64,Int64}()
 
         origin.g = g
         origin.dt = dt
@@ -51,23 +47,23 @@ mutable struct Robot{T,N,No}
             push!(link.F, [link.F[1] for i=1:No-1]...)
             push!(link.τ, [link.τ[1] for i=1:No-1]...)
 
-            # ldict[link.id] = ind
+            ldict[link.id] = ind
         end
 
-        # cdict = Dict{Int64,Int64}()
-        # for (ind,constraint) in enumerate(constraints)
-        #     cdict[constraint.id] = ind
-        # end
+        cdict = Dict{Int64,Int64}()
+        for (ind,constraint) in enumerate(constraints)
+            cdict[constraint.id] = ind
+        end
 
         nodes = [links;constraints]
         nodesrange = [[1:Nl];[Nl+1:Nl+Nc]]
-        diagonals = Vector{DiagonalEntry{T}}(undef,0)
+        # diagonals = Vector{DiagonalEntry{T}}(undef,0)
         dict = Dict{Int64,Int64}()
-        ddict = Dict{Int64,Int64}()
+        # ddict = Dict{Int64,Int64}()
         for (ind,node) in enumerate(nodes)
             dict[node.id] = ind
-            ddict[node.id] = ind
-            push!(diagonals,DiagonalEntry{T,length(node)}())
+            # ddict[node.id] = ind
+            # push!(diagonals,DiagonalEntry{T,length(node)}())
         end
 
         resetGlobalID()
@@ -76,13 +72,13 @@ mutable struct Robot{T,N,No}
         normΔs = zero(T)
 
         graph = Graph(origin,links,constraints)
-        # ldu = SparseLDU(graph,links,constraints,ldict,cdict)
+        ldu = SparseLDU(graph,links,constraints,ldict,cdict)
 
-        fillins,fdict = createfillins(graph,dict,origin,nodes)
+        # fillins,fdict = createfillins(graph,dict,origin,nodes)
 
         storage = Storage{T}(steps,Nl)
 
-        new{T,N,No}(tend,Base.OneTo(steps),dt,g,origin,nodes,diagonals,fillins,nodesrange,dict,ddict,fdict,normf,normΔs,graph,storage)
+        new{T,N,No}(tend,Base.OneTo(steps),dt,g,origin,nodes,nodesrange,dict,normf,normΔs,graph,ldu,storage)
     end
 end
 
@@ -150,39 +146,17 @@ end
 #     # end
 # end
 
-function createfillins(graph::Graph,dict,origin::Link{T},nodes::Vector) where T
-    rdict = graph.rdict
-    fdict = Dict{Tuple{Int64,Int64},Int64}()
-    fillins = Vector{OffDiagonalEntry}(undef,0)
-
-    indcounter = 0
-
-    for (parentind,row) in enumerate(graph.pattern)
-        for (childind,ischild) in enumerate(row)
-            if ischild
-                parentnode = nodes[dict[rdict[parentind]]]
-                childnode = nodes[dict[rdict[childind]]]
-
-                fdict[(rdict[parentind],rdict[childind])] = indcounter+=1
-
-                push!(fillins,OffDiagonalEntry{T,length(childnode),length(parentnode)}())
-            end
-        end
-    end
-    return fillins,fdict
-end
-
 function setentries!(robot::Robot)
     graph = robot.graph
     list = graph.dfslist
     pattern = graph.pattern
     nodes = robot.nodes
-    diagonals = robot.diagonals
+    diagonals = robot.ldu.diagonals
     dict = robot.dict
-    ddict = robot.ddict
+    ddict = robot.ldu.ddict
     gdict = graph.dict
-    fdict = robot.fdict
-    fillins = robot.fillins
+    fdict = robot.ldu.odict
+    fillins = robot.ldu.offdiagonals
 
     for id in list
         node = nodes[dict[id]]
@@ -206,12 +180,12 @@ function factor!(robot::Robot)
     graph = robot.graph
     list = graph.dfslist
     pattern = graph.pattern
-    diagonals = robot.diagonals
-    ddict = robot.ddict
+    diagonals = robot.ldu.diagonals
+    ddict = robot.ldu.ddict
     gdict = graph.dict
     grdict = graph.rdict
-    fdict = robot.fdict
-    fillins = robot.fillins
+    fdict = robot.ldu.odict
+    fillins = robot.ldu.offdiagonals
 
     for id in list
         diagonal = diagonals[ddict[id]]#getnode(robot,id)
@@ -249,12 +223,12 @@ function solve!(robot::Robot)
     list = graph.dfslist
     nodes = robot.nodes
     pattern = graph.pattern
-    diagonals = robot.diagonals
-    ddict = robot.ddict
-    fdict = robot.fdict
+    diagonals = robot.ldu.diagonals
+    ddict = robot.ldu.ddict
+    fdict = robot.ldu.odict
     gdict = graph.dict
     grdict = graph.rdict
-    fillins = robot.fillins
+    fillins = robot.ldu.offdiagonals
 
     for id in list
         diagonal = diagonals[ddict[id]]#getnode(robot,id)
