@@ -3,56 +3,56 @@
     dynT,dynR = ∂dyn∂vel(link)
     Z = @SMatrix zeros(T,3,3)
 
-    link.data.D = [[dynT Z];[Z dynR]] + SMatrix{6,6,Float64,36}(μ*I)
+    link.data.D = [[dynT Z];[Z dynR]] #+ SMatrix{6,6,Float64,36}(μ*I)
     return nothing
 end
 
 @inline setD!(C::Constraint{T,Nc}) where {T,Nc} = (C.data.D = @SMatrix zeros(T,Nc,Nc); nothing)
-@inline function updateD!(node::Node,child::Node,fillin::FillIn)
-    node.data.D -= fillin.data.JL*child.data.D*fillin.data.JU
+@inline function updateD!(node::Node,child::Node,fillin::OffDiagonalEntry)
+    node.data.D -= fillin.JL*child.data.D*fillin.JU
     return nothing
 end
 @inline invertD!(node) = (d = node.data; d.Dinv = inv(d.D); nothing)
 
 # TODO pass in the two connected links
-@inline function setJ!(L::Link,C::Constraint,F::FillIn)
-    data = F.data
+@inline function setJ!(L::Link,C::Constraint,F::OffDiagonalEntry)
+    # data = F.data
 
-    data.JL = ∂g∂vel(C,L)
-    data.JU = -∂g∂pos(C,L)'
-
-    return nothing
-end
-
-@inline function setJ!(C::Constraint,L::Link,F::FillIn)
-    data = F.data
-
-    data.JL = -∂g∂pos(C,L)'
-    data.JU = ∂g∂vel(C,L)
+    F.JL = ∂g∂vel(C,L)
+    F.JU = -∂g∂pos(C,L)'
 
     return nothing
 end
 
-@inline function setJ!(C1::Constraint,C2::Constraint,F::FillIn{T,N1,N2}) where {T,N1,N2}
-    data = F.data
+@inline function setJ!(C::Constraint,L::Link,F::OffDiagonalEntry)
+    # data = F.data
 
-    data.JL = @SMatrix zeros(T,N2,N1)
-    data.JU = @SMatrix zeros(T,N1,N2)
+    F.JL = -∂g∂pos(C,L)'
+    F.JU = ∂g∂vel(C,L)
 
     return nothing
 end
 
-@inline function updateJ1!(node::Node,gcfillin::FillIn,cgcfillin::FillIn,F::FillIn)
-    d = F.data
-    d.JL -= gcfillin.data.JL*node.data.D*cgcfillin.data.JU
-    d.JU -= cgcfillin.data.JL*node.data.D*gcfillin.data.JU
+@inline function setJ!(C1::Constraint,C2::Constraint,F::OffDiagonalEntry{T,N1,N2}) where {T,N1,N2}
+    # data = F.data
+
+    F.JL = @SMatrix zeros(T,N2,N1)
+    F.JU = @SMatrix zeros(T,N1,N2)
+
     return nothing
 end
 
-@inline function updateJ2!(node::Node,F::FillIn)
-    d = F.data
-    d.JL = d.JL*node.data.Dinv
-    d.JU = node.data.Dinv*d.JU
+@inline function updateJ1!(node::Node,gcfillin::OffDiagonalEntry,cgcfillin::OffDiagonalEntry,F::OffDiagonalEntry)
+    # d = F.data
+    F.JL -= gcfillin.JL*node.data.D*cgcfillin.JU
+    F.JU -= cgcfillin.JL*node.data.D*gcfillin.JU
+    return nothing
+end
+
+@inline function updateJ2!(node::Node,F::OffDiagonalEntry)
+    # d = F.data
+    F.JL = F.JL*node.data.Dinv
+    F.JU = node.data.Dinv*F.JU
     return nothing
 end
 
@@ -69,22 +69,23 @@ end
 # @inline addGtλ!(L::Link,C::Constraint) = (L.data.ŝ -= Gtλ(L,C); nothing)
 @inline addλ0!(C::Constraint) = (C.data.ŝ += C.data.s0; nothing)
 
-@inline function LSol!(node::Node,child::Node,fillin::FillIn)
-    node.data.ŝ -= fillin.data.JL*child.data.ŝ
+@inline function LSol!(node::Node,child::Node,fillin::OffDiagonalEntry)
+    node.data.ŝ -= fillin.JL*child.data.ŝ
     return nothing
 end
 @inline DSol!(node) = (d = node.data; d.ŝ = d.Dinv*d.ŝ; nothing)
-@inline function USol!(node::Node,parent::Node,fillin::FillIn)
-    node.data.ŝ -= fillin.data.JU*parent.data.ŝ
+@inline function USol!(node::Node,parent::Node,fillin::OffDiagonalEntry)
+    node.data.ŝ -= fillin.JU*parent.data.ŝ
     return nothing
 end
 
 
 @inline function setNormf!(link::Link,robot::Robot)
     data = link.data
+    graph = robot.graph
     data.f = dynamics(link)
-    for (cid,isconnected) in enumconnected(robot.graph,data.id)
-        isconnected && GtλTof!(getnode(robot,cid),link)
+    for (cind,isconnected) in enumerate(graph.adjacency[graph.dict[link.id]])
+        isconnected && GtλTof!(robot.nodes[robot.dict[graph.rdict[cind]]],link)
     end
     data.normf = data.f'*data.f
     return nothing

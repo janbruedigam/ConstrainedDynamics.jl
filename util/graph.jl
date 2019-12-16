@@ -2,29 +2,39 @@ struct Graph{N}
     adjacency::Vector{SVector{N,Bool}}
     dfsgraph::Vector{SVector{N,Bool}}
     pattern::Vector{SVector{N,Bool}} # includes fillins
+    fillins::Vector{SVector{N,Bool}}
 
     dfslist::SVector{N,Int64}
 
     dict::Dict{Int64,Int64}
+    rdict::Dict{Int64,Int64}
 
-    function Graph(origin::Origin,links::Vector{<:Link},constraints::Vector{<:Constraint})
+    function Graph(origin::Link,links::Vector{<:Link},constraints::Vector{<:Constraint})
         adjacency, dict = adjacencyMatrix(constraints,links)
         dfsgraph, dfslist, loops = dfs(adjacency,dict,origin.id)
         pat = pattern(dfsgraph,dict,loops)
+        fillins = convert(Matrix{Bool},dfsgraph .⊻ pat) # xor so only fillins remain
 
         adjacency = deleteat(adjacency,dict[origin.id])
         dfsgraph = deleteat(dfsgraph,dict[origin.id])
         pat = deleteat(pat,dict[origin.id])
-        dfslist = StaticArrays.deleteat(dfslist,dict[origin.id])
+        fillins = deleteat(fillins,dict[origin.id])
+        dfslist = StaticArrays.deleteat(dfslist,length(dfslist))
+
+        for (id,ind) in dict
+            ind>dict[origin.id] && (dict[id] = ind-1)
+        end
         pop!(dict,origin.id)
+        rdict = Dict(ind => id for (id, ind) in dict)
 
         N = length(dict)
         #TODO make properly to convert
         adjacency = convert(SVector{N,SVector{N,Bool}},adjacency)
         dfsgraph = convert(SVector{N,SVector{N,Bool}},dfsgraph)
         pat = convert(SVector{N,SVector{N,Bool}},pat)
+        fillins = convert(SVector{N,SVector{N,Bool}},fillins)
 
-        new{N}(adjacency,dfsgraph,pat,dfslist,dict)
+        new{N}(adjacency,dfsgraph,pat,fillins,dfslist,dict,rdict)
     end
 end
 
@@ -74,7 +84,7 @@ end
 
 function dfs!(A::Matrix,Adfs::Matrix,dict::Dict,list::Vector,visited::Vector,loops::Vector{Vector{Int64}},index::Int64,currentid::Int64,parentid::Int64) where {N,T}
     i = dict[currentid]
-    for (childid,j) in pairs(dict)
+    for (childid,j) in dict
         if A[i,j] && parentid != childid # connection from i to j in adjacency && not a direct connection back to the parent
             if visited[j]
                 push!(loops,[childid,currentid]) # childid is actually a predecessor of currentid since it's a loop
@@ -110,7 +120,7 @@ end
 
 function parent(dfsgraph::Matrix,dict::Dict,childid::Int64) where {N,T}
     j = dict[childid]
-    for (parentid,i) in pairs(dict)
+    for (parentid,i) in dict
         dfsgraph[i,j] && (return parentid)
     end
     return -1

@@ -7,7 +7,6 @@ getGlobalID() = (global CURRENTID+=1;return CURRENTID-1)
 resetGlobalID() = (global CURRENTID=1; nothing)
 
 mutable struct NodeData{T,N,N²}
-    id::Int64
     s0::SVector{N,T}
     s1::SVector{N,T}
     ŝ::SVector{N,T}
@@ -20,7 +19,6 @@ mutable struct NodeData{T,N,N²}
     function NodeData{T,N}() where {T,N}
         N² = N^2
 
-        id = getGlobalID()
         s0 = @SVector zeros(T,N)
         s1 = @SVector zeros(T,N)
         ŝ = @SVector zeros(T,N)
@@ -29,7 +27,7 @@ mutable struct NodeData{T,N,N²}
         normΔs = zero(T)
         D = @SMatrix zeros(T,N,N)
         Dinv = @SMatrix zeros(T,N,N)
-        new{T,N,N²}(id,s0,s1,ŝ,f,normf,normΔs,D,Dinv)
+        new{T,N,N²}(s0,s1,ŝ,f,normf,normΔs,D,Dinv)
     end
 end
 

@@ -1,7 +1,7 @@
 struct SocketYZ{T,Nc} <: Joint{T,Nc}
     pids::SVector{2,Int64}
 
-    function SocketYZ(link1::AbstractLink{T},link2::AbstractLink{T},pid1::Int64,pid2::Int64) where T
+    function SocketYZ(link1::Link{T},link2::Link{T},pid1::Int64,pid2::Int64) where T
         Nc = 2
         pids = SVector(pid1,pid2)
 

@@ -39,7 +39,7 @@ export
 
 include(joinpath("util", "quaternion.jl"))
 include(joinpath("components", "node.jl"))
-include(joinpath("components", "fillin.jl"))
+# include(joinpath("components", "fillin.jl"))
 include(joinpath("components", "link.jl"))
 
 include(joinpath("joints", "joint.jl"))
@@ -57,8 +57,9 @@ include(joinpath("util", "graph.jl"))
 include(joinpath("util", "shapes.jl"))
 include(joinpath("util", "storage.jl"))
 
+include("sparseldu2.jl")
 include("robot.jl")
-# include("sparseldu.jl")
+include("sparseldu.jl")
 
 include("newton.jl")
 

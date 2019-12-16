@@ -1,7 +1,7 @@
 struct Socket{T,Nc} <: Joint{T,Nc}
     pids::SVector{2,Int64}
 
-    function Socket(link1::AbstractLink{T},link2::AbstractLink{T},pid1::Int64,pid2::Int64) where T
+    function Socket(link1::Link{T},link2::Link{T},pid1::Int64,pid2::Int64) where T
         Nc = 3
         pids = SVector(pid1,pid2)
 
