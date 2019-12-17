@@ -4,17 +4,12 @@ using LinearAlgebra
 using StaticArrays
 using Rotations
 using Plots
-using Base.Threads
-using LightXML
-
 
 export
     Quaternion,
-    Node,
-    Link,
     Origin,
+    Link,
     Constraint,
-    Joint,
     Robot,
 
     Axis,
@@ -22,9 +17,6 @@ export
     SocketYZ,
     # FixedOrientation,
     # FixedPosition,
-    Combined,
-    Combined2,
-    Combined3,
 
     box,
     initialPosition,

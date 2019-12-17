@@ -4,11 +4,11 @@ struct Graph{N}
     pattern::Vector{SVector{N,Bool}} # includes fillins
     fillins::Vector{SVector{N,Bool}}
 
-    successors::Vector{SVector{N,Int64}}
+    directchildren::Vector{SVector}
+    loopchildren::Vector{SVector}
+    successors::Vector{SVector{N,Int64}} # contains direct and loop children
     predecessors::Vector{SVector{N,Int64}}
     connections::Vector{SVector{N,Int64}}
-    # directchildren::Vector{SVector}
-    # loopchildren::Vector{SVector}
 
     dfslist::SVector{N,Int64}
 
@@ -40,11 +40,13 @@ struct Graph{N}
         pat = convert(Vector{SVector{N,Bool}},pat)
         fillins = convert(Vector{SVector{N,Bool}},fillins)
 
+        dirs = directchildren(dfslist,dfsgraph,dict)
+        loos = loopchildren(dfslist,fillins,dict)
         sucs = successors(dfslist,pat,dict)
         preds = predecessors(dfslist,pat,dict)
         cons = connections(dfslist,adjacency,dict)
 
-        new{N}(adjacency,dfsgraph,pat,fillins,sucs,preds,cons,dfslist,dict,rdict)
+        new{N}(adjacency,dfsgraph,pat,fillins,dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
     end
 end
 
@@ -152,6 +154,38 @@ function successors(dfslist,pattern,dict::Dict)
     return convert.(SVector{N,Int64},sucs)
 end
 
+# this is done in order!
+function directchildren(dfslist,dfsgraph,dict::Dict)
+    N = length(dfslist)
+    dirs = [Vector{Int64}(undef,0) for i=1:N]
+    for i=1:N
+        for cid in dfslist
+            dfsgraph[i][dict[cid]] && push!(dirs[i],cid)
+        end
+        while length(dirs[i])<N
+            push!(dirs[i],-1)
+        end
+    end
+
+    return convert.(SVector{N,Int64},dirs)
+end
+
+# this is done in order!
+function loopchildren(dfslist,fillins,dict::Dict)
+    N = length(dfslist)
+    loos = [Vector{Int64}(undef,0) for i=1:N]
+    for i=1:N
+        for cid in dfslist
+            fillins[i][dict[cid]] && push!(loos[i],cid)
+        end
+        while length(loos[i])<N
+            push!(loos[i],-1)
+        end
+    end
+
+    return convert.(SVector{N,Int64},loos)
+end
+
 # this is done in reverse order (but this is not really important for predecessors)
 function predecessors(dfslist,pattern,dict::Dict)
     N = length(dfslist)
@@ -184,6 +218,8 @@ function connections(dfslist,adjacency,dict::Dict)
     return convert.(SVector{N,Int64},cons)
 end
 
+directchildren(graph,id::Int64) = graph.directchildren[graph.dict[id]]
+loopchildren(graph,id::Int64) = graph.loopchildren[graph.dict[id]]
 successors(graph,id::Int64) = graph.successors[graph.dict[id]]
 predecessors(graph,id::Int64) = graph.predecessors[graph.dict[id]]
 connections(graph,id::Int64) = graph.connections[graph.dict[id]]

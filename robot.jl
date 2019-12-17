@@ -5,13 +5,10 @@ mutable struct Robot{T,N,No}
     g::T
 
     origin::Link{T,0}
-    nodes::Vector{Node{T}}
-    # links::Vector{Link{T}}
-    # constraints::Vector{Constraint{T}}
-    nodesrange::Vector{UnitRange{Int64}}
-    dict::Dict{Int64,Int64}
-    # ldict::Dict{Int64,Int64}
-    # cdict::Dict{Int64,Int64}
+    links::Vector{Link{T}}
+    constraints::Vector{Constraint{T}}
+    ldict::Dict{Int64,Int64}
+    cdict::Dict{Int64,Int64}
 
     #???
     normf::T
@@ -55,13 +52,6 @@ mutable struct Robot{T,N,No}
             cdict[constraint.id] = ind
         end
 
-        nodes = [links;constraints]
-        nodesrange = [[1:Nl];[Nl+1:Nl+Nc]]
-        dict = Dict{Int64,Int64}()
-        for (ind,node) in enumerate(nodes)
-            dict[node.id] = ind
-        end
-
         resetGlobalID()
 
         normf = zero(T)
@@ -72,84 +62,36 @@ mutable struct Robot{T,N,No}
 
         storage = Storage{T}(steps,Nl)
 
-        new{T,N,No}(tend,Base.OneTo(steps),dt,g,origin,nodes,nodesrange,dict,normf,normΔs,graph,ldu,storage)
+        new{T,N,No}(tend,Base.OneTo(steps),dt,g,origin,links,constraints,ldict,cdict,normf,normΔs,graph,ldu,storage)
     end
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T}) where {T}
-    summary(io, R); println(io, " with ", length(R.nodesrange[1]), " links and ", length(R.nodesrange[2]), " constraints")
+    summary(io, R); println(io, " with ", length(R.links[1]), " links and ", length(R.constraints[2]), " constraints")
 end
 
 function setentries!(robot::Robot)
-    ldu = robot.ldu
-    graph = robot.graph
-
-    for id in graph.dfslist
-        node = getnode(robot,id)
-        diagonal = getentry(ldu,id)
-
-        for cid in successors(graph,id)
-            cid == -1 && break
-            offdiagonal = getentry(ldu,(id,cid))
-            cnode =  getnode(robot,cid)
-            setJ!(offdiagonal,node,cnode)
-        end
-
-        setD!(diagonal,node)
-        setSol!(diagonal,node)
-    end
+    setentries!(robot,robot.links)
+    setentries!(robot,robot.constraints)
 end
-
-# function setentries!(robot::Robot)
-#     ldu = robot.ldu
-#     graph = robot.graph
-#
-#     for node in robot.links
-#         id = node.id
-#         diagonal = getentry(ldu,id)
-#
-#         for cid in successors(graph,id)
-#             cid == -1 && break
-#             offdiagonal = getentry(ldu,(id,cid))
-#             cnode =  getnode(robot,cid)
-#             setJ!(offdiagonal,node,cnode)
-#         end
-#
-#         setD!(diagonal,node)
-#         setSol!(diagonal,node)
-#     end
-#
-#     for node in robot.constraints
-#         id = node.id
-#         diagonal = getentry(ldu,id)
-#
-#         for cid in successors(graph,id)
-#             cid == -1 && break
-#             offdiagonal = getentry(ldu,(id,cid))
-#             cnode =  getnode(robot,cid)
-#             setJ!(offdiagonal,node,cnode)
-#         end
-#
-#         setD!(diagonal,node)
-#         setSol!(diagonal,node)
-#     end
-# end
 
 function correctλ!(robot::Robot)
-    nodes = robot.nodes
-    diagonals = robot.ldu.diagonals
-    for indn = robot.nodesrange[2]
-        addλ0!(diagonals[indn],nodes[indn])
+    for constraint in robot.constraints
+        addλ0!(getentry(robot.ldu,constraint.id),constraint)
     end
 end
 
-getnode(robot::Robot,id::Int64) = robot.nodes[robot.dict[id]]
+getlink(robot::Robot,id::Int64) = robot.links[robot.ldict[id]]
+getconstraint(robot::Robot,id::Int64) = robot.constraint[robot.cdict[id]]
+getnode(robot::Robot,id::Int64) = haskey(robot.ldict,id) ? getlink(robot,id) : getconstraint(robot,id)
 
 function normf(robot::Robot{T}) where T
     robot.normf = 0
-    nodes = robot.nodes
+    links = robot.links
+    constraints = robot.constraints
 
-    foreach(addNormf!,nodes,robot)
+    foreach(addNormf!,links,robot)
+    foreach(addNormf!,constraints,robot)
     return sqrt(robot.normf)
 end
 
@@ -157,18 +99,20 @@ addNormf!(node,robot::Robot) = (robot.normf += normf(node,robot); nothing)
 
 function normΔs(robot::Robot)
     robot.normΔs = 0
-    nodes = robot.nodes
+    links = robot.links
+    constraints = robot.constraints
 
-    foreach(addNormΔs!,nodes,robot)
+    foreach(addNormΔs!,links,robot)
+    foreach(addNormΔs!,constraints,robot)
     return sqrt(robot.normΔs)
 end
 
 addNormΔs!(node,robot::Robot) = (robot.normΔs += normΔs(node); nothing)
 
 function saveToTraj!(robot::Robot{T,N,No},t) where {T,N,No}
-    for i=robot.nodesrange[1]
-        robot.storage.x[i][t]=robot.nodes[i].x[No]
-        robot.storage.q[i][t]=robot.nodes[i].q[No]
+    for (ind,link) in enumerate(robot.links)
+        robot.storage.x[ind][t]=link.x[No]
+        robot.storage.q[ind][t]=link.q[No]
     end
     return nothing
 end
@@ -183,13 +127,15 @@ end
 
 
 function sim!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
-    nodes = robot.nodes
-    foreach(s0tos1!,nodes)
+    links = robot.links
+    constraints = robot.constraints
+    foreach(s0tos1!,links)
+    foreach(s0tos1!,constraints)
     for i=robot.steps
         newton!(robot,warning=debug)
         save && saveToTraj!(robot,i)
-        for n=robot.nodesrange[1]
-            updatePos!(nodes[n])
+        for link in links
+            updatePos!(link)
         end
 
         disp && (i*robot.dt)%1<robot.dt*(1.0-.1) && display(i*robot.dt)
