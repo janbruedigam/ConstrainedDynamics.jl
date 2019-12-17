@@ -1,5 +1,5 @@
 #TODO vectorize constraints and links
-mutable struct Combined3{T,Nc,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,Nc,Nl}
+mutable struct Combined3{T,N,Nc,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,N,Nc,Nl}
     id::Int64
     linkids::SVector{Nl,Int64}
 
@@ -10,8 +10,8 @@ mutable struct Combined3{T,Nc,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,Nc,Nl}
     link2::L2
     link3::L3
 
-    s0::SVector{Nc,T}
-    s1::SVector{Nc,T}
+    s0::SVector{N,T}
+    s1::SVector{N,T}
 
     function Combined3(c1, c2, c3)
         constr1,l1,l2 = c1
@@ -30,7 +30,7 @@ mutable struct Combined3{T,Nc,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,Nc,Nl}
         s0 = @SVector zeros(T,Nc)
         s1 = @SVector zeros(T,Nc)
 
-        new{T,Nc,Nl,typeof(constr[1]),typeof(constr[2]),typeof(constr[3]),typeof(links[1]),typeof(links[2]),typeof(links[3])}(id,linkids,constr...,links...,s0,s1)
+        new{T,Nc,3,Nl,typeof(constr[1]),typeof(constr[2]),typeof(constr[3]),typeof(links[1]),typeof(links[2]),typeof(links[3])}(id,linkids,constr...,links...,s0,s1)
     end
 end
 
@@ -63,5 +63,3 @@ function ∂g∂vel(C::Combined3,L::Link)
         return [∂g∂velb(C.constr1);∂g∂velb(C.constr2);∂g∂velb(C.constr3)] #[0,0,0]
     end
 end
-
-getNc(C::Combined3) = C.constr1.Nc+C.constr2.Nc+C.constr3.Nc

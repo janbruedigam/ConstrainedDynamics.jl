@@ -98,8 +98,8 @@ getvnew(link::Link{T,0}) where T = @SVector zeros(T,3)
 getω1(link::Link{T,0}) where T = @SVector zeros(T,3)
 getx3(link::Link{T,0}) where T = @SVector zeros(T,3)
 getq3(link::Link{T,0}) where T = Quaternion{T}()
-derivωbar(link::Link{T,0}) where T = @SMatrix zeros(T,4,3)
-ωbar(link::Link{T,0}) where T = Quaternion{T}()
+derivωbar(link::Link{T,0}) where T = [@SMatrix zeros(T,1,3);SMatrix{3,3,T,9}(I)]
+ωbar(link::Link{T,0}) where T = Quaternion{T}(2/link.dt,0,0,0)
 
 function dynamics(link::Link{T}) where T
     No = link.No

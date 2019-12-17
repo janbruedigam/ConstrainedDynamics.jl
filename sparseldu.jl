@@ -41,29 +41,11 @@ end
 setSol!(diagonal,link::Link) = (diagonal.ŝ = dynamics(link); nothing)
 setSol!(diagonal,C::Constraint) = (diagonal.ŝ = g(C); nothing)
 
+
 # (A) For extended equations
 # addGtλ!(L::Link,C::Constraint) = (L.data.ŝ -= Gtλ(L,C); nothing)
 addλ0!(diagonal,C::Constraint) = (diagonal.ŝ += C.s0; nothing)
 
-
-function setNormf!(link::Link,robot::Robot)
-    data = link.data
-    graph = robot.graph
-    data.f = dynamics(link)
-    for cid in connections(graph,link.id)
-        cid == -1 && break
-        GtλTof!(getnode(robot,cid),link)
-    end
-    data.normf = data.f'*data.f
-    return nothing
-end
-
-function setNormf!(C::Constraint,robot::Robot)
-    f = g(C)
-
-    C.data.normf = f'*f
-    return nothing
-end
 
 function normf(link::Link,robot::Robot)
     graph = robot.graph
@@ -78,7 +60,6 @@ end
 
 function normf(C::Constraint,robot::Robot)
     f = g(C)
-
     return dot(f,f)
 end
 

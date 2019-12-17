@@ -36,13 +36,13 @@ struct SparseLDU{T}
     function SparseLDU(graph::Graph{N},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}},ldict::Dict,cdict::Dict) where {T,N}
         diagonals = Vector{DiagonalEntry{T}}(undef,0)
         ddict = Dict{Int64,Int64}()
-        for (ind,link) in enumerate(links)
-            push!(diagonals,DiagonalEntry{T,6}())
+        for link in links
+            push!(diagonals,DiagonalEntry{T,length(link)}())
             ddict[link.id] = length(diagonals)
         end
         Nl = length(links)
-        for (ind,constraint) in enumerate(constraints)
-            push!(diagonals,DiagonalEntry{T,getNc(constraint)}())
+        for constraint in constraints
+            push!(diagonals,DiagonalEntry{T,length(constraint)}())
             ddict[constraint.id] = length(diagonals)
         end
 
@@ -131,7 +131,7 @@ function solve!(graph::Graph,ldu::SparseLDU)
     for id in dfslist
         diagonal = getentry(ldu,id)
 
-        for cid in successors(graph,id) # in correct order (shouldnt matter here)
+        for cid in successors(graph,id)
             cid == -1 && break
             LSol!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
         end

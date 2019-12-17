@@ -1,1 +1,1 @@
-abstract type Constraint{T,Nc,Nl} <: Node{T,Nc} end
+abstract type Constraint{T,N,Nc,Nl} <: Node{T,N} end
