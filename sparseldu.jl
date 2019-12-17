@@ -1,20 +1,6 @@
-# @inline function setD!(link::Link{T}) where T
-#     μ = 1e-4
-#     dynT,dynR = ∂dyn∂vel(link)
-#     Z = @SMatrix zeros(T,3,3)
-#
-#     link.data.D = [[dynT Z];[Z dynR]] #+ SMatrix{6,6,Float64,36}(μ*I)
-#     return nothing
-# end
-#
-# @inline setD!(C::Constraint{T,Nc}) where {T,Nc} = (C.data.D = @SMatrix zeros(T,Nc,Nc); nothing)
-
 @inline function setD!(diagonal,link::Link{T}) where T
-    μ = 1e-4
-    dynT,dynR = ∂dyn∂vel(link)
-    Z = @SMatrix zeros(T,3,3)
-
-    diagonal.D = [[dynT Z];[Z dynR]] #+ SMatrix{6,6,Float64,36}(μ*I)
+    # μ = 1e-4
+    diagonal.D = ∂dyn∂vel(link) #+ SMatrix{6,6,Float64,36}(μ*I)
     return nothing
 end
 
@@ -23,12 +9,6 @@ end
     return nothing
 end
 
-
-@inline function updateD!(diagonal::DiagonalEntry,child::DiagonalEntry,fillin::OffDiagonalEntry)
-    diagonal.D -= fillin.JL*child.D*fillin.JU
-    return nothing
-end
-@inline invertD!(diagonal) = (diagonal.Dinv = +inv(diagonal.D); nothing)
 
 # TODO pass in the two connected links
 @inline function setJ!(F::OffDiagonalEntry,C::Constraint,L::Link)
@@ -60,36 +40,12 @@ end
     return nothing
 end
 
-@inline function updateJ1!(F::OffDiagonalEntry,diagonal::DiagonalEntry,gcfillin::OffDiagonalEntry,cgcfillin::OffDiagonalEntry)
-    F.JL -= gcfillin.JL*diagonal.D*cgcfillin.JU
-    F.JU -= cgcfillin.JL*diagonal.D*gcfillin.JU
-    return nothing
-end
-
-@inline function updateJ2!(F::OffDiagonalEntry,diagonal::DiagonalEntry)
-    F.JL = F.JL*diagonal.Dinv
-    F.JU = diagonal.Dinv*F.JU
-    return nothing
-end
-
-@inline setSol!(diagonal,link::Link) = (diagonal.ŝ = diagonal.ŝ -diagonal.ŝ +dynamics(link); nothing)
+@inline setSol!(diagonal,link::Link) = (diagonal.ŝ = +(dynamics(link)); nothing)
 @inline setSol!(diagonal,C::Constraint) = (diagonal.ŝ = g(C); nothing)
 
 # (A) For extended equations
 # @inline addGtλ!(L::Link,C::Constraint) = (L.data.ŝ -= Gtλ(L,C); nothing)
 @inline addλ0!(diagonal,C::Constraint) = (diagonal.ŝ += C.data.s0; nothing)
-
-@inline function LSol!(diagonal::DiagonalEntry,child::DiagonalEntry,fillin::OffDiagonalEntry)
-    diagonal.ŝ -= fillin.JL*child.ŝ
-    return nothing
-end
-
-#TODO whats going on here ???
-@inline DSol!(diagonal) = (diagonal.ŝ = diagonal.ŝ - diagonal.ŝ + diagonal.Dinv*diagonal.ŝ; nothing)
-@inline function USol!(diagonal::DiagonalEntry,parent::DiagonalEntry,fillin::OffDiagonalEntry)
-    diagonal.ŝ -= fillin.JU*parent.ŝ
-    return nothing
-end
 
 
 @inline function setNormf!(link::Link,robot::Robot)

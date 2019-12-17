@@ -9,6 +9,10 @@ struct Combined3{T,Nc,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,Nc,Nl}
     link1::L1
     link2::L2
     link3::L3
+
+    s0::SVector{Nc,T}
+    s1::SVector{Nc,T}
+
     data::NodeData{T,Nc}
 
     function Combined3(c1, c2, c3)
@@ -25,15 +29,13 @@ struct Combined3{T,Nc,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,Nc,Nl}
         id = getGlobalID()
         linkids = unique([links[i].id for i=1:Nl])
 
+        s0 = @SVector zeros(T,Nc)
+        s1 = @SVector zeros(T,Nc)
+
         data = NodeData{T,Nc}()
 
-        new{T,Nc,Nl,typeof(constr[1]),typeof(constr[2]),typeof(constr[3]),typeof(links[1]),typeof(links[2]),typeof(links[3])}(id,linkids,constr...,links...,data)
+        new{T,Nc,Nl,typeof(constr[1]),typeof(constr[2]),typeof(constr[3]),typeof(links[1]),typeof(links[2]),typeof(links[3])}(id,linkids,constr...,links...,s0,s1,data)
     end
-end
-
-
-function Combined3(joint::XMLJoint, link1::Link, link2::Link)
-    Combined3(Socket(link1,link2,joint.pids...),Axis(link1,link2,joint.axis))
 end
 
 @inline g(C::Combined3) = [g(C.constr1,C.link1,C.link2);g(C.constr2,C.link1,C.link2);g(C.constr3,C.link1,C.link3)]

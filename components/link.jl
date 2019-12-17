@@ -19,6 +19,9 @@ mutable struct Link{T,N} <: Node{T,N}
 
     p::Vector{SVector{3,T}}
 
+    s0::SVector{N,T}
+    s1::SVector{N,T}
+
     data::NodeData{T,N}
 
     function Link{N}(m::T,J::Array{T,2},p::Vector{<:AbstractVector{T}}) where {T,N}
@@ -32,13 +35,16 @@ mutable struct Link{T,N} <: Node{T,N}
 
         p = convert(Vector{SVector{3,T}},p)
 
+        s0 = @SVector zeros(T,N)
+        s1 = @SVector zeros(T,N)
+
         data = NodeData{T,N}()
 
         g = 0
         dt = 0
         No = 0
 
-        new{T,N}(getGlobalID(),g,dt,No,m,J,x,q,F,τ,p,data)
+        new{T,N}(getGlobalID(),g,dt,No,m,J,x,q,F,τ,p,s0,s1,data)
     end
 
     Link(p::Vector{<:AbstractVector{T}}) where T = Link{0}(zero(T),zeros(T,3,3),p)
@@ -122,5 +128,7 @@ end
     dynT = SMatrix{3,3,T,9}(link.m/dt*I)
     dynR = skewplusdiag(ωnew,sq)*J - J*ωnew*(ωnew'/sq) - skew(J*ωnew)
 
-    return dynT, dynR
+    Z = @SMatrix zeros(T,3,3)
+
+    return [[dynT Z];[Z dynR]]
 end

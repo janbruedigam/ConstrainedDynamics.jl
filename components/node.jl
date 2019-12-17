@@ -2,8 +2,7 @@ abstract type Node{T,N} end
 
 #TODO do id differently?
 CURRENTID = 1
-getGlobalID() = (global CURRENTID+=1;return CURRENTID-1)
-# currentGlobalID() = (global CURRENTID; return CURRENTID-1)
+getGlobalID() = (global CURRENTID+=1; return CURRENTID-1)
 resetGlobalID() = (global CURRENTID=1; nothing)
 
 mutable struct NodeData{T,N}
@@ -19,7 +18,7 @@ mutable struct NodeData{T,N}
         f = @SVector zeros(T,N)
         normf = zero(T)
         normΔs = zero(T)
-        
+
         new{T,N}(s0,s1,f,normf,normΔs)
     end
 end
@@ -39,7 +38,7 @@ end
 
 @inline update!(node,diagonal) = (d = node.data; d.s1 = d.s0 - diagonal.ŝ; nothing)
 
-# TODO understand why the + is necessary for zero alloc???
+# TODO why is + necessary?
 @inline s0tos1!(node) = (d = node.data; d.s1 = +d.s0; nothing)
 @inline s1tos0!(node) = (d = node.data; d.s0 = +d.s1; nothing)
 

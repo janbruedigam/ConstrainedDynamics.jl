@@ -68,6 +68,40 @@ end
 @inline getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[ldu.ddict[id]]
 @inline getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ldu.odict[ids]]
 
+
+@inline function updateJ1!(offdiagonal::OffDiagonalEntry,d::DiagonalEntry,gc::OffDiagonalEntry,cgc::OffDiagonalEntry)
+    offdiagonal.JL -= gc.JL*d.D*cgc.JU
+    offdiagonal.JU -= cgc.JL*d.D*gc.JU
+    return nothing
+end
+
+@inline function updateJ2!(offdiagonal::OffDiagonalEntry,d::DiagonalEntry)
+    offdiagonal.JL = offdiagonal.JL*d.Dinv
+    offdiagonal.JU = d.Dinv*offdiagonal.JU
+    return nothing
+end
+
+@inline function updateD!(diagonal::DiagonalEntry,c::DiagonalEntry,f::OffDiagonalEntry)
+    diagonal.D -= f.JL*c.D*f.JU
+    return nothing
+end
+
+# TODO why is + necessary?
+@inline invertD!(diagonal::DiagonalEntry) = (diagonal.Dinv = +inv(diagonal.D); nothing)
+
+@inline function LSol!(diagonal::DiagonalEntry,child::DiagonalEntry,fillin::OffDiagonalEntry)
+    diagonal.ŝ -= fillin.JL*child.ŝ
+    return nothing
+end
+
+# TODO why is + necessary?
+@inline DSol!(diagonal) = (diagonal.ŝ = +(diagonal.Dinv*diagonal.ŝ); nothing)
+@inline function USol!(diagonal::DiagonalEntry,parent::DiagonalEntry,fillin::OffDiagonalEntry)
+    diagonal.ŝ -= fillin.JU*parent.ŝ
+    return nothing
+end
+
+
 function factor!(graph::Graph,ldu::SparseLDU)
     for id in graph.dfslist
         diagonal = getentry(ldu,id)

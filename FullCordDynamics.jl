@@ -24,6 +24,7 @@ export
     SocketYZ,
     # FixedOrientation,
     # FixedPosition,
+    Combined,
     Combined2,
     Combined3,
 
@@ -49,6 +50,7 @@ include(joinpath("joints", "socket.jl"))
 include(joinpath("joints", "socketyz.jl"))
 include(joinpath("joints", "axis.jl"))
 include(joinpath("components", "constraint.jl"))
+include(joinpath("components", "combined.jl"))
 include(joinpath("components", "combined2.jl"))
 include(joinpath("components", "combined3.jl"))
 

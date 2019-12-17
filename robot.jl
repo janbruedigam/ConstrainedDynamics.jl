@@ -6,12 +6,8 @@ mutable struct Robot{T,N,No}
 
     origin::Link{T,0}
     nodes::Vector{Node{T}}
-    # links::Vector{Node{T}}
-    # constraints::Vector{Node{T}}
     nodesrange::Vector{UnitRange{Int64}}
     dict::Dict{Int64,Int64}
-    # ldict::Dict{Int64,Int64}
-    # cdict::Dict{Int64,Int64}
 
     #???
     normf::T
@@ -121,7 +117,7 @@ end
 
 @inline addNormf!(node,robot::Robot) = (robot.normf += node.data.normf; nothing)
 
-function normΔs(robot::Robot)
+@inline function normΔs(robot::Robot)
     robot.normΔs = 0
     nodes = robot.nodes
 
@@ -132,24 +128,13 @@ end
 
 @inline addNormΔs!(node,robot::Robot) = (robot.normΔs += node.data.normΔs; nothing)
 
-@inline function saveToTraj!(robot::Robot{T,N},t) where {T,N}
-    No = robot.origin.No
-
+@inline function saveToTraj!(robot::Robot{T,N,No},t) where {T,N,No}
     for i=robot.nodesrange[1]
         robot.storage.x[i][t]=robot.nodes[i].x[No]
         robot.storage.q[i][t]=robot.nodes[i].q[No]
     end
     return nothing
 end
-
-# @inline function saveToTraj!(robot::Robot,link::Link,i,t)
-#     robot.storage.x[i][t]=link.x[2]
-#     robot.storage.q[i][t]=link.q[2]
-# end
-#
-# @inline function saveToTraj!(robot::Robot,constraint::Link,i,t)
-#     robot.storage.λ[i][t]=constraint.data.s1
-# end
 
 @inline function updatePos!(link::Link)
     link.x[1] = link.x[2]

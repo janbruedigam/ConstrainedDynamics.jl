@@ -7,6 +7,10 @@ struct Combined2{T,Nc,Nl,C1,C2,L1,L2} <: Constraint{T,Nc,Nl}
     constr2::C2
     link1::L1
     link2::L2
+
+    s0::SVector{Nc,T}
+    s1::SVector{Nc,T}
+
     data::NodeData{T,Nc}
 
     function Combined2(c1, c2)
@@ -22,15 +26,13 @@ struct Combined2{T,Nc,Nl,C1,C2,L1,L2} <: Constraint{T,Nc,Nl}
         id = getGlobalID()
         linkids = unique([links[i].id for i=1:Nl])
 
+        s0 = @SVector zeros(T,Nc)
+        s1 = @SVector zeros(T,Nc)
+
         data = NodeData{T,Nc}()
 
-        new{T,Nc,Nl,typeof(constr[1]),typeof(constr[2]),typeof(links[1]),typeof(links[2])}(id,linkids,constr...,links...,data)
+        new{T,Nc,Nl,typeof(constr[1]),typeof(constr[2]),typeof(links[1]),typeof(links[2])}(id,linkids,constr...,links...,s0,s1,data)
     end
-end
-
-
-function Combined2(joint::XMLJoint, link1::Link, link2::Link)
-    Combined2(Socket(link1,link2,joint.pids...),Axis(link1,link2,joint.axis))
 end
 
 @inline g(C::Combined2) = [g(C.constr1,C.link1,C.link2);g(C.constr2,C.link1,C.link2)]
