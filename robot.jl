@@ -96,7 +96,7 @@ function setentries!(robot::Robot)
     end
 end
 
-@inline function correctλ!(robot::Robot)
+function correctλ!(robot::Robot)
     nodes = robot.nodes
     diagonals = robot.ldu.diagonals
     for indn = robot.nodesrange[2]
@@ -104,7 +104,7 @@ end
     end
 end
 
-@inline getnode(robot::Robot,id::Int64) = robot.nodes[robot.dict[id]]
+getnode(robot::Robot,id::Int64) = robot.nodes[robot.dict[id]]
 
 function normf(robot::Robot{T}) where T
     robot.normf = 0
@@ -115,9 +115,9 @@ function normf(robot::Robot{T}) where T
     return sqrt(robot.normf)
 end
 
-@inline addNormf!(node,robot::Robot) = (robot.normf += node.data.normf; nothing)
+addNormf!(node,robot::Robot) = (robot.normf += node.data.normf; nothing)
 
-@inline function normΔs(robot::Robot)
+function normΔs(robot::Robot)
     robot.normΔs = 0
     nodes = robot.nodes
 
@@ -126,9 +126,9 @@ end
     return sqrt(robot.normΔs)
 end
 
-@inline addNormΔs!(node,robot::Robot) = (robot.normΔs += node.data.normΔs; nothing)
+addNormΔs!(node,robot::Robot) = (robot.normΔs += node.data.normΔs; nothing)
 
-@inline function saveToTraj!(robot::Robot{T,N,No},t) where {T,N,No}
+function saveToTraj!(robot::Robot{T,N,No},t) where {T,N,No}
     for i=robot.nodesrange[1]
         robot.storage.x[i][t]=robot.nodes[i].x[No]
         robot.storage.q[i][t]=robot.nodes[i].q[No]
@@ -136,7 +136,7 @@ end
     return nothing
 end
 
-@inline function updatePos!(link::Link)
+function updatePos!(link::Link)
     link.x[1] = link.x[2]
     link.x[2] += getvnew(link)*link.dt
     link.q[1] = link.q[2]

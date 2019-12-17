@@ -9,11 +9,11 @@ struct Axis{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline g(J::Axis,link1::Link,link2::Link) = J.V12*Vmat(LTmat(getq3(link1))*getq3(link2))
-# @inline gŝ(J::Axis,link1::Link,link2::Link,data::NodeData) = (data.ŝ=J.V12*Vmat(LTmat(getq3(link1))*getq3(link2));nothing)
-# @inline gf(J::Axis,link1::Link,link2::Link,data::NodeData) = (data.f=J.V12*Vmat(LTmat(getq3(link1))*getq3(link2));nothing)
+g(J::Axis,link1::Link,link2::Link) = J.V12*Vmat(LTmat(getq3(link1))*getq3(link2))
+# gŝ(J::Axis,link1::Link,link2::Link,data::NodeData) = (data.ŝ=J.V12*Vmat(LTmat(getq3(link1))*getq3(link2));nothing)
+# gf(J::Axis,link1::Link,link2::Link,data::NodeData) = (data.f=J.V12*Vmat(LTmat(getq3(link1))*getq3(link2));nothing)
 
-@inline function ∂g∂posa(J::Axis{T},link1::Link,link2::Link) where T
+function ∂g∂posa(J::Axis{T},link1::Link,link2::Link) where T
     X = @SMatrix zeros(T,2,3)
 
     No = link1.No
@@ -22,7 +22,7 @@ end
     return [X R]
 end
 
-@inline function ∂g∂posb(J::Axis{T},link1::Link,link2::Link) where T
+function ∂g∂posb(J::Axis{T},link1::Link,link2::Link) where T
     X = @SMatrix zeros(T,2,3)
 
     No = link2.No
@@ -31,7 +31,7 @@ end
     return [X R]
 end
 
-@inline function ∂g∂vela(J::Axis{T},link1::Link,link2::Link) where T
+function ∂g∂vela(J::Axis{T},link1::Link,link2::Link) where T
     V = @SMatrix zeros(T,2,3)
 
     No = link1.No
@@ -40,7 +40,7 @@ end
     return [V Ω]
 end
 
-@inline function ∂g∂velb(J::Axis{T},link1::Link,link2::Link) where T
+function ∂g∂velb(J::Axis{T},link1::Link,link2::Link) where T
     V = @SMatrix zeros(T,2,3)
 
     No = link2.No

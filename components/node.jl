@@ -33,16 +33,16 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, N::NodeData)
 end
 
 
-@inline Base.length(::Node{T,N}) where {T,N} = N
-@inline Base.foreach(f,itr::Vector{<:Node},arg...) = (for x in itr; f(x,arg...); end; nothing)
+Base.length(::Node{T,N}) where {T,N} = N
+Base.foreach(f,itr::Vector{<:Node},arg...) = (for x in itr; f(x,arg...); end; nothing)
 
-@inline update!(node,diagonal) = (d = node.data; d.s1 = d.s0 - diagonal.ŝ; nothing)
+update!(node,diagonal) = (d = node.data; d.s1 = d.s0 - diagonal.ŝ; nothing)
 
 # TODO why is + necessary?
-@inline s0tos1!(node) = (d = node.data; d.s1 = +d.s0; nothing)
-@inline s1tos0!(node) = (d = node.data; d.s0 = +d.s1; nothing)
+s0tos1!(node) = (d = node.data; d.s1 = +d.s0; nothing)
+s1tos0!(node) = (d = node.data; d.s0 = +d.s1; nothing)
 
-@inline function setNormΔs!(node)
+function setNormΔs!(node)
     data = node.data
     diff = data.s1-data.s0
     data.normΔs= diff'*diff

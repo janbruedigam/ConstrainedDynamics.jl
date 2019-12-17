@@ -81,29 +81,29 @@ function setInit!(link1::Link{T}, link2::Link{T}, pids::Vector{Int64}; q::Quater
     setInit!(link2; x=x2, q=q, F=F, τ=τ)
 end
 
-@inline getv1(link::Link) = (link.x[2]-link.x[1])/link.dt
-@inline getvnew(link) = link.data.s1[SVector{3}(1:3)]
-@inline function getω1(link) # 2/link.dt*Vmat()*LTmat(link.q[1])*link.q[2]
+getv1(link::Link) = (link.x[2]-link.x[1])/link.dt
+getvnew(link) = link.data.s1[SVector{3}(1:3)]
+function getω1(link) # 2/link.dt*Vmat()*LTmat(link.q[1])*link.q[2]
     q1 = link.q[1]
     q2 = link.q[2]
     2/link.dt*(q1.w*q2.v-q2.w*q1.v-cross(q1.v,q2.v))
 end
-@inline getωnew(link) = link.data.s1[SVector{3}(4:6)]
-@inline getx3(link) = getvnew(link)*link.dt + link.x[2]
-@inline getq3(link) = Quaternion(link.dt/2*(Lmat(link.q[2])*ωbar(link)))
-@inline derivωbar(link::Link{T}) where T = [-(getωnew(link)/(ωbar(link)[1]))';SMatrix{3,3,T,9}(I)]
-@inline ωbar(link) = Quaternion(sqrt(4/link.dt^2 - getωnew(link)'*getωnew(link)),getωnew(link))
+getωnew(link) = link.data.s1[SVector{3}(4:6)]
+getx3(link) = getvnew(link)*link.dt + link.x[2]
+getq3(link) = Quaternion(link.dt/2*(Lmat(link.q[2])*ωbar(link)))
+derivωbar(link::Link{T}) where T = [-(getωnew(link)/(ωbar(link)[1]))';SMatrix{3,3,T,9}(I)]
+ωbar(link) = Quaternion(sqrt(4/link.dt^2 - getωnew(link)'*getωnew(link)),getωnew(link))
 
 
-@inline getv1(link::Link{T,0}) where T = @SVector zeros(T,3)
-@inline getvnew(link::Link{T,0}) where T = @SVector zeros(T,3)
-@inline getω1(link::Link{T,0}) where T = @SVector zeros(T,3)
-@inline getx3(link::Link{T,0}) where T = @SVector zeros(T,3)
-@inline getq3(link::Link{T,0}) where T = Quaternion{T}()
-@inline derivωbar(link::Link{T,0}) where T = @SMatrix zeros(T,4,3)
-@inline ωbar(link::Link{T,0}) where T = Quaternion{T}()
+getv1(link::Link{T,0}) where T = @SVector zeros(T,3)
+getvnew(link::Link{T,0}) where T = @SVector zeros(T,3)
+getω1(link::Link{T,0}) where T = @SVector zeros(T,3)
+getx3(link::Link{T,0}) where T = @SVector zeros(T,3)
+getq3(link::Link{T,0}) where T = Quaternion{T}()
+derivωbar(link::Link{T,0}) where T = @SMatrix zeros(T,4,3)
+ωbar(link::Link{T,0}) where T = Quaternion{T}()
 
-@inline function dynamics(link::Link{T}) where T
+function dynamics(link::Link{T}) where T
     No = link.No
     dt = link.dt
     ezg = SVector{3,T}(0,0,-link.g)
@@ -119,7 +119,7 @@ end
     return [dynT;dynR]
 end
 
-@inline function ∂dyn∂vel(link::Link{T}) where T
+function ∂dyn∂vel(link::Link{T}) where T
     dt = link.dt
     J = link.J
     ωnew = getωnew(link)

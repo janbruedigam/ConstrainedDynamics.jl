@@ -38,9 +38,9 @@ struct Combined3{T,Nc,Nl,C1,C2,C3,L1,L2,L3} <: Constraint{T,Nc,Nl}
     end
 end
 
-@inline g(C::Combined3) = [g(C.constr1,C.link1,C.link2);g(C.constr2,C.link1,C.link2);g(C.constr3,C.link1,C.link3)]
+g(C::Combined3) = [g(C.constr1,C.link1,C.link2);g(C.constr2,C.link1,C.link2);g(C.constr3,C.link1,C.link3)]
 
-@inline function ∂g∂pos(C::Combined3,L::Link)
+function ∂g∂pos(C::Combined3,L::Link)
     id = L.id
     ids = C.linkids
     if id == ids[1]
@@ -54,7 +54,7 @@ end
     end
 end
 
-@inline function ∂g∂vel(C::Combined3,L::Link)
+function ∂g∂vel(C::Combined3,L::Link)
     id = L.id
     ids = C.linkids
     if id == ids[1]

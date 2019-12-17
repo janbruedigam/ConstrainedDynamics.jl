@@ -9,12 +9,12 @@ struct SocketYZ{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline function g(J::SocketYZ,link1::Link,link2::Link)
+function g(J::SocketYZ,link1::Link,link2::Link)
     pids = J.pids
     (getx3(link1) + rotate(link1.p[pids[1]],getq3(link1)) - (getx3(link2) + rotate(link2.p[pids[2]],getq3(link2))))[SVector{2,Int64}(2,3)]
 end
 
-@inline function ∂g∂posa(C::SocketYZ{T},link1::Link,link2::Link) where T
+function ∂g∂posa(C::SocketYZ{T},link1::Link,link2::Link) where T
     X = SMatrix{2,3,T,6}(0,0, 1,0, 0,1)
 
     q = link1.q[link1.No]
@@ -23,7 +23,7 @@ end
     return [X R]
 end
 
-@inline function ∂g∂posb(C::SocketYZ{T},link1::Link,link2::Link) where T
+function ∂g∂posb(C::SocketYZ{T},link1::Link,link2::Link) where T
     X = SMatrix{2,3,T,6}(0,0, -1,0, 0,-1)
 
     q = link2.q[link2.No]
@@ -32,7 +32,7 @@ end
     return [X R]
 end
 
-@inline function ∂g∂vela(C::SocketYZ{T},link1::Link,link2::Link) where T
+function ∂g∂vela(C::SocketYZ{T},link1::Link,link2::Link) where T
     V = link1.dt*SMatrix{2,3,T,6}(0,0, 1,0, 0,1)
 
     q = link1.q[link1.No]
@@ -41,7 +41,7 @@ end
     return [V Ω]
 end
 
-@inline function ∂g∂velb(C::SocketYZ{T},link1::Link,link2::Link) where T
+function ∂g∂velb(C::SocketYZ{T},link1::Link,link2::Link) where T
     V = link2.dt*SMatrix{2,3,T,6}(0,0, -1,0, 0,-1)
 
     q = link2.q[link2.No]

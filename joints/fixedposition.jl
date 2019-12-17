@@ -12,12 +12,12 @@
 # end
 #
 #
-# @inline function g(C::FixedPosition)
+# function g(C::FixedPosition)
 #     link = C.link
 #     getx3(link) + rotate(link.p[C.pid],getq3(link))
 # end
 #
-# @inline function ∂g∂posa(C::FixedPosition{T}) where T
+# function ∂g∂posa(C::FixedPosition{T}) where T
 #     link = C.link
 #     X = SMatrix{3,3,T,9}(I)
 #
@@ -27,7 +27,7 @@
 #     return [X R]
 # end
 #
-# @inline function ∂g∂vela(C::FixedPosition{T}) where T
+# function ∂g∂vela(C::FixedPosition{T}) where T
 #     link = C.link
 #     V = SMatrix{3,3,T,9}(link.dt*I)
 #

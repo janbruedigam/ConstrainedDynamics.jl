@@ -9,24 +9,24 @@ struct Socket{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline function g(J::Socket,link1::Link,link2::Link)
+function g(J::Socket,link1::Link,link2::Link)
     pids = J.pids
     getx3(link1) + rotate(link1.p[pids[1]],getq3(link1)) - (getx3(link2) + rotate(link2.p[pids[2]],getq3(link2)))
 end
 
-# @inline function gŝ(J::Socket,link1::Link,link2::Link,data::NodeData)
+# function gŝ(J::Socket,link1::Link,link2::Link,data::NodeData)
 #     pids = J.pids
 #     data.ŝ = getx3(link1) + rotate(link1.p[pids[1]],getq3(link1)) - (getx3(link2) + rotate(link2.p[pids[2]],getq3(link2)))
 #     return nothing
 # end
 #
-# @inline function gf(J::Socket,link1::Link,link2::Link,data::NodeData)
+# function gf(J::Socket,link1::Link,link2::Link,data::NodeData)
 #     pids = J.pids
 #     data.f = getx3(link1) + rotate(link1.p[pids[1]],getq3(link1)) - (getx3(link2) + rotate(link2.p[pids[2]],getq3(link2)))
 #     return nothing
 # end
 
-@inline function ∂g∂posa(J::Socket{T},link1::Link,link2::Link) where T
+function ∂g∂posa(J::Socket{T},link1::Link,link2::Link) where T
     X = SMatrix{3,3,T,9}(I)
 
     q = link1.q[link1.No]
@@ -35,7 +35,7 @@ end
     return [X R]
 end
 
-@inline function ∂g∂posb(J::Socket{T},link1::Link,link2::Link) where T
+function ∂g∂posb(J::Socket{T},link1::Link,link2::Link) where T
     X = SMatrix{3,3,T,9}(-I)
 
     q = link2.q[link2.No]
@@ -44,7 +44,7 @@ end
     return [X R]
 end
 
-@inline function ∂g∂vela(J::Socket{T},link1::Link,link2::Link) where T
+function ∂g∂vela(J::Socket{T},link1::Link,link2::Link) where T
     V = link1.dt*SMatrix{3,3,T,9}(I)
 
     q = link1.q[link1.No]
@@ -53,7 +53,7 @@ end
     return [V Ω]
 end
 
-@inline function ∂g∂velb(J::Socket{T},link1::Link,link2::Link) where T
+function ∂g∂velb(J::Socket{T},link1::Link,link2::Link) where T
     V = link2.dt*SMatrix{3,3,T,9}(-I)
 
     q = link2.q[link2.No]

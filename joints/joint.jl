@@ -27,10 +27,10 @@ function Base.getproperty(J::Joint{T,Nc},x::Symbol) where {T,Nc}
     end
 end
 
-@inline g(J::Joint{T,Nc}) where {T,Nc} = @SVector zeros(T,Nc)
+g(J::Joint{T,Nc}) where {T,Nc} = @SVector zeros(T,Nc)
 
-@inline zeroBlock(J::Joint{T,Nc}) where {T,Nc} = @SMatrix zeros(T,Nc,6)
-@inline ∂g∂posa(J::Joint) = zeroBlock(J)
-@inline ∂g∂posb(J::Joint) = zeroBlock(J)
-@inline ∂g∂vela(J::Joint) = zeroBlock(J)
-@inline ∂g∂velb(J::Joint) = zeroBlock(J)
+zeroBlock(J::Joint{T,Nc}) where {T,Nc} = @SMatrix zeros(T,Nc,6)
+∂g∂posa(J::Joint) = zeroBlock(J)
+∂g∂posb(J::Joint) = zeroBlock(J)
+∂g∂vela(J::Joint) = zeroBlock(J)
+∂g∂velb(J::Joint) = zeroBlock(J)
