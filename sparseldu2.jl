@@ -87,7 +87,7 @@ function updateD!(diagonal::DiagonalEntry,c::DiagonalEntry,f::OffDiagonalEntry)
 end
 
 # TODO why is + necessary?
-invertD!(diagonal::DiagonalEntry) = (diagonal.Dinv = +inv(diagonal.D); nothing)
+invertD!(diagonal::DiagonalEntry) = (diagonal.Dinv = inv(diagonal.D); nothing)
 
 function LSol!(diagonal::DiagonalEntry,child::DiagonalEntry,fillin::OffDiagonalEntry)
     diagonal.ŝ -= fillin.JL*child.ŝ
@@ -95,7 +95,7 @@ function LSol!(diagonal::DiagonalEntry,child::DiagonalEntry,fillin::OffDiagonalE
 end
 
 # TODO why is + necessary?
-DSol!(diagonal) = (diagonal.ŝ = +(diagonal.Dinv*diagonal.ŝ); nothing)
+DSol!(diagonal) = (diagonal.ŝ = diagonal.Dinv*diagonal.ŝ; nothing)
 function USol!(diagonal::DiagonalEntry,parent::DiagonalEntry,fillin::OffDiagonalEntry)
     diagonal.ŝ -= fillin.JU*parent.ŝ
     return nothing

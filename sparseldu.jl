@@ -12,8 +12,6 @@ end
 
 # TODO pass in the two connected links
 function setJ!(F::OffDiagonalEntry,C::Constraint,L::Link)
-    # data = F.data
-
     F.JL = ∂g∂vel(C,L)
     F.JU = -∂g∂pos(C,L)'
 
@@ -40,7 +38,7 @@ function setJ!(entry::OffDiagonalEntry{T,N1,N2}) where {T,N1,N2}
     return nothing
 end
 
-setSol!(diagonal,link::Link) = (diagonal.ŝ = +(dynamics(link)); nothing)
+setSol!(diagonal,link::Link) = (diagonal.ŝ = dynamics(link); nothing)
 setSol!(diagonal,C::Constraint) = (diagonal.ŝ = g(C); nothing)
 
 # (A) For extended equations
@@ -62,9 +60,7 @@ end
 function setNormf!(C::Constraint,robot::Robot)
     data = C.data
     data.f = g(C)
-    # for i=1:Nl
-    #     gf(C.constr[i],C.link1,C.link2,C.datavec[i])
-    # end
+
     data.normf = data.f'*data.f
     return nothing
 end

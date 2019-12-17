@@ -39,8 +39,8 @@ Base.foreach(f,itr::Vector{<:Node},arg...) = (for x in itr; f(x,arg...); end; no
 update!(node,diagonal) = (d = node.data; d.s1 = d.s0 - diagonal.ŝ; nothing)
 
 # TODO why is + necessary?
-s0tos1!(node) = (d = node.data; d.s1 = +d.s0; nothing)
-s1tos0!(node) = (d = node.data; d.s0 = +d.s1; nothing)
+s0tos1!(node) = (d = node.data; d.s1 = d.s0; nothing)
+s1tos0!(node) = (d = node.data; d.s0 = d.s1; nothing)
 
 function setNormΔs!(node)
     data = node.data
