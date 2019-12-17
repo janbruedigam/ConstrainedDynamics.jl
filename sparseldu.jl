@@ -43,26 +43,43 @@ setSol!(diagonal,C::Constraint) = (diagonal.ŝ = g(C); nothing)
 
 # (A) For extended equations
 # addGtλ!(L::Link,C::Constraint) = (L.data.ŝ -= Gtλ(L,C); nothing)
-addλ0!(diagonal,C::Constraint) = (diagonal.ŝ += C.data.s0; nothing)
+addλ0!(diagonal,C::Constraint) = (diagonal.ŝ += C.s0; nothing)
 
 
 function setNormf!(link::Link,robot::Robot)
     data = link.data
     graph = robot.graph
     data.f = dynamics(link)
-    for (cind,isconnected) in enumerate(graph.adjacency[graph.dict[link.id]])
-        isconnected && GtλTof!(robot.nodes[robot.dict[graph.rdict[cind]]],link)
+    for cid in connections(graph,link.id)
+        cid == -1 && break
+        GtλTof!(getnode(robot,cid),link)
     end
     data.normf = data.f'*data.f
     return nothing
 end
 
 function setNormf!(C::Constraint,robot::Robot)
-    data = C.data
-    data.f = g(C)
+    f = g(C)
 
-    data.normf = data.f'*data.f
+    C.data.normf = f'*f
     return nothing
 end
 
-GtλTof!(C::Constraint,L::Link) = (L.data.f -= ∂g∂pos(C,L)'*C.data.s1; nothing)
+function normf(link::Link,robot::Robot)
+    graph = robot.graph
+    link.f = dynamics(link)
+    for cid in connections(graph,link.id)
+        cid == -1 && break
+        GtλTof!(getnode(robot,cid),link)
+    end
+    f = link.f
+    return dot(f,f)
+end
+
+function normf(C::Constraint,robot::Robot)
+    f = g(C)
+
+    return dot(f,f)
+end
+
+GtλTof!(C::Constraint,L::Link) = (L.f -= ∂g∂pos(C,L)'*C.s1; nothing)

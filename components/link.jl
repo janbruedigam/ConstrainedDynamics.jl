@@ -21,8 +21,7 @@ mutable struct Link{T,N} <: Node{T,N}
 
     s0::SVector{N,T}
     s1::SVector{N,T}
-
-    data::NodeData{T,N}
+    f::SVector{N,T}
 
     function Link{N}(m::T,J::Array{T,2},p::Vector{<:AbstractVector{T}}) where {T,N}
         J = convert(SMatrix{3,3,T,9},J)
@@ -37,14 +36,13 @@ mutable struct Link{T,N} <: Node{T,N}
 
         s0 = @SVector zeros(T,N)
         s1 = @SVector zeros(T,N)
-
-        data = NodeData{T,N}()
+        f = @SVector zeros(T,N)
 
         g = 0
         dt = 0
         No = 0
 
-        new{T,N}(getGlobalID(),g,dt,No,m,J,x,q,F,τ,p,s0,s1,data)
+        new{T,N}(getGlobalID(),g,dt,No,m,J,x,q,F,τ,p,s0,s1,f)
     end
 
     Link(p::Vector{<:AbstractVector{T}}) where T = Link{0}(zero(T),zeros(T,3,3),p)
@@ -82,13 +80,13 @@ function setInit!(link1::Link{T}, link2::Link{T}, pids::Vector{Int64}; q::Quater
 end
 
 getv1(link::Link) = (link.x[2]-link.x[1])/link.dt
-getvnew(link) = link.data.s1[SVector{3}(1:3)]
+getvnew(link) = link.s1[SVector{3}(1:3)]
 function getω1(link) # 2/link.dt*Vmat()*LTmat(link.q[1])*link.q[2]
     q1 = link.q[1]
     q2 = link.q[2]
     2/link.dt*(q1.w*q2.v-q2.w*q1.v-cross(q1.v,q2.v))
 end
-getωnew(link) = link.data.s1[SVector{3}(4:6)]
+getωnew(link) = link.s1[SVector{3}(4:6)]
 getx3(link) = getvnew(link)*link.dt + link.x[2]
 getq3(link) = Quaternion(link.dt/2*(Lmat(link.q[2])*ωbar(link)))
 derivωbar(link::Link{T}) where T = [-(getωnew(link)/(ωbar(link)[1]))';SMatrix{3,3,T,9}(I)]

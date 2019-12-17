@@ -6,8 +6,12 @@ mutable struct Robot{T,N,No}
 
     origin::Link{T,0}
     nodes::Vector{Node{T}}
+    # links::Vector{Link{T}}
+    # constraints::Vector{Constraint{T}}
     nodesrange::Vector{UnitRange{Int64}}
     dict::Dict{Int64,Int64}
+    # ldict::Dict{Int64,Int64}
+    # cdict::Dict{Int64,Int64}
 
     #???
     normf::T
@@ -96,6 +100,41 @@ function setentries!(robot::Robot)
     end
 end
 
+# function setentries!(robot::Robot)
+#     ldu = robot.ldu
+#     graph = robot.graph
+#
+#     for node in robot.links
+#         id = node.id
+#         diagonal = getentry(ldu,id)
+#
+#         for cid in successors(graph,id)
+#             cid == -1 && break
+#             offdiagonal = getentry(ldu,(id,cid))
+#             cnode =  getnode(robot,cid)
+#             setJ!(offdiagonal,node,cnode)
+#         end
+#
+#         setD!(diagonal,node)
+#         setSol!(diagonal,node)
+#     end
+#
+#     for node in robot.constraints
+#         id = node.id
+#         diagonal = getentry(ldu,id)
+#
+#         for cid in successors(graph,id)
+#             cid == -1 && break
+#             offdiagonal = getentry(ldu,(id,cid))
+#             cnode =  getnode(robot,cid)
+#             setJ!(offdiagonal,node,cnode)
+#         end
+#
+#         setD!(diagonal,node)
+#         setSol!(diagonal,node)
+#     end
+# end
+
 function correctλ!(robot::Robot)
     nodes = robot.nodes
     diagonals = robot.ldu.diagonals
@@ -110,23 +149,21 @@ function normf(robot::Robot{T}) where T
     robot.normf = 0
     nodes = robot.nodes
 
-    foreach(setNormf!,nodes,robot)
     foreach(addNormf!,nodes,robot)
     return sqrt(robot.normf)
 end
 
-addNormf!(node,robot::Robot) = (robot.normf += node.data.normf; nothing)
+addNormf!(node,robot::Robot) = (robot.normf += normf(node,robot); nothing)
 
 function normΔs(robot::Robot)
     robot.normΔs = 0
     nodes = robot.nodes
 
-    foreach(setNormΔs!,nodes)
     foreach(addNormΔs!,nodes,robot)
     return sqrt(robot.normΔs)
 end
 
-addNormΔs!(node,robot::Robot) = (robot.normΔs += node.data.normΔs; nothing)
+addNormΔs!(node,robot::Robot) = (robot.normΔs += normΔs(node); nothing)
 
 function saveToTraj!(robot::Robot{T,N,No},t) where {T,N,No}
     for i=robot.nodesrange[1]

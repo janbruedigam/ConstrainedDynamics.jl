@@ -6,6 +6,7 @@ struct Graph{N}
 
     successors::Vector{SVector{N,Int64}}
     predecessors::Vector{SVector{N,Int64}}
+    connections::Vector{SVector{N,Int64}}
     # directchildren::Vector{SVector}
     # loopchildren::Vector{SVector}
 
@@ -41,8 +42,9 @@ struct Graph{N}
 
         sucs = successors(dfslist,pat,dict)
         preds = predecessors(dfslist,pat,dict)
+        cons = connections(dfslist,adjacency,dict)
 
-        new{N}(adjacency,dfsgraph,pat,fillins,sucs,preds,dfslist,dict,rdict)
+        new{N}(adjacency,dfsgraph,pat,fillins,sucs,preds,cons,dfslist,dict,rdict)
     end
 end
 
@@ -166,10 +168,27 @@ function predecessors(dfslist,pattern,dict::Dict)
     return convert.(SVector{N,Int64},preds)
 end
 
-@inline successors(graph,id::Int64) = graph.successors[graph.dict[id]]
-@inline predecessors(graph,id::Int64) = graph.predecessors[graph.dict[id]]
+# this is done in order (but this is not really important for connections)
+function connections(dfslist,adjacency,dict::Dict)
+    N = length(dfslist)
+    cons = [Vector{Int64}(undef,0) for i=1:N]
+    for i=1:N
+        for cid in dfslist
+            adjacency[i][dict[cid]] && push!(cons[i],cid)
+        end
+        while length(cons[i])<N
+            push!(cons[i],-1)
+        end
+    end
 
-@inline function hassuccessor(graph::Graph{N},id,cid) where N
+    return convert.(SVector{N,Int64},cons)
+end
+
+successors(graph,id::Int64) = graph.successors[graph.dict[id]]
+predecessors(graph,id::Int64) = graph.predecessors[graph.dict[id]]
+connections(graph,id::Int64) = graph.connections[graph.dict[id]]
+
+function hassuccessor(graph::Graph{N},id,cid) where N
     successors = graph.successors[graph.dict[id]]
     for i = 1:N
         val = successors[i]
@@ -179,7 +198,7 @@ end
     return false
 end
 
-@inline function haspredecessor(graph::Graph{N},id,pid) where N
+function haspredecessor(graph::Graph{N},id,pid) where N
     predecessor = graph.predecessor[graph.dict[id]]
     for i = 1:N
         val = predecessor[i]
