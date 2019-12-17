@@ -36,18 +36,15 @@ export
 
 include(joinpath("util", "quaternion.jl"))
 include(joinpath("components", "node.jl"))
-include(joinpath("components", "link.jl"))
-
 include(joinpath("joints", "joint.jl"))
+include(joinpath("components", "link.jl"))
+include(joinpath("components", "constraint.jl"))
+
 # include(joinpath("joints", "fixedposition.jl"))
 # include(joinpath("joints", "fixedorientation.jl"))
 include(joinpath("joints", "socket.jl"))
 include(joinpath("joints", "socketyz.jl"))
 include(joinpath("joints", "axis.jl"))
-include(joinpath("components", "constraint.jl"))
-include(joinpath("components", "combined.jl"))
-include(joinpath("components", "combined2.jl"))
-include(joinpath("components", "combined3.jl"))
 
 include(joinpath("util", "util.jl"))
 include(joinpath("util", "graph.jl"))
