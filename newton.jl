@@ -2,11 +2,16 @@ function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter
     n = 1
     nodes = robot.nodes
     diagonals = robot.ldu.diagonals
+
+    graph = robot.graph
+    ldu = robot.ldu
+
     normf0 = normf(robot)
     for outer n=1:newtonIter
         setentries!(robot)
-        factor!(robot)
-        solve!(robot) # x̂1 for each link and constraint
+        factor!(graph,ldu)
+        solve!(graph,ldu) # x̂1 for each link and constraint
+        correctλ!(robot) # for simplified system
         # foreach(update!,nodes) # x1 = x0 - x̂1 for each link and constraint
         for (i,node) in enumerate(nodes)
             update!(node,diagonals[i])

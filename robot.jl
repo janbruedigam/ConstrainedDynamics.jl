@@ -6,8 +6,12 @@ mutable struct Robot{T,N,No}
 
     origin::Link{T,0}
     nodes::Vector{Node{T}}
+    # links::Vector{Node{T}}
+    # constraints::Vector{Node{T}}
     nodesrange::Vector{UnitRange{Int64}}
     dict::Dict{Int64,Int64}
+    # ldict::Dict{Int64,Int64}
+    # cdict::Dict{Int64,Int64}
 
     #???
     normf::T
@@ -96,71 +100,15 @@ function setentries!(robot::Robot)
     end
 end
 
-function factor!(robot::Robot)
-    graph = robot.graph
-    ldu = robot.ldu
-
-    for id in graph.dfslist
-        diagonal = getentry(ldu,id)
-
-        for cid in successors(graph,id)
-            cid == -1 && break
-            offdiagonal = getentry(ldu,(id,cid))
-            cdiagonal =  getentry(ldu,cid)
-            for gcid in successors(graph,cid)
-                gcid == -1 && break
-                if hassuccessor(graph,id,gcid) # is actually a loop child
-                    updateJ1!(offdiagonal,getentry(ldu,gcid),getentry(ldu,(id,gcid)),getentry(ldu,(cid,gcid)))
-                end
-            end
-            updateJ2!(offdiagonal,cdiagonal)
-        end
-
-        for cid in successors(graph,id)
-            cid == -1 && break
-            updateD!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
-        end
-        invertD!(diagonal)
-    end
-end
-
-function solve!(robot::Robot)
-    graph = robot.graph
-    ldu = robot.ldu
-
-    dfslist = graph.dfslist
-
-    for id in dfslist
-        diagonal = getentry(ldu,id)
-
-        for cid in successors(graph,id) # in correct order (shouldnt matter here)
-            cid == -1 && break
-            LSol!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
-        end
-    end
-
-    for id in reverse(dfslist)
-        diagonal = getentry(ldu,id)
-
-        DSol!(diagonal)
-
-        for pid in predecessors(graph,id)
-            pid == -1 && break
-            USol!(diagonal,getentry(ldu,pid),getentry(ldu,(pid,id)))
-        end
-    end
-
+@inline function correctλ!(robot::Robot)
     nodes = robot.nodes
-    diagonals = ldu.diagonals
-    # (A) For simplified equations
+    diagonals = robot.ldu.diagonals
     for indn = robot.nodesrange[2]
         addλ0!(diagonals[indn],nodes[indn])
     end
-    # end (A)
 end
 
 @inline getnode(robot::Robot,id::Int64) = robot.nodes[robot.dict[id]]
-
 
 function normf(robot::Robot{T}) where T
     robot.normf = 0

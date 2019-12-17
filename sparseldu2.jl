@@ -67,55 +67,52 @@ end
 
 @inline getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[ldu.ddict[id]]
 @inline getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ldu.odict[ids]]
-#
-# @inline function setD!(entry::DiagonalEntry,link::Link,dt)
-#     entry.data.D = ∂dyn∂vel(link,dt)
-#     return nothing
-# end
-#
-# @inline function setD!(entry::DiagonalEntry{T,Nc},::Constraint) where {T,Nc}
-#     entry.D = @SMatrix zeros(T,Nc,Nc)
-#     return nothing
-# end
-#
-# @inline function setSol!(entry::DiagonalEntry,link::Link,dt,g,No)
-#     entry.ŝ = dynamics(link,dt,g,No)
-#     return nothing
-# end
-#
-# @inline function setSol!(entry::DiagonalEntry,constraint::Constraint,dt)
-#     entry.ŝ = g(constraint,dt)
-#     return nothing
-# end
-#
-# @inline function setJ!(entry::OffDiagonalEntry,link::Link,constraint::Constraint,dt,No)
-#     entry.JL = ∂g∂vel(constraint,link,dt,No)
-#     entry.JU = -∂g∂pos(constraint,link,No)'
-#     return nothing
-# end
-#
-# @inline function setJ!(entry::OffDiagonalEntry,constraint::Constraint,link::Link,dt,No)
-#     entry.JL = -∂g∂pos(constraint,link,No)'
-#     entry.JU = ∂g∂vel(constraint,link,dt,No)
-#     return nothing
-# end
-#
-# @inline function setJ!(entry::OffDiagonalEntry{T,N1,N2}) where {T,N1,N2}
-#     entry.JL = @SMatrix zeros(T,N2,N1)
-#     entry.JU = @SMatrix zeros(T,N1,N2)
-#     return nothing
-# end
-#
-# # function factor(ldu::SparseLDU, graph::Graph)
-# #
-# # end
-# #
-# # function solve(ldu::SparseLDU, graph::Graph)
-# #
-# # end
-#
-# function test(robot)
-#     d = robot.ldu.diagonals[1]
-#     setD!(d,robot.links[1],robot.dt)
-#     nothing
-# end
+
+function factor!(graph::Graph,ldu::SparseLDU)
+    for id in graph.dfslist
+        diagonal = getentry(ldu,id)
+
+        for cid in successors(graph,id)
+            cid == -1 && break
+            offdiagonal = getentry(ldu,(id,cid))
+            cdiagonal =  getentry(ldu,cid)
+            for gcid in successors(graph,cid)
+                gcid == -1 && break
+                if hassuccessor(graph,id,gcid) # is actually a loop child
+                    updateJ1!(offdiagonal,getentry(ldu,gcid),getentry(ldu,(id,gcid)),getentry(ldu,(cid,gcid)))
+                end
+            end
+            updateJ2!(offdiagonal,cdiagonal)
+        end
+
+        for cid in successors(graph,id)
+            cid == -1 && break
+            updateD!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
+        end
+        invertD!(diagonal)
+    end
+end
+
+function solve!(graph::Graph,ldu::SparseLDU)
+    dfslist = graph.dfslist
+
+    for id in dfslist
+        diagonal = getentry(ldu,id)
+
+        for cid in successors(graph,id) # in correct order (shouldnt matter here)
+            cid == -1 && break
+            LSol!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
+        end
+    end
+
+    for id in reverse(dfslist)
+        diagonal = getentry(ldu,id)
+
+        DSol!(diagonal)
+
+        for pid in predecessors(graph,id)
+            pid == -1 && break
+            USol!(diagonal,getentry(ldu,pid),getentry(ldu,(pid,id)))
+        end
+    end
+end
