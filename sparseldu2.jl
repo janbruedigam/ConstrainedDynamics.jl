@@ -72,50 +72,50 @@ getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ldu.odict[id
 function updateJ1!(offdiagonal::OffDiagonalEntry,d::DiagonalEntry,gc::OffDiagonalEntry,cgc::OffDiagonalEntry)
     offdiagonal.JL -= gc.JL*d.D*cgc.JU
     offdiagonal.JU -= cgc.JL*d.D*gc.JU
-    return nothing
+    return
 end
 
 function updateJ2!(offdiagonal::OffDiagonalEntry,d::DiagonalEntry)
     offdiagonal.JL = offdiagonal.JL*d.Dinv
     offdiagonal.JU = d.Dinv*offdiagonal.JU
-    return nothing
+    return
 end
 
 function updateD!(diagonal::DiagonalEntry,c::DiagonalEntry,f::OffDiagonalEntry)
     diagonal.D -= f.JL*c.D*f.JU
-    return nothing
+    return
 end
 
-invertD!(diagonal::DiagonalEntry) = (diagonal.Dinv = inv(diagonal.D); nothing)
+invertD!(diagonal::DiagonalEntry) = (diagonal.Dinv = inv(diagonal.D); return)
 
 function LSol!(diagonal::DiagonalEntry,child::DiagonalEntry,fillin::OffDiagonalEntry)
     diagonal.ŝ -= fillin.JL*child.ŝ
-    return nothing
+    return
 end
 
 DSol!(diagonal) = (diagonal.ŝ = diagonal.Dinv*diagonal.ŝ; nothing)
+
 function USol!(diagonal::DiagonalEntry,parent::DiagonalEntry,fillin::OffDiagonalEntry)
     diagonal.ŝ -= fillin.JU*parent.ŝ
-    return nothing
+    return
 end
 
 
 function factor!(graph::Graph,ldu::SparseLDU)
     for id in graph.dfslist
-        diagonal = getentry(ldu,id)
-
         for cid in successors(graph,id)
             cid == -1 && break
             offdiagonal = getentry(ldu,(id,cid))
-            cdiagonal =  getentry(ldu,cid)
             for gcid in successors(graph,cid)
                 gcid == -1 && break
                 if hassuccessor(graph,id,gcid) # is actually a loop child
                     updateJ1!(offdiagonal,getentry(ldu,gcid),getentry(ldu,(id,gcid)),getentry(ldu,(cid,gcid)))
                 end
             end
-            updateJ2!(offdiagonal,cdiagonal)
+            updateJ2!(offdiagonal,getentry(ldu,cid))
         end
+
+        diagonal = getentry(ldu,id)
 
         for cid in successors(graph,id)
             cid == -1 && break

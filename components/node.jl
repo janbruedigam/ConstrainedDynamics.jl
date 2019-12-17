@@ -13,10 +13,9 @@ Base.foreach(f,itr::Vector{<:Node},arg...) = (for x in itr; f(x,arg...); end; no
 function setentries!(robot,nodes::Vector{<:Node})
     graph = robot.graph
     ldu = robot.ldu
-    
+
     for node in nodes
         id = node.id
-        diagonal = getentry(ldu,id)
 
         for cid in successors(graph,id)
             cid == -1 && break
@@ -25,17 +24,18 @@ function setentries!(robot,nodes::Vector{<:Node})
             setJ!(offdiagonal,node,cnode)
         end
 
+        diagonal = getentry(ldu,id)
         setD!(diagonal,node)
         setSol!(diagonal,node)
     end
 end
 
-update!(node,diagonal) = (node.s1 = node.s0 - diagonal.ŝ; nothing)
+update!(node,diagonal) = (node.s1 = node.s0 - diagonal.ŝ; return)
 
-s0tos1!(node) = (node.s1 = node.s0; nothing)
-s1tos0!(node) = (node.s0 = node.s1; nothing)
+s0tos1!(node) = (node.s1 = node.s0; return)
+s1tos0!(node) = (node.s0 = node.s1; return)
 
-function normΔs(node)
+function normΔs(node::Node{T})::T where T
     diff = node.s1-node.s0
     return dot(diff,diff)
 end

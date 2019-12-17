@@ -5,7 +5,7 @@ mutable struct Robot{T,N,No}
     g::T
 
     origin::Link{T,0}
-    links::Vector{Link{T}}
+    links::Vector{Link{T,6}}
     constraints::Vector{Constraint{T}}
     ldict::Dict{Int64,Int64}
     cdict::Dict{Int64,Int64}
@@ -82,16 +82,15 @@ function correctλ!(robot::Robot)
 end
 
 getlink(robot::Robot,id::Int64) = robot.links[robot.ldict[id]]
-getconstraint(robot::Robot,id::Int64) = robot.constraint[robot.cdict[id]]
+getconstraint(robot::Robot,id::Int64) = robot.constraints[robot.cdict[id]]
 getnode(robot::Robot,id::Int64) = haskey(robot.ldict,id) ? getlink(robot,id) : getconstraint(robot,id)
 
 function normf(robot::Robot{T}) where T
     robot.normf = 0
-    links = robot.links
-    constraints = robot.constraints
 
-    foreach(addNormf!,links,robot)
-    foreach(addNormf!,constraints,robot)
+    foreach(addNormf!,robot.links,robot)
+    foreach(addNormf!,robot.constraints,robot)
+    
     return sqrt(robot.normf)
 end
 
@@ -99,15 +98,14 @@ addNormf!(node,robot::Robot) = (robot.normf += normf(node,robot); nothing)
 
 function normΔs(robot::Robot)
     robot.normΔs = 0
-    links = robot.links
-    constraints = robot.constraints
 
-    foreach(addNormΔs!,links,robot)
-    foreach(addNormΔs!,constraints,robot)
+    robot.normΔs+=mapreduce(normΔs,+,robot.links)
+    foreach(addNormΔs!,robot.constraints,robot)
+
     return sqrt(robot.normΔs)
 end
 
-addNormΔs!(node,robot::Robot) = (robot.normΔs += normΔs(node); nothing)
+addNormΔs!(node,robot::Robot) = (robot.normΔs += normΔs(node); return)
 
 function saveToTraj!(robot::Robot{T,N,No},t) where {T,N,No}
     for (ind,link) in enumerate(robot.links)

@@ -12,8 +12,6 @@ struct Axis{T,Nc} <: Joint{T,Nc}
 end
 
 g(J::Axis,link1::Link,link2::Link) = J.V12*Vmat(LTmat(getq3(link1))*getq3(link2))
-# gŝ(J::Axis,link1::Link,link2::Link,data::NodeData) = (data.ŝ=J.V12*Vmat(LTmat(getq3(link1))*getq3(link2));nothing)
-# gf(J::Axis,link1::Link,link2::Link,data::NodeData) = (data.f=J.V12*Vmat(LTmat(getq3(link1))*getq3(link2));nothing)
 
 function ∂g∂posa(J::Axis{T},link1::Link,link2::Link) where T
     if SVector{2,Int64}(link1.id,link2.id) == J.linkids
