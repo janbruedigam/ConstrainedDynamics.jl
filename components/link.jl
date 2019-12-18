@@ -1,6 +1,6 @@
-# abstract type AbstractLink{T} end
+abstract type AbstractLink{T} <: Node{T} end
 
-mutable struct Link{T,N} <: Node{T,N}
+mutable struct Link{T} <: AbstractLink{T}
     id::Int64
 
     #TODO remove
@@ -17,13 +17,11 @@ mutable struct Link{T,N} <: Node{T,N}
     F::Vector{SVector{3,T}}
     τ::Vector{SVector{3,T}}
 
-    p::Vector{SVector{3,T}}
+    s0::SVector{6,T}
+    s1::SVector{6,T}
+    f::SVector{6,T}
 
-    s0::SVector{N,T}
-    s1::SVector{N,T}
-    f::SVector{N,T}
-
-    function Link{N}(m::T,J::Array{T,2},p::Vector{<:AbstractVector{T}}) where {T,N}
+    function Link(m::T,J::Array{T,2}) where T
         J = convert(SMatrix{3,3,T,9},J)
 
         x = [@SVector zeros(T,3)]
@@ -32,32 +30,25 @@ mutable struct Link{T,N} <: Node{T,N}
         F = [@SVector zeros(T,3)]
         τ = [@SVector zeros(T,3)]
 
-        p = convert(Vector{SVector{3,T}},p)
-
-        s0 = @SVector zeros(T,N)
-        s1 = @SVector zeros(T,N)
-        f = @SVector zeros(T,N)
+        s0 = @SVector zeros(T,6)
+        s1 = @SVector zeros(T,6)
+        f = @SVector zeros(T,6)
 
         g = 0
         dt = 0
         No = 0
 
-        new{T,N}(getGlobalID(),g,dt,No,m,J,x,q,F,τ,p,s0,s1,f)
+        new{T}(getGlobalID(),g,dt,No,m,J,x,q,F,τ,s0,s1,f)
     end
-
-    Link(p::Vector{<:AbstractVector{T}}) where T = Link{0}(zero(T),zeros(T,3,3),p)
-    Link{T}() where T = Link([zeros(T,3)])
 end
 
-# struct Origin{T} <: AbstractLink{T}
-#     id::Int64
-#     p::Vector{SVector{3,T}}
-#
-#     Origin(p::Vector{<:AbstractVector{T}}) where T = new{T}(getGlobalID(),p)
-#     Origin{T}() where T = Origin([zeros(T,3)])
-# end
+Base.length(C::Link) = 6
 
+struct Origin{T} <: AbstractLink{T}
+    id::Int64
 
+    Origin{T}() where T = new{T}(getGlobalID())
+end
 
 function setInit!(link::Link{T}; x::AbstractVector{T}=zeros(T,3), q::Quaternion{T}=Quaternion{T}(),
     F::AbstractVector{T}=zeros(T,3), τ::AbstractVector{T}=zeros(T,3)) where T
@@ -69,12 +60,22 @@ function setInit!(link::Link{T}; x::AbstractVector{T}=zeros(T,3), q::Quaternion{
 
 end
 
-function setInit!(link1::Link{T}, link2::Link{T}, pids::Vector{Int64}; q::Quaternion{T}=Quaternion{T}(),
+function setInit!(link1::Link{T}, link2::Link{T}, p1,p2,; q::Quaternion{T}=Quaternion{T}(),
     F::AbstractVector{T}=zeros(T,3), τ::AbstractVector{T}=zeros(T,3)) where T
 
-    p1 = link1.p[pids[1]]
-    p2 = link2.p[pids[2]]
+    p1 = convert(SVector{3,T},p1)
+    p2 = convert(SVector{3,T},p2)
     x2 = link1.x[1] + rotate(p1,link1.q[1]) - rotate(p2,q)
+
+    setInit!(link2; x=x2, q=q, F=F, τ=τ)
+end
+
+function setInit!(link1::Origin{T}, link2::Link{T}, p1,p2,; q::Quaternion{T}=Quaternion{T}(),
+    F::AbstractVector{T}=zeros(T,3), τ::AbstractVector{T}=zeros(T,3)) where T
+
+    p1 = convert(SVector{3,T},p1)
+    p2 = convert(SVector{3,T},p2)
+    x2 = p1 - rotate(p2,q)
 
     setInit!(link2; x=x2, q=q, F=F, τ=τ)
 end
@@ -92,14 +93,6 @@ getq3(link) = Quaternion(link.dt/2*(Lmat(link.q[2])*ωbar(link)))
 derivωbar(link::Link{T}) where T = [-(getωnew(link)/(ωbar(link)[1]))';SMatrix{3,3,T,9}(I)]
 ωbar(link) = Quaternion(sqrt(4/link.dt^2 - getωnew(link)'*getωnew(link)),getωnew(link))
 
-
-getv1(link::Link{T,0}) where T = @SVector zeros(T,3)
-getvnew(link::Link{T,0}) where T = @SVector zeros(T,3)
-getω1(link::Link{T,0}) where T = @SVector zeros(T,3)
-getx3(link::Link{T,0}) where T = @SVector zeros(T,3)
-getq3(link::Link{T,0}) where T = Quaternion{T}()
-derivωbar(link::Link{T,0}) where T = [@SMatrix zeros(T,1,3);SMatrix{3,3,T,9}(I)]
-ωbar(link::Link{T,0}) where T = Quaternion{T}(2/link.dt,0,0,0)
 
 function dynamics(link::Link{T}) where T
     No = link.No

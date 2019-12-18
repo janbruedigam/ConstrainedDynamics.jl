@@ -1,4 +1,4 @@
-abstract type Node{T,N} end
+abstract type Node{T} end
 
 #TODO do id differently?
 CURRENTID = 1
@@ -7,7 +7,7 @@ resetGlobalID() = (global CURRENTID=1; nothing)
 
 Base.show(io::IO, N::Node) = summary(io, N)
 
-Base.length(::Node{T,N}) where {T,N} = N
+# Base.length(::Node{T,N}) where {T,N} = N
 Base.foreach(f,itr::Vector{<:Node},arg...) = (for x in itr; f(x,arg...); end; nothing)
 
 update!(node,diagonal) = (node.s1 = node.s0 - diagonal.ŝ; return)

@@ -1,8 +1,8 @@
-mutable struct Constraint{T,N,Nc,Cs} <: Node{T,N}
+mutable struct Constraint{T,N,Nc,Cs} <: Node{T}
     id::Int64
 
     constr::Cs
-    pid::Int64
+    pid::Union{Int64,Nothing}
     linkids::SVector{Nc,Int64}
 
     s0::SVector{N,T}
@@ -32,6 +32,8 @@ mutable struct Constraint{T,N,Nc,Cs} <: Node{T,N}
         new{T,N,Nc,typeof(constr)}(id,constr,pid,linkids,s0,s1)
     end
 end
+
+Base.length(C::Constraint{T,N}) where {T,N} = N
 
 @generated function g(robot,C::Constraint{T,N,Nc}) where {T,N,Nc}
     vec = [:(g(C.constr[$i],getlink(robot,C.pid),getlink(robot,C.linkids[$i]))) for i=1:Nc]

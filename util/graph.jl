@@ -16,24 +16,29 @@ struct Graph{N}
     dict::Dict{Int64,Int64}
     rdict::Dict{Int64,Int64}
 
-    function Graph(origin::Link,links::Vector{<:Link},constraints::Vector{<:Constraint})
+    function Graph(origin::Origin,links::Vector{<:Link},constraints::Vector{<:Constraint})
+        oid = origin.id
         adjacency, dict = adjacencyMatrix(constraints,links)
-        dfsgraph, dfslist, loops = dfs(adjacency,dict,origin.id)
+        dfsgraph, dfslist, loops = dfs(adjacency,dict,oid)
         pat = pattern(dfsgraph,dict,loops)
         fil, originals = fillins(dfsgraph,pat,dict,loops)
 
-        adjacency = deleteat(adjacency,dict[origin.id])
-        dfsgraph = deleteat(dfsgraph,dict[origin.id])
-        pat = deleteat(pat,dict[origin.id])
-        fil = deleteat(fil,dict[origin.id])
-        originals = deleteat(originals,dict[origin.id])
+        adjacency = deleteat(adjacency,dict[oid])
+        dfsgraph = deleteat(dfsgraph,dict[oid])
+        pat = deleteat(pat,dict[oid])
+        fil = deleteat(fil,dict[oid])
+        originals = deleteat(originals,dict[oid])
         dfslist = StaticArrays.deleteat(dfslist,length(dfslist))
 
         for (id,ind) in dict
-            ind>dict[origin.id] && (dict[id] = ind-1)
+            ind>dict[oid] && (dict[id] = ind-1)
         end
-        pop!(dict,origin.id)
+        pop!(dict,oid)
         rdict = Dict(ind => id for (id, ind) in dict)
+
+        for constraint in constraints
+            constraint.pid == oid && (constraint.pid = nothing)
+        end
 
         N = length(dict)
         #TODO make properly to convert

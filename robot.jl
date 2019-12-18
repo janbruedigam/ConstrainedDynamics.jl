@@ -4,8 +4,8 @@ mutable struct Robot{T,N,No}
     dt::T
     g::T
 
-    origin::Link{T,0}
-    links::Vector{Link{T,6}}
+    origin::Origin{T}
+    links::Vector{Link{T}}
     constraints::Vector{Constraint{T}}
     ldict::Dict{Int64,Int64}
     cdict::Dict{Int64,Int64}
@@ -20,7 +20,7 @@ mutable struct Robot{T,N,No}
     storage::Storage{T}
 
     #TODO no constraints input
-    function Robot(origin::Link{T,0},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1, No=2) where T
+    function Robot(origin::Origin{T},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1, No=2) where T
         Nl = length(links)
         Nc = length(constraints)
         N = Nl+Nc
@@ -28,13 +28,6 @@ mutable struct Robot{T,N,No}
 
         ldict = Dict{Int64,Int64}()
 
-        origin.g = g
-        origin.dt = dt
-        origin.No = No
-        push!(origin.x, [origin.x[1] for i=1:No-1]...)
-        push!(origin.q, [origin.q[1] for i=1:No-1]...)
-        push!(origin.F, [origin.F[1] for i=1:No-1]...)
-        push!(origin.τ, [origin.τ[1] for i=1:No-1]...)
         for (ind,link) in enumerate(links)
             link.g = g
             link.dt = dt
@@ -82,7 +75,7 @@ function setentries!(robot::Robot)
         end
 
         diagonal = getentry(ldu,id)
-        link = _getlink(robot,id)
+        link = getlink(robot,id)
         setDandŝ!(diagonal,link,robot)
     end
 
@@ -110,8 +103,8 @@ function correctλ!(robot::Robot)
     end
 end
 
-_getlink(robot::Robot,id::Int64) = robot.links[robot.ldict[id]]
-getlink(robot::Robot,id::Int64) = haskey(robot.ldict,id) ? _getlink(robot,id) : robot.origin
+getlink(robot::Robot,id::Int64) = robot.links[robot.ldict[id]]
+getlink(robot::Robot,id::Nothing) = robot.origin
 getconstraint(robot::Robot,id::Int64) = robot.constraints[robot.cdict[id]]
 getnode(robot::Robot,id::Int64) = haskey(robot.ldict,id) ? _getlink(robot,id) : getconstraint(robot,id)
 
