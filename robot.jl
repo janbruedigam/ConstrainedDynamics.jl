@@ -67,7 +67,7 @@ mutable struct Robot{T,N,No}
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T}) where {T}
-    summary(io, R); println(io, " with ", length(R.links[1]), " links and ", length(R.constraints[2]), " constraints")
+    summary(io, R); println(io, " with ", length(R.links), " links and ", length(R.constraints), " constraints")
 end
 
 function setentries!(robot::Robot)
@@ -81,7 +81,7 @@ function correctλ!(robot::Robot)
     end
 end
 
-getlink(robot::Robot,id::Int64) = robot.links[robot.ldict[id]]
+getlink(robot::Robot,id::Int64) = haskey(robot.ldict,id) ? robot.links[robot.ldict[id]] : robot.origin
 getconstraint(robot::Robot,id::Int64) = robot.constraints[robot.cdict[id]]
 getnode(robot::Robot,id::Int64) = haskey(robot.ldict,id) ? getlink(robot,id) : getconstraint(robot,id)
 
@@ -90,7 +90,7 @@ function normf(robot::Robot{T}) where T
 
     foreach(addNormf!,robot.links,robot)
     foreach(addNormf!,robot.constraints,robot)
-    
+
     return sqrt(robot.normf)
 end
 

@@ -1,10 +1,10 @@
-mutable struct Constraint{T,N,Nc,Nl,Cs,L,Ls} <: Node{T,N}
+mutable struct Constraint{T,N,Nc,Nl,Cs} <: Node{T,N}
     id::Int64
     linkids::SVector{Nl,Int64}
 
     constr::Cs
-    parentlink::L
-    links::Ls
+    parentlink::Int64
+    links::SVector{Nc,Int64}
 
     s0::SVector{N,T}
     s1::SVector{N,T}
@@ -32,54 +32,54 @@ mutable struct Constraint{T,N,Nc,Nl,Cs,L,Ls} <: Node{T,N}
         for i=1:length(links)
             push!(linkids,links[i].id)
         end
+        links = linkids[2:end]
+        parentlink = parentlink.id
         linkids = unique(linkids)
 
         s0 = @SVector zeros(T,N)
         s1 = @SVector zeros(T,N)
 
-        new{T,N,Nc,Nl,typeof(constr),typeof(parentlink),typeof(links)}(id,linkids,constr,parentlink,links,s0,s1)
+        new{T,N,Nc,Nl,typeof(constr)}(id,linkids,constr,parentlink,links,s0,s1)
     end
 end
 
-@generated function g(C::Constraint{T,N,Nc}) where {T,N,Nc}
-    vec = [:(g(C.constr[$i],C.parentlink,C.links[$i])) for i=1:Nc]
+@generated function g(robot,C::Constraint{T,N,Nc}) where {T,N,Nc}
+    vec = [:(g(C.constr[$i],getlink(robot,C.parentlink),getlink(robot,C.links[$i]))) for i=1:Nc]
     :(vcat($(vec...)))
 end
 
-function ∂g∂pos(C::Constraint{T,N,Nc},L::Link) where {T,N,Nc}
-    id = L.id
-    if id == C.parentlink.id
-        return ∂g∂posa(C,L)
+function ∂g∂pos(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
+    if id == C.parentlink
+        return ∂g∂posa(robot,C,id)
     else
-        return ∂g∂posb(C,L)
+        return ∂g∂posb(robot,C,id)
     end
 end
 
-@generated function ∂g∂posa(C::Constraint{T,N,Nc},L::Link) where {T,N,Nc}
-    vec = [:(∂g∂posa(C.constr[$i],L,C.links[$i])) for i=1:Nc]
+@generated function ∂g∂posa(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
+    vec = [:(∂g∂posa(C.constr[$i],getlink(robot,id),getlink(robot,C.links[$i]))) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂posb(C::Constraint{T,N,Nc},L::Link) where {T,N,Nc}
-    vec = [:(∂g∂posb(C.constr[$i],C.parentlink,L)) for i=1:Nc]
+@generated function ∂g∂posb(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
+    vec = [:(∂g∂posb(C.constr[$i],getlink(robot,C.parentlink),getlink(robot,id))) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-function ∂g∂vel(C::Constraint{T,N,Nc},L::Link) where {T,N,Nc}
-    id = L.id
-    if id == C.parentlink.id
-        return ∂g∂vela(C,L)
+function ∂g∂vel(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
+    if id == C.parentlink
+        return ∂g∂vela(robot,C,id)
     else
-        return ∂g∂velb(C,L)
+        return ∂g∂velb(robot,C,id)
     end
 end
 
-@generated function ∂g∂vela(C::Constraint{T,N,Nc},L::Link) where {T,N,Nc}
-    vec = [:(∂g∂vela(C.constr[$i],L,C.links[$i])) for i=1:Nc]
+@generated function ∂g∂vela(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
+    vec = [:(∂g∂vela(C.constr[$i],getlink(robot,id),getlink(robot,C.links[$i]))) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂velb(C::Constraint{T,N,Nc},L::Link) where {T,N,Nc}
-    vec = [:(∂g∂velb(C.constr[$i],C.parentlink,L)) for i=1:Nc]
+@generated function ∂g∂velb(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
+    vec = [:(∂g∂velb(C.constr[$i],getlink(robot,C.parentlink),getlink(robot,id))) for i=1:Nc]
     return :(vcat($(vec...)))
 end

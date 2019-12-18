@@ -21,12 +21,12 @@ function setentries!(robot,nodes::Vector{<:Node})
             cid == -1 && break
             offdiagonal = getentry(ldu,(id,cid))
             cnode =  getnode(robot,cid)
-            setJ!(offdiagonal,node,cnode)
+            setJ!(robot,offdiagonal,node,cnode)
         end
 
         diagonal = getentry(ldu,id)
         setD!(diagonal,node)
-        setSol!(diagonal,node)
+        setSol!(diagonal,node,robot)
     end
 end
 
