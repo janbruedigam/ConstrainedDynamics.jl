@@ -3,11 +3,6 @@ abstract type AbstractLink{T} <: Node{T} end
 mutable struct Link{T} <: AbstractLink{T}
     id::Int64
 
-    #TODO remove
-    g::T
-    dt::T
-    No::Int64
-
     m::T
     J::SMatrix{3,3,T,9}
 
@@ -34,11 +29,7 @@ mutable struct Link{T} <: AbstractLink{T}
         s1 = @SVector zeros(T,6)
         f = @SVector zeros(T,6)
 
-        g = 0
-        dt = 0
-        No = 0
-
-        new{T}(getGlobalID(),g,dt,No,m,J,x,q,F,τ,s0,s1,f)
+        new{T}(getGlobalID(),m,J,x,q,F,τ,s0,s1,f)
     end
 end
 
@@ -80,38 +71,54 @@ function setInit!(link1::Origin{T}, link2::Link{T}, p1,p2,; q::Quaternion{T}=Qua
     setInit!(link2; x=x2, q=q, F=F, τ=τ)
 end
 
-getv1(link::Link) = (link.x[2]-link.x[1])/link.dt
-getvnew(link) = link.s1[SVector{3}(1:3)]
-function getω1(link) # 2/link.dt*Vmat()*LTmat(link.q[1])*link.q[2]
+getx3(link,dt) = getvnew(link)*dt + link.x[2]
+getq3(link,dt) = Quaternion(dt/2*(Lmat(link.q[2])*ωbar(link,dt)))
+getv1(link,dt) = (link.x[2]-link.x[1])/dt
+function getω1(link,dt) # 2/link.dt*Vmat()*LTmat(link.q[1])*link.q[2]
     q1 = link.q[1]
     q2 = link.q[2]
-    2/link.dt*(q1.w*q2.v-q2.w*q1.v-cross(q1.v,q2.v))
+    2/dt*(q1.w*q2.v-q2.w*q1.v-cross(q1.v,q2.v))
 end
+
+getvnew(link) = link.s1[SVector{3}(1:3)]
 getωnew(link) = link.s1[SVector{3}(4:6)]
-getx3(link) = getvnew(link)*link.dt + link.x[2]
-getq3(link) = Quaternion(link.dt/2*(Lmat(link.q[2])*ωbar(link)))
-derivωbar(link::Link{T}) where T = [-(getωnew(link)/(ωbar(link)[1]))';SMatrix{3,3,T,9}(I)]
-ωbar(link) = Quaternion(sqrt(4/link.dt^2 - getωnew(link)'*getωnew(link)),getωnew(link))
+
+function derivωbar(link::Link{T},dt) where T
+    ωnew = getωnew(link)
+    msq = -sqrt(4/dt^2 - dot(ωnew,ωnew))
+    [ωnew'/msq;SMatrix{3,3,T,9}(I)]
+end
+function ωbar(link,dt)
+    ωnew = getωnew(link)
+    Quaternion(sqrt(4/dt^2 - dot(ωnew,ωnew)),ωnew)
+end
 
 
-function dynamics(link::Link{T}) where T
-    No = link.No
-    dt = link.dt
-    ezg = SVector{3,T}(0,0,-link.g)
-    dynT = link.m*((getvnew(link) - getv1(link))/dt + ezg) - link.F[No]
+function dynamics(robot, link::Link{T}) where T
+    No = robot.No
+    dt = robot.dt
+    ezg = SVector{3,T}(0,0,-robot.g)
+    dynT = link.m*((getvnew(link) - getv1(link,dt))/dt + ezg) - link.F[No]
 
     J = link.J
-    ω1 = getω1(link)
+    ω1 = getω1(link,dt)
     ωnew = getωnew(link)
     sq1 = sqrt(4/dt^2 - ω1'*ω1)
     sq2 = sqrt(4/dt^2 - ωnew'*ωnew)
     dynR = skewplusdiag(ωnew,sq2)*(J*ωnew) - skewplusdiag(ω1,sq1)*(J*ω1) - 2*link.τ[No]
 
-    return [dynT;dynR]
+    link.f = [dynT;dynR]
+
+    for cid in connections(robot.graph,link.id)
+        cid == -1 && break
+        GtλTof!(robot,getconstraint(robot,cid),link)
+    end
+
+    return link.f
 end
 
-function ∂dyn∂vel(link::Link{T}) where T
-    dt = link.dt
+function ∂dyn∂vel(robot, link::Link{T}) where T
+    dt = robot.dt
     J = link.J
     ωnew = getωnew(link)
     sq = sqrt(4/dt^2 - ωnew'*ωnew)
