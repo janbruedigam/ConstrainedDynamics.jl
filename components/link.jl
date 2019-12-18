@@ -16,7 +16,7 @@ mutable struct Link{T} <: AbstractLink{T}
     s1::SVector{6,T}
     f::SVector{6,T}
 
-    function Link(m::T,J::Array{T,2}) where T
+    function Link(m::T,J::AbstractArray{T,2}) where T
         J = convert(SMatrix{3,3,T,9},J)
 
         x = [@SVector zeros(T,3)]
@@ -30,6 +30,12 @@ mutable struct Link{T} <: AbstractLink{T}
         f = @SVector zeros(T,6)
 
         new{T}(getGlobalID(),m,J,x,q,F,τ,s0,s1,f)
+    end
+
+    function Link(Box::Box)
+        L = Link(Box.m,Box.J)
+        push!(Box.linkids,L.id)
+        return L
     end
 end
 
@@ -109,10 +115,10 @@ function dynamics(robot, link::Link{T}) where T
 
     link.f = [dynT;dynR]
 
-    for cid in connections(robot.graph,link.id)
-        cid == -1 && break
-        GtλTof!(robot,getconstraint(robot,cid),link)
-    end
+    # for cid in connections(robot.graph,link.id)
+    #     # cid == -1 && break
+    #     GtλTof!(robot,getconstraint(robot,cid),link)
+    # end
 
     return link.f
 end

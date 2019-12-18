@@ -12,16 +12,18 @@ using Main.FullCordDynamics
 ex = [1.;0.;0.]
 
 l1 = 1.
-m1, J1 = box(.1,.1,l1,l1)
+l2 = sqrt(2)/2
+h,w = .1,.1
+b1 = Box(l1,h,w,l1,color=RGBA(1.,1.,0.))
+b2 = Box(l2,h,w,l2,color=RGBA(1.,1.,0.))
+b3 = Box(l1,h,w,l1,color=RGBA(1.,0.,0.))
+b4 = Box(l2,h,w,l2,color=RGBA(1.,0.,0.))
+
 vert11 = [0.;0.;l1/2]
 vert12 = -vert11
-vert1 = [[vert11];[vert12]]
 
-l2 = sqrt(2)/2
-m2, J2 = box(.1,.1,l2,l2)
 vert21 = [0.;0.;l2/2]
 vert22 = -vert21
-vert2 = [[vert21];[vert22]]
 
 # Initial orientation
 phi1, phi2, phi3, phi4 = pi/2, -pi/4, 0., 3*pi/4.
@@ -30,16 +32,16 @@ q1, q2, q3, q4 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX
 # Links
 origin = Origin{Float64}()
 
-link1 = Link(m1,J1)
+link1 = Link(b1)
 setInit!(origin,link1,zeros(3),vert11,q=q1)
 
-link2 = Link(m2,J2)
+link2 = Link(b2)
 setInit!(link1,link2,vert12,vert21,q=q2)
 
-link3 = Link(m1,J1)
+link3 = Link(b3)
 setInit!(link1,link3,vert11,vert11,q=q3,F=[0.,0.,0.])
 
-link4 = Link(m2,J2)
+link4 = Link(b4)
 setInit!(link3,link4,vert12,vert21,q=q4)
 
 # Constraints
@@ -52,15 +54,16 @@ joint3to4 = Constraint(Socket(link3,link4,vert12,vert21),Axis(link3,link4,ex))
 joint2to4 = Constraint(Socket(link2,link4,vert22,vert22),Axis(link2,link4,ex))
 
 
-links = [link1; link2; link3; link4]
-constraints = [joint0to1; joint1to23; joint3to4; joint2to4]
+# links = [link1; link2; link3; link4]
+# constraints = [joint0to1; joint1to23; joint3to4; joint2to4]
 # constraints = [joint0to1; joint1to23; joint3to4]
 # constraints = [joint0to1; joint1to2; joint1to3; joint3to4]
-# links = [link1]
-# constraints = [joint0to1]
+links = [link1]
+constraints = [joint0to1]
+shapes = [b1,b2,b3,b4]
 
 
 bot = Robot(origin,links, constraints)
 
-# sim!(bot,save=true,debug=false)
-# include(joinpath("util", "visualize.jl"))
+sim!(bot,save=true,debug=false)
+# FullCordDynamics.visualize(bot,shapes)

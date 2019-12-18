@@ -107,7 +107,7 @@ function factor!(graph::Graph,ldu::SparseLDU)
             cid == -1 && break
             offdiagonal = getentry(ldu,(id,cid))
             for gcid in successors(graph,cid)
-                gcid == -1 && break
+                # gcid == -1 && break
                 if hassuccessor(graph,id,gcid) # is actually a loop child
                     updateJ1!(offdiagonal,getentry(ldu,gcid),getentry(ldu,(id,gcid)),getentry(ldu,(cid,gcid)))
                 end
@@ -118,7 +118,7 @@ function factor!(graph::Graph,ldu::SparseLDU)
         diagonal = getentry(ldu,id)
 
         for cid in successors(graph,id)
-            cid == -1 && break
+            # cid == -1 && break
             updateD!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
         end
         invertD!(diagonal)
@@ -132,7 +132,7 @@ function solve!(graph::Graph,ldu::SparseLDU)
         diagonal = getentry(ldu,id)
 
         for cid in successors(graph,id)
-            cid == -1 && break
+            # cid == -1 && break
             LSol!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
         end
     end
@@ -143,7 +143,7 @@ function solve!(graph::Graph,ldu::SparseLDU)
         DSol!(diagonal)
 
         for pid in predecessors(graph,id)
-            pid == -1 && break
+            # pid == -1 && break
             USol!(diagonal,getentry(ldu,pid),getentry(ldu,(pid,id)))
         end
     end

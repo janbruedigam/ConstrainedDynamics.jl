@@ -10,7 +10,8 @@ function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter
         setentries!(robot)
         factor!(graph,ldu)
         solve!(graph,ldu) # x̂1 for each link and constraint
-        # correctλ!(robot) # for simplified system
+        correctλ!(robot)
+
         for link in links
             update!(link,getentry(ldu,link.id))
         end
@@ -19,7 +20,7 @@ function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter
         end
 
         normf1 = normf(robot)
-        normf1>normf0 ? lineSearch!(robot,normf0;iter=lineIter, warning=warning) : nothing
+        normf1>normf0 && lineSearch!(robot,normf0;iter=lineIter, warning=warning)
 
         if normΔs(robot) < ε && normf1 < ε
             foreach(s1tos0!,links)

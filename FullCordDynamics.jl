@@ -1,11 +1,22 @@
 module FullCordDynamics
 
-using LinearAlgebra
-using StaticArrays
+using LinearAlgebra, StaticArrays
 using Rotations
+
+using CoordinateTransformations
+using GeometryTypes: # Define geometric shapes
+    GeometryPrimitive, GeometryTypes, HyperRectangle, Vec, Point, Rectangle, Cylinder,
+    HomogenousMesh, SignedDistanceField, HyperSphere, GLUVMesh, Pyramid
+using Blink
+using Colors: RGBA, RGB # Handle RGB colors
+using FileIO, MeshIO # Load meshes in MeshCat
+using MeshCat # Visualize 3D animations
+
 using Plots
 
 export
+    Box,
+
     Quaternion,
     Origin,
     Link,
@@ -22,11 +33,12 @@ export
     initialPosition,
     setInit!,
     sim!,
-    trajSFunc,
-    plotTraj
+    plotTraj,
+    visualize
 
 
 include(joinpath("util", "quaternion.jl"))
+include(joinpath("util", "shapes.jl"))
 include(joinpath("components", "node.jl"))
 include(joinpath("joints", "joint.jl"))
 include(joinpath("components", "link.jl"))
@@ -40,7 +52,6 @@ include(joinpath("joints", "axis.jl"))
 
 include(joinpath("util", "util.jl"))
 include(joinpath("util", "graph.jl"))
-include(joinpath("util", "shapes.jl"))
 include(joinpath("util", "storage.jl"))
 
 include("sparseldu2.jl")
@@ -48,5 +59,7 @@ include("robot.jl")
 include("sparseldu.jl")
 
 include("newton.jl")
+
+include(joinpath("util", "visualize.jl"))
 
 end

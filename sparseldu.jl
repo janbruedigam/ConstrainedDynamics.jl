@@ -29,8 +29,24 @@ function setJ!(F::OffDiagonalEntry{T,N1,N2}) where {T,N1,N2}
     return
 end
 
+addλ0!(diagonal,C::Constraint) = (diagonal.ŝ += C.s0; nothing)
+
+# function normf(link::Link{T},robot::Robot) where T
+#     f = dynamics(robot,link)
+#     return dot(f,f)
+# end
+
 function normf(link::Link{T},robot::Robot) where T
-    f = dynamics(robot,link)
+    graph = robot.graph
+    id = link.id
+    link.f = dynamics(robot,link)
+
+    for cid in connections(graph,id)
+        cid == -1 && break
+        GtλTof!(robot,getconstraint(robot,cid),link)
+    end
+
+    f = link.f
     return dot(f,f)
 end
 

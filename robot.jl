@@ -68,8 +68,8 @@ function setentries!(robot::Robot)
 
     for (id,_) in robot.ldict
         for cid in directchildren(graph,id)
-            cid == -1 && break
-            setJ!(robot,getentry(ldu,(id,cid)),id,getnode(robot,cid))
+            # cid == -1 && break
+            setJ!(robot,getentry(ldu,(id,cid)),id,getconstraint(robot,cid))
         end
 
         diagonal = getentry(ldu,id)
@@ -81,17 +81,23 @@ function setentries!(robot::Robot)
         id = node.id
 
         for cid in directchildren(graph,id)
-            cid == -1 && break
+            # cid == -1 && break
             setJ!(robot,getentry(ldu,(id,cid)),node,cid)
         end
 
         for cid in loopchildren(graph,id)
-            cid == -1 && break
+            # cid == -1 && break
             setJ!(getentry(ldu,(id,cid)))
         end
 
         diagonal = getentry(ldu,id)
         setDandŝ!(diagonal,node,robot)
+    end
+end
+
+function correctλ!(robot::Robot)
+    for constraint in robot.constraints
+        addλ0!(getentry(robot.ldu,constraint.id),constraint)
     end
 end
 
@@ -159,10 +165,19 @@ function sim!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
     end
 end
 
-function plotTraj(robot,trajS,id)
-    p = plot(collect(0:robot.dt:robot.tend-robot.dt),trajS[id[1],:])
+function plotTraj(robot::Robot{T},id) where T
+    n = length(robot.links)
+    angles = zeros(T,n,length(robot.steps))
+    for i=1:n
+        qs = robot.storage.q[i]
+        for (t,q) in enumerate(qs)
+            angles[i,t] = angleAxis(q)[1]*sign(angleAxis(q)[2][1])
+        end
+    end
+
+    p = plot(collect(0:robot.dt:robot.tend-robot.dt),angles[id[1],:])
     for ind in Iterators.rest(id,2)
-        plot!(collect(0:robot.dt:robot.tend-robot.dt),trajS[ind,:])
+        plot!(collect(0:robot.dt:robot.tend-robot.dt),angles[ind,:])
     end
     return p
 end
