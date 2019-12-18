@@ -71,8 +71,37 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T}) where 
 end
 
 function setentries!(robot::Robot)
-    setentries!(robot,robot.links)
-    setentries!(robot,robot.constraints)
+
+    graph = robot.graph
+    ldu = robot.ldu
+
+    for (id,_) in robot.ldict
+        for cid in directchildren(graph,id)
+            cid == -1 && break
+            setJ!(robot,getentry(ldu,(id,cid)),id,getnode(robot,cid))
+        end
+
+        diagonal = getentry(ldu,id)
+        link = _getlink(robot,id)
+        setDandŝ!(diagonal,link,robot)
+    end
+
+    for node in robot.constraints
+        id = node.id
+
+        for cid in directchildren(graph,id)
+            cid == -1 && break
+            setJ!(robot,getentry(ldu,(id,cid)),node,cid)
+        end
+
+        for cid in loopchildren(graph,id)
+            cid == -1 && break
+            setJ!(robot,getentry(ldu,(id,cid)))
+        end
+
+        diagonal = getentry(ldu,id)
+        setDandŝ!(diagonal,node,robot)
+    end
 end
 
 function correctλ!(robot::Robot)
@@ -81,9 +110,10 @@ function correctλ!(robot::Robot)
     end
 end
 
-getlink(robot::Robot,id::Int64) = haskey(robot.ldict,id) ? robot.links[robot.ldict[id]] : robot.origin
+_getlink(robot::Robot,id::Int64) = robot.links[robot.ldict[id]]
+getlink(robot::Robot,id::Int64) = haskey(robot.ldict,id) ? _getlink(robot,id) : robot.origin
 getconstraint(robot::Robot,id::Int64) = robot.constraints[robot.cdict[id]]
-getnode(robot::Robot,id::Int64) = haskey(robot.ldict,id) ? getlink(robot,id) : getconstraint(robot,id)
+getnode(robot::Robot,id::Int64) = haskey(robot.ldict,id) ? _getlink(robot,id) : getconstraint(robot,id)
 
 function normf(robot::Robot{T}) where T
     robot.normf = 0

@@ -1,11 +1,12 @@
 struct Graph{N}
     adjacency::Vector{SVector{N,Bool}}
     dfsgraph::Vector{SVector{N,Bool}}
-    pattern::Vector{SVector{N,Bool}} # includes fillins
+    pattern::Vector{SVector{N,Bool}} # includes fillins and originals
+    originals::Vector{SVector{N,Bool}}
     fillins::Vector{SVector{N,Bool}}
 
-    directchildren::Vector{SVector}
-    loopchildren::Vector{SVector}
+    directchildren::Vector{SVector{N,Int64}}
+    loopchildren::Vector{SVector{N,Int64}}
     successors::Vector{SVector{N,Int64}} # contains direct and loop children
     predecessors::Vector{SVector{N,Int64}}
     connections::Vector{SVector{N,Int64}}
@@ -19,12 +20,13 @@ struct Graph{N}
         adjacency, dict = adjacencyMatrix(constraints,links)
         dfsgraph, dfslist, loops = dfs(adjacency,dict,origin.id)
         pat = pattern(dfsgraph,dict,loops)
-        fillins = convert(Matrix{Bool},dfsgraph .⊻ pat) # xor so only fillins remain
+        fil, originals = fillins(dfsgraph,pat,dict,loops)
 
         adjacency = deleteat(adjacency,dict[origin.id])
         dfsgraph = deleteat(dfsgraph,dict[origin.id])
         pat = deleteat(pat,dict[origin.id])
-        fillins = deleteat(fillins,dict[origin.id])
+        fil = deleteat(fil,dict[origin.id])
+        originals = deleteat(originals,dict[origin.id])
         dfslist = StaticArrays.deleteat(dfslist,length(dfslist))
 
         for (id,ind) in dict
@@ -38,15 +40,16 @@ struct Graph{N}
         adjacency = convert(Vector{SVector{N,Bool}},adjacency)
         dfsgraph = convert(Vector{SVector{N,Bool}},dfsgraph)
         pat = convert(Vector{SVector{N,Bool}},pat)
-        fillins = convert(Vector{SVector{N,Bool}},fillins)
+        fil = convert(Vector{SVector{N,Bool}},fil)
+        originals = convert(Vector{SVector{N,Bool}},originals)
 
-        dirs = directchildren(dfslist,dfsgraph,dict)
-        loos = loopchildren(dfslist,fillins,dict)
+        dirs = directchildren(dfslist,originals,dict)
+        loos = loopchildren(dfslist,fil,dict)
         sucs = successors(dfslist,pat,dict)
         preds = predecessors(dfslist,pat,dict)
         cons = connections(dfslist,adjacency,dict)
 
-        new{N}(adjacency,dfsgraph,pat,fillins,dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
+        new{N}(adjacency,dfsgraph,pat,originals,fil,dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
     end
 end
 
@@ -59,7 +62,7 @@ function adjacencyMatrix(constraints::Vector{<:Constraint},links::Vector{<:Link}
         cid = constraint.id
         A = [A zeros(Bool,n,1); zeros(Bool,1,n) zero(Bool)]
         dict[cid] = n+=1
-        for linkid in constraint.linkids
+        for linkid in unique([constraint.pid;constraint.linkids])
             if !haskey(dict,linkid)
                 A = [A zeros(Bool,n,1); zeros(Bool,1,n) zero(Bool)]
                 dict[linkid] = n+=1
@@ -128,6 +131,20 @@ function pattern(dfsgraph::Matrix,dict::Dict,loops::Vector{Vector{Int64}})
     end
 
     return pat
+end
+
+function fillins(dfsgraph::Matrix,pattern::Matrix,dict::Dict,loops::Vector{Vector{Int64}})
+    fil = deepcopy(dfsgraph .⊻ pattern) # xor so only fillins remain (+ to be removed loop closure since this is a child)
+    originals = deepcopy(dfsgraph)
+
+    for loop in loops # loop = [index of starting constraint, index of last link in loop]
+        startid = loop[1]
+        endid = loop[2]
+        fil[dict[startid],dict[endid]] = false
+        originals[dict[startid],dict[endid]] = true
+    end
+
+    return convert(Matrix{Bool},fil), convert(Matrix{Bool},originals)
 end
 
 function parent(dfsgraph::Matrix,dict::Dict,childid::Int64) where {N,T}

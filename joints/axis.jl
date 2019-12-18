@@ -7,7 +7,7 @@ struct Axis{T,Nc} <: Joint{T,Nc}
         V12 = (@SMatrix [1 0 0; 0 1 0])*svd(skew(axis)).Vt
         ids = SVector{2,Int64}(link1.id,link2.id)
 
-        new{T,Nc}(V12,ids), link1, link2
+        new{T,Nc}(V12,ids), ids...
     end
 end
 

@@ -1,42 +1,34 @@
-function setD!(diagonal,link::Link{T}) where T
-    # μ = 1e-4
-    diagonal.D = ∂dyn∂vel(link) #+ SMatrix{6,6,Float64,36}(μ*I)
+function setDandŝ!(diagonal,link::Link,robot)
+    diagonal.D = ∂dyn∂vel(link)
+    diagonal.ŝ = dynamics(link)
     return
 end
 
-function setD!(diagonal::DiagonalEntry{T,N},::Constraint) where {T,N}
+function setDandŝ!(diagonal::DiagonalEntry{T,N},C::Constraint,robot) where {T,N}
     diagonal.D = @SMatrix zeros(T,N,N)
+    diagonal.ŝ = g(robot,C)
     return
 end
-
 
 # TODO pass in the two connected links
-function setJ!(robot,F::OffDiagonalEntry,C::Constraint,L::Link)
-    F.JL = ∂g∂vel(robot,C,L.id)
-    F.JU = -∂g∂pos(robot,C,L.id)'
+function setJ!(robot,F::OffDiagonalEntry,linkid::Int64,C::Constraint)
+    F.JL = -∂g∂pos(robot,C,linkid)'
+    F.JU = ∂g∂vel(robot,C,linkid)
     return
 end
 
-function setJ!(robot,F::OffDiagonalEntry,L::Link,C::Constraint)
-    F.JL = -∂g∂pos(robot,C,L.id)'
-    F.JU = ∂g∂vel(robot,C,L.id)
+
+function setJ!(robot,F::OffDiagonalEntry,C::Constraint,linkid::Int64)
+    F.JL = ∂g∂vel(robot,C,linkid)
+    F.JU = -∂g∂pos(robot,C,linkid)'
     return
 end
 
-function setJ!(robot,F::OffDiagonalEntry{T,N1,N2},C1::Constraint,C2::Constraint) where {T,N1,N2}
+function setJ!(robot,F::OffDiagonalEntry{T,N1,N2}) where {T,N1,N2}
     F.JL = @SMatrix zeros(T,N2,N1)
     F.JU = @SMatrix zeros(T,N1,N2)
     return
 end
-
-# function setJ!(robot,entry::OffDiagonalEntry{T,N1,N2}) where {T,N1,N2}
-#     entry.JL = @SMatrix zeros(T,N2,N1)
-#     entry.JU = @SMatrix zeros(T,N1,N2)
-#     return
-# end
-
-setSol!(diagonal,link::Link,robot) = (diagonal.ŝ = dynamics(link); nothing)
-setSol!(diagonal,C::Constraint,robot) = (diagonal.ŝ = g(robot,C); nothing)
 
 
 # (A) For extended equations
@@ -44,7 +36,7 @@ setSol!(diagonal,C::Constraint,robot) = (diagonal.ŝ = g(robot,C); nothing)
 addλ0!(diagonal,C::Constraint) = (diagonal.ŝ += C.s0; nothing)
 
 
-function normf(link::Link,robot::Robot)
+function normf(link::Link{T},robot::Robot) where T
     graph = robot.graph
     id = link.id
     link.f = dynamics(link)
@@ -53,6 +45,7 @@ function normf(link::Link,robot::Robot)
         cid == -1 && break
         GtλTof!(robot,getnode(robot,cid),link)
     end
+
     f = link.f
     return dot(f,f)
 end
@@ -62,4 +55,4 @@ function normf(C::Constraint,robot::Robot)
     return dot(f,f)
 end
 
-GtλTof!(robot,C::Constraint,L::Link) = (L.f -= ∂g∂pos(robot,C,L.id)'*C.s1; nothing)
+GtλTof!(robot,C::Constraint,L::Link) = (L.f -= ∂g∂pos(robot,C,L.id)'*C.s1; return)

@@ -10,26 +10,6 @@ Base.show(io::IO, N::Node) = summary(io, N)
 Base.length(::Node{T,N}) where {T,N} = N
 Base.foreach(f,itr::Vector{<:Node},arg...) = (for x in itr; f(x,arg...); end; nothing)
 
-function setentries!(robot,nodes::Vector{<:Node})
-    graph = robot.graph
-    ldu = robot.ldu
-
-    for node in nodes
-        id = node.id
-
-        for cid in successors(graph,id)
-            cid == -1 && break
-            offdiagonal = getentry(ldu,(id,cid))
-            cnode =  getnode(robot,cid)
-            setJ!(robot,offdiagonal,node,cnode)
-        end
-
-        diagonal = getentry(ldu,id)
-        setD!(diagonal,node)
-        setSol!(diagonal,node,robot)
-    end
-end
-
 update!(node,diagonal) = (node.s1 = node.s0 - diagonal.ŝ; return)
 
 s0tos1!(node) = (node.s1 = node.s0; return)

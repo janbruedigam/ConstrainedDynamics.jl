@@ -7,7 +7,7 @@ struct SocketYZ{T,Nc} <: Joint{T,Nc}
         pids = SVector(pid1,pid2)
         ids = SVector{2,Int64}(link1.id,link2.id)
 
-        new{T,Nc}(pids,ids), link1, link2
+        new{T,Nc}(pids,ids), ids...
     end
 end
 
