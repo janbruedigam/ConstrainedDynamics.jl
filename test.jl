@@ -13,11 +13,11 @@ ex = [1.;0.;0.]
 
 l1 = 1.
 l2 = sqrt(2)/2
-h,w = .1,.1
-b1 = Box(l1,h,w,l1,color=RGBA(1.,1.,0.))
-b2 = Box(l2,h,w,l2,color=RGBA(1.,1.,0.))
-b3 = Box(l1,h,w,l1,color=RGBA(1.,0.,0.))
-b4 = Box(l2,h,w,l2,color=RGBA(1.,0.,0.))
+x,y = .1,.1
+b1 = Box(x,y,l1,l1,color=RGBA(1.,1.,0.))
+b2 = Box(x,y,l2,l2,color=RGBA(1.,1.,0.))
+b3 = Box(x,y,l1,l1,color=RGBA(1.,0.,0.))
+b4 = Box(x,y,l2,l2,color=RGBA(1.,0.,0.))
 
 vert11 = [0.;0.;l1/2]
 vert12 = -vert11
@@ -66,4 +66,4 @@ shapes = [b1,b2,b3,b4]
 bot = Robot(origin,links, constraints)
 
 sim!(bot,save=true,debug=false)
-# FullCordDynamics.visualize(bot,shapes)
+FullCordDynamics.visualize(bot,shapes)

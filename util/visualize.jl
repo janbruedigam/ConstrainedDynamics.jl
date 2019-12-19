@@ -1,5 +1,5 @@
 function GeometryTypes.Cylinder(box::Box)
-    Cylinder(Point(0.0,0.0,-box.lwh[1]/2),Point(0.0,0.0,box.lwh[1]/2), box.lwh[2]/2)
+    Cylinder(Point(0.0,0.0,-box.lwh[3]/2),Point(0.0,0.0,box.lwh[3]/2), box.lwh[1]/2)
 end
 
 function visualize(robot::Robot,shapes)
