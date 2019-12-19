@@ -5,7 +5,7 @@ mutable struct Box{T} <: Shape
     m::T
     J::SMatrix{3,3,T,9}
 
-    lwh::SVector{3,T}
+    xyz::SVector{3,T}
     color::RGBA
 
     function Box(x,y,z,m::T;color=RGBA(0.5,0.5,0.5)) where T
