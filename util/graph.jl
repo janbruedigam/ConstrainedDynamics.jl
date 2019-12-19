@@ -1,178 +1,266 @@
 struct Graph{N}
-    root::Int64
     adjacency::Vector{SVector{N,Bool}}
     dfsgraph::Vector{SVector{N,Bool}}
+    pattern::Vector{SVector{N,Bool}} # includes fillins and originals
+    originals::Vector{SVector{N,Bool}}
+    fillins::Vector{SVector{N,Bool}}
+
+    directchildren::Vector{Vector{Int64}}
+    loopchildren::Vector{Vector{Int64}}
+    successors::Vector{Vector{Int64}} # contains direct and loop children
+    predecessors::Vector{Vector{Int64}}
+    connections::Vector{Vector{Int64}}
+
     dfslist::SVector{N,Int64}
-    parentlist::SVector{N,Int64}
-    # idlist::SVector{N,Int64} # matches ids to "nodes" index, 0 is for root
 
-    pattern::Vector{SVector{N,Int64}} # includes fillins with ids of fillins at positions
-    # fillinid::SVector{NpF,Int64} # matches ids to "fillins" index in robot struct
+    dict::Dict{Int64,Int64}
+    rdict::Dict{Int64,Int64}
 
-    loops::Vector{Vector{Int64}}
+    function Graph(origin::Origin,links::Vector{<:Link},constraints::Vector{<:Constraint})
+        oid = origin.id
+        adjacency, dict = adjacencyMatrix(constraints,links)
+        dfsgraph, dfslist, loops = dfs(adjacency,dict,oid)
+        pat = pattern(dfsgraph,dict,loops)
+        fil, originals = fillins(dfsgraph,pat,dict,loops)
 
-    function Graph(origin::Link,links::Vector{<:Link},constraints::Vector{<:Constraint};offset::Int64=0,root::Int64=1)
-        adjacency = adjacencyMatrix(constraints,offset=offset)
-        dfsgraph, dfslist, loops = dfs(adjacency,root)
+        adjacency = deleteat(adjacency,dict[oid])
+        dfsgraph = deleteat(dfsgraph,dict[oid])
+        pat = deleteat(pat,dict[oid])
+        fil = deleteat(fil,dict[oid])
+        originals = deleteat(originals,dict[oid])
+        dfslist = StaticArrays.deleteat(dfslist,length(dfslist))
 
-        N = length(adjacency)
-        parentlist = zeros(Int64,N)
-        for i=1:N
-            parentlist[i] = parent(dfsgraph,i)
+        for (id,ind) in dict
+            ind>dict[oid] && (dict[id] = ind-1)
+        end
+        pop!(dict,oid)
+        rdict = Dict(ind => id for (id, ind) in dict)
+
+        for constraint in constraints
+            constraint.pid == oid && (constraint.pid = nothing)
         end
 
-        # idlist = zeros(Int64,N)
-        # idlist[origin.data.id] = 0
-        # Nl = length(links)
-        # for (i,link) in enumerate(links)
-        #     idlist[link.data.id] = i
-        # end
-        # for (i,constraint) in enumerate(constraints)
-        #     idlist[constraint.data.id] = i+Nl
-        # end
+        N = length(dict)
+        #TODO make properly to convert
+        adjacency = convert(Vector{SVector{N,Bool}},adjacency)
+        dfsgraph = convert(Vector{SVector{N,Bool}},dfsgraph)
+        pat = convert(Vector{SVector{N,Bool}},pat)
+        fil = convert(Vector{SVector{N,Bool}},fil)
+        originals = convert(Vector{SVector{N,Bool}},originals)
 
-        # TODO do fillinid propertly without offset
-        pat = pattern(dfsgraph,root,loops,offset=N)
-        # NpF = N+F
-        # fillinid = zeros(Int64,NpF)
-        # for i=N+1:NpF
-        #     fillinid[i]=i-N
-        # end
+        dirs = directchildren(dfslist,originals,dict)
+        loos = loopchildren(dfslist,fil,dict)
+        sucs = successors(dfslist,pat,dict)
+        preds = predecessors(dfslist,pat,dict)
+        cons = connections(dfslist,adjacency,dict)
 
-        new{N}(root,adjacency,dfsgraph,dfslist,parentlist,pat,loops)
+        new{N}(adjacency,dfsgraph,pat,originals,fil,dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
     end
 end
 
-@inline Base.length(g::Graph{N}) where N = N
+function adjacencyMatrix(constraints::Vector{<:Constraint},links::Vector{<:Link})
+    A = zeros(Bool,0,0)
+    dict = Dict{Int64,Int64}()
+    n = 0
 
-
-function adjacencyMatrix(constraints::Vector{<:Constraint};offset::Int64=0)
-    A = zero(Bool)
-    n = 1
-
-    for (i,constraint) in enumerate(constraints)
-        for linkid in linkids(constraint)
-            cid = constraint.data.id
-            m = maximum([linkid;cid])
-            if m>n
-                A = [A zeros(Bool,n,m-n); zeros(Bool,m-n,n) zeros(Bool,m-n,m-n)]
-                n = m
+    for constraint in constraints
+        cid = constraint.id
+        A = [A zeros(Bool,n,1); zeros(Bool,1,n) zero(Bool)]
+        dict[cid] = n+=1
+        for linkid in unique([constraint.pid;constraint.linkids])
+            if !haskey(dict,linkid)
+                A = [A zeros(Bool,n,1); zeros(Bool,1,n) zero(Bool)]
+                dict[linkid] = n+=1
             end
-            A[cid,linkid] = true
+            A[dict[cid],dict[linkid]] = true
+        end
+    end
+    for link in links # add unconnected links
+        if !haskey(dict,link.id)
+            A = [A zeros(Bool,n,1); zeros(Bool,1,n) zero(Bool)]
+            dict[link.id] = n+=1
         end
     end
 
-    A=A.|A'
-    Avec = repeat([@SVector zeros(Bool,n)],n)
-    for i=1:n
-        Avec[i] = convert(SVector{n,Bool},A[i,:])
-    end
-
-    return Avec
+    A = A.|A'
+    convert(Matrix{Bool},A), dict
 end
 
-function dfs(adjacency::Vector{SVector{N,T}},rootid) where {N,T}
+function dfs(adjacency::Matrix,dict::Dict,originid::Int64)
+    N = size(adjacency)[1]
     dfsgraph = zeros(Bool,N,N)
     dfslist = zeros(Int64,N)
     visited = zeros(Bool,N)
     loops = Vector{Vector{Int64}}(undef,0)
     index = N
 
-    dfslist[index] = rootid
-    visited[rootid] = true
-    dfs!(adjacency,dfsgraph,rootid,dfslist,visited,N,0,loops)
+    dfslist[index] = originid
+    visited[dict[originid]] = true
+    dfs!(adjacency,dfsgraph,dict,dfslist,visited,loops,N,originid,-1)
     loops = loops[sortperm(sort.(loops))[1:2:length(loops)]] # removes double entries of loop connections and keeps the first found pair
 
-    dfsgraphvec = repeat([@SVector zeros(Bool,N)],N)
-    for i=1:N
-        dfsgraphvec[i] = convert(SVector{N,Bool},dfsgraph[i,:])
-    end
-    return dfsgraphvec, convert(SVector{N},dfslist), loops
+    return dfsgraph, convert(SVector{N},dfslist), loops
 end
 
-function dfs!(A::Vector{SVector{N,T}},Adfs::Matrix,nodeid::Int64,list::Vector,visited::Vector,index::Int64,parentid::Int64,loops::Vector{Vector{Int64}}) where {N,T}
-    for j=1:N
-        if A[nodeid][j] && parentid!=j
+function dfs!(A::Matrix,Adfs::Matrix,dict::Dict,list::Vector,visited::Vector,loops::Vector{Vector{Int64}},index::Int64,currentid::Int64,parentid::Int64) where {N,T}
+    i = dict[currentid]
+    for (childid,j) in dict
+        if A[i,j] && parentid != childid # connection from i to j in adjacency && not a direct connection back to the parent
             if visited[j]
-                push!(loops,[j,nodeid])
+                push!(loops,[childid,currentid]) # childid is actually a predecessor of currentid since it's a loop
             else
                 index-=1
+                list[index] = childid
                 visited[j] = true
-                list[index] = j
-                Adfs[nodeid,j] = true
-                index = dfs!(A,Adfs,j,list,visited,index,nodeid,loops)
+                Adfs[i,j] = true
+                index = dfs!(A,Adfs,dict,list,visited,loops,index,childid,currentid)
             end
         end
     end
     return index
 end
 
-@inline children(graph::Graph,n) = graph.dfsgraph[n]
-@inline enumchildren(graph::Graph,n) = enumerate(graph.dfsgraph[n])
-@inline enumpattern(graph::Graph,n) = enumerate(graph.pattern[n])
-@inline parent(graph::Graph,n) = graph.parentlist[n]
-@inline connected(graph::Graph,n) = graph.adjacency[n]
-@inline enumconnected(graph::Graph,n) = enumerate(graph.adjacency[n])
-@inline isroot(graph::Graph,n) = n==graph.root ? true : false
-function ispredecessor(graph::Graph{N},p,c) where N # true if p is predecessor of c
-    while c!=0
-        c = parent(graph,c)
-        p == c && (return true)
+function pattern(dfsgraph::Matrix,dict::Dict,loops::Vector{Vector{Int64}})
+    pat = deepcopy(dfsgraph)
+
+    for loop in loops # loop = [index of starting constraint, index of last link in loop]
+        startid = loop[1]
+        endid = loop[2]
+        currentid = endid
+        nextid = parent(dfsgraph,dict,currentid)
+        while nextid != startid
+            pat[dict[startid],dict[currentid]]=true
+            currentid = nextid
+            nextid = parent(dfsgraph,dict,nextid)
+        end
+    end
+
+    return pat
+end
+
+function fillins(dfsgraph::Matrix,pattern::Matrix,dict::Dict,loops::Vector{Vector{Int64}})
+    fil = deepcopy(dfsgraph .⊻ pattern) # xor so only fillins remain (+ to be removed loop closure since this is a child)
+    originals = deepcopy(dfsgraph)
+
+    for loop in loops # loop = [index of starting constraint, index of last link in loop]
+        startid = loop[1]
+        endid = loop[2]
+        fil[dict[startid],dict[endid]] = false
+        originals[dict[startid],dict[endid]] = true
+    end
+
+    return convert(Matrix{Bool},fil), convert(Matrix{Bool},originals)
+end
+
+function parent(dfsgraph::Matrix,dict::Dict,childid::Int64) where {N,T}
+    j = dict[childid]
+    for (parentid,i) in dict
+        dfsgraph[i,j] && (return parentid)
+    end
+    return -1
+end
+
+# this is done in order!
+function successors(dfslist,pattern,dict::Dict)
+    N = length(dfslist)
+    sucs = [Vector{Int64}(undef,0) for i=1:N]
+    for i=1:N
+        for cid in dfslist
+            pattern[i][dict[cid]] && push!(sucs[i],cid)
+        end
+        # while length(sucs[i])<N
+        #     push!(sucs[i],-1)
+        # end
+    end
+
+    # return convert.(SVector{N,Int64},sucs)
+    return sucs
+end
+
+# this is done in order!
+function directchildren(dfslist,dfsgraph,dict::Dict)
+    N = length(dfslist)
+    dirs = [Vector{Int64}(undef,0) for i=1:N]
+    for i=1:N
+        for cid in dfslist
+            dfsgraph[i][dict[cid]] && push!(dirs[i],cid)
+        end
+        # while length(dirs[i])<N
+        #     push!(dirs[i],-1)
+        # end
+    end
+
+    # return convert.(SVector{N,Int64},dirs)
+    return dirs
+end
+
+# this is done in order!
+function loopchildren(dfslist,fillins,dict::Dict)
+    N = length(dfslist)
+    loos = [Vector{Int64}(undef,0) for i=1:N]
+    for i=1:N
+        for cid in dfslist
+            fillins[i][dict[cid]] && push!(loos[i],cid)
+        end
+        # while length(loos[i])<N
+        #     push!(loos[i],-1)
+        # end
+    end
+
+    # return convert.(SVector{N,Int64},loos)
+    return loos
+end
+
+# this is done in reverse order (but this is not really important for predecessors)
+function predecessors(dfslist,pattern,dict::Dict)
+    N = length(dfslist)
+    preds = [Vector{Int64}(undef,0) for i=1:N]
+    for i=1:N
+        for cid in reverse(dfslist)
+            pattern[dict[cid]][i] && push!(preds[i],cid)
+        end
+        # while length(preds[i])<N
+        #     push!(preds[i],-1)
+        # end
+    end
+
+    # return convert.(SVector{N,Int64},preds)
+    return preds
+end
+
+# this is done in order (but this is not really important for connections)
+function connections(dfslist,adjacency,dict::Dict)
+    N = length(dfslist)
+    cons = [Vector{Int64}(undef,0) for i=1:N]
+    for i=1:N
+        for cid in dfslist
+            adjacency[i][dict[cid]] && push!(cons[i],cid)
+        end
+        # while length(cons[i])<N
+        #     push!(cons[i],-1)
+        # end
+    end
+
+    # return convert.(SVector{N,Int64},cons)
+    return cons
+end
+
+directchildren(graph,id::Int64) = graph.directchildren[graph.dict[id]]
+loopchildren(graph,id::Int64) = graph.loopchildren[graph.dict[id]]
+successors(graph,id::Int64) = graph.successors[graph.dict[id]]
+predecessors(graph,id::Int64) = graph.predecessors[graph.dict[id]]
+connections(graph,id::Int64) = graph.connections[graph.dict[id]]
+
+function hassuccessor(graph::Graph{N},id,cid) where N
+    for val in graph.successors[graph.dict[id]]
+        val == cid && (return true)
     end
     return false
 end
-issuccessor(graph::Graph,c,p) = ispredecessor(graph,p,c) # true if c is successor of p
 
-function parent(dfsgraph::Vector{SVector{N,T}},n) where {N,T}
-    for i=1:N
-        dfsgraph[i][n] && (return i)
+function haspredecessor(graph::Graph{N},id,pid) where N
+    for val in graph.predecessor[graph.dict[id]]
+        val == pid && (return true)
     end
-    return 0
-end
-
-#TODO include loops
-function pattern(dfsgraph::Vector{SVector{N,T}},rootid,loops;offset::Int64=0) where {N,T}
-    pat = zeros(Int64,N,N)
-    id = 0
-    for i=1:N
-        if i!=rootid
-            for j=1:N
-                j!=rootid && dfsgraph[i][j]==true && (id+=1;pat[i,j]=id+offset)
-            end
-        end
-    end
-
-    for loop in loops # loop = [index of starting constraint, index of last link in loop]
-        pid = loop[1]
-        cid = loop[2]
-        while parent(dfsgraph,cid)!=loop[1]
-            id+=1
-            pat[pid,cid]=id+offset
-            cid = parent(dfsgraph,cid)
-        end
-    end
-
-
-    patternvec = repeat([@SVector zeros(Int64,N)],N)
-    for i=1:N
-        patternvec[i] = convert(SVector{N,Int64},pat[i,:])
-    end
-    return patternvec
-end
-
-function createfillins(graph::Graph,idlist,origin::Link{T},nodes::Vector) where T
-    # idlist = graph.idlist
-    fillins = Vector{FillIn}(undef,0)
-    for (i,row) in enumerate(graph.pattern)
-        for (j,id) in enumerate(row)
-            if id!=0
-                parentnode = nodes[idlist[i]]
-                childnode = nodes[idlist[j]]
-
-
-                push!(fillins,FillIn{T,length(childnode),length(parentnode)}(id,childnode.data.id,parentnode.data.id))
-            end
-        end
-    end
-    return fillins
+    return false
 end

@@ -1,21 +1,26 @@
 module FullCordDynamics
 
-using LinearAlgebra
-using StaticArrays
+using LinearAlgebra, StaticArrays
 using Rotations
-using Plots
-using Base.Threads
-using LightXML
 
+using CoordinateTransformations
+using GeometryTypes: # Define geometric shapes
+    GeometryPrimitive, GeometryTypes, HyperRectangle, Vec, Point, Rectangle, Cylinder,
+    HomogenousMesh, SignedDistanceField, HyperSphere, GLUVMesh, Pyramid
+using Blink
+using Colors: RGBA, RGB # Handle RGB colors
+using FileIO, MeshIO # Load meshes in MeshCat
+using MeshCat # Visualize 3D animations
+
+using Plots
 
 export
+    Box,
+
     Quaternion,
-    Node,
-    FillIn,
-    JointNode,
+    Origin,
     Link,
     Constraint,
-    Joint,
     Robot,
 
     Axis,
@@ -23,43 +28,36 @@ export
     SocketYZ,
     # FixedOrientation,
     # FixedPosition,
-    Combined2,
-    Combined3,
 
-    box,
-    initialPosition,
     setInit!,
-    sim!,
-    trajSFunc,
+    simulate!,
     plotTraj,
-
-    parse_urdf
+    visualize
 
 
 include(joinpath("util", "quaternion.jl"))
+include(joinpath("util", "shapes.jl"))
 include(joinpath("components", "node.jl"))
-include(joinpath("components", "fillin.jl"))
-include(joinpath("components", "link.jl"))
-
 include(joinpath("joints", "joint.jl"))
+include(joinpath("components", "link.jl"))
+include(joinpath("components", "constraint.jl"))
+
 # include(joinpath("joints", "fixedposition.jl"))
 # include(joinpath("joints", "fixedorientation.jl"))
 include(joinpath("joints", "socket.jl"))
 include(joinpath("joints", "socketyz.jl"))
 include(joinpath("joints", "axis.jl"))
-include(joinpath("components", "constraint.jl"))
-include(joinpath("components", "combined2.jl"))
-include(joinpath("components", "combined3.jl"))
 
+include(joinpath("util", "util.jl"))
 include(joinpath("util", "graph.jl"))
-include(joinpath("util", "shapes.jl"))
 include(joinpath("util", "storage.jl"))
 
-include("robot.jl")
-include("sparseldu.jl")
+include(joinpath("solver", "sparseldu2.jl"))
+include(joinpath("components", "robot.jl"))
+include(joinpath("solver", "sparseldu.jl"))
 
-include("newton.jl")
+include(joinpath("solver", "newton.jl"))
 
-include(joinpath("util", "parseurdf.jl"))
+include(joinpath("util", "visualize.jl"))
 
 end

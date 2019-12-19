@@ -11,9 +11,9 @@
 # end
 #
 #
-# @inline g(C::FixedOrientation{T}) where T = Vmat(getq3(C.link))
+# g(C::FixedOrientation{T}) where T = Vmat(getq3(C.link))
 #
-# @inline function ∂g∂posa(C::FixedOrientation{T}) where T
+# function ∂g∂posa(C::FixedOrientation{T}) where T
 #     link = C.link
 #     X = @SMatrix zeros(T,3,3)
 #
@@ -22,7 +22,7 @@
 #     return [X R]
 # end
 #
-# @inline function ∂g∂vela(C::FixedOrientation{T}) where T
+# function ∂g∂vela(C::FixedOrientation{T}) where T
 #     link = C.link
 #     V = @SMatrix zeros(T,3,3)
 #
