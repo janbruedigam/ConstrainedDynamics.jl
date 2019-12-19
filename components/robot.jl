@@ -101,6 +101,17 @@ end
 @inline getlink(robot::Robot,id::Int64) = robot.links[robot.ldict[id]]
 @inline getlink(robot::Robot,id::Nothing) = robot.origin
 @inline getconstraint(robot::Robot,id::Int64) = robot.constraints[robot.cdict[id]]
+# @inline function getnode(robot::Robot,id::Int64) # should only be used in setup
+#      if haskey(robot.ldict,id)
+#          return getlink(robot,id)
+#      elseif haskey(robot.cdict,id)
+#          return getconstraint(robot,id)
+#      elseif id == robot.originid
+#          return robot.origin
+#      else
+#          error("not found.")
+#      end
+#  end
 
 
 @inline function normf(robot::Robot{T}) where T

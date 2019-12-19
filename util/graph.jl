@@ -244,3 +244,10 @@ end
     end
     return false
 end
+
+@inline function hasdirectchild(graph::Graph{N},id,cid) where N
+    for val in graph.directchildren[graph.dict[id]]
+        val == cid && (return true)
+    end
+    return false
+end

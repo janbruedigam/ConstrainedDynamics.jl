@@ -48,19 +48,19 @@ struct SparseLDU{T}
 
         offdiagonals = Vector{OffDiagonalEntry{T}}(undef,0)
         odict = Dict{Tuple{Int64,Int64},Int64}()
-        for (parentid,i) in pairs(graph.dict)
-            for (childid,j) in pairs(graph.dict)
-                if graph.pattern[i][j]
-                    haskey(ldict,parentid) ? n1=links[ldict[parentid]] : n1=constraints[cdict[parentid]]
-                    haskey(ldict,childid) ? n2=links[ldict[childid]] : n2=constraints[cdict[childid]]
+        for id in graph.dfslist
+            haskey(ldict,id) ? node=links[ldict[id]] : node=constraints[cdict[id]]
+            N1 = length(node)
 
-                    N1 = length(n1)
-                    N2 = length(n2)
-                    push!(offdiagonals,OffDiagonalEntry{T,N2,N1}())
-                    odict[(parentid,childid)] = length(offdiagonals)
-                end
+            for cid in successors(graph,id)
+                haskey(ldict,cid) ? cnode=links[ldict[cid]] : cnode=constraints[cdict[cid]]
+                N2 = length(cnode)
+
+                push!(offdiagonals,OffDiagonalEntry{T,N2,N1}())
+                odict[(id,cid)] = length(offdiagonals)
             end
         end
+
         new{T}(diagonals,offdiagonals,ddict,odict)
     end
 end
@@ -103,11 +103,22 @@ end
 
 function factor!(graph::Graph,ldu::SparseLDU)
     for id in graph.dfslist
-        for cid in successors(graph,id)
-            cid == -1 && break
+        # Keep this for now
+        # for cid in successors(graph,id)
+        #     offdiagonal = getentry(ldu,(id,cid))
+        #     for gcid in successors(graph,cid)
+        #         if hassuccessor(graph,id,gcid) # is actually a loop child
+        #             updateJ1!(offdiagonal,getentry(ldu,gcid),getentry(ldu,(id,gcid)),getentry(ldu,(cid,gcid)))
+        #         end
+        #     end
+        #     updateJ2!(offdiagonal,getentry(ldu,cid))
+        # end
+        sucs = successors(graph,id)
+        for cid in sucs
             offdiagonal = getentry(ldu,(id,cid))
-            for gcid in successors(graph,cid)
-                if hassuccessor(graph,id,gcid) # is actually a loop child
+            for gcid in sucs
+                gcid == cid && break
+                if hasdirectchild(graph,cid,gcid)
                     updateJ1!(offdiagonal,getentry(ldu,gcid),getentry(ldu,(id,gcid)),getentry(ldu,(cid,gcid)))
                 end
             end

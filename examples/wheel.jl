@@ -37,8 +37,8 @@ constraints = [socket0to1;joint1to5]
 shapes = [b1;b5]
 
 
-bot = Robot(origin,links, constraints;dt=0.001)
-link5.q[2] = Quaternion(RotX(0.05))
+bot = Robot(origin,links, constraints;dt=0.00025)
+link5.q[2] = Quaternion(RotX(0.015))
 
 simulate!(bot,save=true,debug=false)
 FullCordDynamics.visualize(bot,shapes)
