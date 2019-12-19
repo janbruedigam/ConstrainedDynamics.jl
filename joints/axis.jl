@@ -1,4 +1,4 @@
-struct Axis{T,Nc} <: Joint{T,Nc}
+mutable struct Axis{T,Nc} <: Joint{T,Nc}
     V12::SMatrix{2,3,T,6}
     link2id::Int64
 
@@ -11,9 +11,9 @@ struct Axis{T,Nc} <: Joint{T,Nc}
     end
 end
 
-g(J::Axis,link1::Link,link2::Link,dt,No) = J.V12*Vmat(LTmat(getq3(link1,dt))*getq3(link2,dt))
+@inline g(J::Axis,link1::Link,link2::Link,dt,No) = J.V12*Vmat(LTmat(getq3(link1,dt))*getq3(link2,dt))
 
-function ∂g∂posa(J::Axis{T},link1::Link,link2::Link,No) where T
+@inline function ∂g∂posa(J::Axis{T},link1::Link,link2::Link,No) where T
     if link2.id == J.link2id
         X = @SMatrix zeros(T,2,3)
 
@@ -25,7 +25,7 @@ function ∂g∂posa(J::Axis{T},link1::Link,link2::Link,No) where T
     end
 end
 
-function ∂g∂posb(J::Axis{T},link1::Link,link2::Link,No) where T
+@inline function ∂g∂posb(J::Axis{T},link1::Link,link2::Link,No) where T
     if link2.id == J.link2id
         X = @SMatrix zeros(T,2,3)
 
@@ -37,7 +37,7 @@ function ∂g∂posb(J::Axis{T},link1::Link,link2::Link,No) where T
     end
 end
 
-function ∂g∂vela(J::Axis{T},link1::Link,link2::Link,dt,No) where T
+@inline function ∂g∂vela(J::Axis{T},link1::Link,link2::Link,dt,No) where T
     if link2.id == J.link2id
         V = @SMatrix zeros(T,2,3)
 
@@ -49,7 +49,7 @@ function ∂g∂vela(J::Axis{T},link1::Link,link2::Link,dt,No) where T
     end
 end
 
-function ∂g∂velb(J::Axis{T},link1::Link,link2::Link,dt,No) where T
+@inline function ∂g∂velb(J::Axis{T},link1::Link,link2::Link,dt,No) where T
     if link2.id == J.link2id
         V = @SMatrix zeros(T,2,3)
 
@@ -62,9 +62,9 @@ function ∂g∂velb(J::Axis{T},link1::Link,link2::Link,dt,No) where T
 end
 
 
-g(J::Axis,link1::Origin,link2::Link,dt,No) = J.V12*Vmat(getq3(link2,dt))
+@inline g(J::Axis,link1::Origin,link2::Link,dt,No) = J.V12*Vmat(getq3(link2,dt))
 
-function ∂g∂posb(J::Axis{T},link1::Origin,link2::Link,No) where T
+@inline function ∂g∂posb(J::Axis{T},link1::Origin,link2::Link,No) where T
     if link2.id == J.link2id
         X = @SMatrix zeros(T,2,3)
 
@@ -76,7 +76,7 @@ function ∂g∂posb(J::Axis{T},link1::Origin,link2::Link,No) where T
     end
 end
 
-function ∂g∂velb(J::Axis{T},link1::Origin,link2::Link,dt,No) where T
+@inline function ∂g∂velb(J::Axis{T},link1::Origin,link2::Link,dt,No) where T
     if link2.id == J.link2id
         V = @SMatrix zeros(T,2,3)
 

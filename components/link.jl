@@ -41,7 +41,7 @@ end
 
 Base.length(C::Link) = 6
 
-struct Origin{T} <: AbstractLink{T}
+mutable struct Origin{T} <: AbstractLink{T}
     id::Int64
 
     Origin{T}() where T = new{T}(getGlobalID())
@@ -77,30 +77,30 @@ function setInit!(link1::Origin{T}, link2::Link{T}, p1,p2,; q::Quaternion{T}=Qua
     setInit!(link2; x=x2, q=q, F=F, τ=τ)
 end
 
-getx3(link,dt) = getvnew(link)*dt + link.x[2]
-getq3(link,dt) = Quaternion(dt/2*(Lmat(link.q[2])*ωbar(link,dt)))
-getv1(link,dt) = (link.x[2]-link.x[1])/dt
-function getω1(link,dt) # 2/link.dt*Vmat()*LTmat(link.q[1])*link.q[2]
+@inline getx3(link,dt) = getvnew(link)*dt + link.x[2]
+@inline getq3(link,dt) = Quaternion(dt/2*(Lmat(link.q[2])*ωbar(link,dt)))
+@inline getv1(link,dt) = (link.x[2]-link.x[1])/dt
+@inline function getω1(link,dt) # 2/link.dt*Vmat()*LTmat(link.q[1])*link.q[2]
     q1 = link.q[1]
     q2 = link.q[2]
     2/dt*(q1.w*q2.v-q2.w*q1.v-cross(q1.v,q2.v))
 end
 
-getvnew(link) = link.s1[SVector{3}(1:3)]
-getωnew(link) = link.s1[SVector{3}(4:6)]
+@inline getvnew(link) = link.s1[SVector{3}(1:3)]
+@inline getωnew(link) = link.s1[SVector{3}(4:6)]
 
-function derivωbar(link::Link{T},dt) where T
+@inline function derivωbar(link::Link{T},dt) where T
     ωnew = getωnew(link)
     msq = -sqrt(4/dt^2 - dot(ωnew,ωnew))
     [ωnew'/msq;SMatrix{3,3,T,9}(I)]
 end
-function ωbar(link,dt)
+@inline function ωbar(link,dt)
     ωnew = getωnew(link)
     Quaternion(sqrt(4/dt^2 - dot(ωnew,ωnew)),ωnew)
 end
 
 
-function dynamics(robot, link::Link{T}) where T
+@inline function dynamics(robot, link::Link{T}) where T
     No = robot.No
     dt = robot.dt
     ezg = SVector{3,T}(0,0,-robot.g)
@@ -123,7 +123,7 @@ function dynamics(robot, link::Link{T}) where T
     return link.f
 end
 
-function ∂dyn∂vel(robot, link::Link{T}) where T
+@inline function ∂dyn∂vel(robot, link::Link{T}) where T
     dt = robot.dt
     J = link.J
     ωnew = getωnew(link)

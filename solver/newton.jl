@@ -71,4 +71,4 @@ function lineSearch!(robot,normf0;iter=20, warning::Bool=false)
     end
 end
 
-lineStep!(node,diagonal,α) = (node.s1 = node.s0 - 1/(2^α)*diagonal.ŝ; nothing)
+@inline lineStep!(node,diagonal,α) = (node.s1 = node.s0 - 1/(2^α)*diagonal.ŝ; return)

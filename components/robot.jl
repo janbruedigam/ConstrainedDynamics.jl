@@ -68,7 +68,6 @@ function setentries!(robot::Robot)
 
     for (id,_) in robot.ldict
         for cid in directchildren(graph,id)
-            # cid == -1 && break
             setJ!(robot,getentry(ldu,(id,cid)),id,getconstraint(robot,cid))
         end
 
@@ -81,12 +80,10 @@ function setentries!(robot::Robot)
         id = node.id
 
         for cid in directchildren(graph,id)
-            # cid == -1 && break
             setJ!(robot,getentry(ldu,(id,cid)),node,cid)
         end
 
         for cid in loopchildren(graph,id)
-            # cid == -1 && break
             setJ!(getentry(ldu,(id,cid)))
         end
 
@@ -95,18 +92,18 @@ function setentries!(robot::Robot)
     end
 end
 
-function correctλ!(robot::Robot)
+@inline function correctλ!(robot::Robot)
     for constraint in robot.constraints
         addλ0!(getentry(robot.ldu,constraint.id),constraint)
     end
 end
 
-getlink(robot::Robot,id::Int64) = robot.links[robot.ldict[id]]
-getlink(robot::Robot,id::Nothing) = robot.origin
-getconstraint(robot::Robot,id::Int64) = robot.constraints[robot.cdict[id]]
+@inline getlink(robot::Robot,id::Int64) = robot.links[robot.ldict[id]]
+@inline getlink(robot::Robot,id::Nothing) = robot.origin
+@inline getconstraint(robot::Robot,id::Int64) = robot.constraints[robot.cdict[id]]
 
 
-function normf(robot::Robot{T}) where T
+@inline function normf(robot::Robot{T}) where T
     robot.normf = 0
 
     for link in robot.links
@@ -117,9 +114,9 @@ function normf(robot::Robot{T}) where T
     return sqrt(robot.normf)
 end
 
-addNormf!(node,robot::Robot) = (robot.normf += normf(node,robot); nothing)
+@inline addNormf!(node,robot::Robot) = (robot.normf += normf(node,robot); nothing)
 
-function normΔs(robot::Robot)
+@inline function normΔs(robot::Robot)
     robot.normΔs = 0
 
     robot.normΔs+=mapreduce(normΔs,+,robot.links)
@@ -128,7 +125,7 @@ function normΔs(robot::Robot)
     return sqrt(robot.normΔs)
 end
 
-addNormΔs!(node,robot::Robot) = (robot.normΔs += normΔs(node); return)
+@inline addNormΔs!(node,robot::Robot) = (robot.normΔs += normΔs(node); return)
 
 function saveToTraj!(robot::Robot,t)
     No = robot.No
@@ -139,7 +136,7 @@ function saveToTraj!(robot::Robot,t)
     return nothing
 end
 
-function updatePos!(link::Link,dt)
+@inline function updatePos!(link::Link,dt)
     link.x[1] = link.x[2]
     link.x[2] += getvnew(link)*dt
     link.q[1] = link.q[2]

@@ -1,4 +1,4 @@
-struct SocketYZ{T,Nc} <: Joint{T,Nc}
+mutable struct SocketYZ{T,Nc} <: Joint{T,Nc}
     ps::Tuple{SVector{3,T},SVector{3,T}}
     link2id::Int64
 
@@ -11,12 +11,12 @@ struct SocketYZ{T,Nc} <: Joint{T,Nc}
     end
 end
 
-function g(J::SocketYZ,link1::Link,link2::Link,dt,No)
+@inline function g(J::SocketYZ,link1::Link,link2::Link,dt,No)
     ps = J.ps
     (getx3(link1,dt) + rotate(ps[1],getq3(link1,dt)) - (getx3(link2,dt) + rotate(ps[2],getq3(link2,dt))))[SVector{2,Int64}(2,3)]
 end
 
-function ∂g∂posa(J::SocketYZ{T},link1::Link,link2::Link,No) where T
+@inline function ∂g∂posa(J::SocketYZ{T},link1::Link,link2::Link,No) where T
     if link2.id == J.link2id
         X = SMatrix{2,3,T,6}(0,0, 1,0, 0,1)
 
@@ -29,7 +29,7 @@ function ∂g∂posa(J::SocketYZ{T},link1::Link,link2::Link,No) where T
     end
 end
 
-function ∂g∂posb(J::SocketYZ{T},link1::AbstractLink,link2::Link,No) where T
+@inline function ∂g∂posb(J::SocketYZ{T},link1::AbstractLink,link2::Link,No) where T
     if link2.id == J.link2id
         X = SMatrix{2,3,T,6}(0,0, -1,0, 0,-1)
 
@@ -42,7 +42,7 @@ function ∂g∂posb(J::SocketYZ{T},link1::AbstractLink,link2::Link,No) where T
     end
 end
 
-function ∂g∂vela(J::SocketYZ{T},link1::Link,link2::Link,dt,No) where T
+@inline function ∂g∂vela(J::SocketYZ{T},link1::Link,link2::Link,dt,No) where T
     if link2.id == J.link2id
         V = SMatrix{2,3,T,6}(0,0, dt,0, 0,dt)
 
@@ -55,7 +55,7 @@ function ∂g∂vela(J::SocketYZ{T},link1::Link,link2::Link,dt,No) where T
     end
 end
 
-function ∂g∂velb(J::SocketYZ{T},link1::AbstractLink,link2::Link,dt,No) where T
+@inline function ∂g∂velb(J::SocketYZ{T},link1::AbstractLink,link2::Link,dt,No) where T
     if link2.id == J.link2id
         V = SMatrix{2,3,T,6}(0,0, -dt,0, 0,-dt)
 
@@ -69,7 +69,7 @@ function ∂g∂velb(J::SocketYZ{T},link1::AbstractLink,link2::Link,dt,No) where
 end
 
 
-function g(J::SocketYZ,link1::Origin,link2::Link,dt,No)
+@inline function g(J::SocketYZ,link1::Origin,link2::Link,dt,No)
     ps = J.ps
     (ps[1] - (getx3(link2,dt) + rotate(ps[2],getq3(link2,dt))))[SVector{2,Int64}(2,3)]
 end

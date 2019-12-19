@@ -40,9 +40,9 @@ Quaternion{T}() where T = Quaternion{T}(1,0,0,0)
 @inline Tmat() = Tmat(Float64)
 
 @inline Lmat(q::Quaternion{T}) where T = SMatrix{4,4,T,16}(q[1],q[2],q[3],q[4], -q[2], q[1],q[4],-q[3], -q[3], -q[4],q[1],q[2], -q[4], q[3],-q[2],q[1])
-@inline LTmat(q::Quaternion) = Lmat(q)'
+@inline LTmat(q::Quaternion{T}) where T = Lmat(q)'
 @inline Rmat(q::Quaternion{T})  where T = SMatrix{4,4,T,16}(q[1],q[2],q[3],q[4], -q[2], q[1],-q[4],q[3], -q[3], q[4],q[1],-q[2], -q[4], -q[3],q[2],q[1])
-@inline RTmat(q::Quaternion) = Rmat(q)'
+@inline RTmat(q::Quaternion{T})  where T = Rmat(q)'
 
 @inline rotate(x::SVector, q::Quaternion) = q.w^2*x + 2*q.w*cross(q.v,x) + 2*(q.v'*x)*q.v - (q.v'*q.v)*x
 

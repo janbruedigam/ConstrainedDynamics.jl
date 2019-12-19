@@ -65,37 +65,37 @@ struct SparseLDU{T}
     end
 end
 
-getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[ldu.ddict[id]]
-getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ldu.odict[ids]]
+@inline getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[ldu.ddict[id]]
+@inline getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ldu.odict[ids]]
 
 
-function updateJ1!(offdiagonal::OffDiagonalEntry,d::DiagonalEntry,gc::OffDiagonalEntry,cgc::OffDiagonalEntry)
+@inline function updateJ1!(offdiagonal::OffDiagonalEntry,d::DiagonalEntry,gc::OffDiagonalEntry,cgc::OffDiagonalEntry)
     offdiagonal.JL -= gc.JL*d.D*cgc.JU
     offdiagonal.JU -= cgc.JL*d.D*gc.JU
     return
 end
 
-function updateJ2!(offdiagonal::OffDiagonalEntry,d::DiagonalEntry)
+@inline function updateJ2!(offdiagonal::OffDiagonalEntry,d::DiagonalEntry)
     offdiagonal.JL = offdiagonal.JL*d.Dinv
     offdiagonal.JU = d.Dinv*offdiagonal.JU
     return
 end
 
-function updateD!(diagonal::DiagonalEntry,c::DiagonalEntry,f::OffDiagonalEntry)
+@inline function updateD!(diagonal::DiagonalEntry,c::DiagonalEntry,f::OffDiagonalEntry)
     diagonal.D -= f.JL*c.D*f.JU
     return
 end
 
 invertD!(diagonal::DiagonalEntry) = (diagonal.Dinv = inv(diagonal.D); return)
 
-function LSol!(diagonal::DiagonalEntry,child::DiagonalEntry,fillin::OffDiagonalEntry)
+@inline function LSol!(diagonal::DiagonalEntry,child::DiagonalEntry,fillin::OffDiagonalEntry)
     diagonal.ŝ -= fillin.JL*child.ŝ
     return
 end
 
-DSol!(diagonal) = (diagonal.ŝ = diagonal.Dinv*diagonal.ŝ; nothing)
+DSol!(diagonal::DiagonalEntry) = (diagonal.ŝ = diagonal.Dinv*diagonal.ŝ; return)
 
-function USol!(diagonal::DiagonalEntry,parent::DiagonalEntry,fillin::OffDiagonalEntry)
+@inline function USol!(diagonal::DiagonalEntry,parent::DiagonalEntry,fillin::OffDiagonalEntry)
     diagonal.ŝ -= fillin.JU*parent.ŝ
     return
 end
@@ -107,7 +107,6 @@ function factor!(graph::Graph,ldu::SparseLDU)
             cid == -1 && break
             offdiagonal = getentry(ldu,(id,cid))
             for gcid in successors(graph,cid)
-                # gcid == -1 && break
                 if hassuccessor(graph,id,gcid) # is actually a loop child
                     updateJ1!(offdiagonal,getentry(ldu,gcid),getentry(ldu,(id,gcid)),getentry(ldu,(cid,gcid)))
                 end
@@ -118,7 +117,6 @@ function factor!(graph::Graph,ldu::SparseLDU)
         diagonal = getentry(ldu,id)
 
         for cid in successors(graph,id)
-            # cid == -1 && break
             updateD!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
         end
         invertD!(diagonal)
@@ -132,7 +130,6 @@ function solve!(graph::Graph,ldu::SparseLDU)
         diagonal = getentry(ldu,id)
 
         for cid in successors(graph,id)
-            # cid == -1 && break
             LSol!(diagonal,getentry(ldu,cid),getentry(ldu,(id,cid)))
         end
     end
@@ -143,7 +140,6 @@ function solve!(graph::Graph,ldu::SparseLDU)
         DSol!(diagonal)
 
         for pid in predecessors(graph,id)
-            # pid == -1 && break
             USol!(diagonal,getentry(ldu,pid),getentry(ldu,(pid,id)))
         end
     end
