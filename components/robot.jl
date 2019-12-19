@@ -148,7 +148,7 @@ function updatePos!(link::Link,dt)
 end
 
 
-function sim!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
+function simulate!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
     links = robot.links
     constraints = robot.constraints
     dt = robot.dt

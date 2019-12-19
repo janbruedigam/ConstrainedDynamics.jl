@@ -29,10 +29,8 @@ export
     # FixedOrientation,
     # FixedPosition,
 
-    box,
-    initialPosition,
     setInit!,
-    sim!,
+    simulate!,
     plotTraj,
     visualize
 
@@ -54,11 +52,11 @@ include(joinpath("util", "util.jl"))
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "storage.jl"))
 
-include("sparseldu2.jl")
-include("robot.jl")
-include("sparseldu.jl")
+include(joinpath("solver", "sparseldu2.jl"))
+include(joinpath("components", "robot.jl"))
+include(joinpath("solver", "sparseldu.jl"))
 
-include("newton.jl")
+include(joinpath("solver", "newton.jl"))
 
 include(joinpath("util", "visualize.jl"))
 
