@@ -8,7 +8,7 @@ using Rotations
 
 using CoordinateTransformations
 using GeometryTypes: # Define geometric shapes
-    GeometryPrimitive, GeometryTypes, HyperRectangle, Vec, Point, Rectangle, Cylinder,
+    GeometryPrimitive, GeometryTypes, Vec, Point, Rectangle,
     HomogenousMesh, SignedDistanceField, HyperSphere, GLUVMesh, Pyramid
 using Blink
 using Colors: RGBA, RGB # Handle RGB colors
@@ -19,6 +19,7 @@ using Plots
 
 export
     Box,
+    Cylinder,
 
     Quaternion,
     Origin,

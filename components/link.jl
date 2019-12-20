@@ -32,9 +32,9 @@ mutable struct Link{T} <: AbstractLink{T}
         new{T}(getGlobalID(),m,J,x,q,F,τ,s0,s1,f)
     end
 
-    function Link(Box::Box)
-        L = Link(Box.m,Box.J)
-        push!(Box.linkids,L.id)
+    function Link(shape::Shape)
+        L = Link(shape.m,shape.J)
+        push!(shape.linkids,L.id)
         return L
     end
 end

@@ -1,11 +1,14 @@
-# function GeometryTypes.Cylinder(box::Box)
-#     Cylinder(Point(0.0,0.0,-box.lwh[3]/2),Point(0.0,0.0,box.lwh[3]/2), box.lwh[1]/2)
-# end
-
-function GeometryTypes.HyperRectangle(box::Box)
-    x,y,z = Tuple(box.xyz)
-    HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
+function shapeobject(cylinder::Cylinder)
+    r,h = Tuple(cylinder.rh)
+    GeometryTypes.Cylinder(Point(0.0,0.0,-h/2),Point(0.0,0.0,h/2), r)
 end
+
+function shapeobject(box::Box)
+    x,y,z = Tuple(box.xyz)
+    GeometryTypes.HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
+end
+
+
 
 function visualize(robot::Robot,shapes)
     vis = Visualizer()
@@ -15,7 +18,7 @@ function visualize(robot::Robot,shapes)
         for shape in shapes
             for id in shape.linkids
                 if id == link.id
-                    vislink = HyperRectangle(shape)
+                    vislink = shapeobject(shape)
                     setobject!(vis["bundle/vislink"*string(id)], vislink, MeshPhongMaterial(color=shape.color))
                     break
                 end

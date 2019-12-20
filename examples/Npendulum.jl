@@ -7,9 +7,9 @@ using Main.FullCordDynamics
 # Parameters
 ex = [1.;0.;0.]
 
-l1 = 0.5
-x,y = .05,.05
-b1 = Box(x,y,l1,l1,color=RGBA(1.,0.,0.))
+h = 1.
+r = .05
+b1 = Cylinder(r,h,h,color=RGBA(1.,0.,0.))
 
 vert11 = [0.;0.;l1/2]
 vert12 = -vert11
