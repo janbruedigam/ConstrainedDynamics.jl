@@ -12,12 +12,8 @@ function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter
         solve!(graph,ldu) # x̂1 for each link and constraint
         correctλ!(robot)
 
-        for link in links
-            update!(link,getentry(ldu,link.id))
-        end
-        for constraint in constraints
-            update!(constraint,getentry(ldu,constraint.id))
-        end
+        foreach(update!,links,ldu)
+        foreach(update!,constraints,ldu)
 
         normf1 = normf(robot)
         normf1>normf0 && lineSearch!(robot,normf0;iter=lineIter, warning=warning)

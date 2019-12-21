@@ -35,7 +35,8 @@ export
 
     setInit!,
     simulate!,
-    plotTraj,
+    plotθ,
+    plotλ,
     visualize
 
 

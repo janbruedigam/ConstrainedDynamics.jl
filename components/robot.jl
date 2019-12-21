@@ -51,7 +51,7 @@ mutable struct Robot{T,N}
         graph = Graph(origin,links,constraints)
         ldu = SparseLDU(graph,links,constraints,ldict,cdict)
 
-        storage = Storage{T}(steps,Nl)
+        storage = Storage{T}(steps,Nl,Nc)
 
         new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,links,constraints,ldict,cdict,normf,normΔs,graph,ldu,storage)
     end
@@ -144,6 +144,9 @@ function saveToTraj!(robot::Robot,t)
         robot.storage.x[ind][t]=link.x[No]
         robot.storage.q[ind][t]=link.q[No]
     end
+    for (ind,constraint) in enumerate(robot.constraints)
+        robot.storage.λ[ind][t]=constraint.s1
+    end
     return nothing
 end
 
@@ -173,19 +176,42 @@ function simulate!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=fa
     end
 end
 
-function plotTraj(robot::Robot{T},id) where T
+function plotθ(robot::Robot{T},id) where T
     n = length(robot.links)
-    angles = zeros(T,n,length(robot.steps))
+    θ = zeros(T,n,length(robot.steps))
     for i=1:n
         qs = robot.storage.q[i]
         for (t,q) in enumerate(qs)
-            angles[i,t] = angleAxis(q)[1]*sign(angleAxis(q)[2][1])
+            θ[i,t] = angleAxis(q)[1]*sign(angleAxis(q)[2][1])
         end
     end
 
-    p = plot(collect(0:robot.dt:robot.tend-robot.dt),angles[id[1],:])
+    p = plot(collect(0:robot.dt:robot.tend-robot.dt),θ[id[1],:])
     for ind in Iterators.rest(id,2)
-        plot!(collect(0:robot.dt:robot.tend-robot.dt),angles[ind,:])
+        plot!(collect(0:robot.dt:robot.tend-robot.dt),θ[ind,:])
+    end
+    return p
+end
+
+function plotλ(robot::Robot{T},id) where T
+    n = sum(length.(robot.constraints))
+    λ = zeros(T,n,length(robot.steps))
+    startpos = 1
+    endpos = 0
+    for i=1:length(robot.constraints)
+        endpos = startpos + length(robot.constraints[i]) -1
+
+        λs = robot.storage.λ[i]
+        for (t,val) in enumerate(λs)
+            λ[startpos:endpos,t] = val
+        end
+
+        startpos = endpos + 1
+    end
+
+    p = plot(collect(0:robot.dt:robot.tend-robot.dt),λ[id[1],:])
+    for ind in Iterators.rest(id,2)
+        plot!(collect(0:robot.dt:robot.tend-robot.dt),λ[ind,:])
     end
     return p
 end

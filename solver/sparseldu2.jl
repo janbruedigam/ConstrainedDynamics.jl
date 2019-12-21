@@ -155,3 +155,5 @@ function solve!(graph::Graph,ldu::SparseLDU)
         end
     end
 end
+
+@inline update!(node::Node,ldu::SparseLDU) = update!(node,getentry(ldu,node.id))

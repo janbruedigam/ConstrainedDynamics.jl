@@ -11,7 +11,7 @@ h = 1.
 r = .05
 b1 = Cylinder(r,h,h,color=RGBA(1.,0.,0.))
 
-vert11 = [0.;0.;l1/2]
+vert11 = [0.;0.;h/2]
 vert12 = -vert11
 vert1 = [[vert11];[vert12]]
 
