@@ -10,7 +10,6 @@ end
     return
 end
 
-# TODO pass in the two connected links
 @inline function setJ!(robot,F::OffDiagonalEntry,linkid::Int64,C::Constraint)
     F.JL = -∂g∂pos(robot,C,linkid)'
     F.JU = ∂g∂vel(robot,C,linkid)
@@ -55,4 +54,4 @@ end
     return dot(f,f)
 end
 
-GtλTof!(robot,C::Constraint,L::Link) = (L.f -= ∂g∂pos(robot,C,L.id)'*C.s1; return)
+@inline GtλTof!(robot,C::Constraint,L::Link) = (L.f -= ∂g∂pos(robot,C,L.id)'*C.s1; return)

@@ -16,10 +16,10 @@ function visualize(robot::Robot,shapes)
 
     for link in robot.links
         for shape in shapes
-            for id in shape.linkids
-                if id == link.id
+            for shapelink in shape.links
+                if shapelink == link
                     vislink = shapeobject(shape)
-                    setobject!(vis["bundle/vislink"*string(id)], vislink, MeshPhongMaterial(color=shape.color))
+                    setobject!(vis["bundle/vislink"*string(link.id)], vislink, MeshPhongMaterial(color=shape.color))
                     break
                 end
             end
@@ -31,10 +31,8 @@ function visualize(robot::Robot,shapes)
 
     for k=robot.steps
         MeshCat.atframe(anim, vis, k) do frame
-            for link in robot.links
-                id = link.id
-                ind = robot.ldict[id]
-                settransform!(vis["bundle/vislink"*string(id)], compose(Translation(robot.storage.x[ind][k]...),LinearMap(Quat(robot.storage.q[ind][k]...))))
+            for (id,link) in pairs(robot.links)
+                settransform!(vis["bundle/vislink"*string(id)], compose(Translation(robot.storage.x[id][k]...),LinearMap(Quat(robot.storage.q[id][k]...))))
             end
         end
     end

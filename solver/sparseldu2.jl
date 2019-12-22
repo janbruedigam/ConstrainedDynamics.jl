@@ -27,27 +27,20 @@ mutable struct OffDiagonalEntry{T,N1,N2,N1N2} <: Entry{T}
 end
 
 struct SparseLDU{T}
-    diagonals::Vector{DiagonalEntry{T}}
-    offdiagonals::Vector{OffDiagonalEntry{T}}
+    diagonals::UnitDict{Base.OneTo{Int64},DiagonalEntry{T}}
+    offdiagonals::Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}
 
-    ddict::Dict{Int64,Int64}
-    odict::Dict{Tuple{Int64,Int64},Int64}
-
-    function SparseLDU(graph::Graph{N},links::Vector{<:Link{T}},constraints::Vector{<:Constraint{T}},ldict::Dict,cdict::Dict) where {T,N}
+    function SparseLDU(graph::Graph{N},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}},ldict::Dict,cdict::Dict) where {T,N}
         diagonals = Vector{DiagonalEntry{T}}(undef,0)
-        ddict = Dict{Int64,Int64}()
         for link in links
             push!(diagonals,DiagonalEntry{T,length(link)}())
-            ddict[link.id] = length(diagonals)
         end
-        Nl = length(links)
         for constraint in constraints
             push!(diagonals,DiagonalEntry{T,length(constraint)}())
-            ddict[constraint.id] = length(diagonals)
         end
+        diagonals = UnitDict(diagonals)
 
-        offdiagonals = Vector{OffDiagonalEntry{T}}(undef,0)
-        odict = Dict{Tuple{Int64,Int64},Int64}()
+        offdiagonals = Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}()
         for id in graph.dfslist
             haskey(ldict,id) ? node=links[ldict[id]] : node=constraints[cdict[id]]
             N1 = length(node)
@@ -56,17 +49,16 @@ struct SparseLDU{T}
                 haskey(ldict,cid) ? cnode=links[ldict[cid]] : cnode=constraints[cdict[cid]]
                 N2 = length(cnode)
 
-                push!(offdiagonals,OffDiagonalEntry{T,N2,N1}())
-                odict[(id,cid)] = length(offdiagonals)
+                offdiagonals[(id,cid)] = OffDiagonalEntry{T,N2,N1}()
             end
         end
 
-        new{T}(diagonals,offdiagonals,ddict,odict)
+        new{T}(diagonals,offdiagonals)
     end
 end
 
-@inline getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[ldu.ddict[id]]
-@inline getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ldu.odict[ids]]
+@inline getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[id]
+@inline getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ids]
 
 
 @inline function updateJ1!(offdiagonal::OffDiagonalEntry,d::DiagonalEntry,gc::OffDiagonalEntry,cgc::OffDiagonalEntry)
@@ -86,14 +78,20 @@ end
     return
 end
 
-invertD!(diagonal::DiagonalEntry) = (diagonal.Dinv = inv(diagonal.D); return)
+function invertD!(diagonal::DiagonalEntry)
+    diagonal.Dinv = inv(diagonal.D)
+    return
+end
 
 @inline function LSol!(diagonal::DiagonalEntry,child::DiagonalEntry,fillin::OffDiagonalEntry)
     diagonal.ŝ -= fillin.JL*child.ŝ
     return
 end
 
-DSol!(diagonal::DiagonalEntry) = (diagonal.ŝ = diagonal.Dinv*diagonal.ŝ; return)
+function DSol!(diagonal::DiagonalEntry)
+    diagonal.ŝ = diagonal.Dinv*diagonal.ŝ
+    return
+end
 
 @inline function USol!(diagonal::DiagonalEntry,parent::DiagonalEntry,fillin::OffDiagonalEntry)
     diagonal.ŝ -= fillin.JU*parent.ŝ

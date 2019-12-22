@@ -40,6 +40,8 @@ export
     visualize
 
 
+include(joinpath("util", "util.jl"))
+include(joinpath("util", "customdict.jl"))
 include(joinpath("util", "quaternion.jl"))
 include(joinpath("util", "shapes.jl"))
 include(joinpath("components", "node.jl"))
@@ -53,7 +55,6 @@ include(joinpath("joints", "socket.jl"))
 include(joinpath("joints", "socketyz.jl"))
 include(joinpath("joints", "axis.jl"))
 
-include(joinpath("util", "util.jl"))
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "storage.jl"))
 

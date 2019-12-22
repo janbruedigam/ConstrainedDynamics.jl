@@ -51,6 +51,6 @@ Quaternion{T}() where T = Quaternion{T}(1,0,0,0)
     if n == 0
         return zero(T), SVector{3,T}(0,0,0)
     else
-        return 2*atan(n,q[1]), Vmat()*q./n
+        return 2*atan(n,q[1]), Vmat(q./n)
     end
 end

@@ -35,7 +35,7 @@ end
 
 Base.length(C::Constraint{T,N}) where {T,N} = N
 
-@inline @generated function g(robot,C::Constraint{T,N,Nc}) where {T,N,Nc}
+@generated function g(robot,C::Constraint{T,N,Nc}) where {T,N,Nc}
     vec = [:(g(C.constr[$i],getlink(robot,C.pid),getlink(robot,C.linkids[$i]),robot.dt,robot.No)) for i=1:Nc]
     :(vcat($(vec...)))
 end
@@ -48,22 +48,22 @@ end
     id == C.pid ? ∂g∂vela(robot,C,id) : ∂g∂velb(robot,C,id)
 end
 
-@inline @generated function ∂g∂posa(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
+@generated function ∂g∂posa(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
     vec = [:(∂g∂posa(C.constr[$i],getlink(robot,id),getlink(robot,C.linkids[$i]),robot.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@inline @generated function ∂g∂posb(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
+@generated function ∂g∂posb(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
     vec = [:(∂g∂posb(C.constr[$i],getlink(robot,C.pid),getlink(robot,id),robot.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@inline @generated function ∂g∂vela(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
+@generated function ∂g∂vela(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
     vec = [:(∂g∂vela(C.constr[$i],getlink(robot,id),getlink(robot,C.linkids[$i]),robot.dt,robot.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@inline @generated function ∂g∂velb(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
+@generated function ∂g∂velb(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
     vec = [:(∂g∂velb(C.constr[$i],getlink(robot,C.pid),getlink(robot,id),robot.dt,robot.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end

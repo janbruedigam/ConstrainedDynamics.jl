@@ -34,7 +34,7 @@ mutable struct Link{T} <: AbstractLink{T}
 
     function Link(shape::Shape)
         L = Link(shape.m,shape.J)
-        push!(shape.linkids,L.id)
+        push!(shape.links,L)
         return L
     end
 end
@@ -80,10 +80,11 @@ end
 @inline getx3(link,dt) = getvnew(link)*dt + link.x[2]
 @inline getq3(link,dt) = Quaternion(dt/2*(Lmat(link.q[2])*ωbar(link,dt)))
 @inline getv1(link,dt) = (link.x[2]-link.x[1])/dt
-@inline function getω1(link,dt) # 2/link.dt*Vmat()*LTmat(link.q[1])*link.q[2]
+@inline function getω1(link,dt)
     q1 = link.q[1]
     q2 = link.q[2]
     2/dt*(q1.w*q2.v-q2.w*q1.v-cross(q1.v,q2.v))
+    # 2/dt*Vmat(LTmat(link.q[1]))*link.q[2]
 end
 
 @inline getvnew(link) = link.s1[SVector{3}(1:3)]

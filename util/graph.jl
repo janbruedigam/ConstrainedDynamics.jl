@@ -13,8 +13,8 @@ struct Graph{N}
 
     dfslist::SVector{N,Int64}
 
-    dict::Dict{Int64,Int64}
-    rdict::Dict{Int64,Int64}
+    dict::UnitDict{Base.OneTo{Int64},Int64}
+    rdict::UnitDict{Base.OneTo{Int64},Int64}
 
     function Graph(origin::Origin,links::Vector{<:Link},constraints::Vector{<:Constraint})
         oid = origin.id
@@ -53,6 +53,9 @@ struct Graph{N}
         sucs = successors(dfslist,pat,dict)
         preds = predecessors(dfslist,pat,dict)
         cons = connections(dfslist,adjacency,dict)
+
+        dict = UnitDict(dict)
+        rdict = UnitDict(rdict)
 
         new{N}(adjacency,dfsgraph,pat,originals,fil,dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
     end

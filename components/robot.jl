@@ -6,12 +6,10 @@ mutable struct Robot{T,N}
     No::Int64
 
     origin::Origin{T}
-    links::Vector{Link{T}}
-    constraints::Vector{Constraint{T}}
-    ldict::Dict{Int64,Int64}
-    cdict::Dict{Int64,Int64}
+    links::UnitDict{Base.OneTo{Int64},Link{T}}
+    constraints::UnitDict{UnitRange{Int64},<:Constraint{T}}
 
-    #???
+    #TODO remove once Constraint is homogenous
     normf::T
     normΔs::T
 
@@ -22,28 +20,45 @@ mutable struct Robot{T,N}
 
     #TODO no constraints input
     function Robot(origin::Origin{T},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1, No=2) where T
+        resetGlobalID()
+
         Nl = length(links)
         Nc = length(constraints)
         N = Nl+Nc
         steps = Int(ceil(tend/dt))
 
-        ldict = Dict{Int64,Int64}()
+        currentid = 1
 
+        ldict = Dict{Int64,Int64}()
         for (ind,link) in enumerate(links)
             push!(link.x, [link.x[1] for i=1:No-1]...)
             push!(link.q, [link.q[1] for i=1:No-1]...)
             push!(link.F, [link.F[1] for i=1:No-1]...)
             push!(link.τ, [link.τ[1] for i=1:No-1]...)
 
+            for c in constraints
+                c.pid == link.id && (c.pid = currentid)
+                for (ind,linkid) in enumerate(c.linkids)
+                    if linkid == link.id
+                        c.linkids = setindex(c.linkids,currentid,ind)
+                        c.constr[ind].link2id = currentid
+                    end
+                end
+            end
+
+            link.id = currentid
+            currentid+=1
+
             ldict[link.id] = ind
         end
 
         cdict = Dict{Int64,Int64}()
         for (ind,constraint) in enumerate(constraints)
+            constraint.id = currentid
+            currentid+=1
+
             cdict[constraint.id] = ind
         end
-
-        resetGlobalID()
 
         normf = zero(T)
         normΔs = zero(T)
@@ -53,7 +68,10 @@ mutable struct Robot{T,N}
 
         storage = Storage{T}(steps,Nl,Nc)
 
-        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,links,constraints,ldict,cdict,normf,normΔs,graph,ldu,storage)
+        links = UnitDict(links)
+        constraints = UnitDict((links[Nl].id+1):currentid-1,constraints)
+
+        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,links,constraints,normf,normΔs,graph,ldu,storage)
     end
 end
 
@@ -62,17 +80,15 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T}) where 
 end
 
 function setentries!(robot::Robot)
-
     graph = robot.graph
     ldu = robot.ldu
 
-    for (id,_) in robot.ldict
+    for (id,link) in pairs(robot.links)
         for cid in directchildren(graph,id)
             setJ!(robot,getentry(ldu,(id,cid)),id,getconstraint(robot,cid))
         end
 
         diagonal = getentry(ldu,id)
-        link = getlink(robot,id)
         setDandŝ!(diagonal,link,robot)
     end
 
@@ -98,9 +114,10 @@ end
     end
 end
 
-@inline getlink(robot::Robot,id::Int64) = robot.links[robot.ldict[id]]
+@inline getlink(robot::Robot,id::Int64) = robot.links[id]
 @inline getlink(robot::Robot,id::Nothing) = robot.origin
-@inline getconstraint(robot::Robot,id::Int64) = robot.constraints[robot.cdict[id]]
+@inline getconstraint(robot::Robot,id::Int64) = robot.constraints[id]
+
 # @inline function getnode(robot::Robot,id::Int64) # should only be used in setup
 #      if haskey(robot.ldict,id)
 #          return getlink(robot,id)
@@ -151,10 +168,12 @@ function saveToTraj!(robot::Robot,t)
 end
 
 @inline function updatePos!(link::Link,dt)
-    link.x[1] = link.x[2]
-    link.x[2] += getvnew(link)*dt
-    link.q[1] = link.q[2]
-    link.q[2] = dt/2*(Lmat(link.q[2])*ωbar(link,dt))
+    x2 = link.x[2]
+    q2 = link.q[2]
+    link.x[1] = x2
+    link.x[2] = x2 + getvnew(link)*dt
+    link.q[1] = q2
+    link.q[2] = dt/2*(Lmat(q2)*ωbar(link,dt))
     return nothing
 end
 
