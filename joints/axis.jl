@@ -11,13 +11,13 @@ mutable struct Axis{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline g(J::Axis,link1::Link,link2::Link,dt,No) = J.V12*Vmat(LTmat(getq3(link1,dt))*getq3(link2,dt))
+@inline g(J::Axis,link1::Link,link2::Link,dt,No) = J.V12*VLᵀmat(getq3(link1,dt))*getq3(link2,dt)
 
 @inline function ∂g∂posa(J::Axis{T},link1::Link,link2::Link,No) where T
     if link2.id == J.link2id
         X = @SMatrix zeros(T,2,3)
 
-        R = -J.V12*Vmat(VTmat(Rmat(link2.q[No])*RTmat(link1.q[No])))
+        R = -J.V12*VRmat(link2.q[No])*RᵀVᵀmat(link1.q[No])
 
         return [X R]
     else
@@ -29,7 +29,7 @@ end
     if link2.id == J.link2id
         X = @SMatrix zeros(T,2,3)
 
-        R = J.V12*Vmat(VTmat(LTmat(link1.q[No])*Lmat(link2.q[No])))
+        R = J.V12*VLᵀmat(link1.q[No])*LVᵀmat(link2.q[No])
 
         return [X R]
     else
@@ -41,7 +41,7 @@ end
     if link2.id == J.link2id
         V = @SMatrix zeros(T,2,3)
 
-        Ω = dt^2/4*J.V12*Vmat(Rmat(ωbar(link2,dt))*Rmat(link2.q[No])*RTmat(link1.q[No])*Tmat(T))*derivωbar(link1,dt)
+        Ω = dt^2/4*J.V12*VRmat(ωbar(link2,dt))*Rmat(link2.q[No])*Rᵀmat(link1.q[No])*Tmat(T)*derivωbar(link1,dt)
 
         return [V Ω]
     else
@@ -53,7 +53,7 @@ end
     if link2.id == J.link2id
         V = @SMatrix zeros(T,2,3)
 
-        Ω = dt^2/4*J.V12*Vmat(LTmat(ωbar(link1,dt))*LTmat(link1.q[No])*Lmat(link2.q[No]))*derivωbar(link2,dt)
+        Ω = dt^2/4*J.V12*VLᵀmat(ωbar(link1,dt))*Lᵀmat(link1.q[No])*Lmat(link2.q[No])*derivωbar(link2,dt)
 
         return [V Ω]
     else
@@ -68,7 +68,7 @@ end
     if link2.id == J.link2id
         X = @SMatrix zeros(T,2,3)
 
-        R = J.V12*Vmat(VTmat(Lmat(link2.q[No])))
+        R = J.V12*VLmat(link2.q[No])*Vᵀmat(T)
 
         return [X R]
     else
@@ -80,7 +80,7 @@ end
     if link2.id == J.link2id
         V = @SMatrix zeros(T,2,3)
 
-        Ω = dt/2*J.V12*Vmat(Lmat(link2.q[No]))*derivωbar(link2,dt)
+        Ω = dt/2*J.V12*VLmat(link2.q[No])*derivωbar(link2,dt)
 
         return [V Ω]
     else

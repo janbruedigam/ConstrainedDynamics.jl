@@ -3,7 +3,8 @@ module FullCordDynamics
 # using TimerOutputs
 # const to = TimerOutput()
 
-using LinearAlgebra, StaticArrays
+using LinearAlgebra, StaticArrays#, Quaternions
+using StaticArrays: SUnitRange
 using Rotations
 
 using CoordinateTransformations

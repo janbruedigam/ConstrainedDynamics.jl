@@ -62,7 +62,7 @@ function setInit!(link1::Link{T}, link2::Link{T}, p1,p2,; q::Quaternion{T}=Quate
 
     p1 = convert(SVector{3,T},p1)
     p2 = convert(SVector{3,T},p2)
-    x2 = link1.x[1] + rotate(p1,link1.q[1]) - rotate(p2,q)
+    x2 = link1.x[1] + vrotate(p1,link1.q[1]) - vrotate(p2,q)
 
     setInit!(link2; x=x2, q=q, F=F, τ=τ)
 end
@@ -72,7 +72,7 @@ function setInit!(link1::Origin{T}, link2::Link{T}, p1,p2,; q::Quaternion{T}=Qua
 
     p1 = convert(SVector{3,T},p1)
     p2 = convert(SVector{3,T},p2)
-    x2 = p1 - rotate(p2,q)
+    x2 = p1 - vrotate(p2,q)
 
     setInit!(link2; x=x2, q=q, F=F, τ=τ)
 end
@@ -83,7 +83,7 @@ end
 @inline function getω1(link,dt)
     q1 = link.q[1]
     q2 = link.q[2]
-    2/dt*(q1.w*q2.v-q2.w*q1.v-cross(q1.v,q2.v))
+    2/dt*(q1.s*imag(q2)-q2.s*imag(q1)-cross(imag(q1),imag(q2)))
     # 2/dt*Vmat(LTmat(link.q[1]))*link.q[2]
 end
 

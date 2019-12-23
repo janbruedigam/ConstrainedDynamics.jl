@@ -13,7 +13,7 @@ end
 
 @inline function g(J::Socket,link1::Link,link2::Link,dt,No)
     ps = J.ps
-    getx3(link1,dt) + rotate(ps[1],getq3(link1,dt)) - (getx3(link2,dt) + rotate(ps[2],getq3(link2,dt)))
+    getx3(link1,dt) + vrotate(ps[1],getq3(link1,dt)) - (getx3(link2,dt) + vrotate(ps[2],getq3(link2,dt)))
 end
 
 @inline function ∂g∂posa(J::Socket{T},link1::Link,link2::Link,No) where T
@@ -21,7 +21,8 @@ end
         X = SMatrix{3,3,T,9}(I)
 
         q = link1.q[No]
-        R = 2*Vmat(VTmat(RTmat(q)*Rmat(Quaternion(J.ps[1]))*Lmat(q)))
+        # R = 2*Vmat(VTmat(RTmat(q)*Rmat(Quaternion(J.ps[1]))*Lmat(q)))
+        R = 2*VRᵀmat(q)*Rmat(Quaternion(J.ps[1]))*LVᵀmat(q)
 
         return [X R]
     else
@@ -34,7 +35,8 @@ end
         X = SMatrix{3,3,T,9}(-I)
 
         q = link2.q[No]
-        R = -2*Vmat(VTmat(RTmat(q)*Rmat(Quaternion(J.ps[2]))*Lmat(q)))
+        # R = -2*Vmat(VTmat(RTmat(q)*Rmat(Quaternion(J.ps[2]))*Lmat(q)))
+        R = -2*VRᵀmat(q)*Rmat(Quaternion(J.ps[2]))*LVᵀmat(q)
 
         return [X R]
     else
@@ -47,7 +49,7 @@ end
         V = SMatrix{3,3,T,9}(dt*I)
 
         q = link1.q[No]
-        Ω = 2*dt^2/4*Vmat(RTmat(q)*Lmat(q)*RTmat(ωbar(link1,dt))*Rmat(Quaternion(J.ps[1])))*derivωbar(link1,dt)
+        Ω = 2*dt^2/4*VRᵀmat(q)*Lmat(q)*Rᵀmat(ωbar(link1,dt))*Rmat(Quaternion(J.ps[1]))*derivωbar(link1,dt)
 
         return [V Ω]
     else
@@ -60,7 +62,7 @@ end
         V = SMatrix{3,3,T,9}(-dt*I)
 
         q = link2.q[No]
-        Ω = -2*dt^2/4*Vmat(RTmat(q)*Lmat(q)*RTmat(ωbar(link2,dt))*Rmat(Quaternion(J.ps[2])))*derivωbar(link2,dt)
+        Ω = -2*dt^2/4*VRᵀmat(q)*Lmat(q)*Rᵀmat(ωbar(link2,dt))*Rmat(Quaternion(J.ps[2]))*derivωbar(link2,dt)
 
         return [V Ω]
     else
@@ -71,5 +73,5 @@ end
 
 @inline function g(J::Socket,link1::Origin,link2::Link,dt,No)
     ps = J.ps
-    ps[1] - (getx3(link2,dt) + rotate(ps[2],getq3(link2,dt)))
+    ps[1] - (getx3(link2,dt) + vrotate(ps[2],getq3(link2,dt)))
 end
