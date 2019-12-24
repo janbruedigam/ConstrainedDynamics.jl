@@ -19,7 +19,10 @@ mutable struct Robot{T,N}
     storage::Storage{T}
 
     #TODO no constraints input
-    function Robot(origin::Origin{T},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}}; tend::T=10., dt::T=.01, g::T=-9.81, rootid=1, No=2) where T
+    function Robot(origin::Origin{T},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}};
+        tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
+
+
         resetGlobalID()
 
         Nl = length(links)
@@ -41,7 +44,7 @@ mutable struct Robot{T,N}
                 for (ind,linkid) in enumerate(c.linkids)
                     if linkid == link.id
                         c.linkids = setindex(c.linkids,currentid,ind)
-                        c.constr[ind].link2id = currentid
+                        c.constraints[ind].cid = currentid
                     end
                 end
             end
@@ -73,6 +76,16 @@ mutable struct Robot{T,N}
 
         new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,links,constraints,normf,normΔs,graph,ldu,storage)
     end
+
+    function Robot(origin::Origin{T},links::Vector{Link{T}};
+        tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
+
+        constraints = Vector{Constraint{T}}(undef,0)
+        for link in links
+            push!(constraints,Constraint(OriginConnection(origin,link)))
+        end
+        Robot(origin,links,constraints,tend=tend, dt=dt, g=g, No=No)
+    end
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T}) where {T}
@@ -85,7 +98,7 @@ function setentries!(robot::Robot)
 
     for (id,link) in pairs(robot.links)
         for cid in directchildren(graph,id)
-            setJ!(robot,getentry(ldu,(id,cid)),id,getconstraint(robot,cid))
+            setLU!(getentry(ldu,(id,cid)),id,getconstraint(robot,cid),robot)
         end
 
         diagonal = getentry(ldu,id)
@@ -96,21 +109,15 @@ function setentries!(robot::Robot)
         id = node.id
 
         for cid in directchildren(graph,id)
-            setJ!(robot,getentry(ldu,(id,cid)),node,cid)
+            setLU!(getentry(ldu,(id,cid)),node,cid,robot)
         end
 
         for cid in loopchildren(graph,id)
-            setJ!(getentry(ldu,(id,cid)))
+            setLU!(getentry(ldu,(id,cid)))
         end
 
         diagonal = getentry(ldu,id)
         setDandŝ!(diagonal,node,robot)
-    end
-end
-
-@inline function correctλ!(robot::Robot)
-    for constraint in robot.constraints
-        addλ0!(getentry(robot.ldu,constraint.id),constraint)
     end
 end
 
@@ -130,8 +137,22 @@ end
 #      end
 #  end
 
+@inline function normf(link::Link{T},robot::Robot) where T
+    f = dynamics(link,robot)
+    return dot(f,f)
+end
 
-@inline function normf(robot::Robot{T}) where T
+@inline function normf(c::Constraint,robot::Robot)
+    f = g(c,robot)
+    return dot(f,f)
+end
+
+@inline function GtλTof!(link::Link,c::Constraint,robot)
+    link.f -= ∂g∂pos(c,link.id,robot)'*c.s1
+    return
+end
+
+@inline function normf(robot::Robot)
     robot.normf = 0
 
     for link in robot.links
@@ -142,18 +163,24 @@ end
     return sqrt(robot.normf)
 end
 
-@inline addNormf!(node,robot::Robot) = (robot.normf += normf(node,robot); nothing)
-
 @inline function normΔs(robot::Robot)
     robot.normΔs = 0
 
-    robot.normΔs+=mapreduce(normΔs,+,robot.links)
+    robot.normΔs += mapreduce(normΔs,+,robot.links)
     foreach(addNormΔs!,robot.constraints,robot)
 
     return sqrt(robot.normΔs)
 end
 
-@inline addNormΔs!(node,robot::Robot) = (robot.normΔs += normΔs(node); return)
+@inline function addNormf!(c::Constraint,robot::Robot)
+    robot.normf += normf(c,robot)
+    return
+end
+
+@inline function addNormΔs!(component::Component,robot::Robot)
+    robot.normΔs += normΔs(component)
+    return
+end
 
 function saveToTraj!(robot::Robot,t)
     No = robot.No
@@ -164,7 +191,6 @@ function saveToTraj!(robot::Robot,t)
     for (ind,constraint) in enumerate(robot.constraints)
         robot.storage.λ[ind][t]=constraint.s1
     end
-    return nothing
 end
 
 @inline function updatePos!(link::Link,dt)
@@ -174,7 +200,7 @@ end
     link.x[2] = x2 + getvnew(link)*dt
     link.q[1] = q2
     link.q[2] = dt/2*(Lmat(q2)*ωbar(link,dt))
-    return nothing
+    return
 end
 
 
@@ -201,7 +227,7 @@ function plotθ(robot::Robot{T},id) where T
     for i=1:n
         qs = robot.storage.q[i]
         for (t,q) in enumerate(qs)
-            θ[i,t] = angleAxis(q)[1]*sign(angleAxis(q)[2][1])
+            θ[i,t] = angleaxis(q)[1]*sign(angleaxis(q)[2][1])
         end
     end
 

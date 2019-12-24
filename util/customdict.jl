@@ -24,3 +24,5 @@ end
 
 @inline Base.iterate(d::UnitDict, i = 1) = i > length(d) ? nothing : (d.values[i], i + 1)
 @inline Base.pairs(d::UnitDict, i = 1) = Base.Generator(=>, d.keys, d.values)
+
+@inline Base.foreach(f,itr::UnitDict,arg...) = (for x in itr; f(x,arg...); end; return)

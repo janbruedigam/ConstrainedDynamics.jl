@@ -1,9 +1,9 @@
 struct Graph{N}
-    adjacency::Vector{SVector{N,Bool}}
-    dfsgraph::Vector{SVector{N,Bool}}
-    pattern::Vector{SVector{N,Bool}} # includes fillins and originals
-    originals::Vector{SVector{N,Bool}}
-    fillins::Vector{SVector{N,Bool}}
+    # adjacency::Vector{SVector{N,Bool}}
+    # dfsgraph::Vector{SVector{N,Bool}}
+    # pattern::Vector{SVector{N,Bool}} # includes fillins and originals
+    # originals::Vector{SVector{N,Bool}}
+    # fillins::Vector{SVector{N,Bool}}
 
     directchildren::Vector{Vector{Int64}}
     loopchildren::Vector{Vector{Int64}}
@@ -41,7 +41,7 @@ struct Graph{N}
         end
 
         N = length(dict)
-        #TODO make properly to convert
+
         adjacency = convert(Vector{SVector{N,Bool}},adjacency)
         dfsgraph = convert(Vector{SVector{N,Bool}},dfsgraph)
         pat = convert(Vector{SVector{N,Bool}},pat)
@@ -57,8 +57,9 @@ struct Graph{N}
         dict = UnitDict(dict)
         rdict = UnitDict(rdict)
 
-        new{N}(adjacency,dfsgraph,pat,originals,fil,dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
-    end
+        # new{N}(adjacency,dfsgraph,pat,originals,fil,dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
+        new{N}(dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
+end
 end
 
 function adjacencyMatrix(constraints::Vector{<:Constraint},links::Vector{<:Link})

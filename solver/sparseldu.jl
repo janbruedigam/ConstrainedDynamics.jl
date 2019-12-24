@@ -1,57 +1,61 @@
-@inline function setDandŝ!(diagonal,link::Link,robot)
-    diagonal.D = ∂dyn∂vel(robot, link)
-    diagonal.ŝ = dynamics(robot, link)
-    return
-end
+abstract type Entry{T} end
 
-@inline function setDandŝ!(diagonal::DiagonalEntry{T,N},C::Constraint,robot) where {T,N}
-    diagonal.D = @SMatrix zeros(T,N,N)
-    diagonal.ŝ = g(robot,C)
-    return
-end
+mutable struct DiagonalEntry{T,N,N²} <: Entry{T}
+    D::SMatrix{N,N,T,N²}
+    Dinv::SMatrix{N,N,T,N²}
+    ŝ::SVector{N,T}
 
-@inline function setJ!(robot,F::OffDiagonalEntry,linkid::Int64,C::Constraint)
-    F.JL = -∂g∂pos(robot,C,linkid)'
-    F.JU = ∂g∂vel(robot,C,linkid)
-    return
-end
+    function DiagonalEntry{T,N}() where {T,N}
+        N² = N^2
+        D = @SMatrix zeros(T,N,N)
+        Dinv = @SMatrix zeros(T,N,N)
+        ŝ = @SVector zeros(T,N)
 
-@inline function setJ!(robot,F::OffDiagonalEntry,C::Constraint,linkid::Int64)
-    F.JL = ∂g∂vel(robot,C,linkid)
-    F.JU = -∂g∂pos(robot,C,linkid)'
-    return
-end
-
-@inline function setJ!(F::OffDiagonalEntry{T,N1,N2}) where {T,N1,N2}
-    F.JL = @SMatrix zeros(T,N2,N1)
-    F.JU = F.JL'
-    return
-end
-
-addλ0!(diagonal,C::Constraint) = (diagonal.ŝ += C.s0; return)
-
-# function normf(link::Link{T},robot::Robot) where T
-#     f = dynamics(robot,link)
-#     return dot(f,f)
-# end
-
-@inline function normf(link::Link{T},robot::Robot) where T
-    graph = robot.graph
-    id = link.id
-    link.f = dynamics(robot,link)
-
-    for cid in connections(graph,id)
-        cid == -1 && break
-        GtλTof!(robot,getconstraint(robot,cid),link)
+        new{T,N,N²}(D,Dinv,ŝ)
     end
-
-    f = link.f
-    return dot(f,f)
 end
 
-@inline function normf(C::Constraint,robot::Robot)
-    f = g(robot,C)
-    return dot(f,f)
+mutable struct OffDiagonalEntry{T,N1,N2,N1N2} <: Entry{T}
+    L::SMatrix{N2,N1,T,N1N2}
+    U::SMatrix{N1,N2,T,N1N2}
+
+    function OffDiagonalEntry{T,N1,N2}() where {T,N1,N2}
+        L = @SMatrix zeros(T,N2,N1)
+        U = @SMatrix zeros(T,N1,N2)
+        new{T,N1,N2,N1*N2}(L,U)
+    end
 end
 
-@inline GtλTof!(robot,C::Constraint,L::Link) = (L.f -= ∂g∂pos(robot,C,L.id)'*C.s1; return)
+struct SparseLDU{T}
+    diagonals::UnitDict{Base.OneTo{Int64},DiagonalEntry{T}}
+    offdiagonals::Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}
+
+    function SparseLDU(graph::Graph{N},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}},ldict::Dict,cdict::Dict) where {T,N}
+        diagonals = Vector{DiagonalEntry{T}}(undef,0)
+        for link in links
+            push!(diagonals,DiagonalEntry{T,length(link)}())
+        end
+        for constraint in constraints
+            push!(diagonals,DiagonalEntry{T,length(constraint)}())
+        end
+        diagonals = UnitDict(diagonals)
+
+        offdiagonals = Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}()
+        for id in graph.dfslist
+            haskey(ldict,id) ? node=links[ldict[id]] : node=constraints[cdict[id]]
+            N1 = length(node)
+
+            for cid in successors(graph,id)
+                haskey(ldict,cid) ? cnode=links[ldict[cid]] : cnode=constraints[cdict[cid]]
+                N2 = length(cnode)
+
+                offdiagonals[(id,cid)] = OffDiagonalEntry{T,N2,N1}()
+            end
+        end
+
+        new{T}(diagonals,offdiagonals)
+    end
+end
+
+@inline getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[id]
+@inline getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ids]

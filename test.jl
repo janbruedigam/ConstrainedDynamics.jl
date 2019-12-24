@@ -55,14 +55,13 @@ joint2to4 = Constraint(Socket(link2,link4,vert22,vert22))
 joint23to4 = Constraint(Socket(link3,link4,vert12,vert21))
 joint333to4 = Constraint(Socket(link2,link4,vert22,vert22))
 
-
 links = [link1; link2; link3; link4]
 constraints = [joint0to1; joint1to23; joint3to4; joint2to4]
-# constraints = [joint0to1; joint1to23; joint3to4]
 shapes = [b1,b2,b3,b4]
 
 
-bot = Robot(origin,links, constraints)
+# bot = Robot(origin,links,constraints)
+bot = Robot(origin,links)
 
-# simulate!(bot,save=true,debug=true)
-# FullCordDynamics.visualize(bot,shapes)
+simulate!(bot,save=true,debug=false)
+FullCordDynamics.visualize(bot,shapes)

@@ -10,7 +10,7 @@ function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter
         setentries!(robot)
         factor!(graph,ldu)
         solve!(graph,ldu) # x̂1 for each link and constraint
-        correctλ!(robot)
+        # correctλ!(robot)
 
         foreach(update!,links,ldu)
         foreach(update!,constraints,ldu)

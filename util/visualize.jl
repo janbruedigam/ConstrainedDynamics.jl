@@ -8,8 +8,6 @@ function shapeobject(box::Box)
     GeometryTypes.HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
 end
 
-
-
 function visualize(robot::Robot,shapes)
     vis = Visualizer()
     open(vis, Blink.Window())
