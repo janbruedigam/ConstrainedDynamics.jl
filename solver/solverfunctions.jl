@@ -113,13 +113,26 @@ function solve!(graph::Graph,ldu::SparseLDU)
     end
 end
 
-
-@inline update!(node::Component,ldu::SparseLDU) = update!(node,getentry(ldu,node.id))
-
+@inline update!(component::Component,ldu::SparseLDU) = update!(component,getentry(ldu,component.id))
 function update!(component::Component,diagonal::DiagonalEntry)
     component.s1 = component.s0 - diagonal.ŝ
     return
 end
+
+# @inline update!(link::Link,ldu::SparseLDU,dt) = update!(link,getentry(ldu,link.id),dt)
+# @inline update!(constraint::Constraint,ldu::SparseLDU) = update!(constraint,getentry(ldu,constraint.id))
+#
+# function update!(link::Link,diagonal::DiagonalEntry,dt)
+#     link.s1 = link.s0 - diagonal.ŝ
+#     # ω = link.s1
+#     # dot(ω,ω)>(4/dt^2) && error("ω too big")
+#     return
+# end
+#
+# function update!(constraint::Constraint,diagonal::DiagonalEntry)
+#     constraint.s1 = constraint.s0 - diagonal.ŝ
+#     return
+# end
 
 @inline function s0tos1!(component::Component)
     component.s1 = component.s0

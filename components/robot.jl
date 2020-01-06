@@ -156,7 +156,7 @@ end
     robot.normf = 0
 
     for link in robot.links
-        robot.normf+=normf(link,robot)
+        robot.normf += normf(link,robot)
     end
     foreach(addNormf!,robot.constraints,robot)
 
@@ -210,15 +210,15 @@ function simulate!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=fa
     dt = robot.dt
     foreach(s0tos1!,links)
     foreach(s0tos1!,constraints)
+
     for i=robot.steps
         newton!(robot,warning=debug)
         save && saveToTraj!(robot,i)
-        for link in links
-            updatePos!(link,dt)
-        end
+        foreach(updatePos!,links,dt)
 
         disp && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
     end
+    return
 end
 
 function plotθ(robot::Robot{T},id) where T

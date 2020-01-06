@@ -11,7 +11,7 @@ mutable struct Axis{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline g(joint::Axis,link1::Link,link2::Link,dt,No) = joint.V12*VLᵀmat(getq3(link1,dt))*getq3(link2,dt)
+@inline g(joint::Axis,link1::Link,link2::Link,dt,No) = joint.V12*(VLᵀmat(getq3(link1,dt))*getq3(link2,dt))
 
 @inline function ∂g∂posa(joint::Axis{T},link1::Link,link2::Link,No) where T
     if link2.id == joint.cid

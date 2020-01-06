@@ -4,16 +4,17 @@ function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter
     constraints = robot.constraints
     graph = robot.graph
     ldu = robot.ldu
+    dt = robot.dt
 
     normf0 = normf(robot)
     for n=Base.OneTo(newtonIter)
         setentries!(robot)
         factor!(graph,ldu)
         solve!(graph,ldu) # x̂1 for each link and constraint
-        # correctλ!(robot)
 
         foreach(update!,links,ldu)
         foreach(update!,constraints,ldu)
+        # foreach(checkωnorm!,links,dt)
 
         normf1 = normf(robot)
         normf1>normf0 && lineSearch!(robot,normf0;iter=lineIter, warning=warning)
@@ -49,7 +50,7 @@ function lineSearch!(robot,normf0;iter=10, warning::Bool=false)
         lineStep!(constraint,getentry(ldu,constraint.id),α)# x1 = x0 + 1/(2^α)*d
     end
 
-    for n=1:iter
+    for n=Base.OneTo(iter)
         α += 1
         if normf(robot) >= normf0
             for link in links
