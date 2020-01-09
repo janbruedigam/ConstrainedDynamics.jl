@@ -10,7 +10,8 @@ end
 
 function visualize(robot::Robot,shapes)
     vis = Visualizer()
-    open(vis, Blink.Window())
+    # open(vis, Blink.Window())  TODO once it works again
+    open(vis)
 
     for link in robot.links
         for shape in shapes

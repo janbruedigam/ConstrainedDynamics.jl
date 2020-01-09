@@ -23,7 +23,7 @@ vert21 = [0.;0.;l2/2]
 vert22 = -vert21
 
 # Initial orientation
-phi1, phi2, phi3, phi4 = pi/2, -pi/4, 0., 3*pi/4.
+phi1, phi2, phi3, phi4 = 0.,0.,0.,0.#pi/2, -pi/4, 0., 3*pi/4.
 q1, q2, q3, q4 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX(phi3)), Quaternion(RotX(phi4))
 
 # Links
@@ -60,8 +60,7 @@ constraints = [joint0to1; joint1to23; joint3to4; joint2to4]
 shapes = [b1,b2,b3,b4]
 
 
-# bot = Robot(origin,links,constraints)
-bot = Robot(origin,links)
+bot = Robot(origin,links,constraints)
 
 simulate!(bot,save=true,debug=false)
 FullCordDynamics.visualize(bot,shapes)
