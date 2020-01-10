@@ -30,10 +30,10 @@ export
 
     OriginConnection,
     Axis,
+    Line,
     Socket,
     SocketYZ,
-    # FixedOrientation,
-    # FixedPosition,
+    MatchedOrientation,
 
     setInit!,
     simulate!,
@@ -51,12 +51,12 @@ include(joinpath("joints", "joint.jl"))
 include(joinpath("components", "link.jl"))
 include(joinpath("components", "constraint.jl"))
 
-# include(joinpath("joints", "fixedposition.jl"))
-# include(joinpath("joints", "fixedorientation.jl"))
+include(joinpath("joints", "matchedorientation.jl"))
 include(joinpath("joints", "originconnection.jl"))
 include(joinpath("joints", "socket.jl"))
 include(joinpath("joints", "socketyz.jl"))
 include(joinpath("joints", "axis.jl"))
+include(joinpath("joints", "line.jl"))
 
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "storage.jl"))

@@ -1,55 +1,3 @@
-# struct Quaternion{T <: Real} <: FieldVector{4, T}
-#     s::T
-#     v1::T
-#     v2::T
-#     v3::T
-# end
-#
-#
-# @inline Base.imag(q::Quaternion) = q[SVector{3}(2:4)]
-#
-#
-# Quaternion(s::T, v1::T, v2::T, v3::T) where T = Quaternion{T}(s,v1,v2,v3)
-# Quaternion(s::T, v::AbstractVector{T}) where T = Quaternion{T}(s,v[1],v[2],v[3])
-# Quaternion(R::Rotation{3,T}) where T = Quaternion{T}(Quat(R).w,Quat(R).x,Quat(R).y,Quat(R).z)
-# Quaternion(v::Vector{T}) where T = Quaternion{T}(0,v[1],v[2],v[3])
-# Quaternion(v::SVector{3,T}) where T = Quaternion{T}(0,v[1],v[2],v[3])
-# Quaternion(q::SVector{4,T}) where T = Quaternion{T}(q)
-# Quaternion{T}() where T = Quaternion{T}(1,0,0,0)
-#
-#
-# @inline skew(v::AbstractVector{T}) where T = SMatrix{3,3,T,9}(0,v[3],-v[2], -v[3],0,v[1], v[2],-v[1],0)
-# @inline skewplusdiag(v::AbstractVector{T},w::T) where T = SMatrix{3,3,T,9}(w,v[3],-v[2], -v[3],w,v[1], v[2],-v[1],w)
-#
-# @inline Vmat(T::Type) = SMatrix{3,4,T,12}(0,0,0, 1,0,0, 0,1,0, 0,0,1)
-# @inline Vmat() = Vmat(Float64)
-# @inline VTmat(T::Type) = Vmat(T)'
-# @inline VTmat() = Vmat(Float64)'
-# @inline Vmat(q::SVector) = q[SVector{3}(2,3,4)]
-# @inline Vmat(q::Quaternion) = q[SVector{3}(2,3,4)]
-# @inline Vmat(A::SMatrix) = A[SVector{3}(2:4),:]
-# @inline VTmat(A::SMatrix) = A[:,SVector{3}(2:4)]
-#
-#
-# @inline Tmat(T::Type) = SMatrix{4,4,T,16}(1,0,0,0, 0,-1,0,0, 0,0,-1,0, 0,0,0,-1)
-# @inline Tmat() = Tmat(Float64)
-#
-# @inline Lmat(q::Quaternion{T}) where T = SMatrix{4,4,T,16}(q.s,q.v1,q.v2,q.v3, -q.v1, q.s,q.v3,-q.v2, -q.v2, -q.v3,q.s,q.v1, -q.v3, q.v2,-q.v1,q.s)
-# @inline LTmat(q::Quaternion{T}) where T = Lmat(q)'
-# @inline Rmat(q::Quaternion{T})  where T = SMatrix{4,4,T,16}(q.s,q.v1,q.v2,q.v3, -q.v1, q.s,-q.v3,q.v2, -q.v2, q.v3,q.s,-q.v1, -q.v3, -q.v2,q.v1,q.s)
-# @inline RTmat(q::Quaternion{T})  where T = Rmat(q)'
-#
-# @inline rotate(x::SVector, q::Quaternion) = q.s^2*x + 2*q.s*cross(imag(q),x) + 2*(imag(q)'*x)*imag(q) - (imag(q)'*imag(q))*x
-#
-# @inline function angleAxis(q::Quaternion{T}) where T
-#     n = norm(Vmat(T)*q)
-#     if n == 0
-#         return zero(T), SVector{3,T}(0,0,0)
-#     else
-#         return 2*atan(n,q.s), Vmat()*q./n
-#     end
-# end
-
 struct Quaternion{T<:Real} <: FieldVector{4,T}
     s::T
     v1::T
@@ -96,6 +44,7 @@ vrotate(x::AbstractVector,q::Quaternion) = imag(qrotate(Quaternion(x),q))
 Vmat(::Type{T}) where T = SMatrix{3,4,T,12}(0,0,0, 1,0,0, 0,1,0, 0,0,1)
 Vmat() = Vmat(Float64)
 Vmat(q::SVector) = q[SUnitRange(2,4)]
+Vmat(A::SMatrix) = A[SUnitRange(2,4),:]
 Vmat(q::Quaternion) = imag(q)
 Vᵀmat(::Type{T}) where T = SMatrix{4,3,T,12}(0,1,0,0, 0,0,1,0, 0,0,0,1)
 Vᵀmat() = Vᵀmat(Float64)
