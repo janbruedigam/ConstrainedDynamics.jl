@@ -104,7 +104,7 @@ function solve!(graph::Graph,ldu::SparseLDU)
         end
     end
 
-    for id in reverse(dfslist)
+    for id in graph.rdfslist
         diagonal = getentry(ldu,id)
 
         DSol!(diagonal)
