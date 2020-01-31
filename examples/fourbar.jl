@@ -51,7 +51,7 @@ links = [link1; link2; link3; link4]
 constraints = [joint0to1; joint1to23; joint3to4; joint2to4]
 shapes = [b1,b2,b3,b4]
 
-bot = Robot(origin,links, constraints)
+bot = Robot(origin,links, constraints,dt=0.0003)
 
 simulate!(bot,save=true,debug=false)
 FullCordDynamics.visualize(bot,shapes)

@@ -16,11 +16,11 @@ vert12 = -vert11
 vert1 = [[vert11];[vert12]]
 
 # Initial orientation
-phi = .7
+phi = pi/4
 q1 = Quaternion(RotX(phi))
 
 # Links
-N = 25
+N = 100
 
 origin = Origin{Float64}()
 
@@ -51,7 +51,7 @@ end
 
 shapes = [b1]
 
-bot = Robot(origin,links, constraints;tend=30.,dt=0.01)
+bot = Robot(origin,links, constraints;tend=10.,dt=0.01)
 
-simulate!(bot,save=true,debug=false)
-FullCordDynamics.visualize(bot,shapes)
+# simulate!(bot,save=true,debug=false)
+# FullCordDynamics.visualize(bot,shapes)

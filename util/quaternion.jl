@@ -39,8 +39,8 @@ qrotate(x::Quaternion,q::Quaternion) = q*x/q
 vrotate(x::AbstractVector,q::Quaternion) = imag(qrotate(Quaternion(x),q))
 
 # Matrix equivalences
-𝟙(::Type{T}) where T = Quaternion(one(T))
-𝟙() = 𝟙(Float64)
+# 𝟙(::Type{T}) where T = Quaternion(one(T))
+# 𝟙() = 𝟙(Float64)
 Vmat(::Type{T}) where T = SMatrix{3,4,T,12}(0,0,0, 1,0,0, 0,1,0, 0,0,1)
 Vmat() = Vmat(Float64)
 Vmat(q::SVector) = q[SUnitRange(2,4)]

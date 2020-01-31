@@ -66,7 +66,7 @@ oc = Constraint(OriginConnection(origin,link1))
 # testjoint = Constraint(MatchedOrientation(link1,link2,q1))
 # testjoint = Constraint(MatchedOrientation(origin,link1))
 # testjoint = Constraint(Line(origin,link1,[0.;0.;1.]))
-testjoint = Constraint(MatchedOrientation(origin,link5),Line(origin,link5,[0.;1.;0.]))
+testjoint = Constraint(MatchedOrientation(origin,link5),Line(origin,link5,[0.;1.;0.],zeros(3),zeros(3)))
 joint5to1 = Constraint(Socket(link5,link1,zeros(3),vert11))
 joint1to2 = Constraint(Socket(link1,link2,vert12,vert21))
 
