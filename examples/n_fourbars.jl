@@ -2,8 +2,8 @@ using Rotations
 using Plots: RGBA
 using BenchmarkTools
 
-!(@isdefined FullCordDynamics) && include(joinpath("..", "FullCordDynamics.jl"))
-using Main.FullCordDynamics
+!(@isdefined MaximalCoordinateDynamics) && include(joinpath("..", "MaximalCoordinateDynamics.jl"))
+using Main.MaximalCoordinateDynamics
 
 # Parameters
 ex = [1.;0.;0.]
@@ -127,4 +127,4 @@ bot = Robot(origin,links, constraints)
 
 
 simulate!(bot,save=true)
-FullCordDynamics.visualize(bot,shapes)
+MaximalCoordinateDynamics.visualize(bot,shapes)

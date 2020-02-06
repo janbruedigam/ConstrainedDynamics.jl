@@ -6,8 +6,8 @@
 using Rotations
 using Plots: RGBA
 
-!(@isdefined FullCordDynamics) && include(joinpath("..", "FullCordDynamics.jl"))
-using Main.FullCordDynamics
+!(@isdefined MaximalCoordinateDynamics) && include(joinpath("..", "MaximalCoordinateDynamics.jl"))
+using Main.MaximalCoordinateDynamics
 
 # Parameters
 ex = [1.;0.;0.]
@@ -46,4 +46,4 @@ bot = Robot(origin,links, constraints;tend=20.0,dt=0.00025)
 link5.q[2] = Quaternion(RotX(0.015))
 
 simulate!(bot,save=true)
-FullCordDynamics.visualize(bot,shapes)
+MaximalCoordinateDynamics.visualize(bot,shapes)

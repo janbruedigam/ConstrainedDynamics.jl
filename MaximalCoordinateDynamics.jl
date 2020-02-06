@@ -1,4 +1,4 @@
-module FullCordDynamics
+module MaximalCoordinateDynamics
 
 # using TimerOutputs
 # const to = TimerOutput()
@@ -67,7 +67,6 @@ include(joinpath("components", "robot.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 
 include(joinpath("solver", "newton.jl"))
-include(joinpath("paper_experiments", "experiment_methods.jl"))
 
 include(joinpath("util", "visualize.jl"))
 

@@ -2,7 +2,7 @@ rename constraints to joints in Constraint
 better setinit! function
 set velocity function
 zero alloc store
-3rd order integrator
+higher order integrator
 check for sqrt error / limit linesearch
 regularize properly / Augmented Lagrangian
 Fix constraint types / make unambigous / typestable

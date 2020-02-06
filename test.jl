@@ -2,8 +2,8 @@ using Rotations
 using BenchmarkTools
 using Plots
 
-(@isdefined FullCordDynamics) ? nothing : include("FullCordDynamics.jl")
-using Main.FullCordDynamics
+(@isdefined MaximalCoordinateDynamics) ? nothing : include("MaximalCoordinateDynamics.jl")
+using Main.MaximalCoordinateDynamics
 
 # Parameters
 ex = [1.;0.;0.]
@@ -75,4 +75,4 @@ joint1to2 = Constraint(Socket(link1,link2,vert12,vert21))
 bot = Robot(origin,[link5;link1;link2],[testjoint;joint5to1;joint1to2])
 
 simulate!(bot,save=true,debug=false)
-FullCordDynamics.visualize(bot,shapes)
+MaximalCoordinateDynamics.visualize(bot,shapes)

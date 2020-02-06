@@ -1,8 +1,8 @@
 using Rotations
 using Plots
 
-!(@isdefined FullCordDynamics) && include(joinpath("..", "FullCordDynamics.jl"))
-using Main.FullCordDynamics
+!(@isdefined MaximalCoordinateDynamics) && include(joinpath("..", "MaximalCoordinateDynamics.jl"))
+using Main.MaximalCoordinateDynamics
 
 # Parameters
 ex = [1.;0.;0.]
@@ -54,4 +54,4 @@ shapes = [b1]
 bot = Robot(origin,links, constraints;tend=10.,dt=0.01)
 
 simulate!(bot,save=true)
-FullCordDynamics.visualize(bot,shapes)
+MaximalCoordinateDynamics.visualize(bot,shapes)

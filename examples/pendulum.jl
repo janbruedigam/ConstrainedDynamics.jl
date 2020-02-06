@@ -1,7 +1,7 @@
 using Rotations
 
-!(@isdefined FullCordDynamics) && include(joinpath("..", "FullCordDynamics.jl"))
-using Main.FullCordDynamics
+!(@isdefined MaximalCoordinateDynamics) && include(joinpath("..", "MaximalCoordinateDynamics.jl"))
+using Main.MaximalCoordinateDynamics
 
 # Parameters
 joint_axis = [1.0;0.0;0.0]
@@ -33,4 +33,4 @@ shapes = [box]
 robot = Robot(origin, links, constraints)
 
 simulate!(robot,save=true)
-FullCordDynamics.visualize(robot,shapes)
+MaximalCoordinateDynamics.visualize(robot,shapes)
