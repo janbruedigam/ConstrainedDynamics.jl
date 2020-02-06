@@ -39,7 +39,12 @@ export
     simulate!,
     plotθ,
     plotλ,
-    visualize
+    visualize,
+
+    simulate_energy!,
+    simulate_drift!,
+    simulate_reset!,
+    simulate_steptol!
 
 
 include(joinpath("util", "util.jl"))
@@ -66,6 +71,7 @@ include(joinpath("components", "robot.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 
 include(joinpath("solver", "newton.jl"))
+include(joinpath("paper_experiments", "experiment_methods.jl"))
 
 include(joinpath("util", "visualize.jl"))
 

@@ -203,31 +203,6 @@ end
     return
 end
 
-function energy(link::Link,g,dt)
-    x2 = link.x[2]
-    v2 = 0.5*(getv1(link,dt)+getvnew(link))
-    ω2 = 0.5*(getω1(link,dt)+getωnew(link))
-    T = .5*(v2'*v2*link.m + ω2'*link.J*ω2)
-    V = -link.m*g*(x2[3])
-    return [T;V]
-end
-
-function energy(robot::Robot)
-    en = [0.;0.]
-    for link in robot.links
-        en+=energy(link,robot.g,robot.dt)
-    end
-    return en
-end
-
-function drift(robot::Robot)
-    d = 0
-    for constraint in robot.constraints
-        d += norm(g(constraint,robot))
-    end
-    return d
-end
-
 
 function simulate!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
     links = robot.links
@@ -246,40 +221,7 @@ function simulate!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=fa
     return
 end
 
-# function simulate!(robot::Robot,xin,qin;save::Bool=false,debug::Bool=false,disp::Bool=false)
-#     links = robot.links
-#     constraints = robot.constraints
-#     dt = robot.dt
-#     foreach(s0tos1!,links)
-#     foreach(s0tos1!,constraints)
-#
-#     # totenergy = zeros(length(robot.steps),2)
-#     # totdrift = zeros(length(robot.steps))
-#
-#     for (i,link) in enumerate(links)
-#         link.x[1] = xin[i]
-#         link.x[2] = xin[i]
-#         link.q[1] = qin[i]
-#         link.q[2] = qin[i]
-#         link.s0 = @SVector zeros(6)
-#         link.s1 = @SVector zeros(6)
-#     end
-#     for constraint in constraints
-#         constraint.s0 *= 0.
-#         constraint.s1 *= 0.
-#     end
-#
-#     for i=robot.steps
-#         newton!(robot,warning=debug)
-#         save && saveToTraj!(robot,i)
-#         foreach(updatePos!,links,dt)
-#
-#         # totdrift[i] = drift(robot)
-#
-#         disp && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
-#     end
-#     # return totdrift
-# end
+
 
 function plotθ(robot::Robot{T},id) where T
     n = length(robot.links)
