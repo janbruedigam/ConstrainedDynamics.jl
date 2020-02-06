@@ -1,9 +1,9 @@
 struct Graph{N}
-    adjacency::Vector{SVector{N,Bool}}
-    dfsgraph::Vector{SVector{N,Bool}}
-    pattern::Vector{SVector{N,Bool}} # includes fillins and originals
-    originals::Vector{SVector{N,Bool}}
-    fillins::Vector{SVector{N,Bool}}
+    # adjacency::Vector{SVector{N,Bool}}
+    # dfsgraph::Vector{SVector{N,Bool}}
+    # pattern::Vector{SVector{N,Bool}} # includes fillins and originals
+    # originals::Vector{SVector{N,Bool}}
+    # fillins::Vector{SVector{N,Bool}}
 
     directchildren::Vector{Vector{Int64}}
     loopchildren::Vector{Vector{Int64}}
@@ -12,9 +12,10 @@ struct Graph{N}
     connections::Vector{Vector{Int64}}
 
     dfslist::SVector{N,Int64}
+    rdfslist::SVector{N,Int64}
 
-    dict::Dict{Int64,Int64}
-    rdict::Dict{Int64,Int64}
+    dict::UnitDict{Base.OneTo{Int64},Int64}
+    rdict::UnitDict{Base.OneTo{Int64},Int64}
 
     function Graph(origin::Origin,links::Vector{<:Link},constraints::Vector{<:Constraint})
         oid = origin.id
@@ -41,7 +42,7 @@ struct Graph{N}
         end
 
         N = length(dict)
-        #TODO make properly to convert
+
         adjacency = convert(Vector{SVector{N,Bool}},adjacency)
         dfsgraph = convert(Vector{SVector{N,Bool}},dfsgraph)
         pat = convert(Vector{SVector{N,Bool}},pat)
@@ -54,8 +55,11 @@ struct Graph{N}
         preds = predecessors(dfslist,pat,dict)
         cons = connections(dfslist,adjacency,dict)
 
-        new{N}(adjacency,dfsgraph,pat,originals,fil,dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
-    end
+        dict = UnitDict(dict)
+        rdict = UnitDict(rdict)
+
+        new{N}(dirs,loos,sucs,preds,cons,dfslist,reverse(dfslist),dict,rdict)
+end
 end
 
 function adjacencyMatrix(constraints::Vector{<:Constraint},links::Vector{<:Link})
@@ -168,12 +172,8 @@ function successors(dfslist,pattern,dict::Dict)
         for cid in dfslist
             pattern[i][dict[cid]] && push!(sucs[i],cid)
         end
-        # while length(sucs[i])<N
-        #     push!(sucs[i],-1)
-        # end
     end
 
-    # return convert.(SVector{N,Int64},sucs)
     return sucs
 end
 
@@ -185,12 +185,8 @@ function directchildren(dfslist,dfsgraph,dict::Dict)
         for cid in dfslist
             dfsgraph[i][dict[cid]] && push!(dirs[i],cid)
         end
-        # while length(dirs[i])<N
-        #     push!(dirs[i],-1)
-        # end
     end
 
-    # return convert.(SVector{N,Int64},dirs)
     return dirs
 end
 
@@ -202,12 +198,8 @@ function loopchildren(dfslist,fillins,dict::Dict)
         for cid in dfslist
             fillins[i][dict[cid]] && push!(loos[i],cid)
         end
-        # while length(loos[i])<N
-        #     push!(loos[i],-1)
-        # end
     end
 
-    # return convert.(SVector{N,Int64},loos)
     return loos
 end
 
@@ -219,12 +211,8 @@ function predecessors(dfslist,pattern,dict::Dict)
         for cid in reverse(dfslist)
             pattern[dict[cid]][i] && push!(preds[i],cid)
         end
-        # while length(preds[i])<N
-        #     push!(preds[i],-1)
-        # end
     end
 
-    # return convert.(SVector{N,Int64},preds)
     return preds
 end
 
@@ -236,31 +224,34 @@ function connections(dfslist,adjacency,dict::Dict)
         for cid in dfslist
             adjacency[i][dict[cid]] && push!(cons[i],cid)
         end
-        # while length(cons[i])<N
-        #     push!(cons[i],-1)
-        # end
     end
 
-    # return convert.(SVector{N,Int64},cons)
     return cons
 end
 
-directchildren(graph,id::Int64) = graph.directchildren[graph.dict[id]]
-loopchildren(graph,id::Int64) = graph.loopchildren[graph.dict[id]]
-successors(graph,id::Int64) = graph.successors[graph.dict[id]]
-predecessors(graph,id::Int64) = graph.predecessors[graph.dict[id]]
-connections(graph,id::Int64) = graph.connections[graph.dict[id]]
+@inline directchildren(graph,id::Int64) = graph.directchildren[graph.dict[id]]
+@inline loopchildren(graph,id::Int64) = graph.loopchildren[graph.dict[id]]
+@inline successors(graph,id::Int64) = graph.successors[graph.dict[id]]
+@inline predecessors(graph,id::Int64) = graph.predecessors[graph.dict[id]]
+@inline connections(graph,id::Int64) = graph.connections[graph.dict[id]]
 
-function hassuccessor(graph::Graph{N},id,cid) where N
+@inline function hassuccessor(graph::Graph{N},id,cid) where N
     for val in graph.successors[graph.dict[id]]
         val == cid && (return true)
     end
     return false
 end
 
-function haspredecessor(graph::Graph{N},id,pid) where N
+@inline function haspredecessor(graph::Graph{N},id,pid) where N
     for val in graph.predecessor[graph.dict[id]]
         val == pid && (return true)
+    end
+    return false
+end
+
+@inline function hasdirectchild(graph::Graph{N},id,cid) where N
+    for val in graph.directchildren[graph.dict[id]]
+        val == cid && (return true)
     end
     return false
 end

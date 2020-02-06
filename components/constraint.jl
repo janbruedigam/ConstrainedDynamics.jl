@@ -1,7 +1,7 @@
-mutable struct Constraint{T,N,Nc,Cs} <: Node{T}
+mutable struct Constraint{T,N,Nc,Cs} <: Component{T}
     id::Int64
 
-    constr::Cs
+    constraints::Cs
     pid::Union{Int64,Nothing}
     linkids::SVector{Nc,Int64}
 
@@ -9,61 +9,59 @@ mutable struct Constraint{T,N,Nc,Cs} <: Node{T}
     s1::SVector{N,T}
 
     function Constraint(jointdata...)
-        T = jointdata[1][1].T
-        linkids = Vector{Int64}(undef,0)
-        constr = Vector{Joint{T}}(undef,0)
+        T = getT(jointdata[1][1])#.T
+
         pid = jointdata[1][2]
+        linkids = Vector{Int64}(undef,0)
+        constraints = Vector{Joint{T}}(undef,0)
         N = 0
         for set in jointdata
-            push!(constr,set[1])
+            push!(constraints,set[1])
             @assert set[2] == pid
             push!(linkids,set[3])
-            N+=set[1].Nc
+            N += getNc(set[1])#.Nc
         end
-        constr = Tuple(constr)
-
-        Nc = length(constr)
-
-        id = getGlobalID()
+        constraints = Tuple(constraints)
+        Nc = length(constraints)
 
         s0 = @SVector zeros(T,N)
         s1 = @SVector zeros(T,N)
 
-        new{T,N,Nc,typeof(constr)}(id,constr,pid,linkids,s0,s1)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(),constraints,pid,linkids,s0,s1)
     end
 end
 
-Base.length(C::Constraint{T,N}) where {T,N} = N
+Base.length(c::Constraint{T,N}) where {T,N} = N
 
-@generated function g(robot,C::Constraint{T,N,Nc}) where {T,N,Nc}
-    vec = [:(g(C.constr[$i],getlink(robot,C.pid),getlink(robot,C.linkids[$i]),robot.dt,robot.No)) for i=1:Nc]
+@generated function g(c::Constraint{T,N,Nc},robot) where {T,N,Nc}
+    vec = [:(g(c.constraints[$i],getlink(robot,c.pid),getlink(robot,c.linkids[$i]),robot.dt,robot.No)) for i=1:Nc]
     :(vcat($(vec...)))
 end
 
-function ∂g∂pos(robot,C::Constraint,id::Int64)
-    id == C.pid ? ∂g∂posa(robot,C,id) : ∂g∂posb(robot,C,id)
+@inline function ∂g∂pos(c::Constraint,id::Int64,robot)
+    id == c.pid ? ∂g∂posa(c,id,robot) : ∂g∂posb(c,id,robot)
 end
 
-function ∂g∂vel(robot,C::Constraint,id::Int64)
-    id == C.pid ? ∂g∂vela(robot,C,id) : ∂g∂velb(robot,C,id)
+@inline function ∂g∂vel(c::Constraint,id::Int64,robot)
+    id == c.pid ? ∂g∂vela(c,id,robot) : ∂g∂velb(c,id,robot)
 end
 
-@generated function ∂g∂posa(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
-    vec = [:(∂g∂posa(C.constr[$i],getlink(robot,id),getlink(robot,C.linkids[$i]),robot.No)) for i=1:Nc]
+@generated function ∂g∂posa(c::Constraint{T,N,Nc},id::Int64,robot) where {T,N,Nc}
+    vec = [:(∂g∂posa(c.constraints[$i],getlink(robot,id),getlink(robot,c.linkids[$i]),robot.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂posb(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
-    vec = [:(∂g∂posb(C.constr[$i],getlink(robot,C.pid),getlink(robot,id),robot.No)) for i=1:Nc]
+@generated function ∂g∂posb(c::Constraint{T,N,Nc},id::Int64,robot) where {T,N,Nc}
+    vec = [:(∂g∂posb(c.constraints[$i],getlink(robot,c.pid),getlink(robot,id),robot.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂vela(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
-    vec = [:(∂g∂vela(C.constr[$i],getlink(robot,id),getlink(robot,C.linkids[$i]),robot.dt,robot.No)) for i=1:Nc]
+@generated function ∂g∂vela(c::Constraint{T,N,Nc},id::Int64,robot) where {T,N,Nc}
+    vec = [:(∂g∂vela(c.constraints[$i],getlink(robot,id),getlink(robot,c.linkids[$i]),robot.dt,robot.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂velb(robot,C::Constraint{T,N,Nc},id::Int64) where {T,N,Nc}
-    vec = [:(∂g∂velb(C.constr[$i],getlink(robot,C.pid),getlink(robot,id),robot.dt,robot.No)) for i=1:Nc]
+@generated function ∂g∂velb(c::Constraint{T,N,Nc},id::Int64,robot) where {T,N,Nc}
+    vec = [:(∂g∂velb(c.constraints[$i],getlink(robot,c.pid),getlink(robot,id),robot.dt,robot.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end
