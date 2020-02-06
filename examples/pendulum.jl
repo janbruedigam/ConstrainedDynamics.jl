@@ -6,11 +6,11 @@ using Main.FullCordDynamics
 # Parameters
 joint_axis = [1.0;0.0;0.0]
 
-length = 1.0
+length1 = 1.0
 width,depth = 0.1, 0.1
-box = Box(width,depth,length,length)
+box = Box(width,depth,length1,length1)
 
-p1 = [0.0;0.0;length/2] # joint connection point
+p1 = [0.0;0.0;length1/2] # joint connection point
 
 # Initial orientation
 ϕ1 = π/2
