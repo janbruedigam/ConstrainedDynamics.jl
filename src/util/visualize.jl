@@ -8,12 +8,12 @@ function shapeobject(box::Box)
     GeometryTypes.HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
 end
 
-function visualize(robot::Robot,shapes)
+function visualize(mechanism::Mechanism,shapes)
     vis = Visualizer()
     open(vis, Blink.Window())
     # open(vis)
 
-    for link in robot.links
+    for link in mechanism.links
         for shape in shapes
             for shapelink in shape.links
                 if shapelink == link
@@ -25,13 +25,13 @@ function visualize(robot::Robot,shapes)
         end
     end
 
-    framerate = Int64(round(1/robot.dt))
+    framerate = Int64(round(1/mechanism.dt))
     anim = MeshCat.Animation(Dict{MeshCat.SceneTrees.Path,MeshCat.AnimationClip}(), framerate)
 
-    for k=robot.steps
+    for k=mechanism.steps
         MeshCat.atframe(anim, vis, k) do frame
-            for (id,link) in pairs(robot.links)
-                settransform!(vis["bundle/vislink"*string(id)], compose(Translation(robot.storage.x[id][k]...),LinearMap(Quat(robot.storage.q[id][k]...))))
+            for (id,link) in pairs(mechanism.links)
+                settransform!(vis["bundle/vislink"*string(id)], compose(Translation(mechanism.storage.x[id][k]...),LinearMap(Quat(mechanism.storage.q[id][k]...))))
             end
         end
     end

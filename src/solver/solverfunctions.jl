@@ -1,26 +1,26 @@
-@inline function setDandŝ!(diagonal::DiagonalEntry,link::Link,robot::Robot)
-    diagonal.D = ∂dyn∂vel(link, robot.dt)
-    diagonal.ŝ = dynamics(link, robot)
+@inline function setDandŝ!(diagonal::DiagonalEntry,link::Link,mechanism::Mechanism)
+    diagonal.D = ∂dyn∂vel(link, mechanism.dt)
+    diagonal.ŝ = dynamics(link, mechanism)
     return
 end
 
-@inline function setDandŝ!(d::DiagonalEntry{T,N},c::Constraint,robot::Robot) where {T,N}
+@inline function setDandŝ!(d::DiagonalEntry{T,N},c::Constraint,mechanism::Mechanism) where {T,N}
     d.D = @SMatrix zeros(T,N,N)
     # μ = 1e-05
     # d.D = SMatrix{N,N,T,N*N}(μ*I)
-    d.ŝ = g(c,robot)
+    d.ŝ = g(c,mechanism)
     return
 end
 
-@inline function setLU!(o::OffDiagonalEntry,linkid::Int64,c::Constraint,robot)
-    o.L = -∂g∂pos(c,linkid,robot)'
-    o.U = ∂g∂vel(c,linkid,robot)
+@inline function setLU!(o::OffDiagonalEntry,linkid::Int64,c::Constraint,mechanism)
+    o.L = -∂g∂pos(c,linkid,mechanism)'
+    o.U = ∂g∂vel(c,linkid,mechanism)
     return
 end
 
-@inline function setLU!(o::OffDiagonalEntry,c::Constraint,linkid::Int64,robot)
-    o.L = ∂g∂vel(c,linkid,robot)
-    o.U = -∂g∂pos(c,linkid,robot)'
+@inline function setLU!(o::OffDiagonalEntry,c::Constraint,linkid::Int64,mechanism)
+    o.L = ∂g∂vel(c,linkid,mechanism)
+    o.U = -∂g∂pos(c,linkid,mechanism)'
     return
 end
 

@@ -30,7 +30,7 @@ constraints = [joint_between_origin_and_link1]
 shapes = [box]
 
 
-robot = Robot(origin, links, constraints)
+mech = Mechanism(origin, links, constraints)
 
-simulate!(robot,save=true)
-MaximalCoordinateDynamics.visualize(robot,shapes)
+simulate!(mech,save=true)
+MaximalCoordinateDynamics.visualize(mech,shapes)

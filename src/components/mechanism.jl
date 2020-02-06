@@ -1,4 +1,4 @@
-mutable struct Robot{T,N}
+mutable struct Mechanism{T,N}
     tend::T
     steps::Base.OneTo{Int64}
     dt::T
@@ -19,7 +19,7 @@ mutable struct Robot{T,N}
     storage::Storage{T}
 
     #TODO no constraints input
-    function Robot(origin::Origin{T},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}};
+    function Mechanism(origin::Origin{T},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
 
@@ -77,39 +77,39 @@ mutable struct Robot{T,N}
         new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,links,constraints,normf,normΔs,graph,ldu,storage)
     end
 
-    function Robot(origin::Origin{T},links::Vector{Link{T}};
+    function Mechanism(origin::Origin{T},links::Vector{Link{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
         constraints = Vector{Constraint{T}}(undef,0)
         for link in links
             push!(constraints,Constraint(OriginConnection(origin,link)))
         end
-        Robot(origin,links,constraints,tend=tend, dt=dt, g=g, No=No)
+        Mechanism(origin,links,constraints,tend=tend, dt=dt, g=g, No=No)
     end
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Robot{T}) where {T}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Mechanism{T}) where {T}
     summary(io, R); println(io, " with ", length(R.links), " links and ", length(R.constraints), " constraints")
 end
 
-function setentries!(robot::Robot)
-    graph = robot.graph
-    ldu = robot.ldu
+function setentries!(mechanism::Mechanism)
+    graph = mechanism.graph
+    ldu = mechanism.ldu
 
-    for (id,link) in pairs(robot.links)
+    for (id,link) in pairs(mechanism.links)
         for cid in directchildren(graph,id)
-            setLU!(getentry(ldu,(id,cid)),id,getconstraint(robot,cid),robot)
+            setLU!(getentry(ldu,(id,cid)),id,getconstraint(mechanism,cid),mechanism)
         end
 
         diagonal = getentry(ldu,id)
-        setDandŝ!(diagonal,link,robot)
+        setDandŝ!(diagonal,link,mechanism)
     end
 
-    for node in robot.constraints
+    for node in mechanism.constraints
         id = node.id
 
         for cid in directchildren(graph,id)
-            setLU!(getentry(ldu,(id,cid)),node,cid,robot)
+            setLU!(getentry(ldu,(id,cid)),node,cid,mechanism)
         end
 
         for cid in loopchildren(graph,id)
@@ -117,79 +117,79 @@ function setentries!(robot::Robot)
         end
 
         diagonal = getentry(ldu,id)
-        setDandŝ!(diagonal,node,robot)
+        setDandŝ!(diagonal,node,mechanism)
     end
 end
 
-@inline getlink(robot::Robot,id::Int64) = robot.links[id]
-@inline getlink(robot::Robot,id::Nothing) = robot.origin
-@inline getconstraint(robot::Robot,id::Int64) = robot.constraints[id]
+@inline getlink(mechanism::Mechanism,id::Int64) = mechanism.links[id]
+@inline getlink(mechanism::Mechanism,id::Nothing) = mechanism.origin
+@inline getconstraint(mechanism::Mechanism,id::Int64) = mechanism.constraints[id]
 
-# @inline function getnode(robot::Robot,id::Int64) # should only be used in setup
-#      if haskey(robot.ldict,id)
-#          return getlink(robot,id)
-#      elseif haskey(robot.cdict,id)
-#          return getconstraint(robot,id)
-#      elseif id == robot.originid
-#          return robot.origin
+# @inline function getnode(mechanism::Mechanism,id::Int64) # should only be used in setup
+#      if haskey(mechanism.ldict,id)
+#          return getlink(mechanism,id)
+#      elseif haskey(mechanism.cdict,id)
+#          return getconstraint(mechanism,id)
+#      elseif id == mechanism.originid
+#          return mechanism.origin
 #      else
 #          error("not found.")
 #      end
 #  end
 
-@inline function normf(link::Link{T},robot::Robot) where T
-    f = dynamics(link,robot)
+@inline function normf(link::Link{T},mechanism::Mechanism) where T
+    f = dynamics(link,mechanism)
     return dot(f,f)
 end
 
-@inline function normf(c::Constraint,robot::Robot)
-    f = g(c,robot)
+@inline function normf(c::Constraint,mechanism::Mechanism)
+    f = g(c,mechanism)
     return dot(f,f)
 end
 
-@inline function GtλTof!(link::Link,c::Constraint,robot)
-    link.f -= ∂g∂pos(c,link.id,robot)'*c.s1
+@inline function GtλTof!(link::Link,c::Constraint,mechanism)
+    link.f -= ∂g∂pos(c,link.id,mechanism)'*c.s1
     return
 end
 
-@inline function normf(robot::Robot)
-    robot.normf = 0
+@inline function normf(mechanism::Mechanism)
+    mechanism.normf = 0
 
-    for link in robot.links
-        robot.normf += normf(link,robot)
+    for link in mechanism.links
+        mechanism.normf += normf(link,mechanism)
     end
-    foreach(addNormf!,robot.constraints,robot)
+    foreach(addNormf!,mechanism.constraints,mechanism)
 
-    return sqrt(robot.normf)
+    return sqrt(mechanism.normf)
 end
 
-@inline function normΔs(robot::Robot)
-    robot.normΔs = 0
+@inline function normΔs(mechanism::Mechanism)
+    mechanism.normΔs = 0
 
-    robot.normΔs += mapreduce(normΔs,+,robot.links)
-    foreach(addNormΔs!,robot.constraints,robot)
+    mechanism.normΔs += mapreduce(normΔs,+,mechanism.links)
+    foreach(addNormΔs!,mechanism.constraints,mechanism)
 
-    return sqrt(robot.normΔs)
+    return sqrt(mechanism.normΔs)
 end
 
-@inline function addNormf!(c::Constraint,robot::Robot)
-    robot.normf += normf(c,robot)
+@inline function addNormf!(c::Constraint,mechanism::Mechanism)
+    mechanism.normf += normf(c,mechanism)
     return
 end
 
-@inline function addNormΔs!(component::Component,robot::Robot)
-    robot.normΔs += normΔs(component)
+@inline function addNormΔs!(component::Component,mechanism::Mechanism)
+    mechanism.normΔs += normΔs(component)
     return
 end
 
-function saveToTraj!(robot::Robot,t)
-    No = robot.No
-    for (ind,link) in enumerate(robot.links)
-        robot.storage.x[ind][t]=link.x[No]
-        robot.storage.q[ind][t]=link.q[No]
+function saveToTraj!(mechanism::Mechanism,t)
+    No = mechanism.No
+    for (ind,link) in enumerate(mechanism.links)
+        mechanism.storage.x[ind][t]=link.x[No]
+        mechanism.storage.q[ind][t]=link.q[No]
     end
-    for (ind,constraint) in enumerate(robot.constraints)
-        robot.storage.λ[ind][t]=constraint.s1
+    for (ind,constraint) in enumerate(mechanism.constraints)
+        mechanism.storage.λ[ind][t]=constraint.s1
     end
 end
 
@@ -204,16 +204,16 @@ end
 end
 
 
-function simulate!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=false)
-    links = robot.links
-    constraints = robot.constraints
-    dt = robot.dt
+function simulate!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,disp::Bool=false)
+    links = mechanism.links
+    constraints = mechanism.constraints
+    dt = mechanism.dt
     foreach(s0tos1!,links)
     foreach(s0tos1!,constraints)
 
-    for i=robot.steps
-        newton!(robot,warning=debug)
-        save && saveToTraj!(robot,i)
+    for i=mechanism.steps
+        newton!(mechanism,warning=debug)
+        save && saveToTraj!(mechanism,i)
         foreach(updatePos!,links,dt)
 
         disp && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
@@ -223,32 +223,32 @@ end
 
 
 
-function plotθ(robot::Robot{T},id) where T
-    n = length(robot.links)
-    θ = zeros(T,n,length(robot.steps))
+function plotθ(mechanism::Mechanism{T},id) where T
+    n = length(mechanism.links)
+    θ = zeros(T,n,length(mechanism.steps))
     for i=1:n
-        qs = robot.storage.q[i]
+        qs = mechanism.storage.q[i]
         for (t,q) in enumerate(qs)
             θ[i,t] = angleaxis(q)[1]*sign(angleaxis(q)[2][1])
         end
     end
 
-    p = plot(collect(0:robot.dt:robot.tend-robot.dt),θ[id[1],:])
+    p = plot(collect(0:mechanism.dt:mechanism.tend-mechanism.dt),θ[id[1],:])
     for ind in Iterators.rest(id,2)
-        plot!(collect(0:robot.dt:robot.tend-robot.dt),θ[ind,:])
+        plot!(collect(0:mechanism.dt:mechanism.tend-mechanism.dt),θ[ind,:])
     end
     return p
 end
 
-function plotλ(robot::Robot{T},id) where T
-    n = sum(length.(robot.constraints))
-    λ = zeros(T,n,length(robot.steps))
+function plotλ(mechanism::Mechanism{T},id) where T
+    n = sum(length.(mechanism.constraints))
+    λ = zeros(T,n,length(mechanism.steps))
     startpos = 1
     endpos = 0
-    for i=1:length(robot.constraints)
-        endpos = startpos + length(robot.constraints[i]) -1
+    for i=1:length(mechanism.constraints)
+        endpos = startpos + length(mechanism.constraints[i]) -1
 
-        λs = robot.storage.λ[i]
+        λs = mechanism.storage.λ[i]
         for (t,val) in enumerate(λs)
             λ[startpos:endpos,t] = val
         end
@@ -256,9 +256,9 @@ function plotλ(robot::Robot{T},id) where T
         startpos = endpos + 1
     end
 
-    p = plot(collect(0:robot.dt:robot.tend-robot.dt),λ[id[1],:])
+    p = plot(collect(0:mechanism.dt:mechanism.tend-mechanism.dt),λ[id[1],:])
     for ind in Iterators.rest(id,2)
-        plot!(collect(0:robot.dt:robot.tend-robot.dt),λ[ind,:])
+        plot!(collect(0:mechanism.dt:mechanism.tend-mechanism.dt),λ[ind,:])
     end
     return p
 end

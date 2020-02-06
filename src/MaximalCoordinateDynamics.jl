@@ -26,7 +26,7 @@ export
     Origin,
     Link,
     Constraint,
-    Robot,
+    Mechanism,
 
     OriginConnection,
     Axis,
@@ -63,7 +63,7 @@ include(joinpath("util", "graph.jl"))
 include(joinpath("util", "storage.jl"))
 
 include(joinpath("solver", "sparseldu.jl"))
-include(joinpath("components", "robot.jl"))
+include(joinpath("components", "mechanism.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 
 include(joinpath("solver", "newton.jl"))

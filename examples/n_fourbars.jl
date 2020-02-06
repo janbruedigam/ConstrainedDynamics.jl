@@ -122,9 +122,9 @@ end
 
 shapes = [b1,b2,b3,b4]
 
-bot = Robot(origin,links, constraints)
+mech = Mechanism(origin,links, constraints)
 
 
 
-simulate!(bot,save=true)
-MaximalCoordinateDynamics.visualize(bot,shapes)
+simulate!(mech,save=true)
+MaximalCoordinateDynamics.visualize(mech,shapes)

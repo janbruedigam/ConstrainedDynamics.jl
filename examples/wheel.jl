@@ -42,8 +42,8 @@ constraints = [socket0to1;joint1to5]
 shapes = [b1;b5]
 
 
-bot = Robot(origin,links, constraints;tend=20.0,dt=0.00025)
+mech = Mechanism(origin,links, constraints;tend=20.0,dt=0.00025)
 link5.q[2] = Quaternion(RotX(0.015))
 
-simulate!(bot,save=true)
-MaximalCoordinateDynamics.visualize(bot,shapes)
+simulate!(mech,save=true)
+MaximalCoordinateDynamics.visualize(mech,shapes)

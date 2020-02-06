@@ -1,14 +1,14 @@
-function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter=10, warning::Bool=false) where {T,Nl}
+function newton!(mechansim::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter=10, warning::Bool=false) where {T,Nl}
     # n = 1
-    links = robot.links
-    constraints = robot.constraints
-    graph = robot.graph
-    ldu = robot.ldu
-    dt = robot.dt
+    links = mechansim.links
+    constraints = mechansim.constraints
+    graph = mechansim.graph
+    ldu = mechansim.ldu
+    dt = mechansim.dt
 
-    normf0 = normf(robot)
+    normf0 = normf(mechansim)
     for n=Base.OneTo(newtonIter)
-        setentries!(robot)
+        setentries!(mechansim)
         factor!(graph,ldu)
         solve!(graph,ldu) # x̂1 for each link and constraint
 
@@ -16,10 +16,10 @@ function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter
         foreach(update!,constraints,ldu)
         # foreach(checkωnorm!,links,dt)
 
-        normf1 = normf(robot)
-        normf1>normf0 && lineSearch!(robot,normf0;iter=lineIter, warning=warning)
+        normf1 = normf(mechansim)
+        normf1>normf0 && lineSearch!(mechansim,normf0;iter=lineIter, warning=warning)
 
-        if normΔs(robot) < ε && normf1 < ε
+        if normΔs(mechansim) < ε && normf1 < ε
             foreach(s1tos0!,links)
             foreach(s1tos0!,constraints)
             # display(n)
@@ -38,11 +38,11 @@ function newton!(robot::Robot{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter
     return
 end
 
-function lineSearch!(robot,normf0;iter=10, warning::Bool=false)
+function lineSearch!(mechansim,normf0;iter=10, warning::Bool=false)
     α = 1
-    ldu = robot.ldu
-    links = robot.links
-    constraints = robot.constraints
+    ldu = mechansim.ldu
+    links = mechansim.links
+    constraints = mechansim.constraints
     for link in links
         lineStep!(link,getentry(ldu,link.id),α)# x1 = x0 + 1/(2^α)*d
     end
@@ -52,7 +52,7 @@ function lineSearch!(robot,normf0;iter=10, warning::Bool=false)
 
     for n=Base.OneTo(iter)
         α += 1
-        if normf(robot) >= normf0
+        if normf(mechansim) >= normf0
             for link in links
                 lineStep!(link,getentry(ldu,link.id),α)# x1 = x0 + 1/(2^α)*d
             end
