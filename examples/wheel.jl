@@ -1,5 +1,10 @@
+##########
+# This is more of a test case than a proper working example
+##########
+
+
 using Rotations
-using Plots
+using Plots: RGBA
 
 !(@isdefined FullCordDynamics) && include(joinpath("..", "FullCordDynamics.jl"))
 using Main.FullCordDynamics
@@ -37,8 +42,8 @@ constraints = [socket0to1;joint1to5]
 shapes = [b1;b5]
 
 
-bot = Robot(origin,links, constraints;dt=0.00025)
+bot = Robot(origin,links, constraints;tend=20.0,dt=0.00025)
 link5.q[2] = Quaternion(RotX(0.015))
 
-simulate!(bot,save=true,debug=false)
+simulate!(bot,save=true)
 FullCordDynamics.visualize(bot,shapes)

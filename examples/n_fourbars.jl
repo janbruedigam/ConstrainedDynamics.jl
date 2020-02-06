@@ -1,5 +1,5 @@
 using Rotations
-using Plots
+using Plots: RGBA
 using BenchmarkTools
 
 !(@isdefined FullCordDynamics) && include(joinpath("..", "FullCordDynamics.jl"))
@@ -23,7 +23,7 @@ vert21 = [0.;0.;l2/2]
 vert22 = -vert21
 
 # Initial orientation
-offset = pi/2
+offset = pi/4
 phi1, phi2, phi3, phi4 = pi/8+offset,-pi/8+offset,-pi/8+offset,pi/8+offset#pi/4, -pi/2, -pi/4, pi/2
 q1, q2, q3, q4 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX(phi3)), Quaternion(RotX(phi4))
 
@@ -68,7 +68,7 @@ for i=2:N-1
         setInit!($(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+3)),vert11,vert11,q=q3)
         push!($links,$(Symbol("link",(i-1)*4+3)))
 
-        $(Symbol("link",(i-1)*4+4)) = Link(b3)
+        $(Symbol("link",(i-1)*4+4)) = Link(b4)
         setInit!($(Symbol("link",(i-1)*4+3)),$(Symbol("link",(i-1)*4+4)),vert12,vert21,q=q4)
         push!($links,$(Symbol("link",(i-1)*4+4)))
     end
@@ -89,7 +89,7 @@ if N>1
             setInit!($(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+3)),vert11,vert11,q=q7)
             push!($links,$(Symbol("link",(i-1)*4+3)))
 
-            $(Symbol("link",(i-1)*4+4)) = Link(b3)
+            $(Symbol("link",(i-1)*4+4)) = Link(b4)
             setInit!($(Symbol("link",(i-1)*4+3)),$(Symbol("link",(i-1)*4+4)),vert12,vert21,q=q8)
             push!($links,$(Symbol("link",(i-1)*4+4)))
         end
@@ -126,5 +126,5 @@ bot = Robot(origin,links, constraints)
 
 
 
-simulate!(bot,save=true,debug=false)
+simulate!(bot,save=true)
 FullCordDynamics.visualize(bot,shapes)

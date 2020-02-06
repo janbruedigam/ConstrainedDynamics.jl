@@ -10,6 +10,7 @@ l = 1.
 m = l
 I = diagm([0.0845833;0.0845833;0.00125])
 
+# Function to reset joint angles for each run
 function test(state,jointies,N)
     ϕ = π/4
     qu = Quat(RotX(ϕ))

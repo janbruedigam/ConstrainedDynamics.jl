@@ -6,9 +6,9 @@ using Main.FullCordDynamics
 
 # Parameters
 joint_axis = [1.;0.;0.]
-m = 1.
-l = 1.0
-x,y = .1,.1
+m = 1. # mass
+l = 1.0 # length
+x,y = .1,.1 # size of link
 box = Box(x,y,l,m)
 
 # joint connection points

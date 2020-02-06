@@ -3,14 +3,14 @@ using RigidBodyDynamics
 using StaticArrays
 using BenchmarkTools
 
+joint_axis = SVector(1., 0., 0.);
 g = -9.81
 
 l = 1.
 m = l
 I = 0.0841667
 
-joint_axis = SVector(1., 0., 0.);
-
+# Function to reset joint angles for each run
 function test(state,jointies,N)
     ϕ = π/4
     set_configuration!(state, jointies[1], ϕ)

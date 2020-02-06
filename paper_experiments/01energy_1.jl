@@ -31,6 +31,7 @@ setInit!(link1,link2,zeros(3),p1,q=q2)
 joint0to1 = Constraint(Socket(origin,link1,zeros(3),p1),Axis(origin,link1,joint_axis))
 joint1to2 = Constraint(Socket(link1,link2,zeros(3),p1),Axis(link1,link2,joint_axis))
 
+
 links = [link1;link2]
 constraints = [joint0to1;joint1to2]
 shapes = [box]

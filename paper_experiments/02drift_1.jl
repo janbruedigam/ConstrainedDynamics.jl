@@ -1,11 +1,12 @@
 using Rotations
 
+
 !(@isdefined FullCordDynamics) && include(joinpath("..", "FullCordDynamics.jl"))
 using Main.FullCordDynamics
 
 # Parameters
 joint_axis = [1.;0.;0.]
-
+m = 1. # mass
 l1 = 1.0 # length1
 l2 = sqrt(2)/2 # length2
 x,y = .1,.1 # size of link
@@ -16,7 +17,6 @@ box3 = Box(x,y,l1,l1)
  # joint connection points
 p1 = [0.;0.;l1/2]
 p2 = -p1
-
 p3 = [0.;0.;l2/2]
 p4 = -p3
 

@@ -3,9 +3,6 @@ using BenchmarkTools
 using LinearAlgebra
 using StaticArrays
 
-using MeshCatMechanisms
-
-
 joint_axis = SVector(1., 0., 0.);
 g = -9.81
 
@@ -13,7 +10,7 @@ l = 1.
 m = l
 I = diagm([0.0845833;0.0845833;0.00125])
 
-
+# Function to reset joint angles for each run
 function test(state,jointies,N)
     ϕ = π/4
     set_configuration!(state, jointies[1], ϕ)

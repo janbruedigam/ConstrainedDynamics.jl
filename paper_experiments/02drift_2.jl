@@ -11,6 +11,8 @@ m2 = l2 # mass 2
 I1 = 0.0841667 # Inertia 1
 I2 = 0.030052 # Inertia 2
 
+# Set up mechanism
+
 joint_axis = SVector(1., 0., 0.);
 
 origin = RigidBody{Float64}("origin")

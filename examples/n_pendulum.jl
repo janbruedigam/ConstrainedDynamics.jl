@@ -20,7 +20,7 @@ phi = pi/4
 q1 = Quaternion(RotX(phi))
 
 # Links
-N = 100
+N = 20
 
 origin = Origin{Float64}()
 
@@ -53,5 +53,5 @@ shapes = [b1]
 
 bot = Robot(origin,links, constraints;tend=10.,dt=0.01)
 
-# simulate!(bot,save=true,debug=false)
-# FullCordDynamics.visualize(bot,shapes)
+simulate!(bot,save=true)
+FullCordDynamics.visualize(bot,shapes)

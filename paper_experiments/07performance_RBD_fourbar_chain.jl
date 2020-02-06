@@ -118,6 +118,9 @@ setdirty!(state)
 
 ts, qs, vs = simulate(state, 10., Δt = 0.01);
 
+
+# Outputs the time step when the simulation failed
+# Visualization is also very insightful
 for i=1:length(qs)
     if isnan(qs[i][1])
         display(string("Failure after ",i," time steps"))
