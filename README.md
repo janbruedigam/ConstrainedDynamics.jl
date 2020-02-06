@@ -1,1 +1,1 @@
-# FullCordDynamics
+# MaximalCoordinateDynamics.jl
