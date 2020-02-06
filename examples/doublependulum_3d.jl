@@ -1,5 +1,5 @@
 using Rotations
-using Plots
+using Plots: RGBA
 
 !(@isdefined FullCordDynamics) && include(joinpath("..", "FullCordDynamics.jl"))
 using Main.FullCordDynamics
@@ -42,5 +42,5 @@ shapes = [b1,b2]
 
 bot = Robot(origin,links, constraints)
 
-simulate!(bot,save=true,debug=false)
+simulate!(bot,save=true)
 FullCordDynamics.visualize(bot,shapes)

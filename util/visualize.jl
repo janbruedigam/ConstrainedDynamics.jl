@@ -11,6 +11,7 @@ end
 function visualize(robot::Robot,shapes)
     vis = Visualizer()
     open(vis, Blink.Window())
+    # open(vis)
 
     for link in robot.links
         for shape in shapes

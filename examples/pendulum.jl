@@ -1,37 +1,36 @@
 using Rotations
-using Plots
 
 !(@isdefined FullCordDynamics) && include(joinpath("..", "FullCordDynamics.jl"))
 using Main.FullCordDynamics
 
 # Parameters
-ex = [1.;0.;0.]
+joint_axis = [1.0;0.0;0.0]
 
-l1 = 1.0
-x,y = .1,.1
-b1 = Box(x,y,l1,l1,color=RGBA(1.,1.,0.))
+length1 = 1.0
+width,depth = 0.1, 0.1
+box = Box(width,depth,length1,length1)
 
-vert11 = [0.;0.;l1/2]
+p1 = [0.0;0.0;length1/2] # joint connection point
 
 # Initial orientation
-phi1 = pi/2
-q1 = Quaternion(RotX(phi1))
+ϕ1 = π/2
+q1 = Quaternion(RotX(ϕ1))
 
 # Links
 origin = Origin{Float64}()
 
-link1 = Link(b1)
-setInit!(origin,link1,zeros(3),vert11,q=q1)
+link1 = Link(box)
+setInit!(origin,link1,zeros(3),p1,q=q1)
 
 # Constraints
-joint0to1 = Constraint(Socket(origin,link1,zeros(3),vert11),Axis(origin,link1,ex))
+joint_between_origin_and_link1 = Constraint(Socket(origin,link1,zeros(3),p1),Axis(origin,link1,joint_axis))
 
 links = [link1]
-constraints = [joint0to1]
-shapes = [b1]
+constraints = [joint_between_origin_and_link1]
+shapes = [box]
 
 
-bot = Robot(origin,links, constraints)
+robot = Robot(origin, links, constraints)
 
-simulate!(bot,save=true,debug=false)
-FullCordDynamics.visualize(bot,shapes)
+simulate!(robot,save=true)
+FullCordDynamics.visualize(robot,shapes)

@@ -12,6 +12,7 @@ struct Graph{N}
     connections::Vector{Vector{Int64}}
 
     dfslist::SVector{N,Int64}
+    rdfslist::SVector{N,Int64}
 
     dict::UnitDict{Base.OneTo{Int64},Int64}
     rdict::UnitDict{Base.OneTo{Int64},Int64}
@@ -57,8 +58,7 @@ struct Graph{N}
         dict = UnitDict(dict)
         rdict = UnitDict(rdict)
 
-        # new{N}(adjacency,dfsgraph,pat,originals,fil,dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
-        new{N}(dirs,loos,sucs,preds,cons,dfslist,dict,rdict)
+        new{N}(dirs,loos,sucs,preds,cons,dfslist,reverse(dfslist),dict,rdict)
 end
 end
 

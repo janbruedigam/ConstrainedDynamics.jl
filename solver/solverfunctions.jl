@@ -6,6 +6,8 @@ end
 
 @inline function setDandŝ!(d::DiagonalEntry{T,N},c::Constraint,robot::Robot) where {T,N}
     d.D = @SMatrix zeros(T,N,N)
+    # μ = 1e-05
+    # d.D = SMatrix{N,N,T,N*N}(μ*I)
     d.ŝ = g(c,robot)
     return
 end
@@ -102,7 +104,7 @@ function solve!(graph::Graph,ldu::SparseLDU)
         end
     end
 
-    for id in reverse(dfslist)
+    for id in graph.rdfslist
         diagonal = getentry(ldu,id)
 
         DSol!(diagonal)

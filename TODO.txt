@@ -1,0 +1,19 @@
+rename constraints to joints in Constraint
+better setinit! function
+set velocity function
+zero alloc store
+3rd order integrator
+check for sqrt error / limit linesearch
+regularize properly / Augmented Lagrangian
+Fix constraint types / make unambigous / typestable
+add prismatic joint
+add general 1-3d rot and trans joints
+add closed chain init solver
+loop flag?
+seperate rot from trans -> 3x3 instead of 6x6
+add joint coordinates and torques
+better quaternion math/julia code
+change behavior when linesearch fails
+make visualize faster
+make shapes and visualization a proper part of everything
+Use ̇q=q_{k+1}⊗q_k†/dt instead of q_{k+1}-q_k†/dt

@@ -221,6 +221,8 @@ function simulate!(robot::Robot;save::Bool=false,debug::Bool=false,disp::Bool=fa
     return
 end
 
+
+
 function plotθ(robot::Robot{T},id) where T
     n = length(robot.links)
     θ = zeros(T,n,length(robot.steps))

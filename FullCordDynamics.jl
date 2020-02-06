@@ -32,14 +32,17 @@ export
     Axis,
     Socket,
     SocketYZ,
-    # FixedOrientation,
-    # FixedPosition,
 
     setInit!,
     simulate!,
     plotθ,
     plotλ,
-    visualize
+    visualize,
+
+    simulate_energy!,
+    simulate_drift!,
+    simulate_reset!,
+    simulate_steptol!
 
 
 include(joinpath("util", "util.jl"))
@@ -51,8 +54,6 @@ include(joinpath("joints", "joint.jl"))
 include(joinpath("components", "link.jl"))
 include(joinpath("components", "constraint.jl"))
 
-# include(joinpath("joints", "fixedposition.jl"))
-# include(joinpath("joints", "fixedorientation.jl"))
 include(joinpath("joints", "originconnection.jl"))
 include(joinpath("joints", "socket.jl"))
 include(joinpath("joints", "socketyz.jl"))
@@ -66,6 +67,7 @@ include(joinpath("components", "robot.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 
 include(joinpath("solver", "newton.jl"))
+include(joinpath("paper_experiments", "experiment_methods.jl"))
 
 include(joinpath("util", "visualize.jl"))
 
