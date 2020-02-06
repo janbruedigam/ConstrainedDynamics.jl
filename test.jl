@@ -2,7 +2,7 @@ using Rotations
 using BenchmarkTools
 using Plots
 
-(@isdefined MaximalCoordinateDynamics) ? nothing : include("MaximalCoordinateDynamics.jl")
+(@isdefined MaximalCoordinateDynamics) ? nothing : include(joinpath("src", "MaximalCoordinateDynamics.jl"))
 using Main.MaximalCoordinateDynamics
 
 # Parameters
