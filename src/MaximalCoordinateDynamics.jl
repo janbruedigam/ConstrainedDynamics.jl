@@ -24,7 +24,7 @@ export
 
     Quaternion,
     Origin,
-    Link,
+    Body,
     Constraint,
     Mechanism,
 
@@ -51,7 +51,7 @@ include(joinpath("util", "quaternion.jl"))
 include(joinpath("util", "shapes.jl"))
 include(joinpath("components", "component.jl"))
 include(joinpath("joints", "joint.jl"))
-include(joinpath("components", "link.jl"))
+include(joinpath("components", "body.jl"))
 include(joinpath("components", "constraint.jl"))
 
 include(joinpath("joints", "originconnection.jl"))

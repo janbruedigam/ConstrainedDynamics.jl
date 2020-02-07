@@ -13,12 +13,12 @@ function visualize(mechanism::Mechanism,shapes)
     open(vis, Blink.Window())
     # open(vis)
 
-    for link in mechanism.links
+    for body in mechanism.bodies
         for shape in shapes
-            for shapelink in shape.links
-                if shapelink == link
-                    vislink = shapeobject(shape)
-                    setobject!(vis["bundle/vislink"*string(link.id)], vislink, MeshPhongMaterial(color=shape.color))
+            for shapebody in shape.bodies
+                if shapebody == body
+                    visbody = shapeobject(shape)
+                    setobject!(vis["bundle/visbody"*string(body.id)], visbody, MeshPhongMaterial(color=shape.color))
                     break
                 end
             end
@@ -30,8 +30,8 @@ function visualize(mechanism::Mechanism,shapes)
 
     for k=mechanism.steps
         MeshCat.atframe(anim, vis, k) do frame
-            for (id,link) in pairs(mechanism.links)
-                settransform!(vis["bundle/vislink"*string(id)], compose(Translation(mechanism.storage.x[id][k]...),LinearMap(Quat(mechanism.storage.q[id][k]...))))
+            for (id,body) in pairs(mechanism.bodies)
+                settransform!(vis["bundle/visbody"*string(id)], compose(Translation(mechanism.storage.x[id][k]...),LinearMap(Quat(mechanism.storage.q[id][k]...))))
             end
         end
     end

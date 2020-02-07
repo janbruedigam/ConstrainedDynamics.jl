@@ -27,10 +27,10 @@ q1 = Quaternion(RotX(phi1))
 # Links
 origin = Origin{Float64}()
 
-link1 = Link(b1)
+link1 = Body(b1)
 setInit!(origin,link1,zeros(3),vert11,q=q1)
 
-link5 = Link(b5)
+link5 = Body(b5)
 setInit!(link1,link5,vert12,zeros(3),q=q1,τ=[0.0;0.;0.])
 
 # Constraints

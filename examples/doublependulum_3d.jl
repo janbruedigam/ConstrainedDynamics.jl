@@ -25,10 +25,10 @@ q1, q2 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2))
 # Links
 origin = Origin{Float64}()
 
-link1 = Link(b1)
+link1 = Body(b1)
 setInit!(origin,link1,zeros(3),vert11,q=q1)
 
-link2 = Link(b2)
+link2 = Body(b2)
 setInit!(link1,link2,vert12,vert21,q=q2,τ=[0.;0.2;0.])
 
 # Constraints

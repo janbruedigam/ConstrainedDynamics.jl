@@ -1,6 +1,6 @@
-@inline function setDandŝ!(diagonal::DiagonalEntry,link::Link,mechanism::Mechanism)
-    diagonal.D = ∂dyn∂vel(link, mechanism.dt)
-    diagonal.ŝ = dynamics(link, mechanism)
+@inline function setDandŝ!(diagonal::DiagonalEntry,body::Body,mechanism::Mechanism)
+    diagonal.D = ∂dyn∂vel(body, mechanism.dt)
+    diagonal.ŝ = dynamics(body, mechanism)
     return
 end
 
@@ -12,15 +12,15 @@ end
     return
 end
 
-@inline function setLU!(o::OffDiagonalEntry,linkid::Int64,c::Constraint,mechanism)
-    o.L = -∂g∂pos(c,linkid,mechanism)'
-    o.U = ∂g∂vel(c,linkid,mechanism)
+@inline function setLU!(o::OffDiagonalEntry,bodyid::Int64,c::Constraint,mechanism)
+    o.L = -∂g∂pos(c,bodyid,mechanism)'
+    o.U = ∂g∂vel(c,bodyid,mechanism)
     return
 end
 
-@inline function setLU!(o::OffDiagonalEntry,c::Constraint,linkid::Int64,mechanism)
-    o.L = ∂g∂vel(c,linkid,mechanism)
-    o.U = -∂g∂pos(c,linkid,mechanism)'
+@inline function setLU!(o::OffDiagonalEntry,c::Constraint,bodyid::Int64,mechanism)
+    o.L = ∂g∂vel(c,bodyid,mechanism)
+    o.U = -∂g∂pos(c,bodyid,mechanism)'
     return
 end
 
@@ -121,12 +121,12 @@ function update!(component::Component,diagonal::DiagonalEntry)
     return
 end
 
-# @inline update!(link::Link,ldu::SparseLDU,dt) = update!(link,getentry(ldu,link.id),dt)
+# @inline update!(body::Body,ldu::SparseLDU,dt) = update!(body,getentry(ldu,body.id),dt)
 # @inline update!(constraint::Constraint,ldu::SparseLDU) = update!(constraint,getentry(ldu,constraint.id))
 #
-# function update!(link::Link,diagonal::DiagonalEntry,dt)
-#     link.s1 = link.s0 - diagonal.ŝ
-#     # ω = link.s1
+# function update!(body::Body,diagonal::DiagonalEntry,dt)
+#     body.s1 = body.s0 - diagonal.ŝ
+#     # ω = body.s1
 #     # dot(ω,ω)>(4/dt^2) && error("ω too big")
 #     return
 # end

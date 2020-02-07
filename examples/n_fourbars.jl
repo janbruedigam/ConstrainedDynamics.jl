@@ -36,10 +36,10 @@ N = 3
 # Links
 origin = Origin{Float64}()
 
-link1 = Link(b1)
-link2 = Link(b2)
-link3 = Link(b3)
-link4 = Link(b4)
+link1 = Body(b1)
+link2 = Body(b2)
+link3 = Body(b3)
+link4 = Body(b4)
 if N>1
     setInit!(origin,link1,zeros(3),vert11,q=q1)
     setInit!(link1,link2,vert12,vert21,q=q2)
@@ -56,19 +56,19 @@ links = [link1;link2;link3;link4]
 
 for i=2:N-1
     @eval begin
-        $(Symbol("link",(i-1)*4+1)) = Link(b1)
+        $(Symbol("link",(i-1)*4+1)) = Body(b1)
         setInit!($links[($i-1)*4],$(Symbol("link",(i-1)*4+1)),vert22,vert11,q=q1)
         push!($links,$(Symbol("link",(i-1)*4+1)))
 
-        $(Symbol("link",(i-1)*4+2)) = Link(b2)
+        $(Symbol("link",(i-1)*4+2)) = Body(b2)
         setInit!($(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+2)),vert12,vert21,q=q2)
         push!($links,$(Symbol("link",(i-1)*4+2)))
 
-        $(Symbol("link",(i-1)*4+3)) = Link(b3)
+        $(Symbol("link",(i-1)*4+3)) = Body(b3)
         setInit!($(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+3)),vert11,vert11,q=q3)
         push!($links,$(Symbol("link",(i-1)*4+3)))
 
-        $(Symbol("link",(i-1)*4+4)) = Link(b4)
+        $(Symbol("link",(i-1)*4+4)) = Body(b4)
         setInit!($(Symbol("link",(i-1)*4+3)),$(Symbol("link",(i-1)*4+4)),vert12,vert21,q=q4)
         push!($links,$(Symbol("link",(i-1)*4+4)))
     end
@@ -77,19 +77,19 @@ end
 if N>1
     for i=N
         @eval begin
-            $(Symbol("link",(i-1)*4+1)) = Link(b1)
+            $(Symbol("link",(i-1)*4+1)) = Body(b1)
             setInit!($links[($i-1)*4],$(Symbol("link",(i-1)*4+1)),vert22,vert11,q=q5)
             push!($links,$(Symbol("link",(i-1)*4+1)))
 
-            $(Symbol("link",(i-1)*4+2)) = Link(b2)
+            $(Symbol("link",(i-1)*4+2)) = Body(b2)
             setInit!($(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+2)),vert12,vert21,q=q6)
             push!($links,$(Symbol("link",(i-1)*4+2)))
 
-            $(Symbol("link",(i-1)*4+3)) = Link(b3)
+            $(Symbol("link",(i-1)*4+3)) = Body(b3)
             setInit!($(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+3)),vert11,vert11,q=q7)
             push!($links,$(Symbol("link",(i-1)*4+3)))
 
-            $(Symbol("link",(i-1)*4+4)) = Link(b4)
+            $(Symbol("link",(i-1)*4+4)) = Body(b4)
             setInit!($(Symbol("link",(i-1)*4+3)),$(Symbol("link",(i-1)*4+4)),vert12,vert21,q=q8)
             push!($links,$(Symbol("link",(i-1)*4+4)))
         end

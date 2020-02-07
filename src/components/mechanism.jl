@@ -6,7 +6,7 @@ mutable struct Mechanism{T,N}
     No::Int64
 
     origin::Origin{T}
-    links::UnitDict{Base.OneTo{Int64},Link{T}}
+    bodies::UnitDict{Base.OneTo{Int64},Body{T}}
     constraints::UnitDict{UnitRange{Int64},<:Constraint{T}}
 
     #TODO remove once Constraint is homogenous
@@ -19,13 +19,13 @@ mutable struct Mechanism{T,N}
     storage::Storage{T}
 
     #TODO no constraints input
-    function Mechanism(origin::Origin{T},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},constraints::Vector{<:Constraint{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
 
         resetGlobalID()
 
-        Nl = length(links)
+        Nl = length(bodies)
         Nc = length(constraints)
         N = Nl+Nc
         steps = Int(ceil(tend/dt))
@@ -33,26 +33,26 @@ mutable struct Mechanism{T,N}
         currentid = 1
 
         ldict = Dict{Int64,Int64}()
-        for (ind,link) in enumerate(links)
-            push!(link.x, [link.x[1] for i=1:No-1]...)
-            push!(link.q, [link.q[1] for i=1:No-1]...)
-            push!(link.F, [link.F[1] for i=1:No-1]...)
-            push!(link.τ, [link.τ[1] for i=1:No-1]...)
+        for (ind,body) in enumerate(bodies)
+            push!(body.x, [body.x[1] for i=1:No-1]...)
+            push!(body.q, [body.q[1] for i=1:No-1]...)
+            push!(body.F, [body.F[1] for i=1:No-1]...)
+            push!(body.τ, [body.τ[1] for i=1:No-1]...)
 
             for c in constraints
-                c.pid == link.id && (c.pid = currentid)
-                for (ind,linkid) in enumerate(c.linkids)
-                    if linkid == link.id
-                        c.linkids = setindex(c.linkids,currentid,ind)
+                c.pid == body.id && (c.pid = currentid)
+                for (ind,bodyid) in enumerate(c.bodyids)
+                    if bodyid == body.id
+                        c.bodyids = setindex(c.bodyids,currentid,ind)
                         c.constraints[ind].cid = currentid
                     end
                 end
             end
 
-            link.id = currentid
+            body.id = currentid
             currentid+=1
 
-            ldict[link.id] = ind
+            ldict[body.id] = ind
         end
 
         cdict = Dict{Int64,Int64}()
@@ -66,43 +66,43 @@ mutable struct Mechanism{T,N}
         normf = zero(T)
         normΔs = zero(T)
 
-        graph = Graph(origin,links,constraints)
-        ldu = SparseLDU(graph,links,constraints,ldict,cdict)
+        graph = Graph(origin,bodies,constraints)
+        ldu = SparseLDU(graph,bodies,constraints,ldict,cdict)
 
         storage = Storage{T}(steps,Nl,Nc)
 
-        links = UnitDict(links)
-        constraints = UnitDict((links[Nl].id+1):currentid-1,constraints)
+        bodies = UnitDict(bodies)
+        constraints = UnitDict((bodies[Nl].id+1):currentid-1,constraints)
 
-        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,links,constraints,normf,normΔs,graph,ldu,storage)
+        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,constraints,normf,normΔs,graph,ldu,storage)
     end
 
-    function Mechanism(origin::Origin{T},links::Vector{Link{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
         constraints = Vector{Constraint{T}}(undef,0)
-        for link in links
-            push!(constraints,Constraint(OriginConnection(origin,link)))
+        for body in bodies
+            push!(constraints,Constraint(OriginConnection(origin,body)))
         end
-        Mechanism(origin,links,constraints,tend=tend, dt=dt, g=g, No=No)
+        Mechanism(origin,bodies,constraints,tend=tend, dt=dt, g=g, No=No)
     end
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, R::Mechanism{T}) where {T}
-    summary(io, R); println(io, " with ", length(R.links), " links and ", length(R.constraints), " constraints")
+    summary(io, R); println(io, " with ", length(R.bodies), " bodies and ", length(R.constraints), " constraints")
 end
 
 function setentries!(mechanism::Mechanism)
     graph = mechanism.graph
     ldu = mechanism.ldu
 
-    for (id,link) in pairs(mechanism.links)
+    for (id,body) in pairs(mechanism.bodies)
         for cid in directchildren(graph,id)
             setLU!(getentry(ldu,(id,cid)),id,getconstraint(mechanism,cid),mechanism)
         end
 
         diagonal = getentry(ldu,id)
-        setDandŝ!(diagonal,link,mechanism)
+        setDandŝ!(diagonal,body,mechanism)
     end
 
     for node in mechanism.constraints
@@ -121,13 +121,13 @@ function setentries!(mechanism::Mechanism)
     end
 end
 
-@inline getlink(mechanism::Mechanism,id::Int64) = mechanism.links[id]
-@inline getlink(mechanism::Mechanism,id::Nothing) = mechanism.origin
+@inline getbody(mechanism::Mechanism,id::Int64) = mechanism.bodies[id]
+@inline getbody(mechanism::Mechanism,id::Nothing) = mechanism.origin
 @inline getconstraint(mechanism::Mechanism,id::Int64) = mechanism.constraints[id]
 
 # @inline function getnode(mechanism::Mechanism,id::Int64) # should only be used in setup
 #      if haskey(mechanism.ldict,id)
-#          return getlink(mechanism,id)
+#          return getbody(mechanism,id)
 #      elseif haskey(mechanism.cdict,id)
 #          return getconstraint(mechanism,id)
 #      elseif id == mechanism.originid
@@ -137,8 +137,8 @@ end
 #      end
 #  end
 
-@inline function normf(link::Link{T},mechanism::Mechanism) where T
-    f = dynamics(link,mechanism)
+@inline function normf(body::Body{T},mechanism::Mechanism) where T
+    f = dynamics(body,mechanism)
     return dot(f,f)
 end
 
@@ -147,16 +147,16 @@ end
     return dot(f,f)
 end
 
-@inline function GtλTof!(link::Link,c::Constraint,mechanism)
-    link.f -= ∂g∂pos(c,link.id,mechanism)'*c.s1
+@inline function GtλTof!(body::Body,c::Constraint,mechanism)
+    body.f -= ∂g∂pos(c,body.id,mechanism)'*c.s1
     return
 end
 
 @inline function normf(mechanism::Mechanism)
     mechanism.normf = 0
 
-    for link in mechanism.links
-        mechanism.normf += normf(link,mechanism)
+    for body in mechanism.bodies
+        mechanism.normf += normf(body,mechanism)
     end
     foreach(addNormf!,mechanism.constraints,mechanism)
 
@@ -166,7 +166,7 @@ end
 @inline function normΔs(mechanism::Mechanism)
     mechanism.normΔs = 0
 
-    mechanism.normΔs += mapreduce(normΔs,+,mechanism.links)
+    mechanism.normΔs += mapreduce(normΔs,+,mechanism.bodies)
     foreach(addNormΔs!,mechanism.constraints,mechanism)
 
     return sqrt(mechanism.normΔs)
@@ -184,37 +184,37 @@ end
 
 function saveToTraj!(mechanism::Mechanism,t)
     No = mechanism.No
-    for (ind,link) in enumerate(mechanism.links)
-        mechanism.storage.x[ind][t]=link.x[No]
-        mechanism.storage.q[ind][t]=link.q[No]
+    for (ind,body) in enumerate(mechanism.bodies)
+        mechanism.storage.x[ind][t]=body.x[No]
+        mechanism.storage.q[ind][t]=body.q[No]
     end
     for (ind,constraint) in enumerate(mechanism.constraints)
         mechanism.storage.λ[ind][t]=constraint.s1
     end
 end
 
-@inline function updatePos!(link::Link,dt)
-    x2 = link.x[2]
-    q2 = link.q[2]
-    link.x[1] = x2
-    link.x[2] = x2 + getvnew(link)*dt
-    link.q[1] = q2
-    link.q[2] = dt/2*(Lmat(q2)*ωbar(link,dt))
+@inline function updatePos!(body::Body,dt)
+    x2 = body.x[2]
+    q2 = body.q[2]
+    body.x[1] = x2
+    body.x[2] = x2 + getvnew(body)*dt
+    body.q[1] = q2
+    body.q[2] = dt/2*(Lmat(q2)*ωbar(body,dt))
     return
 end
 
 
 function simulate!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,disp::Bool=false)
-    links = mechanism.links
+    bodies = mechanism.bodies
     constraints = mechanism.constraints
     dt = mechanism.dt
-    foreach(s0tos1!,links)
+    foreach(s0tos1!,bodies)
     foreach(s0tos1!,constraints)
 
     for i=mechanism.steps
         newton!(mechanism,warning=debug)
         save && saveToTraj!(mechanism,i)
-        foreach(updatePos!,links,dt)
+        foreach(updatePos!,bodies,dt)
 
         disp && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
     end
@@ -224,7 +224,7 @@ end
 
 
 function plotθ(mechanism::Mechanism{T},id) where T
-    n = length(mechanism.links)
+    n = length(mechanism.bodies)
     θ = zeros(T,n,length(mechanism.steps))
     for i=1:n
         qs = mechanism.storage.q[i]

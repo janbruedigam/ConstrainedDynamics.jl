@@ -31,29 +31,29 @@ q5, q6, q7, q8 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX
 # Links
 origin = Origin{Float64}()
 
-link1 = Link(b1)
+link1 = Body(b1)
 setInit!(origin,link1,zeros(3),vert11,q=q1)
 
-link2 = Link(b2)
+link2 = Body(b2)
 setInit!(link1,link2,vert12,vert21,q=q2)
 
-link3 = Link(b3)
+link3 = Body(b3)
 setInit!(link1,link3,vert11,vert11,q=q3)
 
-link4 = Link(b4)
+link4 = Body(b4)
 setInit!(link3,link4,vert12,vert21,q=q4)
 
 
-link5 = Link(b1)
+link5 = Body(b1)
 setInit!(link4,link5,zeros(3),vert11,q=q5)
 
-link6 = Link(b2)
+link6 = Body(b2)
 setInit!(link5,link6,vert12,vert21,q=q6)
 
-link7 = Link(b3)
+link7 = Body(b3)
 setInit!(link5,link7,vert11,vert11,q=q7)
 
-link8 = Link(b4)
+link8 = Body(b4)
 setInit!(link7,link8,vert12,vert21,q=q8)
 
 # Constraints

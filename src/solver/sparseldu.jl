@@ -30,10 +30,10 @@ struct SparseLDU{T}
     diagonals::UnitDict{Base.OneTo{Int64},DiagonalEntry{T}}
     offdiagonals::Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}
 
-    function SparseLDU(graph::Graph{N},links::Vector{Link{T}},constraints::Vector{<:Constraint{T}},ldict::Dict,cdict::Dict) where {T,N}
+    function SparseLDU(graph::Graph{N},bodies::Vector{Body{T}},constraints::Vector{<:Constraint{T}},ldict::Dict,cdict::Dict) where {T,N}
         diagonals = Vector{DiagonalEntry{T}}(undef,0)
-        for link in links
-            push!(diagonals,DiagonalEntry{T,length(link)}())
+        for body in bodies
+            push!(diagonals,DiagonalEntry{T,length(body)}())
         end
         for constraint in constraints
             push!(diagonals,DiagonalEntry{T,length(constraint)}())
@@ -42,11 +42,11 @@ struct SparseLDU{T}
 
         offdiagonals = Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}()
         for id in graph.dfslist
-            haskey(ldict,id) ? node=links[ldict[id]] : node=constraints[cdict[id]]
+            haskey(ldict,id) ? node=bodies[ldict[id]] : node=constraints[cdict[id]]
             N1 = length(node)
 
             for cid in successors(graph,id)
-                haskey(ldict,cid) ? cnode=links[ldict[cid]] : cnode=constraints[cdict[cid]]
+                haskey(ldict,cid) ? cnode=bodies[ldict[cid]] : cnode=constraints[cdict[cid]]
                 N2 = length(cnode)
 
                 offdiagonals[(id,cid)] = OffDiagonalEntry{T,N2,N1}()

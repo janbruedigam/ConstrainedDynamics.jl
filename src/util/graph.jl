@@ -17,9 +17,9 @@ struct Graph{N}
     dict::UnitDict{Base.OneTo{Int64},Int64}
     rdict::UnitDict{Base.OneTo{Int64},Int64}
 
-    function Graph(origin::Origin,links::Vector{<:Link},constraints::Vector{<:Constraint})
+    function Graph(origin::Origin,bodies::Vector{<:Body},constraints::Vector{<:Constraint})
         oid = origin.id
-        adjacency, dict = adjacencyMatrix(constraints,links)
+        adjacency, dict = adjacencyMatrix(constraints,bodies)
         dfsgraph, dfslist, loops = dfs(adjacency,dict,oid)
         pat = pattern(dfsgraph,dict,loops)
         fil, originals = fillins(dfsgraph,pat,dict,loops)
@@ -62,7 +62,7 @@ struct Graph{N}
 end
 end
 
-function adjacencyMatrix(constraints::Vector{<:Constraint},links::Vector{<:Link})
+function adjacencyMatrix(constraints::Vector{<:Constraint},bodies::Vector{<:Body})
     A = zeros(Bool,0,0)
     dict = Dict{Int64,Int64}()
     n = 0
@@ -71,18 +71,18 @@ function adjacencyMatrix(constraints::Vector{<:Constraint},links::Vector{<:Link}
         cid = constraint.id
         A = [A zeros(Bool,n,1); zeros(Bool,1,n) zero(Bool)]
         dict[cid] = n+=1
-        for linkid in unique([constraint.pid;constraint.linkids])
-            if !haskey(dict,linkid)
+        for bodyid in unique([constraint.pid;constraint.bodyids])
+            if !haskey(dict,bodyid)
                 A = [A zeros(Bool,n,1); zeros(Bool,1,n) zero(Bool)]
-                dict[linkid] = n+=1
+                dict[bodyid] = n+=1
             end
-            A[dict[cid],dict[linkid]] = true
+            A[dict[cid],dict[bodyid]] = true
         end
     end
-    for link in links # add unconnected links
-        if !haskey(dict,link.id)
+    for body in bodies # add unconnected bodies
+        if !haskey(dict,body.id)
             A = [A zeros(Bool,n,1); zeros(Bool,1,n) zero(Bool)]
-            dict[link.id] = n+=1
+            dict[body.id] = n+=1
         end
     end
 
@@ -127,7 +127,7 @@ end
 function pattern(dfsgraph::Matrix,dict::Dict,loops::Vector{Vector{Int64}})
     pat = deepcopy(dfsgraph)
 
-    for loop in loops # loop = [index of starting constraint, index of last link in loop]
+    for loop in loops # loop = [index of starting constraint, index of last body in loop]
         startid = loop[1]
         endid = loop[2]
         currentid = endid
@@ -146,7 +146,7 @@ function fillins(dfsgraph::Matrix,pattern::Matrix,dict::Dict,loops::Vector{Vecto
     fil = deepcopy(dfsgraph .⊻ pattern) # xor so only fillins remain (+ to be removed loop closure since this is a child)
     originals = deepcopy(dfsgraph)
 
-    for loop in loops # loop = [index of starting constraint, index of last link in loop]
+    for loop in loops # loop = [index of starting constraint, index of last body in loop]
         startid = loop[1]
         endid = loop[2]
         fil[dict[startid],dict[endid]] = false

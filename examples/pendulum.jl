@@ -19,7 +19,7 @@ q1 = Quaternion(RotX(ϕ1))
 # Links
 origin = Origin{Float64}()
 
-link1 = Link(box)
+link1 = Body(box)
 setInit!(origin,link1,zeros(3),p1,q=q1)
 
 # Constraints

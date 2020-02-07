@@ -1,17 +1,17 @@
 mutable struct OriginConnection{T,Nc} <: Joint{T,Nc}
     cid::Int64
 
-    function OriginConnection(link1::Origin{T},link2::Link{T}) where T
+    function OriginConnection(body1::Origin{T},body2::Body{T}) where T
         Nc = 0
-        cid = link2.id
+        cid = body2.id
 
-        new{T,Nc}(cid), link1.id, link2.id
+        new{T,Nc}(cid), body1.id, body2.id
     end
 end
 
-@inline g(joint::OriginConnection,link1::AbstractLink,link2::AbstractLink,dt,No) = g(joint)
+@inline g(joint::OriginConnection,body1::AbstractBody,body2::AbstractBody,dt,No) = g(joint)
 
-@inline ∂g∂posa(joint::OriginConnection,link1::AbstractLink,link2::AbstractLink,No) = ∂g∂posa(joint)
-@inline ∂g∂posb(joint::OriginConnection,link1::AbstractLink,link2::AbstractLink,No) = ∂g∂posb(joint)
-@inline ∂g∂vela(joint::OriginConnection,link1::AbstractLink,link2::AbstractLink,dt,No) = ∂g∂vela(joint)
-@inline ∂g∂velb(joint::OriginConnection,link1::AbstractLink,link2::AbstractLink,dt,No) = ∂g∂velb(joint)
+@inline ∂g∂posa(joint::OriginConnection,body1::AbstractBody,body2::AbstractBody,No) = ∂g∂posa(joint)
+@inline ∂g∂posb(joint::OriginConnection,body1::AbstractBody,body2::AbstractBody,No) = ∂g∂posb(joint)
+@inline ∂g∂vela(joint::OriginConnection,body1::AbstractBody,body2::AbstractBody,dt,No) = ∂g∂vela(joint)
+@inline ∂g∂velb(joint::OriginConnection,body1::AbstractBody,body2::AbstractBody,dt,No) = ∂g∂velb(joint)

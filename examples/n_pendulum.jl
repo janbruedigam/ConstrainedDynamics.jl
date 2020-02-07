@@ -24,14 +24,14 @@ N = 20
 
 origin = Origin{Float64}()
 
-link1 = Link(b1)
+link1 = Body(b1)
 setInit!(origin,link1,zeros(3),vert11,q=q1)
 
 links = [link1]
 
 for i=2:N
     @eval begin
-        $(Symbol("link",i)) = Link(b1)
+        $(Symbol("link",i)) = Body(b1)
         setInit!($(Symbol("link",i-1)),$(Symbol("link",i)),vert12,vert11,q=q1)
         push!(links,$(Symbol("link",i)))
     end
