@@ -11,7 +11,7 @@ mutable struct Rotational0{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline g(joint::Rotational0,body1::Body,body2::Body,dt,No) = (VLᵀmat(getq3(body1,dt))*getq3(body2,dt))-offset
+@inline g(joint::Rotational0,body1::Body,body2::Body,dt,No) = (VLᵀmat(getq3(body1,dt))*getq3(body2,dt))-joint.offset
 
 @inline function ∂g∂posa(joint::Rotational0{T},body1::Body,body2::Body,No) where T
     if body2.id == joint.cid
