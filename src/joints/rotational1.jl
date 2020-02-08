@@ -1,8 +1,8 @@
-mutable struct Axis{T,Nc} <: Joint{T,Nc}
+mutable struct Rotational1{T,Nc} <: Joint{T,Nc}
     V12::SMatrix{2,3,T,6}
     cid::Int64
 
-    function Axis(body1::AbstractBody{T},body2::AbstractBody{T},axis::AbstractVector{T}) where T
+    function Rotational1(body1::AbstractBody{T},body2::AbstractBody{T},axis::AbstractVector{T}) where T
         Nc = 2
         V12 = (@SMatrix [1 0 0; 0 1 0])*svd(skew(axis)).Vt
         cid = body2.id
@@ -11,9 +11,9 @@ mutable struct Axis{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline g(joint::Axis,body1::Body,body2::Body,dt,No) = joint.V12*(VLᵀmat(getq3(body1,dt))*getq3(body2,dt))
+@inline g(joint::Rotational1,body1::Body,body2::Body,dt,No) = joint.V12*(VLᵀmat(getq3(body1,dt))*getq3(body2,dt))
 
-@inline function ∂g∂posa(joint::Axis{T},body1::Body,body2::Body,No) where T
+@inline function ∂g∂posa(joint::Rotational1{T},body1::Body,body2::Body,No) where T
     if body2.id == joint.cid
         X = @SMatrix zeros(T,2,3)
 
@@ -25,7 +25,7 @@ end
     end
 end
 
-@inline function ∂g∂posb(joint::Axis{T},body1::Body,body2::Body,No) where T
+@inline function ∂g∂posb(joint::Rotational1{T},body1::Body,body2::Body,No) where T
     if body2.id == joint.cid
         X = @SMatrix zeros(T,2,3)
 
@@ -37,7 +37,7 @@ end
     end
 end
 
-@inline function ∂g∂vela(joint::Axis{T},body1::Body,body2::Body,dt,No) where T
+@inline function ∂g∂vela(joint::Rotational1{T},body1::Body,body2::Body,dt,No) where T
     if body2.id == joint.cid
         V = @SMatrix zeros(T,2,3)
 
@@ -49,7 +49,7 @@ end
     end
 end
 
-@inline function ∂g∂velb(joint::Axis{T},body1::Body,body2::Body,dt,No) where T
+@inline function ∂g∂velb(joint::Rotational1{T},body1::Body,body2::Body,dt,No) where T
     if body2.id == joint.cid
         V = @SMatrix zeros(T,2,3)
 
@@ -62,9 +62,9 @@ end
 end
 
 
-@inline g(joint::Axis,body1::Origin,body2::Body,dt,No) = joint.V12*Vmat(getq3(body2,dt))
+@inline g(joint::Rotational1,body1::Origin,body2::Body,dt,No) = joint.V12*Vmat(getq3(body2,dt))
 
-@inline function ∂g∂posb(joint::Axis{T},body1::Origin,body2::Body,No) where T
+@inline function ∂g∂posb(joint::Rotational1{T},body1::Origin,body2::Body,No) where T
     if body2.id == joint.cid
         X = @SMatrix zeros(T,2,3)
 
@@ -76,7 +76,7 @@ end
     end
 end
 
-@inline function ∂g∂velb(joint::Axis{T},body1::Origin,body2::Body,dt,No) where T
+@inline function ∂g∂velb(joint::Rotational1{T},body1::Origin,body2::Body,dt,No) where T
     if body2.id == joint.cid
         V = @SMatrix zeros(T,2,3)
 
