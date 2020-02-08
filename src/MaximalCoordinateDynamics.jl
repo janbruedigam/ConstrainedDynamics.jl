@@ -30,8 +30,9 @@ export
 
     OriginConnection,
     Axis,
-    Socket,
-    SocketYZ,
+    Spherical,
+    Cylindrical,
+    Revolute,
 
     setInit!,
     simulate!,
@@ -55,9 +56,10 @@ include(joinpath("components", "body.jl"))
 include(joinpath("components", "constraint.jl"))
 
 include(joinpath("joints", "originconnection.jl"))
-include(joinpath("joints", "socket.jl"))
-include(joinpath("joints", "socketyz.jl"))
 include(joinpath("joints", "axis.jl"))
+include(joinpath("joints", "translational0.jl"))
+include(joinpath("joints", "translational1.jl"))
+include(joinpath("joints", "prototypes.jl"))
 
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "storage.jl"))

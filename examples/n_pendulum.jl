@@ -38,13 +38,13 @@ for i=2:N
 end
 
 # Constraints
-jointb1 = Constraint(Socket(origin,link1,zeros(3),vert11),Axis(origin,link1,ex))
+jointb1 = Constraint(Revolute(origin,link1,zeros(3),vert11,ex))
 
 constraints = [jointb1]
 
 for i=2:N
     @eval begin
-        $(Symbol("joint",i-1,i)) = Constraint(Socket($(Symbol("link",i-1)),$(Symbol("link",i)),vert12,vert11),Axis($(Symbol("link",i-1)),$(Symbol("link",i)),ex))
+        $(Symbol("joint",i-1,i)) = Constraint(Revolute($(Symbol("link",i-1)),$(Symbol("link",i)),vert12,vert11,ex))
         push!(constraints,$(Symbol("joint",i-1,i)))
     end
 end

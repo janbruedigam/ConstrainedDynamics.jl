@@ -34,8 +34,8 @@ link5 = Body(b5)
 setInit!(link1,link5,vert12,zeros(3),q=q1,τ=[0.0;0.;0.])
 
 # Constraints
-socket0to1 = Constraint(Socket(origin,link1,zeros(3),vert11))
-joint1to5= Constraint(Socket(link1,link5,vert12,zeros(3)),Axis(link1,link5,ex))
+socket0to1 = Constraint(Spherical(origin,link1,zeros(3),vert11))
+joint1to5= Constraint(Revolute(link1,link5,vert12,zeros(3),ex))
 
 links = [link1;link5]
 constraints = [socket0to1;joint1to5]

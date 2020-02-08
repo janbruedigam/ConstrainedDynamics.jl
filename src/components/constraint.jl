@@ -8,7 +8,18 @@ mutable struct Constraint{T,N,Nc,Cs} <: Component{T}
     s0::SVector{N,T}
     s1::SVector{N,T}
 
-    function Constraint(jointdata...)
+    function Constraint(data...)
+        jointdata = Vector{Tuple{Joint,Int64,Int64}}(undef,0)
+        for info in data
+            if typeof(info[1]) <: Joint
+                push!(jointdata,info)
+            else
+                for subinfo in info
+                    push!(jointdata,subinfo)
+                end
+            end
+        end
+
         T = getT(jointdata[1][1])#.T
 
         pid = jointdata[1][2]
@@ -29,6 +40,8 @@ mutable struct Constraint{T,N,Nc,Cs} <: Component{T}
 
         new{T,N,Nc,typeof(constraints)}(getGlobalID(),constraints,pid,bodyids,s0,s1)
     end
+
+    # Constraint(joint) = Constraint(joint...)
 end
 
 Base.length(c::Constraint{T,N}) where {T,N} = N

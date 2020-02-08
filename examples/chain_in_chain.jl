@@ -57,15 +57,15 @@ link8 = Body(b4)
 setInit!(link7,link8,vert12,vert21,q=q8)
 
 # Constraints
-joint0to1 = Constraint(Socket(origin,link1,zeros(3),vert11),Axis(origin,link1,ex))
-joint1to23 = Constraint(Socket(link1,link2,vert12,vert21),Axis(link1,link2,ex),SocketYZ(link1,link3,vert11,vert11))
-joint3to4 = Constraint(Socket(link3,link4,vert12,vert21),Axis(link3,link4,ex))
-joint2to4 = Constraint(Socket(link2,link4,vert22,vert22),Axis(link2,link4,ex))
+joint0to1 = Constraint(Revolute(origin,link1,zeros(3),vert11,ex))
+joint1to23 = Constraint(Revolute(link1,link2,vert12,vert21,ex),Cylindrical(link1,link3,vert11,vert11,ex))
+joint3to4 = Constraint(Revolute(link3,link4,vert12,vert21,ex))
+joint2to4 = Constraint(Revolute(link2,link4,vert22,vert22,ex))
 
-joint4to5 = Constraint(Socket(link4,link5,zeros(3),vert11),Axis(link4,link5,ex))
-joint5to67 = Constraint(Socket(link5,link6,vert12,vert21),Axis(link5,link6,ex),SocketYZ(link5,link7,vert11,vert11))
-joint7to8 = Constraint(Socket(link7,link8,vert12,vert21),Axis(link7,link8,ex))
-joint6to8 = Constraint(Socket(link6,link8,vert22,vert22),Axis(link6,link8,ex))
+joint4to5 = Constraint(Revolute(link4,link5,zeros(3),vert11,ex))
+joint5to67 = Constraint(Revolute(link5,link6,vert12,vert21,ex),Cylindrical(link5,link7,vert11,vert11,ex))
+joint7to8 = Constraint(Revolute(link7,link8,vert12,vert21,ex))
+joint6to8 = Constraint(Revolute(link6,link8,vert22,vert22,ex))
 
 
 links = [link1; link2; link3; link4; link5; link6; link7; link8]

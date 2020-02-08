@@ -32,8 +32,8 @@ link2 = Body(b2)
 setInit!(link1,link2,vert12,vert21,q=q2,τ=[0.;0.2;0.])
 
 # Constraints
-socket0to1 = Constraint(Socket(origin,link1,zeros(3),vert11))
-socket1to2 = Constraint(Socket(link1,link2,vert12,vert21))
+socket0to1 = Constraint(Spherical(origin,link1,zeros(3),vert11))
+socket1to2 = Constraint(Spherical(link1,link2,vert12,vert21))
 
 links = [link1;link2]
 constraints = [socket0to1;socket1to2]
