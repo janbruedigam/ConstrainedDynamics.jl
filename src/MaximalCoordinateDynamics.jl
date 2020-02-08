@@ -33,6 +33,7 @@ export
     Spherical,
     Cylindrical,
     Revolute,
+    Planar,
 
     setInit!,
     simulate!,
@@ -59,6 +60,7 @@ include(joinpath("joints", "originconnection.jl"))
 include(joinpath("joints", "axis.jl"))
 include(joinpath("joints", "translational0.jl"))
 include(joinpath("joints", "translational1.jl"))
+include(joinpath("joints", "translational2.jl"))
 include(joinpath("joints", "prototypes.jl"))
 
 include(joinpath("util", "graph.jl"))

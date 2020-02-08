@@ -65,7 +65,7 @@ end
     end
 end
 
-@inline function ∂g∂velb(joint::Translational1{T},body1::AbstractBody,body2::Body,dt,No) where T
+@inline function ∂g∂velb(joint::Translational1{T},body1::Body,body2::Body,dt,No) where T
     if body2.id == joint.cid
         q1 = body1.q[No]
         q2 = body2.q[No]
