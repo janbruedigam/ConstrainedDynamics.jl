@@ -16,6 +16,11 @@ mutable struct Body{T} <: AbstractBody{T}
     s1::SVector{6,T}
     f::SVector{6,T}
 
+    sl0::Float64
+    sl1::Float64
+    ga0::Float64
+    ga1::Float64
+
     function Body(m::T,J::AbstractArray{T,2}) where T
         x = [@SVector zeros(T,3)]
         q = [Quaternion{T}()]
@@ -27,7 +32,7 @@ mutable struct Body{T} <: AbstractBody{T}
         s1 = @SVector zeros(T,6)
         f = @SVector zeros(T,6)
 
-        new{T}(getGlobalID(),m,J,x,q,F,τ,s0,s1,f)
+        new{T}(getGlobalID(),m,J,x,q,F,τ,s0,s1,f,rand(),rand(),rand(),rand())
     end
 
     function Body(shape::Shape)
@@ -103,11 +108,20 @@ end
     Quaternion(sqrt(4/dt^2 - dot(ωnew,ωnew)),ωnew)
 end
 
-@inline function dynamics(body::Body{T}, robot) where T
-    No = robot.No
-    dt = robot.dt
+@inline function dynamics(body::Body{T}, mechanism) where T
+    No = mechanism.No
+    dt = mechanism.dt
 
-    ezg = SVector{3,T}(0,0,-robot.g)
+
+    Nx = SVector{6,Float64}(0,0,1,0,0,0)'
+    γ = body.ga1
+    s = body.sl1
+    Σ = γ/s
+    μ = mechanism.μ
+    φ = body.x[2][3]+dt*body.s1[3]
+
+
+    ezg = SVector{3,T}(0,0,-mechanism.g)
     dynT = body.m*((getvnew(body) - getv1(body,dt))/dt + ezg) - body.F[No]
 
     J = body.J
@@ -119,14 +133,21 @@ end
 
     body.f = [dynT;dynR]
 
-    for cid in connections(robot.graph,body.id)
-        GtλTof!(body,getconstraint(robot,cid),robot)
+    for cid in connections(mechanism.graph,body.id)
+        GtλTof!(body,getconstraint(mechanism,cid),mechanism)
     end
 
-    return body.f
+    return body.f + Nx'*(Σ*φ - γ - μ/s)
 end
 
 @inline function ∂dyn∂vel(body::Body{T}, dt) where T
+    Nx = SVector{6,Float64}(0,0,1,0,0,0)'
+    Nv = dt*Nx
+    γ = body.ga1
+    s = body.sl1
+    Σ = γ/s
+
+
     J = body.J
     ωnew = getωnew(body)
     sq = sqrt(4/dt^2 - ωnew'*ωnew)
@@ -136,5 +157,5 @@ end
 
     Z = @SMatrix zeros(T,3,3)
 
-    return [[dynT; Z] [Z; dynR]]
+    return [[dynT; Z] [Z; dynR]] + Nx'*Σ*Nv
 end

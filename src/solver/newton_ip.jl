@@ -5,43 +5,53 @@
 #     nγ = 1
 #
 #     v = body.s0
-#     # λ = zeros(nλ)
-#     γ = 0.#zeros(nγ)
-#     s = rand()#rand(ns)
-#     # e = ones(ns)
-#     μ = 1.
+#     body.ga0 = rand()
+#     body.ga1 = body.ga0
+#     body.sl0 = rand()
+#     body.sl1 = body.sl0
+#
+#     mechanism.μ = 1.
 #     τ = 0.995
 #     σ = 0.2
 #
 #     dt = mechanism.dt
 #
 #     for iter=1:100
+#         γ = body.ga1
+#         s = body.sl1
+#         μ = mechanism.μ
 #         φ = body.x[2][3]+dt*body.s1[3]
 #
-#         dddv = ∂dyn∂vel(body, dt)
 #         Nx = [0;0;1.;0;0;0]'
 #         Nv = dt*Nx
-#         Γ = γ#diagm(γ)
-#         S = s#diagm(s)
-#         In = Matrix{Float64}(I,ns,ns)
 #
-#         Mat = [
-#             dddv         zeros(nv,ns)  -Nx'
-#             zeros(ns,nv) Γ              S
-#             Nv          -In             zeros(nγ,nγ)
-#         ]
+#         Σ = γ/s
+#         Σm = s/γ
 #
-#         vec = [
-#             dynamics(body, mechanism) - Nx'γ
-#             S*γ .- μ
-#             φ
-#         ]
+#         Mat = dddv = ∂dyn∂vel(body, dt)
+#
+#         vec = dynamics(body, mechanism)
+#
 #
 #         sol = Mat\vec
 #
-#         Δv = sol[1:nv]
-#         Δs = sol[nv+1]
-#         Δγ = sol[nv+2]
+#         setentries!(mechanism)
+#         factor!(mechanism.graph,mechanism.ldu)
+#         solve!(mechanism.graph,mechanism.ldu) # x̂1 for each body and constraint
+#
+#         computeΔ!(body,getentry(mechanism.ldu,body.id),mechanism)
+#
+#         # Δv = getentry(mechanism.ldu,body.id).ŝ
+#         # Δγ = Σ*(φ - Nv*Δv) - μ/s
+#         # Δs = Σm*(γ - Δγ) - μ/γ
+#
+#         Δv = getentry(mechanism.ldu,body.id).ŝ
+#         Δγ = getentry(mechanism.ldu,body.id).ga
+#         Δs = getentry(mechanism.ldu,body.id).sl
+#
+#         # getentry(mechanism.ldu,body.id).ŝ = Δv
+#         # getentry(mechanism.ldu,body.id).sl = Δs
+#         # getentry(mechanism.ldu,body.id).ga = Δγ
 #
 #         αs = ones(ns)
 #         αsmax = 1.
@@ -60,21 +70,19 @@
 #             αγmax = minimum(αγ)
 #         end
 #
-#         v -= αsmax.*Δv
-#         s -= αsmax.*Δs
-#         γ -= αγmax.*Δγ
+#         mechanism.αsmax = αsmax
+#         mechanism.αγmax = αγmax
 #
-#         body.s1 = v
+#         update!(body,mechanism.ldu,mechanism.αsmax,mechanism.αγmax)
+#
 #         s1tos0!(body)
 #
-#         norm1 = norm(vec[1:nv])
-#         norm2 = norm(vec[nv+1])
-#         norm4 = norm(vec[nv+2])
+#         norm1 = norm(vec)
 #
-#         E = maximum([norm1;norm2;norm4])
-#         μ = σ*μ
+#         E = norm1
+#         mechanism.μ = σ*mechanism.μ
 #
-#         if E<μ
+#         if E<1e-5
 #             display(iter)
 #             return
 #         end
@@ -83,79 +91,58 @@
 #     return
 # end
 
-function newton_ip!(mechanism::Mechanism,body::Body)
-    nv = 6
-    ns = 1
-    nλ = 0
-    nγ = 1
 
-    v = body.s0
-    γ = rand()
-    s = rand()
-    μ = 1.
-    τ = 0.995
-    σ = 0.2
-
+function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter=10, warning::Bool=false) where {T,Nl}
+    # n = 1
+    bodies = mechanism.bodies
+    constraints = mechanism.constraints
+    graph = mechanism.graph
+    ldu = mechanism.ldu
     dt = mechanism.dt
 
-    for iter=1:100
-        φ = body.x[2][3]+dt*body.s1[3]
+    for body in mechanism.bodies
+        body.sl1 = rand()
+        body.sl0 = rand()
+        body.ga1 = rand()
+        body.ga0 = rand()
+    end
+    mechanism.μ = 1.
+    σ = 0.2
 
-        Nx = [0;0;1.;0;0;0]'
-        Nv = dt*Nx
+    normf0 = normf(mechanism)
+    for n=Base.OneTo(newtonIter)
+        setentries!(mechanism)
+        factor!(graph,ldu)
+        solve!(graph,ldu) # x̂1 for each body and constraint
 
-        Σ = γ/s
-        Σm = s/γ
-
-        Mat = dddv = ∂dyn∂vel(body, dt) + Nx'*Σ*Nv
-
-        Γ = γ#diagm(γ)
-        S = s#diagm(s)
-
-
-        vec = dynamics(body, mechanism) + Nx'*(Σ*φ - γ - μ/s)
-
-        sol = Mat\vec
-
-        Δv = sol
-        Δγ = Σ*(φ - Nv*Δv) - μ/s
-        Δs = Σm*(γ - Δγ) - μ/γ
-
-
-        αs = ones(ns)
-        αsmax = 1.
-        αγ = ones(nγ)
-        αγmax = 1.
-
-        for i=1:ns
-            if Δs[i] > 0
-                αs[i] = minimum([1.;τ*s[i]/Δs[i]])
-            end
-            αsmax = minimum(αs)
-
-            if Δγ[i] > 0
-                αγ[i] = minimum([1.;τ*γ[i]/Δγ[i]])
-            end
-            αγmax = minimum(αγ)
+        for body in bodies
+            computeΔ!(body,getentry(ldu,body.id),mechanism)
         end
+        computeα!(mechanism)
 
-        v -= αsmax.*Δv
-        s -= αsmax.*Δs
-        γ -= αγmax.*Δγ
+        foreach(update!,bodies,ldu,mechanism.αsmax,mechanism.αγmax)
+        foreach(update!,constraints,ldu,mechanism.αsmax,mechanism.αγmax)
 
-        body.s1 = v
-        s1tos0!(body)
+        normf1 = normf(mechanism)
+        # normf1>normf0 && lineSearch!(mechanism,normf0;iter=lineIter, warning=warning)
 
-        norm1 = norm(vec)
-
-        E = norm1
-        μ = σ*μ
-
-        if E<1e-5
-            display(iter)
+        # normΔs not changed yet !!!
+        if normΔs(mechanism) < ε && normf1 < ε
+            foreach(s1tos0!,bodies)
+            foreach(s1tos0!,constraints)
+            # display(n)
             return
+        else
+            foreach(s1tos0!,bodies)
+            foreach(s1tos0!,constraints)
+            mechanism.μ = σ*mechanism.μ
+            normf0=normf1
         end
     end
-    display("failed")
+
+    if warning
+        display(string("WARNING:  newton! did not converge. n = ",newtonIter,", tol = ",normf0,"."))
+    end
+
     return
 end

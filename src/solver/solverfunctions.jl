@@ -115,38 +115,66 @@ function solve!(graph::Graph,ldu::SparseLDU)
     end
 end
 
-@inline update!(component::Component,ldu::SparseLDU) = update!(component,getentry(ldu,component.id))
-function update!(component::Component,diagonal::DiagonalEntry)
-    component.s1 = component.s0 - diagonal.ŝ
+@inline update!(component::Component,ldu::SparseLDU,αsmax,αγmax) = update!(component,getentry(ldu,component.id),αsmax,αγmax)
+# function update!(component::Component,diagonal::DiagonalEntry)
+#     component.s1 = component.s0 - diagonal.ŝ
+#     return
+# end
+function update!(component::Constraint,diagonal::DiagonalEntry,αsmax,αγmax)
+    component.s1 = component.s0 - αγmax*diagonal.ŝ
+    return
+end
+function update!(component::Body,diagonal::DiagonalEntry,αsmax,αγmax)
+    component.s1 = component.s0 - αsmax*diagonal.ŝ
+    component.sl1 = component.sl0 - αsmax*diagonal.sl
+    component.ga1 = component.ga0 - αγmax*diagonal.ga
     return
 end
 
-# @inline update!(body::Body,ldu::SparseLDU,dt) = update!(body,getentry(ldu,body.id),dt)
-# @inline update!(constraint::Constraint,ldu::SparseLDU) = update!(constraint,getentry(ldu,constraint.id))
-#
-# function update!(body::Body,diagonal::DiagonalEntry,dt)
-#     body.s1 = body.s0 - diagonal.ŝ
-#     # ω = body.s1
-#     # dot(ω,ω)>(4/dt^2) && error("ω too big")
-#     return
-# end
-#
-# function update!(constraint::Constraint,diagonal::DiagonalEntry)
-#     constraint.s1 = constraint.s0 - diagonal.ŝ
-#     return
-# end
-
-@inline function s0tos1!(component::Component)
+@inline function s0tos1!(component::Constraint)
     component.s1 = component.s0
     return
 end
 
-@inline function s1tos0!(component::Component)
+@inline function s1tos0!(component::Constraint)
     component.s0 = component.s1
+    return
+end
+
+@inline function s0tos1!(component::Body)
+    component.s1 = component.s0
+    component.sl1 = component.sl0
+    component.ga1 = component.ga0
+    return
+end
+
+@inline function s1tos0!(component::Body)
+    component.s0 = component.s1
+    component.sl0 = component.sl1
+    component.ga0 = component.ga1
     return
 end
 
 @inline function normΔs(component::Component)
     difference = component.s1-component.s0
     return dot(difference,difference)
+end
+
+
+function computeΔ!(body::Body,diagonal::DiagonalEntry,mechanism::Mechanism)
+    dt = mechanism.dt
+    Nx = SVector{6,Float64}(0,0,1,0,0,0)'
+    Nv = dt*Nx
+    γ = body.ga1
+    s = body.sl1
+    Σ = γ/s
+    Σm = s/γ
+    μ = mechanism.μ
+    φ = body.x[2][3]+dt*body.s1[3]
+
+    Δv = diagonal.ŝ
+    diagonal.sl = Σm*(γ - diagonal.ga) - μ/γ
+    diagonal.ga = Σ*(φ - Nv*Δv) - μ/s
+
+    return
 end

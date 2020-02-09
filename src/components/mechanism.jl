@@ -18,6 +18,10 @@ mutable struct Mechanism{T,N}
     ldu::SparseLDU{T}
     storage::Storage{T}
 
+    μ::Float64
+    αsmax::Float64
+    αγmax::Float64
+
     #TODO no constraints input
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},constraints::Vector{<:Constraint{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
@@ -74,7 +78,7 @@ mutable struct Mechanism{T,N}
         bodies = UnitDict(bodies)
         constraints = UnitDict((bodies[Nl].id+1):currentid-1,constraints)
 
-        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,constraints,normf,normΔs,graph,ldu,storage)
+        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,constraints,normf,normΔs,graph,ldu,storage,0,0,0)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
@@ -182,6 +186,30 @@ end
     return
 end
 
+function computeα!(mechanism::Mechanism)
+    τ = 0.995
+    αsmax = 1.
+    αγmax = 1.
+
+    for body in mechanism.bodies
+        sl = getentry(mechanism.ldu,body.id).sl
+        ga = getentry(mechanism.ldu,body.id).ga
+        if sl > 0
+            temp = minimum([1.;τ*body.sl1/sl])
+            αsmax = minimum([αsmax;temp])
+        end
+        if ga > 0
+            temp = minimum([1.;τ*body.ga1/ga])
+            αγmax = minimum([αγmax;temp])
+        end
+    end
+
+    mechanism.αsmax = αsmax
+    mechanism.αγmax = αγmax
+
+    return
+end
+
 function saveToTraj!(mechanism::Mechanism,t)
     No = mechanism.No
     for (ind,body) in enumerate(mechanism.bodies)
@@ -230,7 +258,8 @@ function simulate_ip!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,di
 
     for i=mechanism.steps
         # newton!(mechanism,warning=debug)
-        newton_ip!(mechanism,bodies[1])
+        # newton_ip!(mechanism,bodies[1])
+        newton_ip!(mechanism,warning=debug)
         save && saveToTraj!(mechanism,i)
         foreach(updatePos!,bodies,dt)
 
