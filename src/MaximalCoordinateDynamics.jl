@@ -40,14 +40,10 @@ export
 
     setInit!,
     simulate!,
+    simulate_ip!,
     plotθ,
     plotλ,
-    visualize,
-
-    simulate_energy!,
-    simulate_drift!,
-    simulate_reset!,
-    simulate_steptol!
+    visualize
 
 
 include(joinpath("util", "util.jl"))
@@ -76,6 +72,7 @@ include(joinpath("components", "mechanism.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 
 include(joinpath("solver", "newton.jl"))
+include(joinpath("solver", "newton_ip.jl"))
 
 include(joinpath("util", "visualize.jl"))
 

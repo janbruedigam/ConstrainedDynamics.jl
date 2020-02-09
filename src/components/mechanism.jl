@@ -221,6 +221,23 @@ function simulate!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,disp:
     return
 end
 
+function simulate_ip!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,disp::Bool=false)
+    bodies = mechanism.bodies
+    constraints = mechanism.constraints
+    dt = mechanism.dt
+    foreach(s0tos1!,bodies)
+    foreach(s0tos1!,constraints)
+
+    for i=mechanism.steps
+        # newton!(mechanism,warning=debug)
+        newton_ip!(mechanism,bodies[1])
+        save && saveToTraj!(mechanism,i)
+        foreach(updatePos!,bodies,dt)
+
+        disp && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
+    end
+    return
+end
 
 
 function plotθ(mechanism::Mechanism{T},id) where T

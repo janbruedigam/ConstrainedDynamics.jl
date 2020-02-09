@@ -19,6 +19,7 @@ function newton!(mechansim::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, 
         normf1 = normf(mechansim)
         normf1>normf0 && lineSearch!(mechansim,normf0;iter=lineIter, warning=warning)
 
+        # Move foreach out of if-else? Only if calculating normΔs earlier !!! 
         if normΔs(mechansim) < ε && normf1 < ε
             foreach(s1tos0!,bodies)
             foreach(s1tos0!,constraints)

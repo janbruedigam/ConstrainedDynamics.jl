@@ -1,41 +1,34 @@
 using Rotations
+using Plots: RGBA
 
-(@isdefined MaximalCoordinateDynamics) ? nothing : include(joinpath("src", "MaximalCoordinateDynamics.jl"))
+!(@isdefined MaximalCoordinateDynamics) && include(joinpath("src", "MaximalCoordinateDynamics.jl"))
+# include(joinpath("src", "MaximalCoordinateDynamics.jl"))
 using Main.MaximalCoordinateDynamics
 
 # Parameters
-l1 = 1.0
-x,y = .1,.1
-b1 = Box(x,y,l1,l1,color=RGBA(1.,1.,0.))
+joint_axis = [1.0;0.0;0.0]
 
-x1 = [1.;2.;3.]
-x2 = [-1.;2.;-3.]
-q1 = Quaternion(RotX(1.))
-q2 = Quaternion(RotX(2.))
+length1 = 0.5
+width,depth = 0.5, 0.5
+box1 = Box(width,depth,length1,length1,color=RGBA(1.,1.,0.))
 
-pa = [1.;2.;3.]
-pb = [4.;5.;6.]
-
-# Bodies
+# Links
 origin = Origin{Float64}()
 
-link1 = Body(b1)
-setInit!(origin,link1,x1,zeros(3),q=q1)
-
-link2 = Body(b1)
-setInit!(origin,link2,x2,zeros(3),q=q2)
-
+link1 = Body(box1)
+setInit!(origin,link1,[0.;0.;2.],zeros(3))
 
 # Constraints
+joint1 = Constraint(OriginConnection(origin,link1))
 
-shapes = [b1]
+links = [link1]
+constraints = [joint1]
+shapes = [box1]
 
-oc1 = Constraint(OriginConnection(origin,link1))
-oc2 = Constraint(OriginConnection(origin,link2))
 
-joint1 = Constraint(Socket(link1,link2,pa,pb))
+mech = Mechanism(origin, links, constraints,g=-9.81,tend=10.)
+link1.x[2]=[0.01;0.0;2.]
 
-bot = Mechanism(origin,[link1;link2],[oc1;oc2;joint1])
+simulate_ip!(mech,save=true)
 
-# simulate!(bot,save=true,debug=false)
-# MaximalCoordinateDynamics.visualize(bot,shapes)
+MaximalCoordinateDynamics.visualize(mech,shapes)
