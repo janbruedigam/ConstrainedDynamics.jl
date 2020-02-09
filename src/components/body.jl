@@ -112,15 +112,6 @@ end
     No = mechanism.No
     dt = mechanism.dt
 
-
-    Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-    γ = body.ga1
-    s = body.sl1
-    Σ = γ/s
-    μ = mechanism.μ
-    φ = body.x[2][3]+dt*body.s1[3]
-
-
     ezg = SVector{3,T}(0,0,-mechanism.g)
     dynT = body.m*((getvnew(body) - getv1(body,dt))/dt + ezg) - body.F[No]
 
@@ -137,17 +128,10 @@ end
         GtλTof!(body,getconstraint(mechanism,cid),mechanism)
     end
 
-    return body.f + Nx'*(Σ*φ - γ - μ/s)
+    return body.f
 end
 
 @inline function ∂dyn∂vel(body::Body{T}, dt) where T
-    Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-    Nv = dt*Nx
-    γ = body.ga1
-    s = body.sl1
-    Σ = γ/s
-
-
     J = body.J
     ωnew = getωnew(body)
     sq = sqrt(4/dt^2 - ωnew'*ωnew)
@@ -157,5 +141,5 @@ end
 
     Z = @SMatrix zeros(T,3,3)
 
-    return [[dynT; Z] [Z; dynR]] + Nx'*Σ*Nv
+    return [[dynT; Z] [Z; dynR]]
 end

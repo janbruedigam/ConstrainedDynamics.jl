@@ -28,9 +28,23 @@ mutable struct OffDiagonalEntry{T,N1,N2,N1N2} <: Entry{T}
     end
 end
 
+# mutable struct InequalityEntry{T,N,N²} <: Entry{T}
+#     sl::Float64
+#     ga::Float64
+#
+#     function InequalityEntry{T,N}() where {T,N}
+#         N² = N^2
+#         sl = 0
+#         ga = 0
+#
+#         new{T,N,N²}(sl,ga)
+#     end
+# end
+
 struct SparseLDU{T}
     diagonals::UnitDict{Base.OneTo{Int64},DiagonalEntry{T}}
     offdiagonals::Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}
+    # inequalities::UnitDict{UnitRange{Int64},InequalityEntry{T}}
 
     function SparseLDU(graph::Graph{N},bodies::Vector{Body{T}},constraints::Vector{<:EqualityConstraint{T}},ldict::Dict,cdict::Dict) where {T,N}
         diagonals = Vector{DiagonalEntry{T}}(undef,0)

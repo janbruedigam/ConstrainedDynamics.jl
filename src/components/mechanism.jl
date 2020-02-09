@@ -7,7 +7,8 @@ mutable struct Mechanism{T,N}
 
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
-    constraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
+    equalityconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
+    inequalityconstraints::Union{Nothing,UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}}
 
     #TODO remove once EqualityConstraint is homogenous
     normf::T
@@ -23,7 +24,8 @@ mutable struct Mechanism{T,N}
     αγmax::Float64
 
     #TODO no constraints input
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},constraints::Vector{<:EqualityConstraint{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
+        constraints::Vector{<:EqualityConstraint{T}}, ineqconstraints::Vector{<:InequalityConstraint{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
 
@@ -31,6 +33,7 @@ mutable struct Mechanism{T,N}
 
         Nl = length(bodies)
         Nc = length(constraints)
+        Ni = length(ineqconstraints)
         N = Nl+Nc
         steps = Int(ceil(tend/dt))
 
@@ -53,6 +56,10 @@ mutable struct Mechanism{T,N}
                 end
             end
 
+            for c in ineqconstraints
+                c.pid == body.id && (c.pid = currentid)
+            end
+
             body.id = currentid
             currentid+=1
 
@@ -67,6 +74,14 @@ mutable struct Mechanism{T,N}
             cdict[constraint.id] = ind
         end
 
+        # icdict = Dict{Int64,Int64}()
+        # for (ind,constraint) in enumerate(ineqconstraints)
+        #     constraint.id = currentid
+        #     currentid+=1
+        #
+        #     icdict[constraint.id] = ind
+        # end
+
         normf = zero(T)
         normΔs = zero(T)
 
@@ -76,9 +91,13 @@ mutable struct Mechanism{T,N}
         storage = Storage{T}(steps,Nl,Nc)
 
         bodies = UnitDict(bodies)
-        constraints = UnitDict((bodies[Nl].id+1):currentid-1,constraints)
-
-        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,constraints,normf,normΔs,graph,ldu,storage,0,0,0)
+        constraints = UnitDict((bodies[Nl].id+1):(constraints[Nc].id),constraints)
+        if !isempty(ineqconstraints)
+            ineqconstraints = UnitDict((ineqconstraints[Ni].id+1):currentid-1,ineqconstraints)
+        else
+            ineqconstraints = nothing
+        end
+        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,constraints,ineqconstraints,normf,normΔs,graph,ldu,storage,0,0,0)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
@@ -89,6 +108,13 @@ mutable struct Mechanism{T,N}
             push!(constraints,EqualityConstraint(OriginConnection(origin,body)))
         end
         Mechanism(origin,bodies,constraints,tend=tend, dt=dt, g=g, No=No)
+    end
+
+    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},constraints::Vector{<:EqualityConstraint{T}};
+        tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
+
+        ineqconstraints = Vector{InequalityConstraint{T}}(undef,0)
+        Mechanism(origin,bodies,constraints,ineqconstraints,tend=tend, dt=dt, g=g, No=No)
     end
 end
 
@@ -109,7 +135,7 @@ function setentries!(mechanism::Mechanism)
         setDandŝ!(diagonal,body,mechanism)
     end
 
-    for node in mechanism.constraints
+    for node in mechanism.equalityconstraints
         id = node.id
 
         for cid in directchildren(graph,id)
@@ -127,7 +153,7 @@ end
 
 @inline getbody(mechanism::Mechanism,id::Int64) = mechanism.bodies[id]
 @inline getbody(mechanism::Mechanism,id::Nothing) = mechanism.origin
-@inline getconstraint(mechanism::Mechanism,id::Int64) = mechanism.constraints[id]
+@inline getconstraint(mechanism::Mechanism,id::Int64) = mechanism.equalityconstraints[id]
 
 # @inline function getnode(mechanism::Mechanism,id::Int64) # should only be used in setup
 #      if haskey(mechanism.ldict,id)
@@ -162,7 +188,7 @@ end
     for body in mechanism.bodies
         mechanism.normf += normf(body,mechanism)
     end
-    foreach(addNormf!,mechanism.constraints,mechanism)
+    foreach(addNormf!,mechanism.equalityconstraints,mechanism)
 
     return sqrt(mechanism.normf)
 end
@@ -171,7 +197,7 @@ end
     mechanism.normΔs = 0
 
     mechanism.normΔs += mapreduce(normΔs,+,mechanism.bodies)
-    foreach(addNormΔs!,mechanism.constraints,mechanism)
+    foreach(addNormΔs!,mechanism.equalityconstraints,mechanism)
 
     return sqrt(mechanism.normΔs)
 end
@@ -191,16 +217,19 @@ function computeα!(mechanism::Mechanism)
     αsmax = 1.
     αγmax = 1.
 
-    for body in mechanism.bodies
-        sl = getentry(mechanism.ldu,body.id).sl
-        ga = getentry(mechanism.ldu,body.id).ga
-        if sl > 0
-            temp = minimum([1.;τ*body.sl1/sl])
-            αsmax = minimum([αsmax;temp])
-        end
-        if ga > 0
-            temp = minimum([1.;τ*body.ga1/ga])
-            αγmax = minimum([αγmax;temp])
+    if mechanism.inequalityconstraints != nothing
+        for ineqs in mechanism.inequalityconstraints
+            body = getbody(mechanism,ineqs.pid)
+            sl = getentry(mechanism.ldu,body.id).sl
+            ga = getentry(mechanism.ldu,body.id).ga
+            if sl > 0
+                temp = minimum([1.;τ*body.sl1/sl])
+                αsmax = minimum([αsmax;temp])
+            end
+            if ga > 0
+                temp = minimum([1.;τ*body.ga1/ga])
+                αγmax = minimum([αγmax;temp])
+            end
         end
     end
 
@@ -216,7 +245,7 @@ function saveToTraj!(mechanism::Mechanism,t)
         mechanism.storage.x[ind][t]=body.x[No]
         mechanism.storage.q[ind][t]=body.q[No]
     end
-    for (ind,constraint) in enumerate(mechanism.constraints)
+    for (ind,constraint) in enumerate(mechanism.equalityconstraints)
         mechanism.storage.λ[ind][t]=constraint.s1
     end
 end
@@ -234,7 +263,7 @@ end
 
 function simulate!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,disp::Bool=false)
     bodies = mechanism.bodies
-    constraints = mechanism.constraints
+    constraints = mechanism.equalityconstraints
     dt = mechanism.dt
     foreach(s0tos1!,bodies)
     foreach(s0tos1!,constraints)
@@ -251,7 +280,7 @@ end
 
 function simulate_ip!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,disp::Bool=false)
     bodies = mechanism.bodies
-    constraints = mechanism.constraints
+    constraints = mechanism.equalityconstraints
     dt = mechanism.dt
     foreach(s0tos1!,bodies)
     foreach(s0tos1!,constraints)
@@ -287,12 +316,12 @@ function plotθ(mechanism::Mechanism{T},id) where T
 end
 
 function plotλ(mechanism::Mechanism{T},id) where T
-    n = sum(length.(mechanism.constraints))
+    n = sum(length.(mechanism.equalityconstraints))
     λ = zeros(T,n,length(mechanism.steps))
     startpos = 1
     endpos = 0
-    for i=1:length(mechanism.constraints)
-        endpos = startpos + length(mechanism.constraints[i]) -1
+    for i=1:length(mechanism.equalityconstraints)
+        endpos = startpos + length(mechanism.equalityconstraints[i]) -1
 
         λs = mechanism.storage.λ[i]
         for (t,val) in enumerate(λs)

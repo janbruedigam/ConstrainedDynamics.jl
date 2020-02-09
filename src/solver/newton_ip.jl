@@ -95,7 +95,7 @@
 function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter=10, warning::Bool=false) where {T,Nl}
     # n = 1
     bodies = mechanism.bodies
-    constraints = mechanism.constraints
+    constraints = mechanism.equalityconstraints
     graph = mechanism.graph
     ldu = mechanism.ldu
     dt = mechanism.dt
@@ -115,8 +115,11 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
         factor!(graph,ldu)
         solve!(graph,ldu) # x̂1 for each body and constraint
 
-        for body in bodies
-            computeΔ!(body,getentry(ldu,body.id),mechanism)
+        if mechanism.inequalityconstraints != nothing
+            for ineqs in mechanism.inequalityconstraints
+                body = getbody(mechanism,ineqs.pid)
+                computeΔ!(body,getentry(ldu,body.id),mechanism)
+            end
         end
         computeα!(mechanism)
 

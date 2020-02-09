@@ -1,6 +1,20 @@
 @inline function setDandŝ!(diagonal::DiagonalEntry,body::Body,mechanism::Mechanism)
-    diagonal.D = ∂dyn∂vel(body, mechanism.dt)
-    diagonal.ŝ = dynamics(body, mechanism)
+    ineq = nothing
+    if mechanism.inequalityconstraints != nothing
+        for ineqconstr in mechanism.inequalityconstraints
+            if ineqconstr.pid == body.id
+                ineq = ineqconstr
+                break
+            end
+        end
+    end
+    if ineq == nothing
+        diagonal.D = ∂dyn∂vel(body, mechanism.dt)
+        diagonal.ŝ = dynamics(body, mechanism)
+    else
+        diagonal.D = ∂dyn∂vel(body, mechanism.dt) + diagval(ineq,body,mechanism.dt)
+        diagonal.ŝ = dynamics(body, mechanism) + g(ineq,body,mechanism.dt,mechanism.No,mechanism.μ)
+    end
     return
 end
 

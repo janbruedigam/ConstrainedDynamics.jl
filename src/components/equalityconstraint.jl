@@ -1,5 +1,3 @@
-abstract type AbstractEqualityConstraint{T} <: Component{T} end
-
 mutable struct EqualityConstraint{T,N,Nc,Cs} <: Component{T}
     id::Int64
 
