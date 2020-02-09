@@ -46,15 +46,15 @@ function solve(f,ce,ci,x)
         ∇²f = ForwardDiff.hessian(L,x)
 
         Mat = [
-            ∇²f          zeros(nx,ns) -Ae'         -Ai'
-            zeros(ns,nx) Z            zeros(ns,ny) S
+            ∇²f          zeros(nx,ns) -Ae'        -Ai'
+            zeros(ns,nx) S\Z          zeros(ns,ny) In
             Ae           zeros(ny,ns) zeros(ny,ny) zeros(ny,nz)
             Ai           -In          zeros(nz,ny) zeros(nz,nz)
         ]
 
         vec = -[
             ∇f - Ae'*y - Ai'*z
-            S*z-μ*e
+            z-inv(S)*μ
             ce(x)
             ci(x) - s
         ]
@@ -83,7 +83,7 @@ function solve(f,ce,ci,x)
         end
 
         x += αsmax.*px
-        s += αsmax.*ps 
+        s += αsmax.*ps
         y += αzmax.*py
         z += αzmax.*pz
 
