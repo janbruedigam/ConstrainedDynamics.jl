@@ -25,7 +25,7 @@ export
     Quaternion,
     Origin,
     Body,
-    Constraint,
+    EqualityConstraint,
     Mechanism,
 
     OriginConnection,
@@ -53,7 +53,6 @@ include(joinpath("util", "shapes.jl"))
 include(joinpath("components", "component.jl"))
 include(joinpath("joints", "joint.jl"))
 include(joinpath("components", "body.jl"))
-include(joinpath("components", "constraint.jl"))
 
 include(joinpath("joints", "translationalrotational6.jl"))
 include(joinpath("joints", "translational0.jl"))
@@ -63,6 +62,8 @@ include(joinpath("joints", "rotational0.jl"))
 include(joinpath("joints", "rotational1.jl"))
 include(joinpath("joints", "rotational2.jl"))
 include(joinpath("joints", "prototypes.jl"))
+
+include(joinpath("components", "equalityconstraint.jl"))
 
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "storage.jl"))

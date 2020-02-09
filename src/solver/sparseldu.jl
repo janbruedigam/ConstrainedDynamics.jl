@@ -32,7 +32,7 @@ struct SparseLDU{T}
     diagonals::UnitDict{Base.OneTo{Int64},DiagonalEntry{T}}
     offdiagonals::Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}
 
-    function SparseLDU(graph::Graph{N},bodies::Vector{Body{T}},constraints::Vector{<:Constraint{T}},ldict::Dict,cdict::Dict) where {T,N}
+    function SparseLDU(graph::Graph{N},bodies::Vector{Body{T}},constraints::Vector{<:EqualityConstraint{T}},ldict::Dict,cdict::Dict) where {T,N}
         diagonals = Vector{DiagonalEntry{T}}(undef,0)
         for body in bodies
             push!(diagonals,DiagonalEntry{T,length(body)}())

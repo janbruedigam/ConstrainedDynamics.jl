@@ -7,9 +7,9 @@ mutable struct Mechanism{T,N}
 
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
-    constraints::UnitDict{UnitRange{Int64},<:Constraint{T}}
+    constraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
 
-    #TODO remove once Constraint is homogenous
+    #TODO remove once EqualityConstraint is homogenous
     normf::T
     normΔs::T
 
@@ -23,7 +23,7 @@ mutable struct Mechanism{T,N}
     αγmax::Float64
 
     #TODO no constraints input
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},constraints::Vector{<:Constraint{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},constraints::Vector{<:EqualityConstraint{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
 
@@ -84,9 +84,9 @@ mutable struct Mechanism{T,N}
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
-        constraints = Vector{Constraint{T}}(undef,0)
+        constraints = Vector{EqualityConstraint{T}}(undef,0)
         for body in bodies
-            push!(constraints,Constraint(OriginConnection(origin,body)))
+            push!(constraints,EqualityConstraint(OriginConnection(origin,body)))
         end
         Mechanism(origin,bodies,constraints,tend=tend, dt=dt, g=g, No=No)
     end
@@ -146,12 +146,12 @@ end
     return dot(f,f)
 end
 
-@inline function normf(c::Constraint,mechanism::Mechanism)
+@inline function normf(c::EqualityConstraint,mechanism::Mechanism)
     f = g(c,mechanism)
     return dot(f,f)
 end
 
-@inline function GtλTof!(body::Body,c::Constraint,mechanism)
+@inline function GtλTof!(body::Body,c::EqualityConstraint,mechanism)
     body.f -= ∂g∂pos(c,body.id,mechanism)'*c.s1
     return
 end
@@ -176,7 +176,7 @@ end
     return sqrt(mechanism.normΔs)
 end
 
-@inline function addNormf!(c::Constraint,mechanism::Mechanism)
+@inline function addNormf!(c::EqualityConstraint,mechanism::Mechanism)
     mechanism.normf += normf(c,mechanism)
     return
 end

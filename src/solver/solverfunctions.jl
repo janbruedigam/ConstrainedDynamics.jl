@@ -4,7 +4,7 @@
     return
 end
 
-@inline function setDandŝ!(d::DiagonalEntry{T,N},c::Constraint,mechanism::Mechanism) where {T,N}
+@inline function setDandŝ!(d::DiagonalEntry{T,N},c::EqualityConstraint,mechanism::Mechanism) where {T,N}
     d.D = @SMatrix zeros(T,N,N)
     # μ = 1e-05
     # d.D = SMatrix{N,N,T,N*N}(μ*I)
@@ -12,13 +12,13 @@ end
     return
 end
 
-@inline function setLU!(o::OffDiagonalEntry,bodyid::Int64,c::Constraint,mechanism)
+@inline function setLU!(o::OffDiagonalEntry,bodyid::Int64,c::EqualityConstraint,mechanism)
     o.L = -∂g∂pos(c,bodyid,mechanism)'
     o.U = ∂g∂vel(c,bodyid,mechanism)
     return
 end
 
-@inline function setLU!(o::OffDiagonalEntry,c::Constraint,bodyid::Int64,mechanism)
+@inline function setLU!(o::OffDiagonalEntry,c::EqualityConstraint,bodyid::Int64,mechanism)
     o.L = ∂g∂vel(c,bodyid,mechanism)
     o.U = -∂g∂pos(c,bodyid,mechanism)'
     return
@@ -120,7 +120,7 @@ end
 #     component.s1 = component.s0 - diagonal.ŝ
 #     return
 # end
-function update!(component::Constraint,diagonal::DiagonalEntry,αsmax,αγmax)
+function update!(component::EqualityConstraint,diagonal::DiagonalEntry,αsmax,αγmax)
     component.s1 = component.s0 - αγmax*diagonal.ŝ
     return
 end
@@ -131,12 +131,12 @@ function update!(component::Body,diagonal::DiagonalEntry,αsmax,αγmax)
     return
 end
 
-@inline function s0tos1!(component::Constraint)
+@inline function s0tos1!(component::EqualityConstraint)
     component.s1 = component.s0
     return
 end
 
-@inline function s1tos0!(component::Constraint)
+@inline function s1tos0!(component::EqualityConstraint)
     component.s0 = component.s1
     return
 end

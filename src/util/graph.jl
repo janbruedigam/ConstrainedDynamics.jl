@@ -17,7 +17,7 @@ struct Graph{N}
     dict::UnitDict{Base.OneTo{Int64},Int64}
     rdict::UnitDict{Base.OneTo{Int64},Int64}
 
-    function Graph(origin::Origin,bodies::Vector{<:Body},constraints::Vector{<:Constraint})
+    function Graph(origin::Origin,bodies::Vector{<:Body},constraints::Vector{<:EqualityConstraint})
         oid = origin.id
         adjacency, dict = adjacencyMatrix(constraints,bodies)
         dfsgraph, dfslist, loops = dfs(adjacency,dict,oid)
@@ -62,7 +62,7 @@ struct Graph{N}
 end
 end
 
-function adjacencyMatrix(constraints::Vector{<:Constraint},bodies::Vector{<:Body})
+function adjacencyMatrix(constraints::Vector{<:EqualityConstraint},bodies::Vector{<:Body})
     A = zeros(Bool,0,0)
     dict = Dict{Int64,Int64}()
     n = 0

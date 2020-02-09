@@ -19,11 +19,11 @@ link1 = Body(box1)
 setInit!(origin,link1,[0.;-1/4*sqrt(2);0.],zeros(3),q=Quaternion(RotX(-pi/4)))
 
 link2 = Body(box1)
-setInit!(origin,link2,[0.;1/4*sqrt(2);0],zeros(3),q=Quaternion(RotX(pi/4)),τ=[0.01*0;0;0])
+setInit!(origin,link2,[0.;1/4*sqrt(2);0],zeros(3),q=Quaternion(RotX(pi/4)),τ=[0.01;0;0])
 
 # Constraints
-joint1 = Constraint(OriginConnection(origin,link1))
-joint2 = Constraint(Revolute(link1,link2,[0;0;length1/2],[0;0;length1/2],joint_axis))
+joint1 = EqualityConstraint(OriginConnection(origin,link1))
+joint2 = EqualityConstraint(Revolute(link1,link2,[0;0;length1/2],[0;0;length1/2],joint_axis))
 
 links = [link1;link2]
 constraints = [joint1;joint2]
