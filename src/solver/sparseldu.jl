@@ -4,8 +4,8 @@ mutable struct DiagonalEntry{T,N,N²} <: Entry{T}
     D::SMatrix{N,N,T,N²}
     Dinv::SMatrix{N,N,T,N²}
     ŝ::SVector{N,T}
-    sl::Float64
-    ga::Float64
+    # sl::Float64
+    # ga::Float64
 
     function DiagonalEntry{T,N}() where {T,N}
         N² = N^2
@@ -13,7 +13,7 @@ mutable struct DiagonalEntry{T,N,N²} <: Entry{T}
         Dinv = @SMatrix zeros(T,N,N)
         ŝ = @SVector zeros(T,N)
 
-        new{T,N,N²}(D,Dinv,ŝ,0,0)
+        new{T,N,N²}(D,Dinv,ŝ)
     end
 end
 
@@ -28,50 +28,63 @@ mutable struct OffDiagonalEntry{T,N1,N2,N1N2} <: Entry{T}
     end
 end
 
-# mutable struct InequalityEntry{T,N,N²} <: Entry{T}
-#     sl::Float64
-#     ga::Float64
-#
-#     function InequalityEntry{T,N}() where {T,N}
-#         N² = N^2
-#         sl = 0
-#         ga = 0
-#
-#         new{T,N,N²}(sl,ga)
-#     end
-# end
+mutable struct InequalityEntry{T,N,N²} <: Entry{T}
+    sl::Float64
+    ga::Float64
+
+    function InequalityEntry{T,N}() where {T,N}
+        N² = N^2
+        sl = 0
+        ga = 0
+
+        new{T,N,N²}(sl,ga)
+    end
+end
 
 struct SparseLDU{T}
     diagonals::UnitDict{Base.OneTo{Int64},DiagonalEntry{T}}
     offdiagonals::Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}
-    # inequalities::UnitDict{UnitRange{Int64},InequalityEntry{T}}
+    inequalities::UnitDict{UnitRange{Int64},InequalityEntry{T}}
 
-    function SparseLDU(graph::Graph{N},bodies::Vector{Body{T}},constraints::Vector{<:EqualityConstraint{T}},ldict::Dict,cdict::Dict) where {T,N}
+    function SparseLDU(graph::Graph{N},bodies::Vector{Body{T}},eqconstraints::Vector{<:EqualityConstraint{T}},
+        ineqconstraints::Vector{<:InequalityConstraint{T}},bdict::Dict,eqdict::Dict,ineqdict::Dict) where {T,N}
+
         diagonals = Vector{DiagonalEntry{T}}(undef,0)
         for body in bodies
             push!(diagonals,DiagonalEntry{T,length(body)}())
         end
-        for constraint in constraints
+        for constraint in eqconstraints
             push!(diagonals,DiagonalEntry{T,length(constraint)}())
         end
         diagonals = UnitDict(diagonals)
 
         offdiagonals = Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}()
         for id in graph.dfslist
-            haskey(ldict,id) ? node=bodies[ldict[id]] : node=constraints[cdict[id]]
+            haskey(bdict,id) ? node=bodies[bdict[id]] : node=eqconstraints[eqdict[id]]
             N1 = length(node)
 
             for cid in successors(graph,id)
-                haskey(ldict,cid) ? cnode=bodies[ldict[cid]] : cnode=constraints[cdict[cid]]
+                haskey(bdict,cid) ? cnode=bodies[bdict[cid]] : cnode=eqconstraints[eqdict[cid]]
                 N2 = length(cnode)
 
                 offdiagonals[(id,cid)] = OffDiagonalEntry{T,N2,N1}()
             end
         end
 
-        new{T}(diagonals,offdiagonals)
+        inequalities = Vector{InequalityEntry{T}}(undef,0)
+        for ineq in ineqconstraints
+            push!(inequalities,InequalityEntry{T,length(ineq)}())
+        end
+        if !isempty(inequalities)
+            inequalities = UnitDict((ineqconstraints[1].id):(ineqconstraints[length(inequalities)].id),inequalities)
+        else
+            inequalities = UnitDict(0:0,inequalities)
+        end
+
+        new{T}(diagonals,offdiagonals,inequalities)
     end
 end
 
 @inline getentry(ldu::SparseLDU,id::Int64) = ldu.diagonals[id]
 @inline getentry(ldu::SparseLDU,ids::Tuple{Int64,Int64}) = ldu.offdiagonals[ids]
+@inline getineq(ldu::SparseLDU,id::Int64) = ldu.inequalities[id]

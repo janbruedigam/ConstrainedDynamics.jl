@@ -46,35 +46,35 @@ end
 
 Base.length(c::EqualityConstraint{T,N}) where {T,N} = N
 
-@generated function g(c::EqualityConstraint{T,N,Nc},robot) where {T,N,Nc}
-    vec = [:(g(c.constraints[$i],getbody(robot,c.pid),getbody(robot,c.bodyids[$i]),robot.dt,robot.No)) for i=1:Nc]
+@generated function g(c::EqualityConstraint{T,N,Nc},mechanism) where {T,N,Nc}
+    vec = [:(g(c.constraints[$i],getbody(mechanism,c.pid),getbody(mechanism,c.bodyids[$i]),mechanism.dt,mechanism.No)) for i=1:Nc]
     :(vcat($(vec...)))
 end
 
-@inline function ∂g∂pos(c::EqualityConstraint,id::Int64,robot)
-    id == c.pid ? ∂g∂posa(c,id,robot) : ∂g∂posb(c,id,robot)
+@inline function ∂g∂pos(c::EqualityConstraint,id::Int64,mechanism)
+    id == c.pid ? ∂g∂posa(c,id,mechanism) : ∂g∂posb(c,id,mechanism)
 end
 
-@inline function ∂g∂vel(c::EqualityConstraint,id::Int64,robot)
-    id == c.pid ? ∂g∂vela(c,id,robot) : ∂g∂velb(c,id,robot)
+@inline function ∂g∂vel(c::EqualityConstraint,id::Int64,mechanism)
+    id == c.pid ? ∂g∂vela(c,id,mechanism) : ∂g∂velb(c,id,mechanism)
 end
 
-@generated function ∂g∂posa(c::EqualityConstraint{T,N,Nc},id::Int64,robot) where {T,N,Nc}
-    vec = [:(∂g∂posa(c.constraints[$i],getbody(robot,id),getbody(robot,c.bodyids[$i]),robot.No)) for i=1:Nc]
+@generated function ∂g∂posa(c::EqualityConstraint{T,N,Nc},id::Int64,mechanism) where {T,N,Nc}
+    vec = [:(∂g∂posa(c.constraints[$i],getbody(mechanism,id),getbody(mechanism,c.bodyids[$i]),mechanism.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂posb(c::EqualityConstraint{T,N,Nc},id::Int64,robot) where {T,N,Nc}
-    vec = [:(∂g∂posb(c.constraints[$i],getbody(robot,c.pid),getbody(robot,id),robot.No)) for i=1:Nc]
+@generated function ∂g∂posb(c::EqualityConstraint{T,N,Nc},id::Int64,mechanism) where {T,N,Nc}
+    vec = [:(∂g∂posb(c.constraints[$i],getbody(mechanism,c.pid),getbody(mechanism,id),mechanism.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂vela(c::EqualityConstraint{T,N,Nc},id::Int64,robot) where {T,N,Nc}
-    vec = [:(∂g∂vela(c.constraints[$i],getbody(robot,id),getbody(robot,c.bodyids[$i]),robot.dt,robot.No)) for i=1:Nc]
+@generated function ∂g∂vela(c::EqualityConstraint{T,N,Nc},id::Int64,mechanism) where {T,N,Nc}
+    vec = [:(∂g∂vela(c.constraints[$i],getbody(mechanism,id),getbody(mechanism,c.bodyids[$i]),mechanism.dt,mechanism.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂velb(c::EqualityConstraint{T,N,Nc},id::Int64,robot) where {T,N,Nc}
-    vec = [:(∂g∂velb(c.constraints[$i],getbody(robot,c.pid),getbody(robot,id),robot.dt,robot.No)) for i=1:Nc]
+@generated function ∂g∂velb(c::EqualityConstraint{T,N,Nc},id::Int64,mechanism) where {T,N,Nc}
+    vec = [:(∂g∂velb(c.constraints[$i],getbody(mechanism,c.pid),getbody(mechanism,id),mechanism.dt,mechanism.No)) for i=1:Nc]
     return :(vcat($(vec...)))
 end

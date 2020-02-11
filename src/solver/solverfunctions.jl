@@ -1,20 +1,13 @@
 @inline function setDandŝ!(diagonal::DiagonalEntry,body::Body,mechanism::Mechanism)
-    ineq = nothing
-    if mechanism.inequalityconstraints != nothing
-        for ineqconstr in mechanism.inequalityconstraints
-            if ineqconstr.pid == body.id
-                ineq = ineqconstr
-                break
-            end
-        end
-    end
-    if ineq == nothing
-        diagonal.D = ∂dyn∂vel(body, mechanism.dt)
-        diagonal.ŝ = dynamics(body, mechanism)
-    else
-        diagonal.D = ∂dyn∂vel(body, mechanism.dt) + diagval(ineq,body,mechanism.dt)
-        diagonal.ŝ = dynamics(body, mechanism) + g(ineq,body,mechanism.dt,mechanism.No,mechanism.μ)
-    end
+    diagonal.D = ∂dyn∂vel(body, mechanism.dt)
+    diagonal.ŝ = dynamics(body, mechanism)
+    return
+end
+
+@inline function extendDandŝ!(diagonal::DiagonalEntry,body::Body,c::InequalityConstraint,mechanism::Mechanism)
+    dt = mechanism.dt
+    diagonal.D += diagval(c,body,dt)
+    diagonal.ŝ += g(c,body,mechanism)
     return
 end
 
@@ -107,7 +100,7 @@ function factor!(graph::Graph,ldu::SparseLDU)
     end
 end
 
-function solve!(graph::Graph,ldu::SparseLDU)
+function solve!(graph::Graph,ldu::SparseLDU,mechanism)
     dfslist = graph.dfslist
 
     for id in dfslist
@@ -126,46 +119,52 @@ function solve!(graph::Graph,ldu::SparseLDU)
         for pid in predecessors(graph,id)
             USol!(diagonal,getentry(ldu,pid),getentry(ldu,(pid,id)))
         end
+
+        # inequalities
+        for cid in ineqchildren(graph,id)
+            SLGASol!(getineq(ldu,cid),diagonal,getbody(mechanism,id),getineqconstraint(mechanism,cid),mechanism)
+        end
     end
 end
 
-@inline update!(component::Component,ldu::SparseLDU,αsmax,αγmax) = update!(component,getentry(ldu,component.id),αsmax,αγmax)
-# function update!(component::Component,diagonal::DiagonalEntry)
-#     component.s1 = component.s0 - diagonal.ŝ
-#     return
-# end
-function update!(component::EqualityConstraint,diagonal::DiagonalEntry,αsmax,αγmax)
-    component.s1 = component.s0 - αγmax*diagonal.ŝ
-    return
-end
-function update!(component::Body,diagonal::DiagonalEntry,αsmax,αγmax)
-    component.s1 = component.s0 - αsmax*diagonal.ŝ
-    component.sl1 = component.sl0 - αsmax*diagonal.sl
-    component.ga1 = component.ga0 - αγmax*diagonal.ga
+@inline update!(body::Body,ldu::SparseLDU,αsmax) = update!(body,getentry(ldu,body.id),αsmax)
+function update!(body::Body,diagonal::DiagonalEntry,αsmax)
+    body.s1 = body.s0 - αsmax*diagonal.ŝ
     return
 end
 
-@inline function s0tos1!(component::EqualityConstraint)
+@inline update!(eq::EqualityConstraint,ldu::SparseLDU,αγmax) = update!(eq,getentry(ldu,eq.id),αγmax)
+function update!(eq::EqualityConstraint,diagonal::DiagonalEntry,αγmax)
+    eq.s1 = eq.s0 - αγmax*diagonal.ŝ
+    return
+end
+
+@inline update!(ineq::InequalityConstraint,ldu::SparseLDU,αsmax,αγmax) = update!(ineq,getineq(ldu,ineq.id),αsmax,αγmax)
+function update!(ineq::InequalityConstraint,entry::InequalityEntry,αsmax,αγmax)
+    ineq.sl1 = ineq.sl0 - αsmax*entry.sl
+    ineq.ga1 = ineq.ga0 - αγmax*entry.ga
+    return
+end
+
+@inline function s0tos1!(component::Component)
     component.s1 = component.s0
     return
 end
 
-@inline function s1tos0!(component::EqualityConstraint)
+@inline function s1tos0!(component::Component)
     component.s0 = component.s1
     return
 end
 
-@inline function s0tos1!(component::Body)
-    component.s1 = component.s0
-    component.sl1 = component.sl0
-    component.ga1 = component.ga0
+@inline function s0tos1!(ineq::InequalityConstraint)
+    ineq.sl1 = ineq.sl0
+    ineq.ga1 = ineq.ga0
     return
 end
 
-@inline function s1tos0!(component::Body)
-    component.s0 = component.s1
-    component.sl0 = component.sl1
-    component.ga0 = component.ga1
+@inline function s1tos0!(ineq::InequalityConstraint)
+    ineq.sl0 = ineq.sl1
+    ineq.ga0 = ineq.ga1
     return
 end
 
@@ -175,20 +174,23 @@ end
 end
 
 
-function computeΔ!(body::Body,diagonal::DiagonalEntry,mechanism::Mechanism)
+function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
     Nv = dt*Nx
-    γ = body.ga1
-    s = body.sl1
+    γ = ineq.ga1
+    s = ineq.sl1
     Σ = γ/s
     Σm = s/γ
     μ = mechanism.μ
     φ = body.x[2][3]+dt*body.s1[3]
 
     Δv = diagonal.ŝ
-    diagonal.sl = Σm*(γ - diagonal.ga) - μ/γ
-    diagonal.ga = Σ*(φ - Nv*Δv) - μ/s
+
+    # SHOULD BE SWITCHED ???
+    ineqentry.sl = Σm*(γ - ineqentry.ga) - μ/γ
+    ineqentry.ga = Σ*(φ - Nv*Δv) - μ/s
+
 
     return
 end

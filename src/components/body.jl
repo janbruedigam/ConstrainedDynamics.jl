@@ -16,10 +16,10 @@ mutable struct Body{T} <: AbstractBody{T}
     s1::SVector{6,T}
     f::SVector{6,T}
 
-    sl0::Float64
-    sl1::Float64
-    ga0::Float64
-    ga1::Float64
+    # sl0::Float64
+    # sl1::Float64
+    # ga0::Float64
+    # ga1::Float64
 
     function Body(m::T,J::AbstractArray{T,2}) where T
         x = [@SVector zeros(T,3)]
@@ -32,7 +32,7 @@ mutable struct Body{T} <: AbstractBody{T}
         s1 = @SVector zeros(T,6)
         f = @SVector zeros(T,6)
 
-        new{T}(getGlobalID(),m,J,x,q,F,τ,s0,s1,f,rand(),rand(),rand(),rand())
+        new{T}(getGlobalID(),m,J,x,q,F,τ,s0,s1,f)
     end
 
     function Body(shape::Shape)
@@ -125,7 +125,7 @@ end
     body.f = [dynT;dynR]
 
     for cid in connections(mechanism.graph,body.id)
-        GtλTof!(body,getconstraint(mechanism,cid),mechanism)
+        GtλTof!(body,geteqconstraint(mechanism,cid),mechanism)
     end
 
     return body.f
