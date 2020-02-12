@@ -20,8 +20,7 @@ mutable struct Mechanism{T,N}
     storage::Storage{T}
 
     μ::Float64
-    αsmax::Float64
-    αγmax::Float64
+    αmax::Float64
 
     #TODO no constraints input
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
@@ -97,7 +96,7 @@ mutable struct Mechanism{T,N}
         else
             ineqconstraints = UnitDict(0:0,ineqconstraints)
         end
-        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,eqconstraints,ineqconstraints,normf,normΔs,graph,ldu,storage,0,0,0)
+        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,eqconstraints,ineqconstraints,normf,normΔs,graph,ldu,storage,1,1)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
@@ -181,8 +180,26 @@ end
     return dot(f,f)
 end
 
+@inline function normf(c::InequalityConstraint,mechanism::Mechanism)
+    f = g(c,mechanism)
+    d = h(c,mechanism)
+    return dot([f;d],[f;d])
+end
+
+@inline function normfμ(c::InequalityConstraint,mechanism::Mechanism)
+    f = g(c,mechanism)
+    d = hμ(c,mechanism)
+    return dot([f;d],[f;d])
+end
+
 @inline function GtλTof!(body::Body,c::EqualityConstraint,mechanism)
     body.f -= ∂g∂pos(c,body.id,mechanism)'*c.s1
+    return
+end
+
+@inline function NtγTof!(body::Body,c::InequalityConstraint,mechanism)
+    Nx = SVector{6,Float64}(0,0,1,0,0,0)'
+    body.f -= Nx'*c.ga1
     return
 end
 
@@ -193,6 +210,23 @@ end
         mechanism.normf += normf(body,mechanism)
     end
     foreach(addNormf!,mechanism.eqconstraints,mechanism)
+    for ineq in mechanism.ineqconstraints
+        mechanism.normf += normf(ineq,mechanism)
+    end
+
+    return sqrt(mechanism.normf)
+end
+
+@inline function meritf(mechanism::Mechanism)
+    mechanism.normf = 0
+
+    for body in mechanism.bodies
+        mechanism.normf += normf(body,mechanism)
+    end
+    foreach(addNormf!,mechanism.eqconstraints,mechanism)
+    for ineq in mechanism.ineqconstraints
+        mechanism.normf += normfμ(ineq,mechanism)
+    end
 
     return sqrt(mechanism.normf)
 end
@@ -202,6 +236,7 @@ end
 
     mechanism.normΔs += mapreduce(normΔs,+,mechanism.bodies)
     foreach(addNormΔs!,mechanism.eqconstraints,mechanism)
+    foreach(addNormΔs!,mechanism.ineqconstraints,mechanism)
 
     return sqrt(mechanism.normΔs)
 end
@@ -220,25 +255,24 @@ function computeα!(mechanism::Mechanism)
     ldu = mechanism.ldu
 
     τ = 0.995
-    αsmax = 1.
-    αγmax = 1.
+    αmax = 1.
 
     for ineq in mechanism.ineqconstraints
-        # body = getbody(mechanism,ineq.pid)
         sl = getineq(ldu,ineq.id).sl
         ga = getineq(ldu,ineq.id).ga
+
         if sl > 0
             temp = minimum([1.;τ*ineq.sl1/sl])
-            αsmax = minimum([αsmax;temp])
+            αmax = minimum([αmax;temp])
         end
+
         if ga > 0
             temp = minimum([1.;τ*ineq.ga1/ga])
-            αγmax = minimum([αγmax;temp])
+            αmax = minimum([αmax;temp])
         end
     end
 
-    mechanism.αsmax = αsmax
-    mechanism.αγmax = αγmax
+    mechanism.αmax = αmax
 
     return
 end

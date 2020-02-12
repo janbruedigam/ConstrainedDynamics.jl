@@ -6,14 +6,19 @@ mutable struct Impact{T}
 end
 
 
-function g(ineq,impact::Impact,body::Body,dt,No,μ)
+function g(ineq,impact::Impact,body::Body,dt,No)
+    φ = body.x[No][3]+dt*body.s1[3]
+    φ - ineq.sl1
+end
+
+function dynineq(ineq,impact::Impact,body::Body,dt,No,μ)
     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
     ga1 = ineq.ga1
     sl1 = ineq.sl1
     Σ = ga1/sl1
     φ = body.x[No][3]+dt*body.s1[3]
 
-    Nx'*(Σ*φ - ga1 - μ/sl1)
+    Nx'*(Σ*φ - μ/sl1)
 end
 
 function diagval(ineq,impact::Impact,body::Body,dt)

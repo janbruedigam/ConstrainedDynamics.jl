@@ -15,10 +15,10 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T}
         pid = body.id
         constraints = Impact(body)
 
-        s0 = 0
-        s1 = 0
-        γ0 = 0
-        γ1 = 0
+        s0 = 1.
+        s1 = 1.
+        γ0 = 1.
+        γ1 = 1.
 
         new{T,N,typeof(constraints)}(getGlobalID(),constraints,pid,s0,s1,γ0,γ1)
     end
@@ -27,8 +27,20 @@ end
 
 Base.length(c::InequalityConstraint{T,N}) where {T,N} = N
 
-function g(ineq::InequalityConstraint,body::Body,mechanism)
-    g(ineq,ineq.constraints,body,mechanism.dt,mechanism.No,mechanism.μ)
+function g(c::InequalityConstraint,mechanism)
+    g(c,c.constraints,getbody(mechanism,c.pid),mechanism.dt,mechanism.No)
+end
+
+function hμ(c::InequalityConstraint,mechanism)
+    c.sl1*c.ga1 - mechanism.μ
+end
+
+function h(c::InequalityConstraint,mechanism)
+    c.sl1*c.ga1
+end
+
+function dynineq(ineq::InequalityConstraint,body::Body,mechanism)
+    dynineq(ineq,ineq.constraints,body,mechanism.dt,mechanism.No,mechanism.μ)
 end
 
 function diagval(ineq::InequalityConstraint,body::Body,dt)

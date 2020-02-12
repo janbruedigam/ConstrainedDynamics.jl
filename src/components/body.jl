@@ -128,6 +128,10 @@ end
         GtλTof!(body,geteqconstraint(mechanism,cid),mechanism)
     end
 
+    for cid in ineqchildren(mechanism.graph,body.id)
+        NtγTof!(body,getineqconstraint(mechanism,cid),mechanism)
+    end
+
     return body.f
 end
 

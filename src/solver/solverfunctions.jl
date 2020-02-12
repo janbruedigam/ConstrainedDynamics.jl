@@ -7,7 +7,7 @@ end
 @inline function extendDandŝ!(diagonal::DiagonalEntry,body::Body,c::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
     diagonal.D += diagval(c,body,dt)
-    diagonal.ŝ += g(c,body,mechanism)
+    diagonal.ŝ += dynineq(c,body,mechanism)
     return
 end
 
@@ -173,6 +173,11 @@ end
     return dot(difference,difference)
 end
 
+@inline function normΔs(ineq::InequalityConstraint)
+    difference = [ineq.sl1-ineq.sl0;ineq.ga1-ineq.ga0]
+    return dot(difference,difference)
+end
+
 
 function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
@@ -187,9 +192,8 @@ function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,
 
     Δv = diagonal.ŝ
 
-    # SHOULD BE SWITCHED ???
-    ineqentry.sl = Σm*(γ - ineqentry.ga) - μ/γ
     ineqentry.ga = Σ*(φ - Nv*Δv) - μ/s
+    ineqentry.sl = Σm*(γ - ineqentry.ga) - μ/γ
 
 
     return
