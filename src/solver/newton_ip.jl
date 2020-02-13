@@ -6,14 +6,29 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
     ldu = mechanism.ldu
     dt = mechanism.dt
 
-    for ineq in mechanism.ineqconstraints
+    for ineq in ineqconstraints
         ineq.sl1 = 1.
         ineq.sl0 = 1.
         ineq.ga1 = 1.
         ineq.ga0 = 1.
     end
+    # for body in bodies
+    #     body.s1 *= 0
+    #     body.s0 *= 0
+    # end
+    # for constraint in eqconstraints
+    #     constraint.s1 *= 0
+    #     constraint.s0 *= 0
+    # end
 
-    # slgan = 0.
+    # for ineq in ineqconstraints
+    #     ineq.sl1 *= 100
+    #     ineq.sl0 *= 100
+    #     ineq.ga1 *= 100
+    #     ineq.ga0 *= 100
+    # end
+    #
+    # slgan = 0.0
     # for ineq in mechanism.ineqconstraints
     #     slgan += ineq.sl1*ineq.ga1
     # end
@@ -44,7 +59,7 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
             display(n)
             return
         else
-            if meritf1 < mechanism.μ && mechanism.μ > ε
+            if meritf1 < mechanism.μ*0.01 #&& mechanism.μ > ε*0.1
                 mechanism.μ = σ*mechanism.μ
                 meritf0 = meritf(mechanism)
             else

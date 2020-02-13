@@ -224,11 +224,14 @@ end
         mechanism.normf += normf(body,mechanism)
     end
     foreach(addNormf!,mechanism.eqconstraints,mechanism)
+    # mechanism.normf = sqrt(mechanism.normf)
     for ineq in mechanism.ineqconstraints
         mechanism.normf += normfμ(ineq,mechanism)
+        # mechanism.normf -= mechanism.μ*ineq.sl1
     end
 
-    return sqrt(mechanism.normf)
+    # return sqrt(mechanism.normf)
+    return mechanism.normf
 end
 
 @inline function normΔs(mechanism::Mechanism)

@@ -6,15 +6,15 @@ end
 
 @inline function extendDandŝ!(diagonal::DiagonalEntry,body::Body,c::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
-    diagonal.D += diagval(c,body,dt)
+    diagonal.D += diagval(c,body,dt) #+ SMatrix{6,6,Float64,36}(1e-5*I)
     diagonal.ŝ += dynineq(c,body,mechanism)
     return
 end
 
 @inline function setDandŝ!(d::DiagonalEntry{T,N},c::EqualityConstraint,mechanism::Mechanism) where {T,N}
-    d.D = @SMatrix zeros(T,N,N)
-    # μ = 1e-05
-    # d.D = SMatrix{N,N,T,N*N}(μ*I)
+    # d.D = @SMatrix zeros(T,N,N)
+    μ = 1e-5
+    d.D = SMatrix{N,N,T,N*N}(μ*I) # TODO Positiv because of weird system? fix generally
     d.ŝ = g(c,mechanism)
     return
 end
