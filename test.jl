@@ -115,5 +115,5 @@ mech = Mechanism(origin, links,constraints,ineqs,g=-9.81*0,tend=10.)
 # -0.3575718060311244
 link1.x[2] = [0.;0.0;0.]
 
-# simulate_ip!(mech,save=true,debug=true)
-# MaximalCoordinateDynamics.visualize(mech,shapes)
+simulate_ip!(mech,save=true,debug=true)
+MaximalCoordinateDynamics.visualize(mech,shapes)

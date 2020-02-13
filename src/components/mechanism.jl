@@ -202,7 +202,7 @@ end
     body.f -= Nx'*c.ga1
 
     D = [1 0 0 0 0 0;0 1 0 0 0 0]
-    body.f -= D'*c.b1
+    body.f -= D'*c.b1*c.ga1
     return
 end
 
@@ -279,15 +279,15 @@ function computeα!(mechanism::Mechanism)
             αmax = minimum([αmax;temp])
         end
 
-        if slf > 0
-            temp = minimum([1.;τ*ineq.slf1/slf])
-            αmax = minimum([αmax;temp])
-        end
-
-        if psi > 0
-            temp = minimum([1.;τ*ineq.psi1/psi])
-            αmax = minimum([αmax;temp])
-        end
+        # if slf > 0
+        #     temp = minimum([1.;τ*ineq.slf1/slf])
+        #     αmax = minimum([αmax;temp])
+        # end
+        #
+        # if psi > 0
+        #     temp = minimum([1.;τ*ineq.psi1/psi])
+        #     αmax = minimum([αmax;temp])
+        # end
     end
 
     mechanism.αmax = αmax

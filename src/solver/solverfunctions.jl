@@ -192,7 +192,7 @@ function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,
     dt = mechanism.dt
     μ = mechanism.μ
 
-
+    No = 2
 
     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
     Nv = dt*Nx
@@ -205,28 +205,28 @@ function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,
     psi1 = ineq.psi1
     b1 = ineq.b1
 
-    cf = 0.2
+    cf = 0.
 
     Ax = [-Nx-b1'*D;zeros(6)']
     Av = [Nv;zeros(6)']
-    H = [D*s1+2*psi1*b1 2*ga1*b1]
-    X = [0 0;2*cf^2*ga1 0]
-    B = [zeros(2)';b1']
+    H = [D*s1+2*psi1*ga1*b1 2*ga1^2*b1] #[D*s1+2*psi1*b1 2*ga1*b1]
+    X = [0 0;2*cf^2*ga1-2*ga1*b1'*b1 0] #[0 0;2*cf^2*ga1 0]
+    B = [zeros(2)';ga1^2*b1'] #[zeros(2)';b1']
     Z = [ga1 0;0 psi1]
     S = [sl1 0;0 slf1]
 
-    K = X + 1/2*1/(ga1*psi1)*B*H + Z\S
-    φ = body.x[2][3]+dt*body.s1[3]
-    ci = [φ;cf^2*ga1^2-b1'*b1]
+    K = X + 1/2*1/(ga1^2*psi1)*B*H + Z\S
+    φ = body.x[No][3]+dt*body.s1[3]
+    ci = [φ;cf^2*ga1^2-b1'*b1*ga1^2]
 
     Δv = diagonal.ŝ
-    temp1 = K\(ci+1/2*1/psi1*B*D*s1+B*b1-μ*inv(Z)*ones(2) - (Av+1/2*1/psi1*B*D)*Δv)
+    temp1 = K\(ci+1/2*1/(psi1*ga1)*B*D*s1+B*b1-μ*inv(Z)*ones(2) - (Av+1/2*1/(psi1*ga1)*B*D)*Δv) #K\(ci+1/2*1/psi1*B*D*s1+B*b1-μ*inv(Z)*ones(2) - (Av+1/2*1/psi1*B*D)*Δv)
     ineqentry.ga = temp1[1]
     ineqentry.psi = temp1[2]
-    temp2 = S*ones(2)-μ*inv(Z)*ones(2)-Z\S*[ineqentry.ga;ineqentry.psi]
+    temp2 = S*ones(2)-μ*inv(Z)*ones(2)-Z\S*temp1
     ineqentry.sl = temp2[1]
     ineqentry.slf = temp2[2]
-    ineqentry.b = 1/2*1/psi1*(D*s1 + 2*psi1*b1-D*Δv-1/ga1*H*temp1)
+    ineqentry.b = 1/2*1/(psi1*ga1)*(D*s1 + 2*psi1*ga1*b1-D*Δv-1/ga1*H*temp1)
 
     return
 end
