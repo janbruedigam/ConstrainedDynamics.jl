@@ -200,6 +200,9 @@ end
 @inline function NtγTof!(body::Body,c::InequalityConstraint,mechanism)
     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
     body.f -= Nx'*c.ga1
+
+    D = [1 0 0 0 0 0;0 1 0 0 0 0]
+    body.f -= D'*c.b1
     return
 end
 
@@ -263,6 +266,8 @@ function computeα!(mechanism::Mechanism)
     for ineq in mechanism.ineqconstraints
         sl = getineq(ldu,ineq.id).sl
         ga = getineq(ldu,ineq.id).ga
+        slf = getineq(ldu,ineq.id).slf
+        psi = getineq(ldu,ineq.id).psi
 
         if sl > 0
             temp = minimum([1.;τ*ineq.sl1/sl])
@@ -271,6 +276,16 @@ function computeα!(mechanism::Mechanism)
 
         if ga > 0
             temp = minimum([1.;τ*ineq.ga1/ga])
+            αmax = minimum([αmax;temp])
+        end
+
+        if slf > 0
+            temp = minimum([1.;τ*ineq.slf1/slf])
+            αmax = minimum([αmax;temp])
+        end
+
+        if psi > 0
+            temp = minimum([1.;τ*ineq.psi1/psi])
             αmax = minimum([αmax;temp])
         end
     end

@@ -31,13 +31,16 @@ end
 mutable struct InequalityEntry{T,N,N²} <: Entry{T}
     sl::Float64
     ga::Float64
+    slf::Float64
+    psi::Float64
+    b::Vector{Float64}
 
     function InequalityEntry{T,N}() where {T,N}
         N² = N^2
         sl = 0
         ga = 0
 
-        new{T,N,N²}(sl,ga)
+        new{T,N,N²}(sl,ga,0,0,zeros(2))
     end
 end
 

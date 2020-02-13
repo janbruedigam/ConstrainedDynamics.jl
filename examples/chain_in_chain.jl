@@ -57,22 +57,22 @@ link8 = Body(b4)
 setInit!(link7,link8,vert12,vert21,q=q8)
 
 # Constraints
-joint0to1 = Constraint(Revolute(origin,link1,zeros(3),vert11,ex))
-joint1to23 = Constraint(Revolute(link1,link2,vert12,vert21,ex),Cylindrical(link1,link3,vert11,vert11,ex))
-joint3to4 = Constraint(Revolute(link3,link4,vert12,vert21,ex))
-joint2to4 = Constraint(Revolute(link2,link4,vert22,vert22,ex))
+joint0to1 = EqualityConstraint(Revolute(origin,link1,zeros(3),vert11,ex))
+joint1to23 = EqualityConstraint(Revolute(link1,link2,vert12,vert21,ex),Cylindrical(link1,link3,vert11,vert11,ex))
+joint3to4 = EqualityConstraint(Revolute(link3,link4,vert12,vert21,ex))
+joint2to4 = EqualityConstraint(Revolute(link2,link4,vert22,vert22,ex))
 
-joint4to5 = Constraint(Revolute(link4,link5,zeros(3),vert11,ex))
-joint5to67 = Constraint(Revolute(link5,link6,vert12,vert21,ex),Cylindrical(link5,link7,vert11,vert11,ex))
-joint7to8 = Constraint(Revolute(link7,link8,vert12,vert21,ex))
-joint6to8 = Constraint(Revolute(link6,link8,vert22,vert22,ex))
+joint4to5 = EqualityConstraint(Revolute(link4,link5,zeros(3),vert11,ex))
+joint5to67 = EqualityConstraint(Revolute(link5,link6,vert12,vert21,ex),Cylindrical(link5,link7,vert11,vert11,ex))
+joint7to8 = EqualityConstraint(Revolute(link7,link8,vert12,vert21,ex))
+joint6to8 = EqualityConstraint(Revolute(link6,link8,vert22,vert22,ex))
 
 
 links = [link1; link2; link3; link4; link5; link6; link7; link8]
 constraints = [joint0to1; joint1to23; joint3to4; joint2to4; joint4to5;joint5to67;joint7to8;joint6to8]
 shapes = [b1,b2,b3,b4]
 
-mech = Mechanism(origin,links, constraints)
+mech = Mechanism(origin,links, constraints,InequalityConstraint{Float64}[])
 
 simulate!(mech,save=true)
 MaximalCoordinateDynamics.visualize(mech,shapes)

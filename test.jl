@@ -19,7 +19,7 @@ b2 = Box(0.1,0.1,.1,.1,color=RGBA(1.,0.,0.))
 origin = Origin{Float64}()
 
 link1 = Body(box1)
-setInit!(origin,link1,[0.;0;0.6],zeros(3))
+setInit!(origin,link1,[0.;0;0.],zeros(3))
 
 # link1 = Body(b1)
 # setInit!(origin,link1,[0;0;0.0],[0;0;-length1],q = Quaternion(RotX(0.3)))
@@ -95,25 +95,25 @@ joint1to9 = EqualityConstraint(Fixed(link1,link9,[-length1/2;-length1/2;length1/
 # links = [link1;link2;link3;link4;link5;link6;link7;link8;link9]
 # constraints = [joint0to1;joint1to2;joint1to3;joint1to4;joint1to5;joint1to6;joint1to7;joint1to8;joint1to9]
 # ineqs = [joint2;joint3;joint4;joint5;joint6;joint7;joint8;joint9]
-links = [link1;link2]
-constraints = [joint0to1;joint1to2]
-ineqs = [joint2]
+links = [link1]
+constraints = [joint0to1]
+ineqs = [joint1]
 # links = [link1]
 # constraints = [joint0to1]
 # ineqs = [joint1]
 shapes = [box1;b1;b2]
 
 
-mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=10.)
-link1.q[2] = Quaternion(AngleAxis(-rand()*.1,rand(3)-ones(3)*0.5...))
+mech = Mechanism(origin, links,constraints,ineqs,g=-9.81*0,tend=10.)
+# link1.q[2] = Quaternion(AngleAxis(-rand()*.1,rand(3)-ones(3)*0.5...))
 # link1.q[2] = Quaternion(SVector([0.927424899;-0.324817832;-0.198234505;-0.315485452]...))
 # link1.q[2] = Quaternion(SVector([0.885818;-0.0789202;-0.274472;-0.365735]...))
-qtemp = link1.q[2]
+# qtemp = link1.q[2]
 # 0.9127362490430289
 # -0.19667611676218716
 # -0.01932481073253633
 # -0.3575718060311244
-link1.x[2] = [0.;0.;0.6]
+link1.x[2] = [0.;0.0;0.]
 
-simulate_ip!(mech,save=true,debug=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+# simulate_ip!(mech,save=true,debug=true)
+# MaximalCoordinateDynamics.visualize(mech,shapes)

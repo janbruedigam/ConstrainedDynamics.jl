@@ -97,25 +97,25 @@ if N>1
 end
 
 # Constraints
-joint0to1 = Constraint(Revolute(origin,link1,zeros(3),vert11,ex))
-joint1to23 = Constraint(Revolute(link1,link2,vert12,vert21,ex),Cylindrical(link1,link3,vert11,vert11,ex))
-joint3to4 = Constraint(Revolute(link3,link4,vert12,vert21,ex))
-joint2to4 = Constraint(Revolute(link2,link4,vert22,vert22,ex))
+joint0to1 = EqualityConstraint(Revolute(origin,link1,zeros(3),vert11,ex))
+joint1to23 = EqualityConstraint(Revolute(link1,link2,vert12,vert21,ex),Cylindrical(link1,link3,vert11,vert11,ex))
+joint3to4 = EqualityConstraint(Revolute(link3,link4,vert12,vert21,ex))
+joint2to4 = EqualityConstraint(Revolute(link2,link4,vert22,vert22,ex))
 
 constraints = [joint0to1; joint1to23; joint3to4; joint2to4]
 
 for i=2:N
     @eval begin
-        $(Symbol("joint",(i-1)*4,"to",(i-1)*4+1)) = Constraint(Revolute($links[($i-1)*4],$links[($i-1)*4+1],vert22,vert11,ex))
+        $(Symbol("joint",(i-1)*4,"to",(i-1)*4+1)) = EqualityConstraint(Revolute($links[($i-1)*4],$links[($i-1)*4+1],vert22,vert11,ex))
         push!($constraints,$(Symbol("joint",(i-1)*4,"to",(i-1)*4+1)))
 
-        $(Symbol("joint",(i-1)*4+1,"to",(i-1)*4+2,(i-1)*4+3)) = Constraint(Revolute($links[($i-1)*4+1],$links[($i-1)*4+2],vert12,vert21,ex),Cylindrical($links[($i-1)*4+1],$links[($i-1)*4+3],vert11,vert11,ex))
+        $(Symbol("joint",(i-1)*4+1,"to",(i-1)*4+2,(i-1)*4+3)) = EqualityConstraint(Revolute($links[($i-1)*4+1],$links[($i-1)*4+2],vert12,vert21,ex),Cylindrical($links[($i-1)*4+1],$links[($i-1)*4+3],vert11,vert11,ex))
         push!($constraints,$(Symbol("joint",(i-1)*4+1,"to",(i-1)*4+2,(i-1)*4+3)))
 
-        $(Symbol("joint",(i-1)*4+3,"to",(i-1)*4+4)) = Constraint(Revolute($links[($i-1)*4+3],$links[($i-1)*4+4],vert12,vert21,ex))
+        $(Symbol("joint",(i-1)*4+3,"to",(i-1)*4+4)) = EqualityConstraint(Revolute($links[($i-1)*4+3],$links[($i-1)*4+4],vert12,vert21,ex))
         push!($constraints,$(Symbol("joint",(i-1)*4+3,"to",(i-1)*4+4)))
 
-        $(Symbol("joint",(i-1)*4+2,"to",(i-1)*4+4)) = Constraint(Revolute($links[($i-1)*4+2],$links[($i-1)*4+4],vert22,vert22,ex))
+        $(Symbol("joint",(i-1)*4+2,"to",(i-1)*4+4)) = EqualityConstraint(Revolute($links[($i-1)*4+2],$links[($i-1)*4+4],vert22,vert22,ex))
         push!($constraints,$(Symbol("joint",(i-1)*4+2,"to",(i-1)*4+4)))
     end
 end

@@ -34,16 +34,16 @@ link5 = Body(b5)
 setInit!(link1,link5,vert12,zeros(3),q=q1,τ=[0.0;0.;0.])
 
 # Constraints
-socket0to1 = Constraint(Spherical(origin,link1,zeros(3),vert11))
-joint1to5= Constraint(Revolute(link1,link5,vert12,zeros(3),ex))
+socket0to1 = EqualityConstraint(Spherical(origin,link1,zeros(3),vert11))
+joint1to5= EqualityConstraint(Revolute(link1,link5,vert12,zeros(3),ex))
 
 links = [link1;link5]
 constraints = [socket0to1;joint1to5]
 shapes = [b1;b5]
 
 
-mech = Mechanism(origin,links, constraints;tend=20.0,dt=0.00025)
-link5.q[2] = Quaternion(RotX(0.015))
+mech = Mechanism(origin,links, constraints;tend=10.0,dt=0.001)
+link5.q[2] = Quaternion(RotX(0.05))
 
 simulate!(mech,save=true)
 MaximalCoordinateDynamics.visualize(mech,shapes)

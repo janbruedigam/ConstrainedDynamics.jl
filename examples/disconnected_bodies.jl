@@ -22,8 +22,8 @@ link2 = Body(box2)
 setInit!(origin,link2,[0.;-1.;0.],zeros(3))
 
 # Constraints
-joint1 = Constraint(OriginConnection(origin,link1))
-joint2 = Constraint(OriginConnection(origin,link2))
+joint1 = EqualityConstraint(OriginConnection(origin,link1))
+joint2 = EqualityConstraint(OriginConnection(origin,link2))
 
 links = [link1;link2]
 constraints = [joint1;joint2]

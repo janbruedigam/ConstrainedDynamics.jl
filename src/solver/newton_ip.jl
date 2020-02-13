@@ -11,10 +11,14 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
         ineq.sl0 = 1.
         ineq.ga1 = 1.
         ineq.ga0 = 1.
+        ineq.slf1 = 1.
+        ineq.slf0 = 1.
+        ineq.psi1 = 1.
+        ineq.psi0 = 1.
     end
     # for body in bodies
-    #     body.s1 *= 0
-    #     body.s0 *= 0
+    #     body.s1 *= 1.
+    #     body.s0 *= 1.
     # end
     # for constraint in eqconstraints
     #     constraint.s1 *= 0
@@ -117,5 +121,8 @@ end
 @inline function lineStep!(node::InequalityConstraint,entry,e,α)
     node.sl1 = node.sl0 - 1/(2^e)*α*entry.sl
     node.ga1 = node.ga0 - 1/(2^e)*α*entry.ga
+    node.slf1 = node.slf0 - 1/(2^e)*α*entry.slf
+    node.psi1 = node.psi0 - 1/(2^e)*α*entry.psi
+    node.b1 = node.b0 - 1/(2^e)*α*entry.b
     return
 end

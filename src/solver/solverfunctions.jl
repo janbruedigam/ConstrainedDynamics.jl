@@ -127,9 +127,9 @@ function solve!(graph::Graph,ldu::SparseLDU,mechanism)
     end
 end
 
-@inline update!(body::Body,ldu::SparseLDU,αsmax) = update!(body,getentry(ldu,body.id),αsmax)
-function update!(body::Body,diagonal::DiagonalEntry,αsmax)
-    body.s1 = body.s0 - αsmax*diagonal.ŝ
+@inline update!(component::Component,ldu::SparseLDU) = update!(component,getentry(ldu,component.id))
+function update!(component::Component,diagonal::DiagonalEntry)
+    component.s1 = component.s0 - diagonal.ŝ
     return
 end
 
@@ -143,6 +143,9 @@ end
 function update!(ineq::InequalityConstraint,entry::InequalityEntry,αsmax,αγmax)
     ineq.sl1 = ineq.sl0 - αsmax*entry.sl
     ineq.ga1 = ineq.ga0 - αγmax*entry.ga
+    ineq.slf1 = ineq.slf0 - αsmax*entry.slf
+    ineq.psi1 = ineq.psi0 - αγmax*entry.psi
+    ineq.b1 = ineq.b0 - αsmax*entry.b
     return
 end
 
@@ -159,12 +162,18 @@ end
 @inline function s0tos1!(ineq::InequalityConstraint)
     ineq.sl1 = ineq.sl0
     ineq.ga1 = ineq.ga0
+    ineq.slf1 = ineq.slf0
+    ineq.psi1 = ineq.psi0
+    ineq.b1 = ineq.b0
     return
 end
 
 @inline function s1tos0!(ineq::InequalityConstraint)
     ineq.sl0 = ineq.sl1
     ineq.ga0 = ineq.ga1
+    ineq.slf0 = ineq.slf1
+    ineq.psi0 = ineq.psi1
+    ineq.b0 = ineq.b1
     return
 end
 
@@ -181,20 +190,43 @@ end
 
 function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
+    μ = mechanism.μ
+
+
+
     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
     Nv = dt*Nx
-    γ = ineq.ga1
-    s = ineq.sl1
-    Σ = γ/s
-    Σm = s/γ
-    μ = mechanism.μ
+    D = [1 0 0 0 0 0;0 1 0 0 0 0]
+
+    s1 = body.s1
+    ga1 = ineq.ga1
+    sl1 = ineq.sl1
+    slf1 = ineq.slf1
+    psi1 = ineq.psi1
+    b1 = ineq.b1
+
+    cf = 0.2
+
+    Ax = [-Nx-b1'*D;zeros(6)']
+    Av = [Nv;zeros(6)']
+    H = [D*s1+2*psi1*b1 2*ga1*b1]
+    X = [0 0;2*cf^2*ga1 0]
+    B = [zeros(2)';b1']
+    Z = [ga1 0;0 psi1]
+    S = [sl1 0;0 slf1]
+
+    K = X + 1/2*1/(ga1*psi1)*B*H + Z\S
     φ = body.x[2][3]+dt*body.s1[3]
+    ci = [φ;cf^2*ga1^2-b1'*b1]
 
     Δv = diagonal.ŝ
-
-    ineqentry.ga = Σ*(φ - Nv*Δv) - μ/s
-    ineqentry.sl = Σm*(γ - ineqentry.ga) - μ/γ
-
+    temp1 = K\(ci+1/2*1/psi1*B*D*s1+B*b1-μ*inv(Z)*ones(2) - (Av+1/2*1/psi1*B*D)*Δv)
+    ineqentry.ga = temp1[1]
+    ineqentry.psi = temp1[2]
+    temp2 = S*ones(2)-μ*inv(Z)*ones(2)-Z\S*[ineqentry.ga;ineqentry.psi]
+    ineqentry.sl = temp2[1]
+    ineqentry.slf = temp2[2]
+    ineqentry.b = 1/2*1/psi1*(D*s1 + 2*psi1*b1-D*Δv-1/ga1*H*temp1)
 
     return
 end

@@ -23,7 +23,7 @@ link1 = Body(box)
 setInit!(origin,link1,zeros(3),p1,q=q1)
 
 # Constraints
-joint_between_origin_and_link1 = Constraint(Revolute(origin,link1,zeros(3),p1,joint_axis))
+joint_between_origin_and_link1 = EqualityConstraint(Revolute(origin,link1,zeros(3),p1,joint_axis))
 
 links = [link1]
 constraints = [joint_between_origin_and_link1]

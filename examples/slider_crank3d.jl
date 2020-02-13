@@ -38,14 +38,14 @@ link3 = Body(box2)
 setInit!(origin,link3,p2,zeros(3))
 
 # Constraints
-joint0to23 = Constraint(Revolute(origin,link2,p3+p1,zeros(3),ez),Revolute(origin,link3,p2,zeros(3),ex))
-joint1to23 = Constraint(Spherical(link1,link2,p1,p3),Spherical(link1,link3,p0,p3))
+joint0to23 = EqualityConstraint(Revolute(origin,link2,p3+p1,zeros(3),ez),Revolute(origin,link3,p2,zeros(3),ex))
+joint1to23 = EqualityConstraint(Spherical(link1,link2,p1,p3),Spherical(link1,link3,p0,p3))
 
 
 
 links = [link1;link2;link3]
 constraints = [joint0to23;joint1to23]
-shapes = [box,cyl,box2,indicator]
+shapes = [box,cyl,box2]
 
 mech = Mechanism(origin,links,constraints,g=0.,tend=20.)
 link2.q[2] = Quaternion(RotZ(0.01))

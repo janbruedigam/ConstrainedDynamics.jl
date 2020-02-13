@@ -33,8 +33,8 @@ link3 = Body(b1)
 setInit!(origin,link3,zeros(3),vert11,q=q3,τ=[0.;0.;2.])
 
 # Constraints
-joint0to123 = Constraint(Planar(origin,link1,zeros(3),vert12,ez),Planar(origin,link2,zeros(3),vert12,ez),Planar(origin,link3,zeros(3),vert12,ez))
-joint1to23 = Constraint(Spherical(link1,link2,vert11,vert11),Spherical(link1,link3,vert11,vert11))
+joint0to123 = EqualityConstraint(Planar(origin,link1,zeros(3),vert12,ez),Planar(origin,link2,zeros(3),vert12,ez),Planar(origin,link3,zeros(3),vert12,ez))
+joint1to23 = EqualityConstraint(Spherical(link1,link2,vert11,vert11),Spherical(link1,link3,vert11,vert11))
 
 
 

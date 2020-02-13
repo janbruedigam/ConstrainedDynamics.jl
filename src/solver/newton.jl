@@ -1,7 +1,7 @@
 function newton!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, lineIter=10, warning::Bool=false) where {T,Nl}
     # n = 1
     bodies = mechanism.bodies
-    constraints = mechanism.constraints
+    constraints = mechanism.eqconstraints
     graph = mechanism.graph
     ldu = mechanism.ldu
     dt = mechanism.dt
@@ -10,7 +10,7 @@ function newton!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, 
     for n=Base.OneTo(newtonIter)
         setentries!(mechanism)
         factor!(graph,ldu)
-        solve!(graph,ldu) # x̂1 for each body and constraint
+        solve!(graph,ldu,mechanism) # x̂1 for each body and constraint
 
         foreach(update!,bodies,ldu)
         foreach(update!,constraints,ldu)
