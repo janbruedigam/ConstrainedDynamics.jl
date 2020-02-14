@@ -162,8 +162,6 @@ end
 @inline function s0tos1!(ineq::InequalityConstraint)
     ineq.sl1 = ineq.sl0
     ineq.ga1 = ineq.ga0
-    ineq.slf1 = ineq.slf0
-    ineq.psi1 = ineq.psi0
     ineq.b1 = ineq.b0
     return
 end
@@ -171,8 +169,6 @@ end
 @inline function s1tos0!(ineq::InequalityConstraint)
     ineq.sl0 = ineq.sl1
     ineq.ga0 = ineq.ga1
-    ineq.slf0 = ineq.slf1
-    ineq.psi0 = ineq.psi1
     ineq.b0 = ineq.b1
     return
 end
@@ -191,62 +187,32 @@ end
 function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
     μ = mechanism.μ
-
     No = 2
+
+    φ = body.x[No][3]+dt*body.s1[3]
+    cf = ineq.constraints.cf
 
     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
     Nv = dt*Nx
-    D = [1 0 0 0 0 0;0 1 0 0 0 0]
+    D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
 
     s1 = body.s1
     ga1 = ineq.ga1
     sl1 = ineq.sl1
-    slf1 = ineq.slf1
-    psi1 = ineq.psi1
     b1 = ineq.b1
 
-    cf = 0.
-
-    Ax = [Nx+b1'*D;zeros(6)']
-    Av = [Nv;zeros(6)']
-    H = [D*s1+2*psi1*ga1*b1 2*ga1^2*b1] #[D*s1+2*psi1*b1 2*ga1*b1]
-    X = [0 0;2*cf^2*ga1-2*ga1*b1'*b1 0] #[0 0;2*cf^2*ga1 0]
-    B = [zeros(2)';ga1^2*b1'] #[zeros(2)';b1']
-    Z = [ga1 0;0 psi1]
-    S = [sl1 0;0 slf1]
-
-    K = X + 1/2*1/(ga1^2*psi1)*B*H + Z\S
-    φ = body.x[No][3]+dt*body.s1[3]
-    ci = [φ;cf^2*ga1^2-b1'*b1*ga1^2]
-
     Δv = diagonal.ŝ
-    temp1 = K\(ci+1/2*1/(psi1*ga1)*B*D*s1+B*b1-μ*inv(Z)*ones(2) - (Av+1/2*1/(psi1*ga1)*B*D)*Δv) #K\(ci+1/2*1/psi1*B*D*s1+B*b1-μ*inv(Z)*ones(2) - (Av+1/2*1/psi1*B*D)*Δv)
-    ineqentry.ga = temp1[1]
-    ineqentry.psi = temp1[2]
-    temp2 = S*ones(2)-μ*inv(Z)*ones(2)-Z\S*temp1
-    ineqentry.sl = temp2[1]
-    ineqentry.slf = temp2[2]
-    ineqentry.b = 1/2*1/(psi1*ga1)*(D*s1 + 2*psi1*ga1*b1-D*Δv-1/ga1*H*temp1)
+    ineqentry.ga = ga1/sl1*φ - μ/sl1 - ga1/sl1*Nv*Δv
+    ineqentry.sl = sl1 - μ/ga1 - sl1/ga1*ineqentry.ga
+
+    Dv = D*s1
+
+    if Dv == zeros(2)
+        ineqentry.b = b1
+    else
+        X = cf*ga1*D + b1*s1'*D'*D/norm(Dv)
+        ineqentry.b = 1/norm(Dv)*(cf*ga1*Dv + b1*norm(Dv) - X*Δv - cf*Dv*ineqentry.ga)
+    end
 
     return
 end
-
-# function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
-#     dt = mechanism.dt
-#     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-#     Nv = dt*Nx
-#     γ = ineq.ga1
-#     s = ineq.sl1
-#     Σ = γ/s
-#     Σm = s/γ
-#     μ = mechanism.μ
-#     φ = body.x[2][3]+dt*body.s1[3]
-#
-#     Δv = diagonal.ŝ
-#
-#     ineqentry.ga = Σ*(φ - Nv*Δv) - μ/s
-#     ineqentry.sl = Σm*(γ - ineqentry.ga) - μ/γ
-#
-#
-#     return
-# end

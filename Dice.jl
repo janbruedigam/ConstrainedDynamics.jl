@@ -52,15 +52,16 @@ link9 = Body(b2)
 setInit!(link1,link9,[-length1/2;-length1/2;length1/2],zeros(3))
 
 # # Constraints
-joint1 = InequalityConstraint(link1)
-joint2 = InequalityConstraint(link2)
-joint3 = InequalityConstraint(link3)
-joint4 = InequalityConstraint(link4)
-joint5 = InequalityConstraint(link5)
-joint6 = InequalityConstraint(link6)
-joint7 = InequalityConstraint(link7)
-joint8 = InequalityConstraint(link8)
-joint9 = InequalityConstraint(link9)
+cfr = 0.1
+joint1 = InequalityConstraint(link1,cfr)
+joint2 = InequalityConstraint(link2,cfr)
+joint3 = InequalityConstraint(link3,cfr)
+joint4 = InequalityConstraint(link4,cfr)
+joint5 = InequalityConstraint(link5,cfr)
+joint6 = InequalityConstraint(link6,cfr)
+joint7 = InequalityConstraint(link7,cfr)
+joint8 = InequalityConstraint(link8,cfr)
+joint9 = InequalityConstraint(link9,cfr)
 #
 # links = [link1]
 # constraints = [joint1]

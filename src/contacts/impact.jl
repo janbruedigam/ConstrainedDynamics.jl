@@ -1,7 +1,8 @@
 mutable struct Impact{T}
+    cf::Float64
 
-    function Impact(body::Body{T}) where T
-        new{T}()
+    function Impact(body::Body{T},cf) where T
+        new{T}(cf)
     end
 end
 
@@ -10,167 +11,57 @@ function g(ineq,impact::Impact,body::Body,dt,No)
     φ = body.x[No][3]+dt*body.s1[3]
     f1 = φ - ineq.sl1
 
-    D = [1 0 0 0 0 0;0 1 0 0 0 0]
-    cf = 0.
+    cf = impact.cf
+    D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
+    Dv = D*body.s1
+    f2 = 0.
+    if Dv == zeros(2)
+        f2 = ineq.b1
+    else
+        f2 = cf*ineq.ga1*Dv + ineq.b1*norm(Dv)
+    end
 
-    f2 = cf^2*ineq.ga1^2 - ineq.b1'*ineq.b1*ineq.ga1^2 - ineq.slf1 #cf^2*ineq.ga1^2 - ineq.b1'*ineq.b1
-    f3 = D*body.s1*ineq.ga1 + 2*ineq.psi1*ineq.ga1^2*ineq.b1 #D*body.s1*ineq.ga1 + 2*ineq.psi1*ineq.ga1*ineq.b1
-
-    [f1;f2;f3]
+    [f1;f2]
 end
 
 function dynineq(ineq,impact::Impact,body::Body,dt,No,μ)
-    No = 2
+    φ = body.x[No][3]+dt*body.s1[3]
+    cf = impact.cf
 
     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
     Nv = dt*Nx
-    D = [1 0 0 0 0 0;0 1 0 0 0 0]
+    D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
 
     s1 = body.s1
     ga1 = ineq.ga1
     sl1 = ineq.sl1
-    slf1 = ineq.slf1
-    psi1 = ineq.psi1
-    b1 = ineq.b1
 
-    cf = 0.
-
-    Ax = [Nx+b1'*D;zeros(6)']
-    Av = [Nv;zeros(6)']
-    H = [D*s1+2*psi1*ga1*b1 2*ga1^2*b1] #[D*s1+2*psi1*b1 2*ga1*b1]
-    X = [0 0;2*cf^2*ga1-2*ga1*b1'*b1 0] #[0 0;2*cf^2*ga1 0]
-    B = [zeros(2)';ga1^2*b1'] #[zeros(2)';b1']
-    Z = [ga1 0;0 psi1]
-    S = [sl1 0;0 slf1]
-
-    K = X + 1/2*1/(ga1^2*psi1)*B*H + Z\S
-    φ = body.x[No][3]+dt*body.s1[3]
-    ci = [φ;cf^2*ga1^2-b1'*b1*ga1^2]
-
-    1/2*D'*(1/psi1*D*s1+2*b1*ga1)-(1/2*D'*1/(psi1*ga1)*H-Ax')/K*(ci+1/2*1/(psi1*ga1)*B*D*s1+B*b1-μ*inv(Z)*ones(2)) #1/2*ga1*D'*(1/psi1*D*s1+2*b1)-(1/2*D'*1/psi1*H-Ax')/K*(ci+1/2*1/psi1*B*D*s1+B*b1-μ*inv(Z)*ones(2))
+    Dv = D*s1
+    if Dv == zeros(2)
+        return Nx'*(ga1/sl1*φ - μ/sl1)
+    else
+        return Nx'*(ga1/sl1*φ - μ/sl1) + cf*D'*D/norm(Dv)*s1*(ga1-ga1/sl1*φ+μ/sl1)
+    end
 end
 
 function diagval(ineq,impact::Impact,body::Body,dt)
     No = 2
+    cf = impact.cf
 
     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
     Nv = dt*Nx
-    D = [1 0 0 0 0 0;0 1 0 0 0 0]
+    D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
 
     s1 = body.s1
     ga1 = ineq.ga1
     sl1 = ineq.sl1
-    slf1 = ineq.slf1
-    psi1 = ineq.psi1
     b1 = ineq.b1
 
-    cf = 0.
-
-    Ax = [Nx+b1'*D;zeros(6)']
-    Av = [Nv;zeros(6)']
-    H = [D*s1+2*psi1*ga1*b1 2*ga1^2*b1] #[D*s1+2*psi1*b1 2*ga1*b1]
-    X = [0 0;2*cf^2*ga1-2*ga1*b1'*b1 0] #[0 0;2*cf^2*ga1 0]
-    B = [zeros(2)';ga1^2*b1'] #[zeros(2)';b1']
-    Z = [ga1 0;0 psi1]
-    S = [sl1 0;0 slf1]
-
-    K = X + 1/2*1/(ga1^2*psi1)*B*H + Z\S
-    φ = body.x[No][3]+dt*body.s1[3]
-    ci = [φ;cf^2*ga1^2-b1'*b1*ga1^2]
-
-    1/2/psi1*D'*D + (Ax' - 1/2*D'*1/(psi1*ga1)*H)/K*(Av+1/2*1/(psi1*ga1)*B*D) #1/2*ga1/psi1*D'*D + (Ax' - 1/2*D'*1/psi1*H)/K*(Av+1/2*1/psi1*B*D)
+    Dv = D*s1
+    if Dv == zeros(2)
+        return Nx'*ga1/sl1*Nv
+    else
+        X = cf*ga1*D + b1*s1'*D'*D/norm(Dv)
+        return D'*X/norm(Dv) - cf*D'*D/norm(Dv)*s1*ga1/sl1*Nv + Nx'*ga1/sl1*Nv
+    end
 end
-
-# function g(ineq,impact::Impact,body::Body,dt,No)
-#     φ = body.x[No][3]+dt*body.s1[3]
-#     φ - ineq.sl1
-# end
-#
-# function dynineq(ineq,impact::Impact,body::Body,dt,No,μ)
-#     No = 2
-#
-#     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-#     Nv = dt*Nx
-#     D = [1 0 0 0 0 0;0 1 0 0 0 0]
-#
-#     s1 = body.s1
-#     ga1 = ineq.ga1
-#     sl1 = ineq.sl1
-#     slf1 = ineq.slf1
-#     psi1 = ineq.psi1
-#     b1 = ineq.b1
-#
-#     cf = 0.
-#
-#     Ax = [Nx+b1'*D;zeros(6)']
-#     Av = [Nv;zeros(6)']
-#     H = [D*s1+2*psi1*ga1*b1 2*ga1^2*b1] #[D*s1+2*psi1*b1 2*ga1*b1]
-#     X = [0 0;2*cf^2*ga1-2*ga1*b1'*b1 0] #[0 0;2*cf^2*ga1 0]
-#     B = [zeros(2)';ga1^2*b1'] #[zeros(2)';b1']
-#     Z = [ga1 0;0 psi1]
-#     S = [sl1 0;0 slf1]
-#
-#     K = X + 1/2*1/(ga1^2*psi1)*B*H + Z\S
-#     φ = body.x[No][3]+dt*body.s1[3]
-#     ci = [φ;cf^2*ga1^2-b1'*b1*ga1^2]
-#
-#     1/2*D'*(1/psi1*D*s1+2*b1*ga1)-(1/2*D'*1/(psi1*ga1)*H-Ax')/K*(ci+1/2*1/(psi1*ga1)*B*D*s1+B*b1-μ*inv(Z)*ones(2)) #1/2*ga1*D'*(1/psi1*D*s1+2*b1)-(1/2*D'*1/psi1*H-Ax')/K*(ci+1/2*1/psi1*B*D*s1+B*b1-μ*inv(Z)*ones(2))
-#
-#
-#
-#
-#
-#
-#
-#     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-#     ga1 = ineq.ga1
-#     sl1 = ineq.sl1
-#     Σ = ga1/sl1
-#     φ = body.x[No][3]+dt*body.s1[3]
-#
-#     Nx'*(Σ*φ - μ/sl1)
-# end
-#
-# function diagval(ineq,impact::Impact,body::Body,dt)
-#     No = 2
-#
-#     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-#     Nv = dt*Nx
-#     D = [1 0 0 0 0 0;0 1 0 0 0 0]
-#
-#     s1 = body.s1
-#     ga1 = ineq.ga1
-#     sl1 = ineq.sl1
-#     slf1 = ineq.slf1
-#     psi1 = ineq.psi1
-#     b1 = ineq.b1
-#
-#     cf = 0.
-#
-#     Ax = [Nx+b1'*D;zeros(6)']
-#     Av = [Nv;zeros(6)']
-#     H = [D*s1+2*psi1*ga1*b1 2*ga1^2*b1] #[D*s1+2*psi1*b1 2*ga1*b1]
-#     X = [0 0;2*cf^2*ga1-2*ga1*b1'*b1 0] #[0 0;2*cf^2*ga1 0]
-#     B = [zeros(2)';ga1^2*b1'] #[zeros(2)';b1']
-#     Z = [ga1 0;0 psi1]
-#     S = [sl1 0;0 slf1]
-#
-#     K = X + 1/2*1/(ga1^2*psi1)*B*H + Z\S
-#     φ = body.x[No][3]+dt*body.s1[3]
-#     ci = [φ;cf^2*ga1^2-b1'*b1*ga1^2]
-#
-#     1/2/psi1*D'*D + (Ax' - 1/2*D'*1/(psi1*ga1)*H)/K*(Av+1/2*1/(psi1*ga1)*B*D) #1/2*ga1/psi1*D'*D + (Ax' - 1/2*D'*1/psi1*H)/K*(Av+1/2*1/psi1*B*D)
-#
-#
-#
-#
-#
-#
-#     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-#     Nv = dt*Nx
-#     ga1 = ineq.ga1
-#     sl1 = ineq.sl1
-#     Σ = ga1/sl1
-#
-#     Nx'*Σ*Nv
-# end

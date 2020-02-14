@@ -10,24 +10,24 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T}
     ga0::Float64
     ga1::Float64
 
-    slf0::Float64
-    slf1::Float64
-    psi0::Float64
-    psi1::Float64
+    # slf0::Float64
+    # slf1::Float64
+    # psi0::Float64
+    # psi1::Float64
     b0::Vector{Float64}
     b1::Vector{Float64}
 
-    function InequalityConstraint(body::Body{T}) where T
+    function InequalityConstraint(body::Body{T},cf) where T
         N = 1
         pid = body.id
-        constraints = Impact(body)
+        constraints = Impact(body,cf)
 
         s0 = 1.
         s1 = 1.
         γ0 = 1.
         γ1 = 1.
 
-        new{T,N,typeof(constraints)}(getGlobalID(),constraints,pid,s0,s1,γ0,γ1,1,1,1,1,zeros(2),zeros(2))
+        new{T,N,typeof(constraints)}(getGlobalID(),constraints,pid,s0,s1,γ0,γ1,zeros(2),zeros(2))
     end
 end
 
@@ -39,20 +39,12 @@ function g(c::InequalityConstraint,mechanism)
 end
 
 function hμ(c::InequalityConstraint,mechanism)
-    [c.sl1*c.ga1 - mechanism.μ;c.slf1*c.psi1 - mechanism.μ]
+    c.sl1*c.ga1 - mechanism.μ
 end
 
 function h(c::InequalityConstraint,mechanism)
-    [c.sl1*c.ga1;c.slf1*c.psi1]
+    c.sl1*c.ga1
 end
-
-# function hμ(c::InequalityConstraint,mechanism)
-#     c.sl1*c.ga1 - mechanism.μ
-# end
-#
-# function h(c::InequalityConstraint,mechanism)
-#     c.sl1*c.ga1
-# end
 
 function dynineq(ineq::InequalityConstraint,body::Body,mechanism)
     dynineq(ineq,ineq.constraints,body,mechanism.dt,mechanism.No,mechanism.μ)

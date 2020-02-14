@@ -49,8 +49,10 @@ joint0to1 = EqualityConstraint(OriginConnection(origin,link1))
 joint1to2 = EqualityConstraint(Revolute(link1,link2,[0.;0;length1],[0.;0;length1],joint_axis))
 joint1to3 = EqualityConstraint(Fixed(link1,link3,[0.;0;-length1],zeros(3)))
 joint2to4 = EqualityConstraint(Fixed(link2,link4,[0.;0;-length1],zeros(3)))
-joint3ineq = InequalityConstraint(link3)
-joint4ineq = InequalityConstraint(link4)
+
+cfr = 0.1
+joint3ineq = InequalityConstraint(link3,cfr)
+joint4ineq = InequalityConstraint(link4,cfr)
 
 links = [link1;link2;link3;link4]
 constraints = [joint0to1;joint1to2;joint1to3;joint2to4]
