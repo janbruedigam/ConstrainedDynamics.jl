@@ -12,6 +12,7 @@ length1 = 0.5
 width,depth = 0.5, 0.5
 box1 = Box(width,depth,length1,1.,color=RGBA(1.,1.,0.))
 b1 = Box(0.1,0.1,2length1,1.,color=RGBA(1.,1.,0.))
+b1b = Box(0.1,0.1,2length1,1.,color=RGBA(1.,1.,1.))
 b2 = Box(0.1,0.1,.1,.1,color=RGBA(1.,0.,0.))
 
 # Links
@@ -23,7 +24,7 @@ origin = Origin{Float64}()
 link1 = Body(b1)
 setInit!(origin,link1,[0;0;1.],[0;0;-length1],q = Quaternion(RotX(0.3)))
 
-link2 = Body(b1)
+link2 = Body(b1b)
 setInit!(link1,link2,[0;0;length1],[0;0;length1],q = Quaternion(RotX(-1.)))
 
 link3 = Body(b2)
@@ -58,7 +59,7 @@ ineqs = [joint3ineq;joint4ineq]
 # links = [link1]
 # constraints = [joint1]
 # ineqs = [joint2]
-shapes = [box1;b1;b2]
+shapes = [box1;b1;b2;b1b]
 
 
 mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=10.)

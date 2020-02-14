@@ -46,6 +46,14 @@ function h(c::InequalityConstraint,mechanism)
     [c.sl1*c.ga1;c.slf1*c.psi1]
 end
 
+# function hμ(c::InequalityConstraint,mechanism)
+#     c.sl1*c.ga1 - mechanism.μ
+# end
+#
+# function h(c::InequalityConstraint,mechanism)
+#     c.sl1*c.ga1
+# end
+
 function dynineq(ineq::InequalityConstraint,body::Body,mechanism)
     dynineq(ineq,ineq.constraints,body,mechanism.dt,mechanism.No,mechanism.μ)
 end

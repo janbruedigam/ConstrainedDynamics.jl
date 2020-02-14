@@ -207,7 +207,7 @@ function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,
 
     cf = 0.
 
-    Ax = [-Nx-b1'*D;zeros(6)']
+    Ax = [Nx+b1'*D;zeros(6)']
     Av = [Nv;zeros(6)']
     H = [D*s1+2*psi1*ga1*b1 2*ga1^2*b1] #[D*s1+2*psi1*b1 2*ga1*b1]
     X = [0 0;2*cf^2*ga1-2*ga1*b1'*b1 0] #[0 0;2*cf^2*ga1 0]
@@ -230,3 +230,23 @@ function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,
 
     return
 end
+
+# function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
+#     dt = mechanism.dt
+#     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
+#     Nv = dt*Nx
+#     γ = ineq.ga1
+#     s = ineq.sl1
+#     Σ = γ/s
+#     Σm = s/γ
+#     μ = mechanism.μ
+#     φ = body.x[2][3]+dt*body.s1[3]
+#
+#     Δv = diagonal.ŝ
+#
+#     ineqentry.ga = Σ*(φ - Nv*Δv) - μ/s
+#     ineqentry.sl = Σm*(γ - ineqentry.ga) - μ/γ
+#
+#
+#     return
+# end
