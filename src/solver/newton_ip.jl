@@ -117,6 +117,5 @@ end
 @inline function lineStep!(node::InequalityConstraint,entry,e,α)
     node.sl1 = node.sl0 - 1/(2^e)*α*entry.sl
     node.ga1 = node.ga0 - 1/(2^e)*α*entry.ga
-    node.b1 = node.b0 - 1/(2^e)*α*entry.b
     return
 end

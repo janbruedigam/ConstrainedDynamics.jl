@@ -202,7 +202,11 @@ end
     body.f -= Nx'*c.ga1
 
     D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
-    body.f -= D'*c.b1
+    s1 = body.s1
+    Dv = D*s1
+    if norm(Dv) > 1e-10
+        body.f += D'*Dv/norm(Dv)*c.ga1*c.constraints.cf
+    end
     return
 end
 
@@ -227,10 +231,8 @@ end
         mechanism.normf += normf(body,mechanism)
     end
     foreach(addNormf!,mechanism.eqconstraints,mechanism)
-    # mechanism.normf = sqrt(mechanism.normf)
     for ineq in mechanism.ineqconstraints
         mechanism.normf += normfμ(ineq,mechanism)
-        # mechanism.normf -= mechanism.μ*ineq.sl1
     end
 
     # return sqrt(mechanism.normf)

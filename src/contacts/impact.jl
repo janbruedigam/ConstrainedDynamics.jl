@@ -9,19 +9,7 @@ end
 
 function g(ineq,impact::Impact,body::Body,dt,No)
     φ = body.x[No][3]+dt*body.s1[3]
-    f1 = φ - ineq.sl1
-
-    cf = impact.cf
-    D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
-    Dv = D*body.s1
-    f2 = 0.
-    if Dv == zeros(2)
-        f2 = ineq.b1
-    else
-        f2 = cf*ineq.ga1*Dv + ineq.b1*norm(Dv)
-    end
-
-    [f1;f2]
+    φ - ineq.sl1
 end
 
 function dynineq(ineq,impact::Impact,body::Body,dt,No,μ)
@@ -37,10 +25,10 @@ function dynineq(ineq,impact::Impact,body::Body,dt,No,μ)
     sl1 = ineq.sl1
 
     Dv = D*s1
-    if Dv == zeros(2)
+    if norm(Dv) < 1e-10
         return Nx'*(ga1/sl1*φ - μ/sl1)
     else
-        return Nx'*(ga1/sl1*φ - μ/sl1) + cf*D'*D/norm(Dv)*s1*(ga1-ga1/sl1*φ+μ/sl1)
+        return Nx'*(ga1/sl1*φ - μ/sl1) + D'*D/norm(Dv)*s1*cf*(-ga1/sl1*φ+μ/sl1)
     end
 end
 
@@ -55,13 +43,11 @@ function diagval(ineq,impact::Impact,body::Body,dt)
     s1 = body.s1
     ga1 = ineq.ga1
     sl1 = ineq.sl1
-    b1 = ineq.b1
 
     Dv = D*s1
-    if Dv == zeros(2)
+    if norm(Dv) < 1e-10
         return Nx'*ga1/sl1*Nv
     else
-        X = cf*ga1*D + b1*s1'*D'*D/norm(Dv)
-        return D'*X/norm(Dv) - cf*D'*D/norm(Dv)*s1*ga1/sl1*Nv + Nx'*ga1/sl1*Nv
+        return Nx'*ga1/sl1*Nv + cf*ga1/(norm(Dv))*(D'*D - s1*s1'*D'*D/(s1'*D'*D*s1) - D'*D*s1*Nv/sl1)
     end
 end

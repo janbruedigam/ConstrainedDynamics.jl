@@ -162,14 +162,12 @@ end
 @inline function s0tos1!(ineq::InequalityConstraint)
     ineq.sl1 = ineq.sl0
     ineq.ga1 = ineq.ga0
-    ineq.b1 = ineq.b0
     return
 end
 
 @inline function s1tos0!(ineq::InequalityConstraint)
     ineq.sl0 = ineq.sl1
     ineq.ga0 = ineq.ga1
-    ineq.b0 = ineq.b1
     return
 end
 
@@ -199,20 +197,10 @@ function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,
     s1 = body.s1
     ga1 = ineq.ga1
     sl1 = ineq.sl1
-    b1 = ineq.b1
 
     Δv = diagonal.ŝ
     ineqentry.ga = ga1/sl1*φ - μ/sl1 - ga1/sl1*Nv*Δv
     ineqentry.sl = sl1 - μ/ga1 - sl1/ga1*ineqentry.ga
-
-    Dv = D*s1
-
-    if Dv == zeros(2)
-        ineqentry.b = b1
-    else
-        X = cf*ga1*D + b1*s1'*D'*D/norm(Dv)
-        ineqentry.b = 1/norm(Dv)*(cf*ga1*Dv + b1*norm(Dv) - X*Δv - cf*Dv*ineqentry.ga)
-    end
 
     return
 end

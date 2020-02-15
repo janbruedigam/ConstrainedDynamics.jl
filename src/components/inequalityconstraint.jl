@@ -10,13 +10,6 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T}
     ga0::Float64
     ga1::Float64
 
-    # slf0::Float64
-    # slf1::Float64
-    # psi0::Float64
-    # psi1::Float64
-    b0::Vector{Float64}
-    b1::Vector{Float64}
-
     function InequalityConstraint(body::Body{T},cf) where T
         N = 1
         pid = body.id
@@ -27,7 +20,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T}
         γ0 = 1.
         γ1 = 1.
 
-        new{T,N,typeof(constraints)}(getGlobalID(),constraints,pid,s0,s1,γ0,γ1,zeros(2),zeros(2))
+        new{T,N,typeof(constraints)}(getGlobalID(),constraints,pid,s0,s1,γ0,γ1)
     end
 end
 
