@@ -11,10 +11,10 @@ ex = [1.;0.;0.]
 l1 = 1.0
 l2 = 1.0#sqrt(2)/2
 x,y = .1,.1
-b1 = Box(x,y,l1,l1,color=RGBA(0.,0.,1.))
-b2 = Box(x,y,l2,l2,color=RGBA(0.,0.,1.))
-b3 = Box(x,y,l1,l1,color=RGBA(0.,0.,1))
-b4 = Box(x,y,l2,l2,color=RGBA(0.,0.,1))
+b1 = Box(x,y,l1,l1,color=RGBA(1.,1.,0.))
+b2 = Box(x,y,l2,l2,color=RGBA(1.,1.,0.))
+b3 = Box(x,y,l1,l1,color=RGBA(1.,1.,0))
+b4 = Box(x,y,l2,l2,color=RGBA(1.,1.,0))
 
 vert11 = [0.;0.;l1/2]
 vert12 = -vert11

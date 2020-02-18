@@ -19,7 +19,7 @@ b2 = Box(0.1,0.1,.1,.1,color=RGBA(1.,0.,0.))
 origin = Origin{Float64}()
 
 link1 = Body(box1)
-setInit!(origin,link1,[0.;-2;1.5],zeros(3),F=[0;0.;0])
+setInit!(origin,link1,[0.;-2;1.5],zeros(3),F=[0;0.0;0])
 
 # link1 = Body(b1)
 # setInit!(origin,link1,[0;0;0.0],[0;0;-length1],q = Quaternion(RotX(0.3)))
@@ -52,7 +52,7 @@ link9 = Body(b2)
 setInit!(link1,link9,[-length1/2;-length1/2;length1/2],zeros(3))
 
 # # Constraints
-cfr = 0.
+cfr = 10.
 joint1 = InequalityConstraint(link1,cfr)
 joint2 = InequalityConstraint(link2,cfr)
 joint3 = InequalityConstraint(link3,cfr)
@@ -108,7 +108,8 @@ qtemp = link1.q[2]
 # -0.01932481073253633
 # -0.3575718060311244
 for link in links
-    link.x[2] += [0.;0.05;0.05]
+    # link.x[2] += [0.;0.05;0.05]
+    link.x[2] += [0.0;0.03;0.07]
 end
 
 simulate_ip!(mech,save=true,debug=true)

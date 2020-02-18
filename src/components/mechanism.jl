@@ -198,14 +198,31 @@ end
 end
 
 @inline function NtγTof!(body::Body,c::InequalityConstraint,mechanism)
-    Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-    body.f -= Nx'*c.ga1
+    impact = c.constraints
+    g = 9.81
+    cf = impact.cf
+    dt = mechanism.dt
 
+    Nx = SVector{6,Float64}(0,0,1,0,0,0)'
+    Nv = dt*Nx
     D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
+
     s1 = body.s1
+    ga1 = c.ga1
+    sl1 = c.sl1
+
     Dv = D*s1
-    if norm(Dv) > 1e-10
-        body.f += D'*Dv/norm(Dv)*c.ga1*c.constraints.cf
+
+
+    body.f -= Nx'*ga1
+
+    # if norm(Dv) > 1e-10
+    if norm(Dv) < ga1/(dt*g)
+        F = -D'*Dv*cf*dt*g
+        body.f -= F
+    else
+        F = -D'*Dv/norm(Dv)*ga1*cf
+        body.f -= F
     end
     return
 end
