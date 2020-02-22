@@ -111,5 +111,5 @@ for link in links
     link.x[2] += [0.0;0.03;0.07]
 end
 
-# simulate_ip!(mech,save=true,debug=false)
-# MaximalCoordinateDynamics.visualize(mech,shapes)
+simulate_ip!(mech,save=true,debug=false)
+MaximalCoordinateDynamics.visualize(mech,shapes)

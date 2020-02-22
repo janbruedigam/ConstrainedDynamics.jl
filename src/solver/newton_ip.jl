@@ -12,31 +12,11 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
         ineq.ga1 = 1.
         ineq.ga0 = 1.
     end
-    # for body in bodies
-    #     body.s1 *= 1.
-    #     body.s0 *= 1.
-    # end
-    # for constraint in eqconstraints
-    #     constraint.s1 *= 0
-    #     constraint.s0 *= 0
-    # end
 
-    # for ineq in ineqconstraints
-    #     ineq.sl1 *= 100
-    #     ineq.sl0 *= 100
-    #     ineq.ga1 *= 100
-    #     ineq.ga0 *= 100
-    # end
-    #
-    # slgan = 0.0
-    # for ineq in mechanism.ineqconstraints
-    #     slgan += ineq.sl1*ineq.ga1
-    # end
 
-    mechanism.μ = 1.#slgan/length(ineqconstraints)
+    mechanism.μ = 1.0
     σ = 0.1
 
-    # normf0 = normf(mechanism)
     meritf0 = meritf(mechanism)
     for n=Base.OneTo(newtonIter)
         setentries!(mechanism)
@@ -45,26 +25,21 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
 
         lineSearch!(mechanism,meritf0;iter=lineIter, warning=warning)
 
-        # foreach(update!,bodies,ldu,αsmax)
-        # foreach(update!,eqconstraints,ldu,αγmax)
-        # foreach(update!,ineqconstraints,ldu,αsmax,αγmax)
 
         meritf1 = meritf(mechanism)
 
-        normsol = normΔs(mechanism)
         foreach(s1tos0!,bodies)
         foreach(s1tos0!,eqconstraints)
         foreach(s1tos0!,ineqconstraints)
-        if normf(mechanism) < ε # && normsol < ε
+        if normf(mechanism) < ε
             warning && display(n)
             return
         else
-            if meritf1 < mechanism.μ #&& mechanism.μ > ε*0.1
+            while meritf1 < mechanism.μ
                 mechanism.μ = σ*mechanism.μ
-                meritf0 = meritf(mechanism)
-            else
-                meritf0=meritf1
+                meritf1 = meritf(mechanism)
             end
+            meritf0 = meritf1
         end
     end
 

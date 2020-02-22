@@ -4,8 +4,6 @@ mutable struct DiagonalEntry{T,N,N²} <: Entry{T}
     D::SMatrix{N,N,T,N²}
     Dinv::SMatrix{N,N,T,N²}
     ŝ::SVector{N,T}
-    # sl::Float64
-    # ga::Float64
 
     function DiagonalEntry{T,N}() where {T,N}
         N² = N^2
