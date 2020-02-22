@@ -216,14 +216,24 @@ end
 
     body.f -= Nx'*ga1
 
-    # if norm(Dv) > 1e-10
-    if norm(Dv) < ga1/(dt*g)
-        F = -D'*Dv*cf*dt*g
-        body.f -= F
-    else
-        F = -D'*Dv/norm(Dv)*ga1*cf
-        body.f -= F
+    ezg = SVector{3,Float64}(0,0,-mechanism.g)
+    b = D[:,1:3]*(body.m*(( - getv1(body,dt))/dt + ezg) - body.F[2])
+
+    if norm(b)>0
+        b = b/norm(b)*minimum([norm(b);cf*ga1])
     end
+
+    body.f -= D'*b
+
+
+    # if norm(Dv) > 1e-10
+    # if norm(Dv) < ga1/(dt*g)
+    #     F = -D'*Dv*cf*dt*g
+    #     body.f -= F
+    # else
+    #     F = -D'*Dv/norm(Dv)*ga1*cf
+    #     body.f -= F
+    # end
     return
 end
 

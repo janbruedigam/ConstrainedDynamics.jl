@@ -52,7 +52,7 @@ link9 = Body(b2)
 setInit!(link1,link9,[-length1/2;-length1/2;length1/2],zeros(3))
 
 # # Constraints
-cfr = 10.
+cfr = .15
 joint1 = InequalityConstraint(link1,cfr)
 joint2 = InequalityConstraint(link2,cfr)
 joint3 = InequalityConstraint(link3,cfr)
@@ -100,17 +100,16 @@ shapes = [box1;b1;b2]
 
 
 mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=10.)
-link1.q[2] = Quaternion(AngleAxis(-rand()-0.2,rand(3)-ones(3)*0.5...))
-# link1.q[2] = Quaternion(SVector([0.885818;-0.0789202;-0.274472;-0.365735]...))
+# link1.q[2] = Quaternion(AngleAxis(-rand()-0.2,rand(3)-ones(3)*0.5...))
+link1.q[2] = Quaternion(SVector([0.9127362490430289;-0.19667611676218716;-0.01932481073253633;-0.3575718060311244]...))
+# link1.q[2] = Quaternion(SVector([0.8264247451585373;0.007903070296695762;0.42943709893585524;-0.364065186645316]...))
+# link1.q[2] = Quaternion(SVector([0.9011767166792705;0.037092558277805214;0.22503618549822949;-0.36859650385209014]...))
 qtemp = link1.q[2]
-# 0.9127362490430289
-# -0.19667611676218716
-# -0.01932481073253633
-# -0.3575718060311244
+
 for link in links
     # link.x[2] += [0.;0.05;0.05]
     link.x[2] += [0.0;0.03;0.07]
 end
 
-simulate_ip!(mech,save=true,debug=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+# simulate_ip!(mech,save=true,debug=false)
+# MaximalCoordinateDynamics.visualize(mech,shapes)

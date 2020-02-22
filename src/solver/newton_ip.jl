@@ -56,7 +56,7 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
         foreach(s1tos0!,eqconstraints)
         foreach(s1tos0!,ineqconstraints)
         if normf(mechanism) < ε # && normsol < ε
-            display(n)
+            warning && display(n)
             return
         else
             if meritf1 < mechanism.μ #&& mechanism.μ > ε*0.1
