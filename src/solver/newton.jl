@@ -17,7 +17,7 @@ function newton!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, 
         # foreach(checkωnorm!,bodies,dt)
 
         normf1 = normf(mechanism)
-        normf1>normf0 && lineSearch!(mechanism,normf0;iter=lineIter, warning=warning)
+        normf1>normf0 && lineSearchold!(mechanism,normf0;iter=lineIter, warning=warning)
 
         # Move foreach out of if-else? Only if calculating normΔs earlier !!!
         if normΔs(mechanism) < ε && normf1 < ε
@@ -39,26 +39,26 @@ function newton!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, 
     return
 end
 
-function lineSearch!(mechanism,normf0;iter=10, warning::Bool=false)
+function lineSearchold!(mechanism,normf0;iter=10, warning::Bool=false)
     α = 1
     ldu = mechanism.ldu
     bodies = mechanism.bodies
-    constraints = mechanism.constraints
+    constraints = mechanism.eqconstraints
     for body in bodies
-        lineStep!(body,getentry(ldu,body.id),α)# x1 = x0 + 1/(2^α)*d
+        lineStepold!(body,getentry(ldu,body.id),α)# x1 = x0 + 1/(2^α)*d
     end
     for constraint in constraints
-        lineStep!(constraint,getentry(ldu,constraint.id),α)# x1 = x0 + 1/(2^α)*d
+        lineStepold!(constraint,getentry(ldu,constraint.id),α)# x1 = x0 + 1/(2^α)*d
     end
 
     for n=Base.OneTo(iter)
         α += 1
         if normf(mechanism) >= normf0
             for body in bodies
-                lineStep!(body,getentry(ldu,body.id),α)# x1 = x0 + 1/(2^α)*d
+                lineStepold!(body,getentry(ldu,body.id),α)# x1 = x0 + 1/(2^α)*d
             end
             for constraint in constraints
-                lineStep!(constraint,getentry(ldu,constraint.id),α)# x1 = x0 + 1/(2^α)*d
+                lineStepold!(constraint,getentry(ldu,constraint.id),α)# x1 = x0 + 1/(2^α)*d
             end
         else
             return
@@ -71,4 +71,4 @@ function lineSearch!(mechanism,normf0;iter=10, warning::Bool=false)
     return
 end
 
-@inline lineStep!(node,diagonal,α) = (node.s1 = node.s0 - 1/(2^α)*diagonal.ŝ; return)
+@inline lineStepold!(node,diagonal,α) = (node.s1 = node.s0 - 1/(2^α)*diagonal.ŝ; return)
