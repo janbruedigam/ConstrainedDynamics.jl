@@ -3,15 +3,15 @@ abstract type Entry{T} end
 mutable struct DiagonalEntry{T,N,N²} <: Entry{T}
     D::SMatrix{N,N,T,N²}
     Dinv::SMatrix{N,N,T,N²}
-    ŝ::SVector{N,T}
+    Δs::SVector{N,T}
 
     function DiagonalEntry{T,N}() where {T,N}
         N² = N^2
         D = @SMatrix zeros(T,N,N)
         Dinv = @SMatrix zeros(T,N,N)
-        ŝ = @SVector zeros(T,N)
+        Δs = @SVector zeros(T,N)
 
-        new{T,N,N²}(D,Dinv,ŝ)
+        new{T,N,N²}(D,Dinv,Δs)
     end
 end
 
@@ -27,18 +27,15 @@ mutable struct OffDiagonalEntry{T,N1,N2,N1N2} <: Entry{T}
 end
 
 mutable struct InequalityEntry{T,N,N²} <: Entry{T}
-    sl::Float64
-    ga::Float64
-    # slf::Float64
-    # psi::Float64
-    b::Vector{Float64}
+    Δs::SVector{N,T}
+    Δγ::SVector{N,T}
 
     function InequalityEntry{T,N}() where {T,N}
         N² = N^2
-        sl = 0
-        ga = 0
+        Δs = @SVector zeros(T,N)
+        Δγ = @SVector zeros(T,N)
 
-        new{T,N,N²}(sl,ga,zeros(2))
+        new{T,N,N²}(Δs,Δγ)
     end
 end
 

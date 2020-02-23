@@ -71,4 +71,4 @@ function lineSearchold!(mechanism,normf0;iter=10, warning::Bool=false)
     return
 end
 
-@inline lineStepold!(node,diagonal,α) = (node.s1 = node.s0 - 1/(2^α)*diagonal.ŝ; return)
+@inline lineStepold!(node,diagonal,α) = (node.s1 = node.s0 - 1/(2^α)*diagonal.Δs; return)

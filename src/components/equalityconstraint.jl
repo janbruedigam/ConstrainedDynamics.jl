@@ -1,4 +1,4 @@
-mutable struct EqualityConstraint{T,N,Nc,Cs} <: Component{T}
+mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T}
     id::Int64
 
     constraints::Cs
@@ -44,7 +44,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: Component{T}
     # EqualityConstraint(joint) = EqualityConstraint(joint...)
 end
 
-Base.length(c::EqualityConstraint{T,N}) where {T,N} = N
+Base.length(::EqualityConstraint{T,N}) where {T,N} = N
 
 @generated function g(c::EqualityConstraint{T,N,Nc},mechanism) where {T,N,Nc}
     vec = [:(g(c.constraints[$i],getbody(mechanism,c.pid),getbody(mechanism,c.bodyids[$i]),mechanism.dt,mechanism.No)) for i=1:Nc]

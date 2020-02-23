@@ -24,15 +24,15 @@ mutable struct Mechanism{T,N}
 
     #TODO no constraints input
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
-        eqconstraints::Vector{<:EqualityConstraint{T}}, ineqconstraints::Vector{<:InequalityConstraint{T}};
+        eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
 
         resetGlobalID()
 
         Nb = length(bodies)
-        Ne = length(eqconstraints)
-        Ni = length(ineqconstraints)
+        Ne = length(eqcs)
+        Ni = length(ineqcs)
         N = Nb+Ne
         steps = Int(ceil(tend/dt))
 
@@ -45,7 +45,7 @@ mutable struct Mechanism{T,N}
             push!(body.F, [body.F[1] for i=1:No-1]...)
             push!(body.τ, [body.τ[1] for i=1:No-1]...)
 
-            for c in eqconstraints
+            for c in eqcs
                 c.pid == body.id && (c.pid = currentid)
                 for (ind,bodyid) in enumerate(c.bodyids)
                     if bodyid == body.id
@@ -55,7 +55,7 @@ mutable struct Mechanism{T,N}
                 end
             end
 
-            for c in ineqconstraints
+            for c in ineqcs
                 c.pid == body.id && (c.pid = currentid)
             end
 
@@ -66,7 +66,7 @@ mutable struct Mechanism{T,N}
         end
 
         eqdict = Dict{Int64,Int64}()
-        for (ind,c) in enumerate(eqconstraints)
+        for (ind,c) in enumerate(eqcs)
             c.id = currentid
             currentid+=1
 
@@ -74,7 +74,7 @@ mutable struct Mechanism{T,N}
         end
 
         ineqdict = Dict{Int64,Int64}()
-        for (ind,c) in enumerate(ineqconstraints)
+        for (ind,c) in enumerate(ineqcs)
             c.id = currentid
             currentid+=1
 
@@ -84,25 +84,25 @@ mutable struct Mechanism{T,N}
         normf = zero(T)
         normΔs = zero(T)
 
-        graph = Graph(origin,bodies,eqconstraints,ineqconstraints)
-        ldu = SparseLDU(graph,bodies,eqconstraints,ineqconstraints,bdict,eqdict,ineqdict)
+        graph = Graph(origin,bodies,eqcs,ineqcs)
+        ldu = SparseLDU(graph,bodies,eqcs,ineqcs,bdict,eqdict,ineqdict)
 
         storage = Storage{T}(steps,Nb,Ne)
 
         bodies = UnitDict(bodies)
-        eqconstraints = UnitDict((eqconstraints[1].id):(eqconstraints[Ne].id),eqconstraints)
-        if !isempty(ineqconstraints)
-            ineqconstraints = UnitDict((ineqconstraints[1].id):(ineqconstraints[Ni].id),ineqconstraints)
+        eqcs = UnitDict((eqcs[1].id):(eqcs[Ne].id),eqcs)
+        if !isempty(ineqcs)
+            ineqcs = UnitDict((ineqcs[1].id):(ineqcs[Ni].id),ineqcs)
         else
-            ineqconstraints = UnitDict(0:0,ineqconstraints)
+            ineqcs = UnitDict(0:0,ineqcs)
         end
-        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,eqconstraints,ineqconstraints,normf,normΔs,graph,ldu,storage,1,1)
+        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,eqcs,ineqcs,normf,normΔs,graph,ldu,storage,1,1)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
-        constraints = Vector{EqualityConstraint{T}}(undef,0)
+        constraints = EqualityConstraint{T}[] # Vector{EqualityConstraint{T}}(undef,0)
         for body in bodies
             push!(constraints,EqualityConstraint(OriginConnection(origin,body)))
         end
@@ -112,7 +112,7 @@ mutable struct Mechanism{T,N}
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},constraints::Vector{<:EqualityConstraint{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
-        ineqconstraints = Vector{InequalityConstraint{T}}(undef,0)
+        ineqconstraints = InequalityConstraint{T}[] # Vector{InequalityConstraint{T}}(undef,0)
         Mechanism(origin,bodies,constraints,ineqconstraints,tend=tend, dt=dt, g=g, No=No)
     end
 end
@@ -131,9 +131,9 @@ function setentries!(mechanism::Mechanism)
         end
 
         diagonal = getentry(ldu,id)
-        setDandŝ!(diagonal,body,mechanism)
+        setDandΔs!(diagonal,body,mechanism)
         for cid in ineqchildren(graph,id)
-            extendDandŝ!(diagonal,body,getineqconstraint(mechanism,cid),mechanism)
+            extendDandΔs!(diagonal,body,getineqconstraint(mechanism,cid),mechanism)
         end
     end
 
@@ -149,7 +149,7 @@ function setentries!(mechanism::Mechanism)
         end
 
         diagonal = getentry(ldu,id)
-        setDandŝ!(diagonal,node,mechanism)
+        setDandΔs!(diagonal,node,mechanism)
     end
 end
 
@@ -180,60 +180,53 @@ end
     return dot(f,f)
 end
 
-@inline function normf(c::InequalityConstraint,mechanism::Mechanism)
-    f = g(c,mechanism)
-    d = h(c,mechanism)
+@inline function normf(ineqc::InequalityConstraint,mechanism::Mechanism)
+    f = g(ineqc,mechanism)
+    d = h(ineqc,mechanism)
     return dot([f;d],[f;d])
 end
 
-@inline function normfμ(c::InequalityConstraint,mechanism::Mechanism)
-    f = g(c,mechanism)
-    d = hμ(c,mechanism)
+@inline function normfμ(ineqc::InequalityConstraint,mechanism::Mechanism)
+    f = g(ineqc,mechanism)
+    d = hμ(ineqc,mechanism)
     return dot([f;d],[f;d])
 end
 
-@inline function GtλTof!(body::Body,c::EqualityConstraint,mechanism)
-    body.f -= ∂g∂pos(c,body.id,mechanism)'*c.s1
+@inline function GtλTof!(body::Body,eqc::EqualityConstraint,mechanism)
+    body.f -= ∂g∂pos(eqc,body.id,mechanism)'*eqc.s1
     return
 end
 
-@inline function NtγTof!(body::Body,c::InequalityConstraint,mechanism)
-    impact = c.constraints
-    g = 9.81
-    cf = impact.cf
-    dt = mechanism.dt
+@inline function NtγTof!(body::Body,ineqc::InequalityConstraint,mechanism)
+    body.f -= ∂g∂pos(ineqc,body.id,mechanism)'*ineqc.γ1[1]
 
-    Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-    Nv = dt*Nx
-    D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
-
-    s1 = body.s1
-    ga1 = c.ga1
-    sl1 = c.sl1
-
-    Dv = D*s1
-
-
-    body.f -= Nx'*ga1
-
-    ezg = SVector{3,Float64}(0,0,-mechanism.g)
-    b = D[:,1:3]*(body.m*(( - getv1(body,dt))/dt + ezg) - body.F[2])
-
-    if norm(b)>0
-        b = b/norm(b)*minimum([norm(b);cf*ga1])
-    end
-
-    body.f -= D'*b
-
-
-    # if norm(Dv) > 1e-10
-    # if norm(Dv) < ga1/(dt*g)
-    #     F = -D'*Dv*cf*dt*g
-    #     body.f -= F
-    # else
-    #     F = -D'*Dv/norm(Dv)*ga1*cf
-    #     body.f -= F
+    # impact = ineqc.constraints
+    # g = 9.81
+    # cf = impact.cf
+    # dt = mechanism.dt
+    #
+    # Nx = SVector{6,Float64}(0,0,1,0,0,0)'
+    # Nv = dt*Nx
+    # D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
+    #
+    # s1 = body.s1
+    # γ1 = ineqc.γ1[1]
+    # sl1 = ineqc.s1[1]
+    #
+    # Dv = D*s1
+    #
+    #
+    # body.f -= Nx'*γ1
+    #
+    # ezg = SVector{3,Float64}(0,0,-mechanism.g)
+    # b = D[:,1:3]*(body.m*(( - getv1(body,dt))/dt + ezg) - body.F[2])
+    #
+    # if norm(b)>0
+    #     b = b/norm(b)*minimum([norm(b);cf*γ1])
     # end
+    #
+    # body.f -= D'*b
+
     return
 end
 
@@ -244,8 +237,8 @@ end
         mechanism.normf += normf(body,mechanism)
     end
     foreach(addNormf!,mechanism.eqconstraints,mechanism)
-    for ineq in mechanism.ineqconstraints
-        mechanism.normf += normf(ineq,mechanism)
+    for ineqc in mechanism.ineqconstraints
+        mechanism.normf += normf(ineqc,mechanism)
     end
 
     return sqrt(mechanism.normf)
@@ -258,12 +251,12 @@ end
         mechanism.normf += normf(body,mechanism)
     end
     foreach(addNormf!,mechanism.eqconstraints,mechanism)
-    for ineq in mechanism.ineqconstraints
-        mechanism.normf += normfμ(ineq,mechanism)
+    for ineqc in mechanism.ineqconstraints
+        mechanism.normf += normfμ(ineqc,mechanism)
     end
 
-    # return sqrt(mechanism.normf)
-    return mechanism.normf
+    return sqrt(mechanism.normf)
+    # return mechanism.normf
 end
 
 @inline function normΔs(mechanism::Mechanism)
@@ -292,17 +285,17 @@ function computeα!(mechanism::Mechanism)
     τ = 0.995
     αmax = 1.
 
-    for ineq in mechanism.ineqconstraints
-        sl = getineq(ldu,ineq.id).sl
-        ga = getineq(ldu,ineq.id).ga
+    for ineqc in mechanism.ineqconstraints
+        Δs = getineq(ldu,ineqc.id).Δs[1]
+        Δγ = getineq(ldu,ineqc.id).Δγ[1]
 
-        if sl > 0
-            temp = minimum([1.;τ*ineq.sl1/sl])
+        if Δs > 0
+            temp = minimum([1.;τ*ineqc.s1[1]/Δs])
             αmax = minimum([αmax;temp])
         end
 
-        if ga > 0
-            temp = minimum([1.;τ*ineq.ga1/ga])
+        if Δγ > 0
+            temp = minimum([1.;τ*ineqc.γ1[1]/Δγ])
             αmax = minimum([αmax;temp])
         end
     end
@@ -353,12 +346,12 @@ end
 
 function simulate_ip!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,disp::Bool=false)
     bodies = mechanism.bodies
-    eqconstraints = mechanism.eqconstraints
-    ineqconstraints = mechanism.ineqconstraints
+    eqcs = mechanism.eqconstraints
+    ineqcs = mechanism.ineqconstraints
     dt = mechanism.dt
     foreach(s0tos1!,bodies)
-    foreach(s0tos1!,eqconstraints)
-    foreach(s0tos1!,ineqconstraints)
+    foreach(s0tos1!,eqcs)
+    foreach(s0tos1!,ineqcs)
 
     for i=mechanism.steps
         # newton!(mechanism,warning=debug)

@@ -49,7 +49,7 @@ mutable struct Origin{T} <: AbstractBody{T}
 end
 
 
-Base.length(C::Body) = 6
+Base.length(::Body) = 6
 
 function setInit!(body::Body{T};
     x::AbstractVector=zeros(T,3),

@@ -1,21 +1,21 @@
-@inline function setDandŝ!(diagonal::DiagonalEntry,body::Body,mechanism::Mechanism)
+@inline function setDandΔs!(diagonal::DiagonalEntry,body::Body,mechanism::Mechanism)
     diagonal.D = ∂dyn∂vel(body, mechanism.dt)
-    diagonal.ŝ = dynamics(body, mechanism)
+    diagonal.Δs = dynamics(body, mechanism)
     return
 end
 
-@inline function extendDandŝ!(diagonal::DiagonalEntry,body::Body,c::InequalityConstraint,mechanism::Mechanism)
+@inline function extendDandΔs!(diagonal::DiagonalEntry,body::Body,c::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
     diagonal.D += diagval(c,body,dt) #+ SMatrix{6,6,Float64,36}(1e-5*I)
-    diagonal.ŝ += dynineq(c,body,mechanism)
+    diagonal.Δs += dynineq(c,body,mechanism)
     return
 end
 
-@inline function setDandŝ!(d::DiagonalEntry{T,N},c::EqualityConstraint,mechanism::Mechanism) where {T,N}
-    # d.D = @SMatrix zeros(T,N,N)
-    μ = 1e-5
-    d.D = SMatrix{N,N,T,N*N}(μ*I) # TODO Positiv because of weird system? fix generally
-    d.ŝ = g(c,mechanism)
+@inline function setDandΔs!(d::DiagonalEntry{T,N},c::EqualityConstraint,mechanism::Mechanism) where {T,N}
+    d.D = @SMatrix zeros(T,N,N)
+    # μ = 1e-5
+    # d.D = SMatrix{N,N,T,N*N}(μ*I) # TODO Positiv because of weird system? fix generally
+    d.Δs = g(c,mechanism)
     return
 end
 
@@ -62,17 +62,17 @@ function invertD!(d::DiagonalEntry)
 end
 
 @inline function LSol!(d::DiagonalEntry,child::DiagonalEntry,fillin::OffDiagonalEntry)
-    d.ŝ -= fillin.L*child.ŝ
+    d.Δs -= fillin.L*child.Δs
     return
 end
 
 function DSol!(d::DiagonalEntry)
-    d.ŝ = d.Dinv*d.ŝ
+    d.Δs = d.Dinv*d.Δs
     return
 end
 
 @inline function USol!(d::DiagonalEntry,parent::DiagonalEntry,fillin::OffDiagonalEntry)
-    d.ŝ -= fillin.U*parent.ŝ
+    d.Δs -= fillin.U*parent.Δs
     return
 end
 
@@ -122,20 +122,20 @@ function solve!(graph::Graph,ldu::SparseLDU,mechanism)
 
         # inequalities
         for cid in ineqchildren(graph,id)
-            SLGASol!(getineq(ldu,cid),diagonal,getbody(mechanism,id),getineqconstraint(mechanism,cid),mechanism)
+            eliminatedSol!(getineq(ldu,cid),diagonal,getbody(mechanism,id),getineqconstraint(mechanism,cid),mechanism)
         end
     end
 end
 
 @inline update!(component::Component,ldu::SparseLDU) = update!(component,getentry(ldu,component.id))
 function update!(component::Component,diagonal::DiagonalEntry)
-    component.s1 = component.s0 - diagonal.ŝ
+    component.s1 = component.s0 - diagonal.Δs
     return
 end
 
 @inline update!(eq::EqualityConstraint,ldu::SparseLDU,αγmax) = update!(eq,getentry(ldu,eq.id),αγmax)
 function update!(eq::EqualityConstraint,diagonal::DiagonalEntry,αγmax)
-    eq.s1 = eq.s0 - αγmax*diagonal.ŝ
+    eq.s1 = eq.s0 - αγmax*diagonal.Δs
     return
 end
 
@@ -160,14 +160,14 @@ end
 end
 
 @inline function s0tos1!(ineq::InequalityConstraint)
-    ineq.sl1 = ineq.sl0
-    ineq.ga1 = ineq.ga0
+    ineq.s1 = ineq.s0
+    ineq.γ1 = ineq.γ0
     return
 end
 
 @inline function s1tos0!(ineq::InequalityConstraint)
-    ineq.sl0 = ineq.sl1
-    ineq.ga0 = ineq.ga1
+    ineq.s0 = ineq.s1
+    ineq.γ0 = ineq.γ1
     return
 end
 
@@ -177,30 +177,52 @@ end
 end
 
 @inline function normΔs(ineq::InequalityConstraint)
-    difference = [ineq.sl1-ineq.sl0;ineq.ga1-ineq.ga0]
+    difference = [ineq.s1-ineq.s0;ineq.γ1-ineq.γ0]
     return dot(difference,difference)
 end
 
 
-function SLGASol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
+# function eliminatedSol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
+#     dt = mechanism.dt
+#     μ = mechanism.μ
+#     No = 2
+#
+#     φ = body.x[No][3]+dt*body.s1[3]
+#     cf = ineq.constraints.cf
+#
+#     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
+#     Nv = dt*Nx
+#     D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
+#
+#     s1 = body.s1
+#     γ1 = ineq.γ1[1]
+#     sl1 = ineq.s1[1]
+#
+#     Δv = diagonal.Δs
+#     ineqentry.Δγ = [γ1/sl1*φ - μ/sl1 - γ1/sl1*Nv*Δv]
+#     ineqentry.Δs = [sl1 - μ/γ1 - sl1/γ1*ineqentry.Δγ[1]]
+#
+#     return
+# end
+
+function eliminatedSol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
     μ = mechanism.μ
     No = 2
 
-    φ = body.x[No][3]+dt*body.s1[3]
-    cf = ineq.constraints.cf
+    impact = ineq.constraints
 
-    Nx = SVector{6,Float64}(0,0,1,0,0,0)'
+    φ = g(impact,body,dt,No)
+
+    Nx = impact.Nx
     Nv = dt*Nx
-    D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
 
-    s1 = body.s1
-    ga1 = ineq.ga1
-    sl1 = ineq.sl1
+    γ1 = ineq.γ1[1]
+    s1 = ineq.s1[1]
 
-    Δv = diagonal.ŝ
-    ineqentry.ga = ga1/sl1*φ - μ/sl1 - ga1/sl1*Nv*Δv
-    ineqentry.sl = sl1 - μ/ga1 - sl1/ga1*ineqentry.ga
+    Δv = diagonal.Δs
+    ineqentry.Δγ = [γ1/s1*φ - μ/s1 - γ1/s1*Nv*Δv]
+    ineqentry.Δs = [s1 - μ/γ1 - s1/γ1*ineqentry.Δγ[1]]
 
     return
 end

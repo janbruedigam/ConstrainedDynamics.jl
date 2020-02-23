@@ -5,44 +5,52 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T}
     pid::Int64
     # bodyid::Int64
 
-    sl0::Float64
-    sl1::Float64
-    ga0::Float64
-    ga1::Float64
+    s0::SVector{N,T}
+    s1::SVector{N,T}
+    γ0::SVector{N,T}
+    γ1::SVector{N,T}
 
-    function InequalityConstraint(body::Body{T},cf) where T
+    function InequalityConstraint(input)
+        impact,body = input
+
+        T = Float64
         N = 1
         pid = body.id
-        constraints = Impact(body,cf)
+        constraints = impact
 
-        s0 = 1.
-        s1 = 1.
-        γ0 = 1.
-        γ1 = 1.
+        s0 = ones(T,N)
+        s1 = ones(T,N)
+        γ0 = ones(T,N)
+        γ1 = ones(T,N)
 
         new{T,N,typeof(constraints)}(getGlobalID(),constraints,pid,s0,s1,γ0,γ1)
     end
 end
 
 
-Base.length(c::InequalityConstraint{T,N}) where {T,N} = N
+Base.length(::InequalityConstraint{T,N}) where {T,N} = N
 
-function g(c::InequalityConstraint,mechanism)
-    g(c,c.constraints,getbody(mechanism,c.pid),mechanism.dt,mechanism.No)
+function g(ineqc::InequalityConstraint,mechanism)
+    val = g(ineqc.constraints,getbody(mechanism,ineqc.pid),mechanism.dt,mechanism.No)
+    val - ineqc.s1[1]
 end
 
-function hμ(c::InequalityConstraint,mechanism)
-    c.sl1*c.ga1 - mechanism.μ
+function hμ(ineqc::InequalityConstraint,mechanism)
+    ineqc.s1[1]*ineqc.γ1[1] - mechanism.μ
 end
 
-function h(c::InequalityConstraint,mechanism)
-    c.sl1*c.ga1
+function h(ineqc::InequalityConstraint,mechanism)
+    ineqc.s1[1]*ineqc.γ1[1]
 end
 
-function dynineq(ineq::InequalityConstraint,body::Body,mechanism)
-    dynineq(ineq,ineq.constraints,body,mechanism.dt,mechanism.No,mechanism.μ)
+function dynineq(ineqc::InequalityConstraint,body::Body,mechanism)
+    dynineq(ineqc,ineqc.constraints,body,mechanism.dt,mechanism.No,mechanism.μ)
 end
 
-function diagval(ineq::InequalityConstraint,body::Body,dt)
-    diagval(ineq,ineq.constraints,body,dt)
+function diagval(ineqc::InequalityConstraint,body::Body,dt)
+    diagval(ineqc,ineqc.constraints,body,dt)
+end
+
+function ∂g∂pos(ineqc::InequalityConstraint,id,mechanism)
+    ineqc.constraints.Nx
 end

@@ -7,10 +7,10 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
     dt = mechanism.dt
 
     for ineq in ineqconstraints
-        ineq.sl1 = 1.
-        ineq.sl0 = 1.
-        ineq.ga1 = 1.
-        ineq.ga0 = 1.
+        ineq.s1 = ones(1)
+        ineq.s0 = ones(1)
+        ineq.γ1 = ones(1)
+        ineq.γ0 = ones(1)
     end
 
 
@@ -85,12 +85,12 @@ function lineSearch!(mechanism,meritf0;iter=10, warning::Bool=false)
 end
 
 @inline function lineStep!(node::Component,diagonal,e,α)
-    node.s1 = node.s0 - 1/(2^e)*α*diagonal.ŝ
+    node.s1 = node.s0 - 1/(2^e)*α*diagonal.Δs
     return
 end
 
 @inline function lineStep!(node::InequalityConstraint,entry,e,α)
-    node.sl1 = node.sl0 - 1/(2^e)*α*entry.sl
-    node.ga1 = node.ga0 - 1/(2^e)*α*entry.ga
+    node.s1 = node.s0 - 1/(2^e)*α*entry.Δs
+    node.γ1 = node.γ0 - 1/(2^e)*α*entry.Δγ
     return
 end

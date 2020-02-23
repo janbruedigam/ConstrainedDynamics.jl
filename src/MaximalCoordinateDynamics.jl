@@ -39,6 +39,9 @@ export
     FixedOrientation,
     CylindricalFree,
 
+    Impact,
+    Friction,
+
     setInit!,
     simulate!,
     simulate_ip!,

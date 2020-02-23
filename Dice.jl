@@ -53,15 +53,25 @@ setInit!(link1,link9,[-length1/2;-length1/2;length1/2],zeros(3))
 
 # # Constraints
 cfr = .15
-joint1 = InequalityConstraint(link1,cfr)
-joint2 = InequalityConstraint(link2,cfr)
-joint3 = InequalityConstraint(link3,cfr)
-joint4 = InequalityConstraint(link4,cfr)
-joint5 = InequalityConstraint(link5,cfr)
-joint6 = InequalityConstraint(link6,cfr)
-joint7 = InequalityConstraint(link7,cfr)
-joint8 = InequalityConstraint(link8,cfr)
-joint9 = InequalityConstraint(link9,cfr)
+joint1 = InequalityConstraint(MaximalCoordinateDynamics.Impact(link1,[0;-.1;01.0],offset=[0;0;1.]))
+joint2 = InequalityConstraint(MaximalCoordinateDynamics.Impact(link2,[0;-.1;01.0],offset=[0;0;1.]))
+joint3 = InequalityConstraint(MaximalCoordinateDynamics.Impact(link3,[0;-.1;01.0],offset=[0;0;1.]))
+joint4 = InequalityConstraint(MaximalCoordinateDynamics.Impact(link4,[0;-.1;01.0],offset=[0;0;1.]))
+joint5 = InequalityConstraint(MaximalCoordinateDynamics.Impact(link5,[0;-.1;01.0],offset=[0;0;1.]))
+joint6 = InequalityConstraint(MaximalCoordinateDynamics.Impact(link6,[0;-.1;01.0],offset=[0;0;1.]))
+joint7 = InequalityConstraint(MaximalCoordinateDynamics.Impact(link7,[0;-.1;01.0],offset=[0;0;1.]))
+joint8 = InequalityConstraint(MaximalCoordinateDynamics.Impact(link8,[0;-.1;01.0],offset=[0;0;1.]))
+joint9 = InequalityConstraint(MaximalCoordinateDynamics.Impact(link9,[0;-.1;01.0],offset=[0;0;1.]))
+
+# joint1 = InequalityConstraint(link1,cfr)
+# joint2 = InequalityConstraint(link2,cfr)
+# joint3 = InequalityConstraint(link3,cfr)
+# joint4 = InequalityConstraint(link4,cfr)
+# joint5 = InequalityConstraint(link5,cfr)
+# joint6 = InequalityConstraint(link6,cfr)
+# joint7 = InequalityConstraint(link7,cfr)
+# joint8 = InequalityConstraint(link8,cfr)
+# joint9 = InequalityConstraint(link9,cfr)
 #
 # links = [link1]
 # constraints = [joint1]
