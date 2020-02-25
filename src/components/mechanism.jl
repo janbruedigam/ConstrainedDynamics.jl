@@ -294,7 +294,8 @@ function computeα!(mechanism::Mechanism)
     ldu = mechanism.ldu
 
     τ = 0.995
-    αmax = 1.
+    # αmax = 1.
+    mechanism.αmax = 1.
 
     for ineqc in mechanism.ineqconstraints
         computeα!(ineqc,getineq(ldu,ineqc.id),τ,mechanism)

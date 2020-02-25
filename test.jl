@@ -119,8 +119,8 @@ qtemp = link1.q[2]
 # -0.01932481073253633
 # -0.3575718060311244
 for link in links
-    link.x[2] += [0.;0.0000;0.0]
+    link.x[2] += [0.;0.0000;0.05]
 end
 
-simulate_ip!(mech,save=true,debug=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+simulate_ip!(mech,save=true,debug=false)
+# MaximalCoordinateDynamics.visualize(mech,shapes)
