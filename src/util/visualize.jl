@@ -29,7 +29,7 @@ function visualize(mechanism::Mechanism,shapes)
     anim = MeshCat.Animation(Dict{MeshCat.SceneTrees.Path,MeshCat.AnimationClip}(), framerate)
 
     for k=mechanism.steps
-        MeshCat.atframe(anim, vis, k) do frame
+        MeshCat.atframe(anim, k) do
             for (id,body) in pairs(mechanism.bodies)
                 settransform!(vis["bundle/visbody"*string(id)], compose(Translation(mechanism.storage.x[id][k]...),LinearMap(Quat(mechanism.storage.q[id][k]...))))
             end

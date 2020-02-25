@@ -9,7 +9,8 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T}
     s1::SVector{N,T}
 
     function EqualityConstraint(data...)
-        jointdata = Vector{Tuple{Joint,Int64,Int64}}(undef,0)
+        # jointdata = Vector{Tuple{Joint,Int64,Int64}}(undef,0)
+        jointdata = Tuple{Joint,Int64,Int64}[]
         for info in data
             if typeof(info[1]) <: Joint
                 push!(jointdata,info)
@@ -23,8 +24,10 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T}
         T = getT(jointdata[1][1])#.T
 
         pid = jointdata[1][2]
-        bodyids = Vector{Int64}(undef,0)
-        constraints = Vector{Joint{T}}(undef,0)
+        # bodyids = Vector{Int64}(undef,0)
+        # constraints = Vector{Joint{T}}(undef,0)
+        bodyids = Int64[]
+        constraints = Joint{T}[]
         N = 0
         for set in jointdata
             push!(constraints,set[1])

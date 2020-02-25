@@ -7,10 +7,10 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
     dt = mechanism.dt
 
     for ineq in ineqconstraints
-        ineq.s1 = ones(1)
-        ineq.s0 = ones(1)
-        ineq.γ1 = ones(1)
-        ineq.γ0 = ones(1)
+        ineq.s1 = ones(length(ineq.s1))
+        ineq.s0 = ones(length(ineq.s0))
+        ineq.γ1 = ones(length(ineq.γ1))
+        ineq.γ0 = ones(length(ineq.γ0))
     end
 
 

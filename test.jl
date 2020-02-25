@@ -53,15 +53,26 @@ setInit!(link1,link9,[-length1/2;-length1/2;length1/2],zeros(3))
 
 # # Constraints
 cfr = 0.1
-joint1 = InequalityConstraint(link1,cfr)
-joint2 = InequalityConstraint(link2,cfr)
-joint3 = InequalityConstraint(link3,cfr)
-joint4 = InequalityConstraint(link4,cfr)
-joint5 = InequalityConstraint(link5,cfr)
-joint6 = InequalityConstraint(link6,cfr)
-joint7 = InequalityConstraint(link7,cfr)
-joint8 = InequalityConstraint(link8,cfr)
-joint9 = InequalityConstraint(link9,cfr)
+# joint1 = InequalityConstraint(link1,cfr)
+# joint2 = InequalityConstraint(link2,cfr)
+# joint3 = InequalityConstraint(link3,cfr)
+# joint4 = InequalityConstraint(link4,cfr)
+# joint5 = InequalityConstraint(link5,cfr)
+# joint6 = InequalityConstraint(link6,cfr)
+# joint7 = InequalityConstraint(link7,cfr)
+# joint8 = InequalityConstraint(link8,cfr)
+# joint9 = InequalityConstraint(link9,cfr)
+
+joint1 = InequalityConstraint(Impact(link1,[0;0;1.0]))
+joint2 = InequalityConstraint(Impact(link2,[0;0;1.0]))
+joint3 = InequalityConstraint(Impact(link3,[0;0;1.0]))
+joint4 = InequalityConstraint(Impact(link4,[0;0;1.0]))
+joint5 = InequalityConstraint(Impact(link5,[0;0;1.0]))
+joint6 = InequalityConstraint(Impact(link6,[0;0;1.0]))
+joint7 = InequalityConstraint(Impact(link7,[0;0;1.0]))
+joint8 = InequalityConstraint(Impact(link8,[0;0;1.0]))
+joint9 = InequalityConstraint(Impact(link9,[0;0;1.0]))
+
 #
 # links = [link1]
 # constraints = [joint1]
@@ -99,7 +110,7 @@ ineqs = [joint1]
 shapes = [box1;b1;b2]
 
 
-mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=10.)
+mech = Mechanism(origin, links,constraints,ineqs,g=-9.81*0,tend=10.)
 # link1.q[2] = Quaternion(AngleAxis(-rand()-0.2,rand(3)-ones(3)*0.5...))
 # link1.q[2] = Quaternion(SVector([0.885818;-0.0789202;-0.274472;-0.365735]...))
 qtemp = link1.q[2]
@@ -108,8 +119,8 @@ qtemp = link1.q[2]
 # -0.01932481073253633
 # -0.3575718060311244
 for link in links
-    link.x[2] += [0.;0.00001;0.0]
+    link.x[2] += [0.;0.0000;0.0]
 end
 
-# simulate_ip!(mech,save=true,debug=true)
-# MaximalCoordinateDynamics.visualize(mech,shapes)
+simulate_ip!(mech,save=true,debug=true)
+MaximalCoordinateDynamics.visualize(mech,shapes)

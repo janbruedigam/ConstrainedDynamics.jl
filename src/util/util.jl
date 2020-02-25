@@ -15,3 +15,6 @@ end
 deleteat(M::Array{T,2},i::Int64) where T = deleteat(M,i,i)
 
 skew(v::AbstractVector{T}) where T = SMatrix{3,3,T,9}(0,v[3],-v[2], -v[3],0,v[1], v[2],-v[1],0)
+
+Base.:*(u::LinearAlgebra.AdjointAbsVec, v::SVector{1,T}) where T = u*v[1]
+Base.:*(u::AbstractVector, v::SVector{1,T}) where T = u*v[1]

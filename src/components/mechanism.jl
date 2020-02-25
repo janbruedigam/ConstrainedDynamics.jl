@@ -182,13 +182,13 @@ end
 
 @inline function normf(ineqc::InequalityConstraint,mechanism::Mechanism)
     f = g(ineqc,mechanism)
-    d = h(ineqc,mechanism)
+    d = h(ineqc)
     return dot([f;d],[f;d])
 end
 
 @inline function normfμ(ineqc::InequalityConstraint,mechanism::Mechanism)
-    f = g(ineqc,mechanism)
-    d = hμ(ineqc,mechanism)
+    f = gμ(ineqc,mechanism)
+    d = hμ(ineqc,mechanism.μ)
     return dot([f;d],[f;d])
 end
 
@@ -198,7 +198,7 @@ end
 end
 
 @inline function NtγTof!(body::Body,ineqc::InequalityConstraint,mechanism)
-    body.f -= ∂g∂pos(ineqc,body.id,mechanism)'*ineqc.γ1[1]
+    body.f -= ∂g∂pos(ineqc,body,mechanism)'*ineqc.γ1
 
     # impact = ineqc.constraints
     # g = 9.81
@@ -286,17 +286,21 @@ function computeα!(mechanism::Mechanism)
     αmax = 1.
 
     for ineqc in mechanism.ineqconstraints
-        Δs = getineq(ldu,ineqc.id).Δs[1]
-        Δγ = getineq(ldu,ineqc.id).Δγ[1]
+        Δs = getineq(ldu,ineqc.id).Δs
+        Δγ = getineq(ldu,ineqc.id).Δγ
 
-        if Δs > 0
-            temp = minimum([1.;τ*ineqc.s1[1]/Δs])
-            αmax = minimum([αmax;temp])
+        for (i,el) in enumerate(Δs)
+            if el > 0
+                temp = minimum([1.;τ*ineqc.s1[i]/el])
+                αmax = minimum([αmax;temp])
+            end
         end
 
-        if Δγ > 0
-            temp = minimum([1.;τ*ineqc.γ1[1]/Δγ])
-            αmax = minimum([αmax;temp])
+        for (i,el) in enumerate(Δγ)
+            if el > 0
+                temp = minimum([1.;τ*ineqc.γ1[i]/el])
+                αmax = minimum([αmax;temp])
+            end
         end
     end
 

@@ -6,8 +6,8 @@ end
 
 @inline function extendDandΔs!(diagonal::DiagonalEntry,body::Body,c::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
-    diagonal.D += diagval(c,body,dt) #+ SMatrix{6,6,Float64,36}(1e-5*I)
-    diagonal.Δs += dynineq(c,body,mechanism)
+    diagonal.D += schurD(c,body,dt) #+ SMatrix{6,6,Float64,36}(1e-5*I)
+    diagonal.Δs += schurf(c,body,mechanism)
     return
 end
 
@@ -205,24 +205,44 @@ end
 #     return
 # end
 
-function eliminatedSol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
+# function eliminatedSol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineq::InequalityConstraint,mechanism::Mechanism)
+#     dt = mechanism.dt
+#     μ = mechanism.μ
+#     No = 2
+#
+#     impact = ineq.constraints[1]
+#
+#     φ = g(impact,body,dt,No)
+#
+#     Nx = impact.Nx
+#     Nv = dt*Nx
+#
+#     γ1 = ineq.γ1[1]
+#     s1 = ineq.s1[1]
+#
+#     Δv = diagonal.Δs
+#     ineqentry.Δγ = [γ1/s1*φ - μ/s1 - γ1/s1*Nv*Δv]
+#     ineqentry.Δs = [s1 - μ/γ1 - s1/γ1*ineqentry.Δγ[1]]
+#
+#     return
+# end
+
+function eliminatedSol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineqc::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
     μ = mechanism.μ
     No = 2
 
-    impact = ineq.constraints
+    φ = g(ineqc,mechanism)
 
-    φ = g(impact,body,dt,No)
+    Nx = ∂g∂pos(ineqc,body,mechanism)
+    Nv = ∂g∂vel(ineqc,body,mechanism)
 
-    Nx = impact.Nx
-    Nv = dt*Nx
-
-    γ1 = ineq.γ1[1]
-    s1 = ineq.s1[1]
+    γ1 = ineqc.γ1
+    s1 = ineqc.s1
 
     Δv = diagonal.Δs
-    ineqentry.Δγ = [γ1/s1*φ - μ/s1 - γ1/s1*Nv*Δv]
-    ineqentry.Δs = [s1 - μ/γ1 - s1/γ1*ineqentry.Δγ[1]]
+    ineqentry.Δγ = γ1./s1.*φ - μ./s1 - γ1./s1.*(Nv*Δv)
+    ineqentry.Δs = s1 .- μ./γ1 - s1./γ1.*ineqentry.Δγ
 
     return
 end
