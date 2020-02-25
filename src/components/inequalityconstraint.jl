@@ -75,7 +75,8 @@ end
 
 @generated function gs(ineqc::InequalityConstraint{T,N},mechanism) where {T,N}
     vec = [:(g(ineqc.constraints[$i],getbody(mechanism,ineqc.pid),mechanism.dt,mechanism.No) - ineqc.s1[$i]) for i=1:N]
-    :(vcat($(vec...)))
+    # :(vcat($(vec...)))
+    :(SVector{N,T}($(vec...)))
 end
 
 function gs(ineqc::InequalityConstraint{T,1},mechanism) where {T}
@@ -84,17 +85,13 @@ end
 
 @generated function g(ineqc::InequalityConstraint{T,N},mechanism) where {T,N}
     vec = [:(g(ineqc.constraints[$i],getbody(mechanism,ineqc.pid),mechanism.dt,mechanism.No)) for i=1:N]
-    :(vcat($(vec...)))
+    # :(vcat($(vec...)))
+    :(SVector{N,T}($(vec...)))
 end
 
 function g(ineqc::InequalityConstraint{T,1},mechanism) where {T}
     g(ineqc.constraints[1],getbody(mechanism,ineqc.pid),mechanism.dt,mechanism.No)
 end
-
-# function g(ineqc::InequalityConstraint,mechanism)
-#     val = g(ineqc.constraints,getbody(mechanism,ineqc.pid),mechanism.dt,mechanism.No)
-#     val - ineqc.s1[1]
-# end
 
 function hμ(ineqc::InequalityConstraint{T},μ::T) where T
     ineqc.s1.*ineqc.γ1 .- μ
