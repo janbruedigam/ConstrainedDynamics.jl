@@ -23,7 +23,7 @@ function newton!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, 
         if normΔs(mechanism) < ε && normf1 < ε
             foreach(s1tos0!,bodies)
             foreach(s1tos0!,constraints)
-            # display(n)
+            # warning && (@info string("Newton iterations: ",n))
             return
         else
             foreach(s1tos0!,bodies)
@@ -32,10 +32,7 @@ function newton!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=100, 
         end
     end
 
-    if warning
-        display(string("WARNING:  newton! did not converge. n = ",newtonIter,", tol = ",normf0,"."))
-    end
-
+    warning && (@info string("newton_ip! did not converge. n = ",newtonIter,", tol = ",normf(mechanism),"."))
     return
 end
 
@@ -65,9 +62,7 @@ function lineSearchold!(mechanism,normf0;iter=10, warning::Bool=false)
         end
     end
 
-    if warning
-        display(string("WARNING:  lineSearch! did not converge. n = ",iter,"."))
-    end
+    warning && (@info string("lineSearch! did not converge. n = ",iter,"."))
     return
 end
 

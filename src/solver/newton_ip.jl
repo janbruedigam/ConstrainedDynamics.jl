@@ -34,7 +34,7 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
         foreach(s1tos0!,eqconstraints)
         foreach(s1tos0!,ineqconstraints)
         if normf(mechanism) < ε
-            warning && display(n)
+            warning && (@info string("Newton iterations: ",n))
             return
         else
             while meritf1 < mechanism.μ
@@ -45,10 +45,7 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
         end
     end
 
-    if warning
-        display(string("WARNING:  newton! did not converge. n = ",newtonIter,", tol = ",normf(mechanism),"."))
-    end
-
+    warning && (@info string("newton_ip! did not converge. n = ",newtonIter,", tol = ",normf(mechanism),"."))
     return
 end
 
@@ -81,9 +78,7 @@ function lineSearch!(mechanism,meritf0;iter=10, warning::Bool=false)
         end
     end
 
-    if warning
-        display(string("WARNING:  lineSearch! did not converge. n = ",iter,"."))
-    end
+    warning && (@info string("lineSearch! did not converge. n = ",iter,"."))
     return
 end
 
