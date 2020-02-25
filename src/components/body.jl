@@ -135,6 +135,33 @@ end
     return body.f
 end
 
+@inline function dynamicseq(body::Body{T}, mechanism) where T
+    No = mechanism.No
+    dt = mechanism.dt
+
+    ezg = SVector{3,T}(0,0,-mechanism.g)
+    dynT = body.m*((getvnew(body) - getv1(body,dt))/dt + ezg) - body.F[No]
+
+    J = body.J
+    ω1 = getω1(body,dt)
+    ωnew = getωnew(body)
+    sq1 = sqrt(4/dt^2 - ω1'*ω1)
+    sq2 = sqrt(4/dt^2 - ωnew'*ωnew)
+    dynR = skewplusdiag(ωnew,sq2)*(J*ωnew) - skewplusdiag(ω1,sq1)*(J*ω1) - 2*body.τ[No]
+
+    body.f = [dynT;dynR]
+
+    for cid in connections(mechanism.graph,body.id)
+        GtλTof!(body,geteqconstraint(mechanism,cid),mechanism)
+    end
+
+    # for cid in ineqchildren(mechanism.graph,body.id)
+    #     NtγTof!(body,getineqconstraint(mechanism,cid),mechanism)
+    # end
+
+    return body.f
+end
+
 @inline function ∂dyn∂vel(body::Body{T}, dt) where T
     J = body.J
     ωnew = getωnew(body)

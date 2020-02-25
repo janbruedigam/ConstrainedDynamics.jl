@@ -4,6 +4,8 @@ abstract type Contact{T} end
 
 getT(contact::Contact{T}) where T = T
 
+extrafriction!(ineqc,contact::Contact{T},i,body,dt) where T = @SVector zeros(T,6)
+
 # @inline g(joint::Joint{T,Nc}) where {T,Nc} = @SVector zeros(T,Nc)
 #
 # @inline ∂g∂posa(contact::Contact{T}) where {T} = @SMatrix zeros(T,Nc,6)

@@ -63,25 +63,25 @@ cfr = .15
 # joint8 = InequalityConstraint(Impact(link8,[0;0;01.0]))
 # joint9 = InequalityConstraint(Impact(link9,[0;0;01.0]))
 
-joint1 = InequalityConstraint(Impact(link1,[0.0;.20;01.0]),Impact(link1,[0.0;-.20;01.0]))
-joint2 = InequalityConstraint(Impact(link2,[0.0;.20;01.0]),Impact(link2,[0.0;-.20;01.0]))
-joint3 = InequalityConstraint(Impact(link3,[0.0;.20;01.0]),Impact(link3,[0.0;-.20;01.0]))
-joint4 = InequalityConstraint(Impact(link4,[0.0;.20;01.0]),Impact(link4,[0.0;-.20;01.0]))
-joint5 = InequalityConstraint(Impact(link5,[0.0;.20;01.0]),Impact(link5,[0.0;-.20;01.0]))
-joint6 = InequalityConstraint(Impact(link6,[0.0;.20;01.0]),Impact(link6,[0.0;-.20;01.0]))
-joint7 = InequalityConstraint(Impact(link7,[0.0;.20;01.0]),Impact(link7,[0.0;-.20;01.0]))
-joint8 = InequalityConstraint(Impact(link8,[0.0;.20;01.0]),Impact(link8,[0.0;-.20;01.0]))
-joint9 = InequalityConstraint(Impact(link9,[0.0;.20;01.0]),Impact(link9,[0.0;-.20;01.0]))
+# joint1 = InequalityConstraint(Impact(link1,[0.0;.20;01.0]),Impact(link1,[0.0;-.20;01.0]))
+# joint2 = InequalityConstraint(Impact(link2,[0.0;.20;01.0]),Impact(link2,[0.0;-.20;01.0]))
+# joint3 = InequalityConstraint(Impact(link3,[0.0;.20;01.0]),Impact(link3,[0.0;-.20;01.0]))
+# joint4 = InequalityConstraint(Impact(link4,[0.0;.20;01.0]),Impact(link4,[0.0;-.20;01.0]))
+# joint5 = InequalityConstraint(Impact(link5,[0.0;.20;01.0]),Impact(link5,[0.0;-.20;01.0]))
+# joint6 = InequalityConstraint(Impact(link6,[0.0;.20;01.0]),Impact(link6,[0.0;-.20;01.0]))
+# joint7 = InequalityConstraint(Impact(link7,[0.0;.20;01.0]),Impact(link7,[0.0;-.20;01.0]))
+# joint8 = InequalityConstraint(Impact(link8,[0.0;.20;01.0]),Impact(link8,[0.0;-.20;01.0]))
+# joint9 = InequalityConstraint(Impact(link9,[0.0;.20;01.0]),Impact(link9,[0.0;-.20;01.0]))
 
-# joint1 = InequalityConstraint(link1,cfr)
-# joint2 = InequalityConstraint(link2,cfr)
-# joint3 = InequalityConstraint(link3,cfr)
-# joint4 = InequalityConstraint(link4,cfr)
-# joint5 = InequalityConstraint(link5,cfr)
-# joint6 = InequalityConstraint(link6,cfr)
-# joint7 = InequalityConstraint(link7,cfr)
-# joint8 = InequalityConstraint(link8,cfr)
-# joint9 = InequalityConstraint(link9,cfr)
+joint1 = InequalityConstraint(Friction(link1,[0;-0.1;01.0],cfr))
+joint2 = InequalityConstraint(Friction(link2,[0;-0.1;01.0],cfr))
+joint3 = InequalityConstraint(Friction(link3,[0;-0.1;01.0],cfr))
+joint4 = InequalityConstraint(Friction(link4,[0;-0.1;01.0],cfr))
+joint5 = InequalityConstraint(Friction(link5,[0;-0.1;01.0],cfr))
+joint6 = InequalityConstraint(Friction(link6,[0;-0.1;01.0],cfr))
+joint7 = InequalityConstraint(Friction(link7,[0;-0.1;01.0],cfr))
+joint8 = InequalityConstraint(Friction(link8,[0;-0.1;01.0],cfr))
+joint9 = InequalityConstraint(Friction(link9,[0;-0.1;01.0],cfr))
 #
 # links = [link1]
 # constraints = [joint1]
@@ -119,7 +119,7 @@ ineqs = [joint2;joint3;joint4;joint5;joint6;joint7;joint8;joint9]
 shapes = [box1;b1;b2]
 
 
-mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=10.)
+mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=15.)
 # link1.q[2] = Quaternion(AngleAxis(-rand()-0.2,rand(3)-ones(3)*0.5...))
 link1.q[2] = Quaternion(SVector([0.9127362490430289;-0.19667611676218716;-0.01932481073253633;-0.3575718060311244]...))
 # link1.q[2] = Quaternion(SVector([0.8264247451585373;0.007903070296695762;0.42943709893585524;-0.364065186645316]...))

@@ -125,7 +125,9 @@ end
     :(vcat($(vec...)))
 end
 
-# function ∂g∂pos(ineqc::InequalityConstraint,id,mechanism)
-#
-#     ineqc.constraints[1].Nx
-# end
+function extrafriction!(ineqc::InequalityConstraint{T,N},body,mechanism) where {T,N}
+    for i=1:N
+        extrafriction!(ineqc,ineqc.constraints[i],i,body,mechanism.dt)
+    end
+    return
+end

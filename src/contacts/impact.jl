@@ -1,5 +1,5 @@
 mutable struct Impact{T} <: Contact{T}
-    Nx::Adjoint{Float64,SVector{6,Float64}}
+    Nx::Adjoint{T,SVector{6,T}}
     # D::SMatrix{2,6,T,12}
     offset::SVector{6,T}
 

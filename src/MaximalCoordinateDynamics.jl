@@ -60,6 +60,7 @@ include(joinpath("contacts", "contact.jl"))
 include(joinpath("components", "body.jl"))
 include(joinpath("components", "constraint.jl"))
 include(joinpath("contacts", "impact.jl"))
+include(joinpath("contacts", "friction.jl"))
 
 include(joinpath("joints", "translationalrotational6.jl"))
 include(joinpath("joints", "translational0.jl"))

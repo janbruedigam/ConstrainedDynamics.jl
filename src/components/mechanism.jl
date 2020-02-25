@@ -199,32 +199,33 @@ end
 
 @inline function NtγTof!(body::Body,ineqc::InequalityConstraint,mechanism)
     body.f -= ∂g∂pos(ineqc,body,mechanism)'*ineqc.γ1
+    extrafriction!(ineqc,body,mechanism)
 
     # impact = ineqc.constraints
     # g = 9.81
-    # cf = impact.cf
+    # cf = ineqc.constraints[1].cf
     # dt = mechanism.dt
-    #
+    # #
     # Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-    # Nv = dt*Nx
+    # # Nv = dt*Nx
     # D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
-    #
+    
     # s1 = body.s1
     # γ1 = ineqc.γ1[1]
     # sl1 = ineqc.s1[1]
-    #
+    
     # Dv = D*s1
-    #
-    #
+    
+    
     # body.f -= Nx'*γ1
-    #
+    
     # ezg = SVector{3,Float64}(0,0,-mechanism.g)
     # b = D[:,1:3]*(body.m*(( - getv1(body,dt))/dt + ezg) - body.F[2])
-    #
+    
     # if norm(b)>0
     #     b = b/norm(b)*minimum([norm(b);cf*γ1])
     # end
-    #
+    
     # body.f -= D'*b
 
     return
