@@ -181,15 +181,15 @@ end
 end
 
 @inline function normf(ineqc::InequalityConstraint,mechanism::Mechanism)
-    f = g(ineqc,mechanism)
+    f = gs(ineqc,mechanism)
     d = h(ineqc)
-    return dot([f;d],[f;d])
+    return dot(f,f)+dot(d,d)
 end
 
 @inline function normfμ(ineqc::InequalityConstraint,mechanism::Mechanism)
-    f = gμ(ineqc,mechanism)
+    f = gs(ineqc,mechanism)
     d = hμ(ineqc,mechanism.μ)
-    return dot([f;d],[f;d])
+    return dot(f,f)+dot(d,d)
 end
 
 @inline function GtλTof!(body::Body,eqc::EqualityConstraint,mechanism)
@@ -237,9 +237,10 @@ end
         mechanism.normf += normf(body,mechanism)
     end
     foreach(addNormf!,mechanism.eqconstraints,mechanism)
-    for ineqc in mechanism.ineqconstraints
-        mechanism.normf += normf(ineqc,mechanism)
-    end
+    foreach(addNormf!,mechanism.ineqconstraints,mechanism)
+    # for ineqc in mechanism.ineqconstraints
+    #     mechanism.normf += normf(ineqc,mechanism)
+    # end
 
     return sqrt(mechanism.normf)
 end
@@ -251,12 +252,12 @@ end
         mechanism.normf += normf(body,mechanism)
     end
     foreach(addNormf!,mechanism.eqconstraints,mechanism)
-    for ineqc in mechanism.ineqconstraints
-        mechanism.normf += normfμ(ineqc,mechanism)
-    end
+    foreach(addNormfμ!,mechanism.ineqconstraints,mechanism)
+    # for ineqc in mechanism.ineqconstraints
+    #     mechanism.normf += normfμ(ineqc,mechanism)
+    # end
 
     return sqrt(mechanism.normf)
-    # return mechanism.normf
 end
 
 @inline function normΔs(mechanism::Mechanism)
@@ -269,8 +270,18 @@ end
     return sqrt(mechanism.normΔs)
 end
 
-@inline function addNormf!(c::EqualityConstraint,mechanism::Mechanism)
-    mechanism.normf += normf(c,mechanism)
+@inline function addNormf!(ineqc::InequalityConstraint,mechanism::Mechanism)
+    mechanism.normf += normf(ineqc,mechanism)
+    return
+end
+
+@inline function addNormfμ!(ineqc::InequalityConstraint,mechanism::Mechanism)
+    mechanism.normf += normfμ(ineqc,mechanism)
+    return
+end
+
+@inline function addNormf!(eqc::EqualityConstraint,mechanism::Mechanism)
+    mechanism.normf += normf(eqc,mechanism)
     return
 end
 
@@ -286,27 +297,43 @@ function computeα!(mechanism::Mechanism)
     αmax = 1.
 
     for ineqc in mechanism.ineqconstraints
-        Δs = getineq(ldu,ineqc.id).Δs
-        Δγ = getineq(ldu,ineqc.id).Δγ
+        computeα!(ineqc,getineq(ldu,ineqc.id),τ,mechanism)
+        # Δs = getineq(ldu,ineqc.id).Δs
+        # Δγ = getineq(ldu,ineqc.id).Δγ
 
-        for (i,el) in enumerate(Δs)
-            if el > 0
-                temp = minimum([1.;τ*ineqc.s1[i]/el])
-                αmax = minimum([αmax;temp])
-            end
-        end
+        # for (i,el) in enumerate(Δs)
+        #     if el > 0
+        #         temp = minimum([1.;τ*ineqc.s1[i]/el])
+        #         αmax = minimum([αmax;temp])
+        #     end
+        # end
 
-        for (i,el) in enumerate(Δγ)
-            if el > 0
-                temp = minimum([1.;τ*ineqc.γ1[i]/el])
-                αmax = minimum([αmax;temp])
-            end
-        end
+        # for (i,el) in enumerate(Δγ)
+        #     if el > 0
+        #         temp = minimum([1.;τ*ineqc.γ1[i]/el])
+        #         αmax = minimum([αmax;temp])
+        #     end
+        # end
     end
 
-    mechanism.αmax = αmax
+    # mechanism.αmax = αmax
 
     return
+end
+
+function computeα!(ineqc::InequalityConstraint,ineqentry::InequalityEntry,τ, mechanism)
+    findminforα!(ineqc.s1,ineqentry.Δs,τ,mechanism)
+    findminforα!(ineqc.γ1,ineqentry.Δγ,τ,mechanism)
+    return
+end
+
+function findminforα!(sγ1::SVector{N,T},Δsγ::SVector{N,T},τ,mechanism) where {N,T}
+    for i=1:N
+        temp = τ*sγ1[i]/Δsγ[i]
+        (temp > 0) && (temp < mechanism.αmax) && (mechanism.αmax = temp)
+    end
+
+    return 
 end
 
 function saveToTraj!(mechanism::Mechanism,t)

@@ -246,3 +246,17 @@ function eliminatedSol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body:
 
     return
 end
+
+# function eliminateds(ineqentry::InequalityEntry,ineqc::InequalityConstraint,φ,μ,γ,Nv,Δγ)
+#     γ1 = ineqc.γ1
+#     s1 = ineqc.s1
+#     ineqentry.Δs = s1 .- μ./γ1 - s1./γ1.*Δγ
+#     return
+# end
+
+# function eliminatedγ(ineqentry::InequalityEntry,ineqc::InequalityConstraint,φ,μ,γ,Nv,Δv)
+#     γ1 = ineqc.γ1
+#     s1 = ineqc.s1
+#     ineqentry.Δγ = γ1./s1.*φ - μ./s1 - γ1./s1.*(Nv*Δv)
+#     return
+# end

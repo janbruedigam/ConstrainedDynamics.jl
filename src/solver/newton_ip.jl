@@ -6,11 +6,13 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
     ldu = mechanism.ldu
     dt = mechanism.dt
 
-    for ineq in ineqconstraints
-        ineq.s1 = ones(length(ineq.s1))
-        ineq.s0 = ones(length(ineq.s0))
-        ineq.γ1 = ones(length(ineq.γ1))
-        ineq.γ0 = ones(length(ineq.γ0))
+
+    for ineqc in ineqconstraints
+        # ineqc.s1 = ones(length(ineqc.s1))
+        # ineqc.s0 = ones(length(ineqc.s0))
+        # ineqc.γ1 = ones(length(ineqc.γ1))
+        # ineqc.γ0 = ones(length(ineqc.γ0))
+        setOne(ineqc)
     end
 
 
@@ -50,6 +52,7 @@ function newton_ip!(mechanism::Mechanism{T,Nl}; ε=1e-10, μ=1e-5, newtonIter=10
     return
 end
 
+
 function lineSearch!(mechanism,meritf0;iter=10, warning::Bool=false)
     e = 0
     ldu = mechanism.ldu
@@ -58,17 +61,17 @@ function lineSearch!(mechanism,meritf0;iter=10, warning::Bool=false)
     ineqconstraints = mechanism.ineqconstraints
 
     computeα!(mechanism)
-    αmax = mechanism.αmax
+    # αmax = mechanism.αmax
 
     for n=Base.OneTo(iter)
         for body in bodies
-            lineStep!(body,getentry(ldu,body.id),e,αmax)# x1 = x0 - 1/(2^e)*d
+            lineStep!(body,getentry(ldu,body.id),e,mechanism)# x1 = x0 - 1/(2^e)*d
         end
         for constraint in eqconstraints
-            lineStep!(constraint,getentry(ldu,constraint.id),e,αmax)# x1 = x0 - 1/(2^e)*d
+            lineStep!(constraint,getentry(ldu,constraint.id),e,mechanism)# x1 = x0 - 1/(2^e)*d
         end
         for constraint in ineqconstraints
-            lineStep!(constraint,getineq(ldu,constraint.id),e,αmax)# x1 = x0 - 1/(2^e)*d
+            lineStep!(constraint,getineq(ldu,constraint.id),e,mechanism)# x1 = x0 - 1/(2^e)*d
         end
 
         if meritf(mechanism) >= meritf0
@@ -84,13 +87,18 @@ function lineSearch!(mechanism,meritf0;iter=10, warning::Bool=false)
     return
 end
 
-@inline function lineStep!(node::Component,diagonal,e,α)
-    node.s1 = node.s0 - 1/(2^e)*α*diagonal.Δs
+# function lineStep!(node::Component,diagonal,e,α)
+#     node.s1 = node.s0 - 1/(2^e)*α*diagonal.Δs
+#     return
+# end
+
+@inline function lineStep!(node::Component,diagonal,e,mechanism)
+    node.s1 = node.s0 - 1/(2^e)*mechanism.αmax*diagonal.Δs
     return
 end
 
-@inline function lineStep!(node::InequalityConstraint,entry,e,α)
-    node.s1 = node.s0 - 1/(2^e)*α*entry.Δs
-    node.γ1 = node.γ0 - 1/(2^e)*α*entry.Δγ
+@inline function lineStep!(node::InequalityConstraint,entry,e,mechanism)
+    node.s1 = node.s0 - 1/(2^e)*mechanism.αmax*entry.Δs
+    node.γ1 = node.γ0 - 1/(2^e)*mechanism.αmax*entry.Δγ
     return
 end

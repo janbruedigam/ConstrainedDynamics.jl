@@ -65,14 +65,30 @@ end
 
 Base.length(::InequalityConstraint{T,N}) where {T,N} = N
 
-@generated function gμ(ineqc::InequalityConstraint{T,N},mechanism) where {T,N}
+function setOne(ineqc::InequalityConstraint{T,N}) where {T,N}
+    ineqc.s0 = @SVector ones(T,N)
+    ineqc.s1 = @SVector ones(T,N)
+    ineqc.γ0 = @SVector ones(T,N)
+    ineqc.γ1 = @SVector ones(T,N)
+    return 
+end
+
+@generated function gs(ineqc::InequalityConstraint{T,N},mechanism) where {T,N}
     vec = [:(g(ineqc.constraints[$i],getbody(mechanism,ineqc.pid),mechanism.dt,mechanism.No) - ineqc.s1[$i]) for i=1:N]
     :(vcat($(vec...)))
+end
+
+function gs(ineqc::InequalityConstraint{T,1},mechanism) where {T}
+    g(ineqc.constraints[1],getbody(mechanism,ineqc.pid),mechanism.dt,mechanism.No) - ineqc.s1[1]
 end
 
 @generated function g(ineqc::InequalityConstraint{T,N},mechanism) where {T,N}
     vec = [:(g(ineqc.constraints[$i],getbody(mechanism,ineqc.pid),mechanism.dt,mechanism.No)) for i=1:N]
     :(vcat($(vec...)))
+end
+
+function g(ineqc::InequalityConstraint{T,1},mechanism) where {T}
+    g(ineqc.constraints[1],getbody(mechanism,ineqc.pid),mechanism.dt,mechanism.No)
 end
 
 # function g(ineqc::InequalityConstraint,mechanism)
@@ -87,7 +103,7 @@ end
 h(ineqc::InequalityConstraint) = hμ(ineqc,0.)
 
 function schurf(ineqc::InequalityConstraint{T,N},body,mechanism) where {T,N}
-    val = zeros(T,6)
+    val = @SVector zeros(T,6)
     for i=1:N
         val += schurf(ineqc,ineqc.constraints[i],i,body,mechanism.dt,mechanism.No,mechanism.μ)
     end

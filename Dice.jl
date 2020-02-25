@@ -63,15 +63,15 @@ cfr = .15
 # joint8 = InequalityConstraint(Impact(link8,[0;-.1;01.0]),Impact(link1,[0;.1;01.0]))
 # joint9 = InequalityConstraint(Impact(link9,[0;-.1;01.0]),Impact(link1,[0;.1;01.0]))
 
-joint1 = InequalityConstraint(Impact(link1,[0;0;01.0]))
-joint2 = InequalityConstraint(Impact(link2,[0;0;01.0]))
-joint3 = InequalityConstraint(Impact(link3,[0;0;01.0]))
-joint4 = InequalityConstraint(Impact(link4,[0;0;01.0]))
-joint5 = InequalityConstraint(Impact(link5,[0;0;01.0]))
-joint6 = InequalityConstraint(Impact(link6,[0;0;01.0]))
-joint7 = InequalityConstraint(Impact(link7,[0;0;01.0]))
-joint8 = InequalityConstraint(Impact(link8,[0;0;01.0]))
-joint9 = InequalityConstraint(Impact(link9,[0;0;01.0]))
+joint1 = InequalityConstraint(Impact(link1,[0.0;.20;01.0]),Impact(link1,[0.0;-.20;01.0]))
+joint2 = InequalityConstraint(Impact(link2,[0.0;.20;01.0]),Impact(link2,[0.0;-.20;01.0]))
+joint3 = InequalityConstraint(Impact(link3,[0.0;.20;01.0]),Impact(link3,[0.0;-.20;01.0]))
+joint4 = InequalityConstraint(Impact(link4,[0.0;.20;01.0]),Impact(link4,[0.0;-.20;01.0]))
+joint5 = InequalityConstraint(Impact(link5,[0.0;.20;01.0]),Impact(link5,[0.0;-.20;01.0]))
+joint6 = InequalityConstraint(Impact(link6,[0.0;.20;01.0]),Impact(link6,[0.0;-.20;01.0]))
+joint7 = InequalityConstraint(Impact(link7,[0.0;.20;01.0]),Impact(link7,[0.0;-.20;01.0]))
+joint8 = InequalityConstraint(Impact(link8,[0.0;.20;01.0]),Impact(link8,[0.0;-.20;01.0]))
+joint9 = InequalityConstraint(Impact(link9,[0.0;.20;01.0]),Impact(link9,[0.0;-.20;01.0]))
 
 # joint1 = InequalityConstraint(link1,cfr)
 # joint2 = InequalityConstraint(link2,cfr)
@@ -131,5 +131,5 @@ for link in links
     link.x[2] += [0.0;0.03;0.07]
 end
 
-simulate_ip!(mech,save=true,debug=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+# simulate_ip!(mech,save=true,debug=false)
+# MaximalCoordinateDynamics.visualize(mech,shapes)

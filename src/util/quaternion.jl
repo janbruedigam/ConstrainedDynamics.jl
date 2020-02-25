@@ -15,12 +15,12 @@ Quaternion(R::Rotation) = Quaternion(Quat(R).w,Quat(R).x,Quat(R).y,Quat(R).z)
 Quaternion{T}() where T = Quaternion{T}(1,0,0,0)
 
 # Basic quaternion operations
-real(q::Quaternion) = q[1]
-imag(q::Quaternion) = q[SUnitRange(2,4)]
+LinearAlgebra.real(q::Quaternion) = q[1]
+LinearAlgebra.imag(q::Quaternion) = q[SUnitRange(2,4)]
 
-conj(q::Quaternion) = Quaternion(q.s, -q.v1, -q.v2, -q.v3)
-abs(q::Quaternion) = sqrt(q.s * q.s + q.v1 * q.v1 + q.v2 * q.v2 + q.v3 * q.v3)
-abs2(q::Quaternion) = q.s * q.s + q.v1 * q.v1 + q.v2 * q.v2 + q.v3 * q.v3
+LinearAlgebra.conj(q::Quaternion) = Quaternion(q.s, -q.v1, -q.v2, -q.v3)
+Base.abs(q::Quaternion) = sqrt(q.s * q.s + q.v1 * q.v1 + q.v2 * q.v2 + q.v3 * q.v3)
+Base.abs2(q::Quaternion) = q.s * q.s + q.v1 * q.v1 + q.v2 * q.v2 + q.v3 * q.v3
 Base.inv(q::Quaternion) = conj(q)
 
 Base.:*(q1::Quaternion, q2::Quaternion) = Quaternion(  q1.s * q2.s - q1.v1 * q2.v1 - q1.v2 * q2.v2 - q1.v3 * q2.v3,

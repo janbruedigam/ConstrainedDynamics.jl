@@ -110,7 +110,7 @@ ineqs = [joint1]
 shapes = [box1;b1;b2]
 
 
-mech = Mechanism(origin, links,constraints,ineqs,g=-9.81*0,tend=10.)
+mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=10.)
 # link1.q[2] = Quaternion(AngleAxis(-rand()-0.2,rand(3)-ones(3)*0.5...))
 # link1.q[2] = Quaternion(SVector([0.885818;-0.0789202;-0.274472;-0.365735]...))
 qtemp = link1.q[2]
