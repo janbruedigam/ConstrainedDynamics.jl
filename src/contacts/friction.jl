@@ -35,15 +35,21 @@ end
 
 ∂g∂pos(friction::Friction) = friction.Nx
 ∂g∂vel(friction::Friction,dt) = friction.Nx*dt
-function extrafriction!(ineq,friction::Friction,i,body,dt)
+function extrafriction!(ineq,friction::Friction{T},i,body,mechanism) where T
+    dt = mechanism.dt
     cf = friction.cf
     γ1 = ineq.γ1[i]
 
+    v = body.s1
     D = friction.D
 
-    ezg = SVector{3,Float64}(0,0,9.81)
-    b = D[:,1:3]*(body.m*(( - getv1(body,dt))/dt + ezg) - body.F[2])
-    
+    f = body.f
+    body.s1 = @SVector zeros(T,6)
+    b = D*dynamics0(body,mechanism)
+    body.s1 = v
+    body.f = f
+
+
     if norm(b)>0
         b = b/norm(b)*minimum([norm(b);cf*γ1])
     end
@@ -52,7 +58,10 @@ function extrafriction!(ineq,friction::Friction,i,body,dt)
     return
 end
 
-function schurf(ineq,friction::Friction,i,body::Body,dt,No,μ)
+function schurf(ineq,friction::Friction,i,body::Body,mechanism)
+    dt = mechanism.dt
+    μ = mechanism.μ
+    No = mechanism.No
     φ = g(friction,body,dt,No)
     cf = friction.cf
 
@@ -64,8 +73,11 @@ function schurf(ineq,friction::Friction,i,body::Body,dt,No,μ)
     D = friction.D
     Dv = friction.D*v
 
-    ezg = SVector{3,Float64}(0,0,9.81)
-    b = D[:,SVector(1,2,3)]*(body.m*(( - getv1(body,dt))/dt + ezg) - body.F[2])
+    f = body.f
+    body.s1 = @SVector zeros(6)
+    b = D*dynamics0(body,mechanism)
+    body.s1 = v
+    body.f = f
 
 
     if norm(b)>0
@@ -83,39 +95,8 @@ function schurf(ineq,friction::Friction,i,body::Body,dt,No,μ)
     end
 end
 
-# function dynineq(ineqc,friction::Friction,body::Body,dt,No,μ)
-#     φ = g(ineqc,friction,body,dt,No)
-#     cf = friction.cf
-
-#     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-#     Nv = dt*Nx
-#     D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
-
-#     s1 = body.s1
-#     γ1 = ineqc.γ1[1]
-#     sl1 = ineqc.s1[1]
-
-#     Dv = D*s1
-
-#     ezg = SVector{3,Float64}(0,0,-mechanism.g)
-#     b = D[:,1:3]*(body.m*(( - getv1(body,dt))/dt + ezg) - body.F[2])
-
-#     if norm(b)>0
-#         b = b/norm(b)*minimum([norm(b);cf*γ1])
-#     end
-
-#     if norm(b) < cf*γ1
-#         return Nx'*(γ1/sl1*φ - μ/sl1)
-#     else
-#         X = D*(body.m*[getv1(body,dt);getω1(body,dt)]/dt - [body.F[2];body.τ[2]])
-#         if norm(X) == 0
-#             throw("should not happen")
-#         end
-#         return (Nx'- D'*X/norm(X)*cf)*(γ1/sl1*φ - μ/sl1)
-#     end
-# end
-
-function schurD(ineq,friction::Friction,i,body::Body,dt)
+function schurD(ineq,friction::Friction,i,body::Body,mechanism)
+    dt = mechanism.dt
     cf = friction.cf
 
     v = body.s1
@@ -127,9 +108,11 @@ function schurD(ineq,friction::Friction,i,body::Body,dt)
     D = friction.D
     Dv = friction.D*v
     
-    ezg = SVector{3,Float64}(0,0,9.81)
-    b = D[:,SVector(1,2,3)]*(body.m*(( - getv1(body,dt))/dt + ezg) - body.F[2])
-
+    f = body.f
+    body.s1 = @SVector zeros(6)
+    b = D*dynamics0(body,mechanism)
+    body.s1 = v
+    body.f = f
 
     if norm(b)>0
         b = b/norm(b)*minimum([norm(b);cf*γ1])
@@ -146,35 +129,3 @@ function schurD(ineq,friction::Friction,i,body::Body,dt)
     end
 end
 
-# function diagval(ineqc,friction::Friction,body::Body,dt)
-#     No = 2
-#     g = 9.81
-#     cf = friction.cf
-
-#     Nx = SVector{6,Float64}(0,0,1,0,0,0)'
-#     Nv = dt*Nx
-#     D = Float64[1 0 0 0 0 0;0 1 0 0 0 0]
-
-#     s1 = body.s1
-#     γ1 = ineqc.γ1[1]
-#     sl1 = ineqc.s1[1]
-
-#     Dv = D*s1
-
-#     ezg = SVector{3,Float64}(0,0,g)
-#     b = D[:,1:3]*(body.m*(( - getv1(body,dt))/dt + ezg) - body.F[2])
-
-#     if norm(b)>0
-#         b = b/norm(b)*minimum([norm(b);cf*γ1])
-#     end
-
-#     if norm(b) < cf*γ1
-#         return Nx'*γ1/sl1*Nv
-#     else
-#         X = D*(body.m*[getv1(body,dt);getω1(body,dt)]/dt - [body.F[2];body.τ[2]])
-#         if norm(X) == 0
-#             throw("should not happen")
-#         end
-#         return (Nx'-D'*X/norm(X)*cf)*γ1/sl1*Nv
-#     end
-# end

@@ -135,7 +135,7 @@ end
     return body.f
 end
 
-@inline function dynamicseq(body::Body{T}, mechanism) where T
+@inline function dynamics0(body::Body{T}, mechanism) where T
     No = mechanism.No
     dt = mechanism.dt
 
@@ -151,9 +151,9 @@ end
 
     body.f = [dynT;dynR]
 
-    for cid in connections(mechanism.graph,body.id)
-        GtλTof!(body,geteqconstraint(mechanism,cid),mechanism)
-    end
+    # for cid in connections(mechanism.graph,body.id)
+    #     GtλTof!(body,geteqconstraint(mechanism,cid),mechanism)
+    # end
 
     # for cid in ineqchildren(mechanism.graph,body.id)
     #     NtγTof!(body,getineqconstraint(mechanism,cid),mechanism)

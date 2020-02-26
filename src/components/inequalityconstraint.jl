@@ -102,15 +102,15 @@ h(ineqc::InequalityConstraint) = hμ(ineqc,0.)
 function schurf(ineqc::InequalityConstraint{T,N},body,mechanism) where {T,N}
     val = @SVector zeros(T,6)
     for i=1:N
-        val += schurf(ineqc,ineqc.constraints[i],i,body,mechanism.dt,mechanism.No,mechanism.μ)
+        val += schurf(ineqc,ineqc.constraints[i],i,body,mechanism)
     end
     return val
 end
 
-function schurD(ineqc::InequalityConstraint{T,N},body,dt) where {T,N}
+function schurD(ineqc::InequalityConstraint{T,N},body,mechanism) where {T,N}
     val = @SMatrix zeros(T,6,6)
     for i=1:N
-        val += schurD(ineqc,ineqc.constraints[i],i,body,dt)
+        val += schurD(ineqc,ineqc.constraints[i],i,body,mechanism)
     end
     return val
 end
@@ -127,7 +127,7 @@ end
 
 function extrafriction!(ineqc::InequalityConstraint{T,N},body,mechanism) where {T,N}
     for i=1:N
-        extrafriction!(ineqc,ineqc.constraints[i],i,body,mechanism.dt)
+        extrafriction!(ineqc,ineqc.constraints[i],i,body,mechanism)
     end
     return
 end

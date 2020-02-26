@@ -6,7 +6,7 @@ end
 
 @inline function extendDandΔs!(diagonal::DiagonalEntry,body::Body,c::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
-    diagonal.D += schurD(c,body,dt) #+ SMatrix{6,6,Float64,36}(1e-5*I)
+    diagonal.D += schurD(c,body,mechanism) #+ SMatrix{6,6,Float64,36}(1e-5*I)
     diagonal.Δs += schurf(c,body,mechanism)
     return
 end

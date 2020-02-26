@@ -2,7 +2,7 @@ using Rotations
 using Plots: RGBA
 using StaticArrays
 
-!(@isdefined MaximalCoordinateDynamics) && include(joinpath("src", "MaximalCoordinateDynamics.jl"))
+!(@isdefined MaximalCoordinateDynamics) && include(joinpath("..", "src", "MaximalCoordinateDynamics.jl"))
 # include(joinpath("src", "MaximalCoordinateDynamics.jl"))
 using Main.MaximalCoordinateDynamics
 
@@ -52,7 +52,7 @@ link9 = Body(b2)
 setInit!(link1,link9,[-length1/2;-length1/2;length1/2],zeros(3))
 
 # # Constraints
-cfr = .15
+cfr = .2
 # joint1 = InequalityConstraint(Impact(link1,[0;0;01.0]))
 # joint2 = InequalityConstraint(Impact(link2,[0;0;01.0]))
 # joint3 = InequalityConstraint(Impact(link3,[0;0;01.0]))
@@ -119,7 +119,7 @@ ineqs = [joint2;joint3;joint4;joint5;joint6;joint7;joint8;joint9]
 shapes = [box1;b1;b2]
 
 
-mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=15.)
+mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=10.)
 # link1.q[2] = Quaternion(AngleAxis(-rand()-0.2,rand(3)-ones(3)*0.5...))
 link1.q[2] = Quaternion(SVector([0.9127362490430289;-0.19667611676218716;-0.01932481073253633;-0.3575718060311244]...))
 # link1.q[2] = Quaternion(SVector([0.8264247451585373;0.007903070296695762;0.42943709893585524;-0.364065186645316]...))

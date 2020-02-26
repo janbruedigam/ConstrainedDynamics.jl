@@ -26,7 +26,9 @@ end
 ∂g∂pos(impact::Impact) = impact.Nx
 ∂g∂vel(impact::Impact,dt) = impact.Nx*dt
 
-function schurf(ineq,impact::Impact,i,body::Body,dt,No,μ)
+function schurf(ineq,impact::Impact,i,body::Body,mechanism)
+    dt = mechanism.dt
+    μ = mechanism.μ
     φ = g(impact,body,dt,No)
 
     γ1 = ineq.γ1[i]
@@ -35,7 +37,8 @@ function schurf(ineq,impact::Impact,i,body::Body,dt,No,μ)
     return impact.Nx'*(γ1/s1*φ - μ/s1)
 end
 
-function schurD(ineq,impact::Impact,i,body::Body,dt)
+function schurD(ineq,impact::Impact,i,body::Body,mechanism)
+    dt = mechanism.dt
     Nx = impact.Nx
     Nv = dt*Nx
 
