@@ -8,7 +8,7 @@ function shapeobject(box::Box)
     GeometryTypes.HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
 end
 
-function visualize(mechanism::Mechanism,shapes)
+function visualize(mechanism::Mechanism, shapes)
     vis = Visualizer()
     open(vis, Blink.Window())
     # open(vis)
@@ -40,9 +40,7 @@ function visualize(mechanism::Mechanism,shapes)
 end
 
 
-function convert_meshcat_to_video(;filename="video",
-    input_path="util\\",
-    output_path="util\\")
+function convert_meshcat_to_video(;filename="video",input_path="util\\",output_path="util\\")
     # Saving MeshCat sequence as a video.
     meshcat_sequence_dir = joinpath(@__DIR__, "..", input_path)
     if filename==nothing

@@ -1,1 +1,1 @@
-abstract type AbstractConstraint{T} <: Component{T} end
+abstract type AbstractConstraint{T,N} <: Component{T} end

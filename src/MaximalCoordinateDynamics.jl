@@ -18,8 +18,7 @@ using MeshCat
 
 using Plots
 
-export
-    Box,
+export Box,
     Cylinder,
 
     Quaternion,
