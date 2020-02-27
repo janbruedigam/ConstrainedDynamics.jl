@@ -11,10 +11,10 @@ ex = [1.;0.;0.]
 l1 = 1.0
 l2 = 1.0#sqrt(2)/2
 x,y = .1,.1
-b1 = Box(x,y,l1,l1,color=RGBA(0.,0.,1.))
-b2 = Box(x,y,l2,l2,color=RGBA(0.,0.,1.))
-b3 = Box(x,y,l1,l1,color=RGBA(0.,0.,1))
-b4 = Box(x,y,l2,l2,color=RGBA(0.,0.,1))
+b1 = Box(x,y,l1,l1,color=RGBA(1.,1.,0.))
+b2 = Box(x,y,l2,l2,color=RGBA(1.,1.,0.))
+b3 = Box(x,y,l1,l1,color=RGBA(1.,1.,0))
+b4 = Box(x,y,l2,l2,color=RGBA(1.,1.,0))
 
 vert11 = [0.;0.;l1/2]
 vert12 = -vert11
@@ -97,25 +97,25 @@ if N>1
 end
 
 # Constraints
-joint0to1 = Constraint(Socket(origin,link1,zeros(3),vert11),Axis(origin,link1,ex))
-joint1to23 = Constraint(Socket(link1,link2,vert12,vert21),Axis(link1,link2,ex),SocketYZ(link1,link3,vert11,vert11))
-joint3to4 = Constraint(Socket(link3,link4,vert12,vert21),Axis(link3,link4,ex))
-joint2to4 = Constraint(Socket(link2,link4,vert22,vert22),Axis(link2,link4,ex))
+joint0to1 = EqualityConstraint(Revolute(origin,link1,zeros(3),vert11,ex))
+joint1to23 = EqualityConstraint(Revolute(link1,link2,vert12,vert21,ex),Cylindrical(link1,link3,vert11,vert11,ex))
+joint3to4 = EqualityConstraint(Revolute(link3,link4,vert12,vert21,ex))
+joint2to4 = EqualityConstraint(Revolute(link2,link4,vert22,vert22,ex))
 
 constraints = [joint0to1; joint1to23; joint3to4; joint2to4]
 
 for i=2:N
     @eval begin
-        $(Symbol("joint",(i-1)*4,"to",(i-1)*4+1)) = Constraint(Socket($links[($i-1)*4],$links[($i-1)*4+1],vert22,vert11),Axis($links[($i-1)*4],$links[($i-1)*4+1],ex))
+        $(Symbol("joint",(i-1)*4,"to",(i-1)*4+1)) = EqualityConstraint(Revolute($links[($i-1)*4],$links[($i-1)*4+1],vert22,vert11,ex))
         push!($constraints,$(Symbol("joint",(i-1)*4,"to",(i-1)*4+1)))
 
-        $(Symbol("joint",(i-1)*4+1,"to",(i-1)*4+2,(i-1)*4+3)) = Constraint(Socket($links[($i-1)*4+1],$links[($i-1)*4+2],vert12,vert21),Axis($links[($i-1)*4+1],$links[($i-1)*4+2],ex),SocketYZ($links[($i-1)*4+1],$links[($i-1)*4+3],vert11,vert11))
+        $(Symbol("joint",(i-1)*4+1,"to",(i-1)*4+2,(i-1)*4+3)) = EqualityConstraint(Revolute($links[($i-1)*4+1],$links[($i-1)*4+2],vert12,vert21,ex),Cylindrical($links[($i-1)*4+1],$links[($i-1)*4+3],vert11,vert11,ex))
         push!($constraints,$(Symbol("joint",(i-1)*4+1,"to",(i-1)*4+2,(i-1)*4+3)))
 
-        $(Symbol("joint",(i-1)*4+3,"to",(i-1)*4+4)) = Constraint(Socket($links[($i-1)*4+3],$links[($i-1)*4+4],vert12,vert21),Axis($links[($i-1)*4+3],$links[($i-1)*4+4],ex))
+        $(Symbol("joint",(i-1)*4+3,"to",(i-1)*4+4)) = EqualityConstraint(Revolute($links[($i-1)*4+3],$links[($i-1)*4+4],vert12,vert21,ex))
         push!($constraints,$(Symbol("joint",(i-1)*4+3,"to",(i-1)*4+4)))
 
-        $(Symbol("joint",(i-1)*4+2,"to",(i-1)*4+4)) = Constraint(Socket($links[($i-1)*4+2],$links[($i-1)*4+4],vert22,vert22),Axis($links[($i-1)*4+2],$links[($i-1)*4+4],ex))
+        $(Symbol("joint",(i-1)*4+2,"to",(i-1)*4+4)) = EqualityConstraint(Revolute($links[($i-1)*4+2],$links[($i-1)*4+4],vert22,vert22,ex))
         push!($constraints,$(Symbol("joint",(i-1)*4+2,"to",(i-1)*4+4)))
     end
 end

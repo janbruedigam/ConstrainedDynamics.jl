@@ -18,31 +18,33 @@ using MeshCat
 
 using Plots
 
-export
-    Box,
+export Box,
     Cylinder,
 
     Quaternion,
     Origin,
     Body,
-    Constraint,
+    EqualityConstraint,
+    InequalityConstraint,
     Mechanism,
 
     OriginConnection,
-    Axis,
-    Socket,
-    SocketYZ,
+    Prismatic,
+    Spherical,
+    Cylindrical,
+    Revolute,
+    Planar,
+    Fixed,
+    FixedOrientation,
+    CylindricalFree,
+
+    Impact,
 
     setInit!,
     simulate!,
     plotθ,
     plotλ,
-    visualize,
-
-    simulate_energy!,
-    simulate_drift!,
-    simulate_reset!,
-    simulate_steptol!
+    visualize
 
 
 include(joinpath("util", "util.jl"))
@@ -51,13 +53,22 @@ include(joinpath("util", "quaternion.jl"))
 include(joinpath("util", "shapes.jl"))
 include(joinpath("components", "component.jl"))
 include(joinpath("joints", "joint.jl"))
+include(joinpath("bounds", "bound.jl"))
 include(joinpath("components", "body.jl"))
 include(joinpath("components", "constraint.jl"))
+include(joinpath("bounds", "impact.jl"))
 
-include(joinpath("joints", "originconnection.jl"))
-include(joinpath("joints", "socket.jl"))
-include(joinpath("joints", "socketyz.jl"))
-include(joinpath("joints", "axis.jl"))
+include(joinpath("joints", "translationalrotational6.jl"))
+include(joinpath("joints", "translational0.jl"))
+include(joinpath("joints", "translational1.jl"))
+include(joinpath("joints", "translational2.jl"))
+include(joinpath("joints", "rotational0.jl"))
+include(joinpath("joints", "rotational1.jl"))
+include(joinpath("joints", "rotational2.jl"))
+include(joinpath("joints", "prototypes.jl"))
+
+include(joinpath("components", "equalityconstraint.jl"))
+include(joinpath("components", "inequalityconstraint.jl"))
 
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "storage.jl"))

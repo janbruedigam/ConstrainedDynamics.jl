@@ -8,11 +8,11 @@ mutable struct Box{T} <: Shape
     xyz::SVector{3,T}
     color::RGBA
 
-    function Box(x,y,z,m::T;color=RGBA(0.5,0.5,0.5)) where T
-        J = 1/12*m*diagm([y^2+z^2;x^2+z^2;x^2+y^2])
-        bodies = Vector(undef,0)
+    function Box(x, y, z, m::T;color = RGBA(0.5, 0.5, 0.5)) where T
+        J = 1 / 12 * m * diagm([y^2 + z^2;x^2 + z^2;x^2 + y^2])
+        bodies = []
 
-        new{T}(bodies,m,J,[x;y;z],color)
+        new{T}(bodies, m, J, [x;y;z], color)
     end
 end
 
@@ -26,10 +26,10 @@ mutable struct Cylinder{T} <: Shape
 
     # by defaul the cylinder points in the z direction
     # TODO other direction
-    function Cylinder(r,h,m::T;color=RGBA(0.5,0.5,0.5)) where T
-        J = 1/2*m*diagm([r^2+1/6*h^2;r^2+1/6*h^2;r^2])
-        bodies = Vector(undef,0)
+    function Cylinder(r, h, m::T;color = RGBA(0.5, 0.5, 0.5)) where T
+        J = 1 / 2 * m * diagm([r^2 + 1 / 6 * h^2;r^2 + 1 / 6 * h^2;r^2])
+        bodies = []
 
-        new{T}(bodies,m,J,[r;h],color)
+        new{T}(bodies, m, J, [r;h], color)
     end
 end
