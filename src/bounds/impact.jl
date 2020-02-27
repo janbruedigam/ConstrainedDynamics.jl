@@ -23,11 +23,10 @@ end
     impact.Nx[SVector(1, 2, 3)]' * (getx3(body, dt) - impact.offset[SVector(1, 2, 3)])
 end
 
-@inline ∂g∂pos(impact::Impact,No) = impact.Nx
-@inline ∂g∂vel(impact::Impact,dt,No) = impact.Nx * dt
+@inline ∂g∂pos(impact::Impact, No) = impact.Nx
+@inline ∂g∂vel(impact::Impact, dt, No) = impact.Nx * dt
 
-@inline function schurf(ineqc, impact::Impact, i, body::Body, dt, No)
-    μ = ineqc.μ
+@inline function schurf(ineqc, impact::Impact, i, body::Body, μ, dt, No)
     φ = g(impact, body, dt, No)
 
     γ1 = ineqc.γ1[i]

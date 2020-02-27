@@ -19,6 +19,9 @@ mutable struct Mechanism{T,N,Ni}
     ldu::SparseLDU{T}
     storage::Storage{T}
 
+    α::T
+    μ::T
+
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
         eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
@@ -94,7 +97,10 @@ mutable struct Mechanism{T,N,Ni}
             ineqcs = UnitDict(0:0, ineqcs)
         end
 
-        new{T,N,Ni}(tend, Base.OneTo(steps), dt, g, No, origin, bodies, eqcs, ineqcs, normf, normΔs, graph, ldu, storage)
+        α = 1
+        μ = 1
+
+        new{T,N,Ni}(tend, Base.OneTo(steps), dt, g, No, origin, bodies, eqcs, ineqcs, normf, normΔs, graph, ldu, storage, α, μ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
@@ -189,7 +195,7 @@ end
 
 @inline function normfμ(ineqc::InequalityConstraint, mechanism::Mechanism)
     f = gs(ineqc, mechanism)
-    d = hμ(ineqc)
+    d = hμ(ineqc, mechanism.μ)
     return dot(f, f) + dot(d, d)
 end
 
@@ -260,8 +266,32 @@ end
     return
 end
 
-function feasibilityStepLenth(ineqc::InequalityConstraint, ldu::SparseLDU)
-    feasibilityStepLenth(ineqc, getineqentry(ldu, ineqc.id))
+function feasibilityStepLength!(mechanism::Mechanism)
+    ldu = mechanism.ldu
+
+    τ = 0.995
+    mechanism.α = 1.
+
+    for ineqc in mechanism.ineqconstraints
+        feasibilityStepLength!(ineqc, getineqentry(ldu, ineqc.id), τ, mechanism)
+    end
+
+    return
+end
+
+function feasibilityStepLength!(ineqc::InequalityConstraint{T,N}, ineqentry::InequalityEntry, τ, mechanism) where {T,N}
+    s1 = ineqc.s1
+    γ1 = ineqc.γ1
+    Δs = ineqentry.Δs
+    Δγ = ineqentry.Δγ
+
+    for i = 1:N
+        αmax = τ * s1[i] / Δs[i]
+        (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
+        αmax = τ * γ1[i] / Δγ[i]
+        (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
+    end
+    return
 end
 
 

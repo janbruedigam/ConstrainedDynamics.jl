@@ -10,7 +10,7 @@ function newton!(mechanism::Mechanism{T,Nl,0}; ε = 1e-10, newtonIter = 100, lin
     for n = Base.OneTo(newtonIter)
         setentries!(mechanism)
         factor!(graph, ldu)
-        solve!(graph, ldu, mechanism) # x̂1 for each body and constraint
+        solve!(mechanism) # x̂1 for each body and constraint
 
         normf1 = lineSearch!(mechanism, normf0;iter = lineIter, warning = warning)
         normΔs1 = normΔs(mechanism)
@@ -31,7 +31,7 @@ function newton!(mechanism::Mechanism{T,Nl,0}; ε = 1e-10, newtonIter = 100, lin
 end
 
 # Newton on interior point with line search
-function newton!(mechanism::Mechanism{T,Nl}; ε = 1e-10, σ = 0.1, newtonIter = 100, lineIter = 10, warning::Bool = false) where {T,Nl}
+function newton!(mechanism::Mechanism{T,Nl}; ε = 1e-10, σ = 0.1, μ = 1.0, newtonIter = 100, lineIter = 10, warning::Bool = false) where {T,Nl}
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
@@ -40,12 +40,16 @@ function newton!(mechanism::Mechanism{T,Nl}; ε = 1e-10, σ = 0.1, newtonIter = 
     dt = mechanism.dt
 
     foreach(resetVars!, ineqcs)
+    mechanism.μ = μ
+    # for ineq in ineqcs
+    #     ineq.μ = μ
+    # end
 
     meritf0 = meritf(mechanism)
     for n = Base.OneTo(newtonIter)
         setentries!(mechanism)
         factor!(graph, ldu)
-        solve!(graph, ldu, mechanism) # x̂1 for each body and constraint
+        solve!(mechanism) # x̂1 for each body and constraint
 
         meritf1 = lineSearch!(mechanism, meritf0;iter = lineIter, warning = warning)
 
@@ -57,15 +61,9 @@ function newton!(mechanism::Mechanism{T,Nl}; ε = 1e-10, σ = 0.1, newtonIter = 
             warning && (@info string("Newton iterations: ", n))
             return
         else
-            for ineq in ineqcs
-                if meritf1 < ineq.μ
-                    ineq.μ = σ * ineq.μ
-                    meritf1 = meritf(mechanism)
-                end
-                # while meritf1 < ineq.μ
-                #     ineq.μ = σ*ineq.μ
-                #     meritf1 = meritf(mechanism)
-                # end
+            while meritf1 < mechanism.μ
+                mechanism.μ = σ * mechanism.μ
+                meritf1 = meritf(mechanism)
             end
             meritf0 = meritf1
         end
@@ -111,21 +109,17 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
 
-    α = 1.
-    for ineqc in ineqcs
-        αmax = feasibilityStepLenth(ineqc, ldu)
-        (αmax < α) && (α = αmax)
-    end
+    feasibilityStepLength!(mechanism)
 
     for n = Base.OneTo(iter)
         for body in bodies
-            lineStep!(body, getentry(ldu, body.id), scale, α)
+            lineStep!(body, getentry(ldu, body.id), scale, mechanism)
         end
         for eqc in eqcs
-            lineStep!(eqc, getentry(ldu, eqc.id), scale, α)
+            lineStep!(eqc, getentry(ldu, eqc.id), scale, mechanism)
         end
         for ineqc in ineqcs
-            lineStep!(ineqc, getineqentry(ldu, ineqc.id), scale, α)
+            lineStep!(ineqc, getineqentry(ldu, ineqc.id), scale, mechanism)
         end
 
         meritf1 = meritf(mechanism)
@@ -145,13 +139,13 @@ end
     return
 end
 
-@inline function lineStep!(node::Component, diagonal, scale, α)
-    node.s1 = node.s0 - 1 / (2^scale) * α * diagonal.Δs
+@inline function lineStep!(node::Component, diagonal, scale, mechanism)
+    node.s1 = node.s0 - 1 / (2^scale) * mechanism.α * diagonal.Δs
     return
 end
 
-@inline function lineStep!(ineqc::InequalityConstraint, entry, scale, α)
-    ineqc.s1 = ineqc.s0 - 1 / (2^scale) * α * entry.Δs
-    ineqc.γ1 = ineqc.γ0 - 1 / (2^scale) * α * entry.Δγ
+@inline function lineStep!(ineqc::InequalityConstraint, entry, scale, mechanism)
+    ineqc.s1 = ineqc.s0 - 1 / (2^scale) * mechanism.α * entry.Δs
+    ineqc.γ1 = ineqc.γ0 - 1 / (2^scale) * mechanism.α * entry.Δγ
     return
 end

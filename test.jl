@@ -62,9 +62,9 @@ cfr = 0.1
 # joint8 = InequalityConstraint(link8,cfr)
 # joint9 = InequalityConstraint(link9,cfr)
 
-joint1 = InequalityConstraint(Impact(link1,[0;0;1.0]))
-joint2 = InequalityConstraint(Impact(link2,[0;0;1.0]))
-joint3 = InequalityConstraint(Impact(link3,[0;0;1.0]))
+joint1 = InequalityConstraint(Impact(link1,[0;-0.1;1.0]),Impact(link1,[0;0.1;1.0]))
+joint2 = InequalityConstraint(Impact(link1,[0.1;0;1.0]))
+joint3 = InequalityConstraint(Impact(link1,[-0.1;0;1.0]))
 joint4 = InequalityConstraint(Impact(link4,[0;0;1.0]))
 joint5 = InequalityConstraint(Impact(link5,[0;0;1.0]))
 joint6 = InequalityConstraint(Impact(link6,[0;0;1.0]))
@@ -105,11 +105,11 @@ joint1to8 = EqualityConstraint(Fixed(link1,link8,[-length1/2;length1/2;length1/2
 joint1to9 = EqualityConstraint(Fixed(link1,link9,[-length1/2;-length1/2;length1/2],zeros(3)))
 links = [link1]
 constraints = [joint0to1]
-ineqs = [joint1]
+ineqs = [joint1;joint2;joint3]
 shapes = [box1;b1;b2]
 
 
-mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=5.)
+mech = Mechanism(origin, links,constraints,ineqs,g=-9.81,tend=10.)
 # link1.q[2] = Quaternion(AngleAxis(-rand()-0.2,rand(3)-ones(3)*0.5...))
 # link1.q[2] = Quaternion(SVector([0.885818;-0.0789202;-0.274472;-0.365735]...))
 qtemp = link1.q[2]
@@ -118,7 +118,7 @@ qtemp = link1.q[2]
 # -0.01932481073253633
 # -0.3575718060311244
 for link in links
-    link.x[2] += [0.;0.02;0.04]
+    link.x[2] += [0.01;0.005;0.04]
 end
 
 simulate!(mech,save=true,debug=true)

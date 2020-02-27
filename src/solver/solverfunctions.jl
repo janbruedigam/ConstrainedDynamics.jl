@@ -99,7 +99,9 @@ function factor!(graph::Graph, ldu::SparseLDU)
     end
 end
 
-function solve!(graph::Graph, ldu::SparseLDU, mechanism)
+function solve!(mechanism)
+    ldu = mechanism.ldu
+    graph = mechanism.graph
     dfslist = graph.dfslist
 
     for id in dfslist
@@ -160,7 +162,7 @@ end
 
 function eliminatedSol!(ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint, mechanism::Mechanism)
     dt = mechanism.dt
-    μ = ineqc.μ
+    μ = mechanism.μ
     No = 2
 
     φ = g(ineqc, mechanism)

@@ -9,10 +9,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
     s1::SVector{N,T}
     γ0::SVector{N,T}
     γ1::SVector{N,T}
-
-    μ::T
-    α::T
-    τ::T
+    
 
     function InequalityConstraint(data...)
         bounddata = Tuple{Bound,Int64}[]
@@ -45,11 +42,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
         γ0 = ones(T, N)
         γ1 = ones(T, N)
 
-        α = 1
-        μ = 1
-        τ = 0.995
-
-        new{T,N,typeof(constraints)}(getGlobalID(), constraints, pid, s0, s1, γ0, γ1, α, μ, τ)
+        new{T,N,typeof(constraints)}(getGlobalID(), constraints, pid, s0, s1, γ0, γ1)
     end
 end
 
@@ -62,26 +55,7 @@ function resetVars!(ineqc::InequalityConstraint{T,N}) where {T,N}
     ineqc.γ0 = @SVector ones(T, N)
     ineqc.γ1 = @SVector ones(T, N)
 
-    ineqc.α = 1
-    ineqc.μ = 1
     return 
-end
-
-function feasibilityStepLenth(ineqc::InequalityConstraint{T,N}, ineqentry) where {T,N}
-    s1 = ineqc.s1
-    γ1 = ineqc.γ1
-    Δs = ineqentry.Δs
-    Δγ = ineqentry.Δγ
-    τ = ineqc.τ
-
-    for i = 1:N
-        αmax = τ * s1[i] / Δs[i]
-        (αmax > 0) && (αmax < ineqc.α) && (ineqc.α = αmax)
-        αmax = τ * γ1[i] / Δγ[i]
-        (αmax > 0) && (αmax < ineqc.α) && (ineqc.α = αmax)
-    end
-
-    return ineqc.α
 end
 
 
@@ -107,15 +81,15 @@ function h(ineqc::InequalityConstraint)
     ineqc.s1 .* ineqc.γ1
 end
 
-function hμ(ineqc::InequalityConstraint{T}) where T
-    ineqc.s1 .* ineqc.γ1 .- ineqc.μ
+function hμ(ineqc::InequalityConstraint{T}, μ) where T
+    ineqc.s1 .* ineqc.γ1 .- μ
 end
 
 
 function schurf(ineqc::InequalityConstraint{T,N}, body, mechanism) where {T,N}
     val = @SVector zeros(T, 6)
     for i = 1:N
-        val += schurf(ineqc, ineqc.constraints[i], i, body, mechanism.dt, mechanism.No)
+        val += schurf(ineqc, ineqc.constraints[i], i, body, mechanism.μ, mechanism.dt, mechanism.No)
     end
     return val
 end

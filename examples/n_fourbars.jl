@@ -31,7 +31,7 @@ offset = pi/2
 phi1, phi2, phi3, phi4 = pi/8+offset,-pi/8+offset,-pi/8+offset,pi/8+offset#pi/2, -pi/4, 0., 3*pi/4
 q5, q6, q7, q8 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX(phi3)), Quaternion(RotX(phi4))
 
-N = 1
+N = 3
 
 # Links
 origin = Origin{Float64}()
@@ -122,9 +122,9 @@ end
 
 shapes = [b1,b2,b3,b4]
 
-# mech = Mechanism(origin,links, constraints)
-#
-#
-#
-# simulate!(mech,save=true)
-# MaximalCoordinateDynamics.visualize(mech,shapes)
+mech = Mechanism(origin,links, constraints)
+
+
+
+simulate!(mech,save=true)
+MaximalCoordinateDynamics.visualize(mech,shapes)
