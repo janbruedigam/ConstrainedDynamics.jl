@@ -3,7 +3,6 @@ using Plots: RGBA
 using StaticArrays
 
 !(@isdefined MaximalCoordinateDynamics) && include(joinpath("src", "MaximalCoordinateDynamics.jl"))
-# include(joinpath("src", "MaximalCoordinateDynamics.jl"))
 using Main.MaximalCoordinateDynamics
 
 # Parameters
@@ -53,7 +52,7 @@ setInit!(link1,link9,[-length1/2;-length1/2;length1/2],zeros(3))
 
 # # Constraints
 cfr = 0.1
-joint1 = InequalityConstraint(Friction(link1,[0;-0.;1.0],cfr))
+# joint1 = InequalityConstraint(Friction(link1,[0;-0.;1.0],cfr))
 # joint2 = InequalityConstraint(link2,cfr)
 # joint3 = InequalityConstraint(link3,cfr)
 # joint4 = InequalityConstraint(link4,cfr)
@@ -63,7 +62,7 @@ joint1 = InequalityConstraint(Friction(link1,[0;-0.;1.0],cfr))
 # joint8 = InequalityConstraint(link8,cfr)
 # joint9 = InequalityConstraint(link9,cfr)
 
-# joint1 = InequalityConstraint(Impact(link1,[0;0;1.0]))
+joint1 = InequalityConstraint(Impact(link1,[0;0;1.0]))
 joint2 = InequalityConstraint(Impact(link2,[0;0;1.0]))
 joint3 = InequalityConstraint(Impact(link3,[0;0;1.0]))
 joint4 = InequalityConstraint(Impact(link4,[0;0;1.0]))
@@ -122,5 +121,5 @@ for link in links
     link.x[2] += [0.;0.02;0.04]
 end
 
-# simulate_ip!(mech,save=true,debug=true)
-# MaximalCoordinateDynamics.visualize(mech,shapes)
+simulate!(mech,save=true,debug=true)
+MaximalCoordinateDynamics.visualize(mech,shapes)

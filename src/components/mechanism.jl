@@ -1,9 +1,9 @@
-mutable struct Mechanism{T,N}
+mutable struct Mechanism{T,N,Ni}
     tend::T
     steps::Base.OneTo{Int64}
     dt::T
     g::T
-    No::Int64
+    No::Int64 # order of integrator, currently only No=2 (1st order) implemented
 
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
@@ -19,10 +19,7 @@ mutable struct Mechanism{T,N}
     ldu::SparseLDU{T}
     storage::Storage{T}
 
-    μ::Float64
-    αmax::Float64
 
-    #TODO no constraints input
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
         eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
@@ -45,18 +42,18 @@ mutable struct Mechanism{T,N}
             push!(body.F, [body.F[1] for i=1:No-1]...)
             push!(body.τ, [body.τ[1] for i=1:No-1]...)
 
-            for c in eqcs
-                c.pid == body.id && (c.pid = currentid)
-                for (ind,bodyid) in enumerate(c.bodyids)
+            for eqc in eqcs
+                eqc.pid == body.id && (eqc.pid = currentid)
+                for (ind,bodyid) in enumerate(eqc.bodyids)
                     if bodyid == body.id
-                        c.bodyids = setindex(c.bodyids,currentid,ind)
-                        c.constraints[ind].cid = currentid
+                        eqc.bodyids = setindex(eqc.bodyids,currentid,ind)
+                        eqc.constraints[ind].cid = currentid
                     end
                 end
             end
 
-            for c in ineqcs
-                c.pid == body.id && (c.pid = currentid)
+            for ineqc in ineqcs
+                ineqc.pid == body.id && (ineqc.pid = currentid)
             end
 
             body.id = currentid
@@ -66,23 +63,23 @@ mutable struct Mechanism{T,N}
         end
 
         eqdict = Dict{Int64,Int64}()
-        for (ind,c) in enumerate(eqcs)
-            c.id = currentid
+        for (ind,eqc) in enumerate(eqcs)
+            eqc.id = currentid
             currentid+=1
 
-            eqdict[c.id] = ind
+            eqdict[eqc.id] = ind
         end
 
         ineqdict = Dict{Int64,Int64}()
-        for (ind,c) in enumerate(ineqcs)
-            c.id = currentid
+        for (ind,ineqc) in enumerate(ineqcs)
+            ineqc.id = currentid
             currentid+=1
 
-            ineqdict[c.id] = ind
+            ineqdict[ineqc.id] = ind
         end
 
-        normf = zero(T)
-        normΔs = zero(T)
+        normf = 0
+        normΔs = 0
 
         graph = Graph(origin,bodies,eqcs,ineqcs)
         ldu = SparseLDU(graph,bodies,eqcs,ineqcs,bdict,eqdict,ineqdict)
@@ -91,34 +88,49 @@ mutable struct Mechanism{T,N}
 
         bodies = UnitDict(bodies)
         eqcs = UnitDict((eqcs[1].id):(eqcs[Ne].id),eqcs)
-        if !isempty(ineqcs)
+        if Ni > 0
             ineqcs = UnitDict((ineqcs[1].id):(ineqcs[Ni].id),ineqcs)
         else
             ineqcs = UnitDict(0:0,ineqcs)
         end
-        new{T,N}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,eqcs,ineqcs,normf,normΔs,graph,ldu,storage,1,1)
+
+        new{T,N,Ni}(tend,Base.OneTo(steps),dt,g,No,origin,bodies,eqcs,ineqcs,normf,normΔs,graph,ldu,storage)
+    end
+
+    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
+        tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
+
+        ineqcs = InequalityConstraint{T}[]
+        Mechanism(origin,bodies,eqcs,ineqcs,tend=tend, dt=dt, g=g, No=No)
+    end
+
+    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
+        tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
+
+        eqc = EqualityConstraint{T}[]
+        for body in bodies
+            push!(eqc,EqualityConstraint(OriginConnection(origin,body)))
+        end
+        Mechanism(origin,bodies,eqc,ineqcs,tend=tend, dt=dt, g=g, No=No)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
         tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
 
-        constraints = EqualityConstraint{T}[] # Vector{EqualityConstraint{T}}(undef,0)
+        eqc = EqualityConstraint{T}[]
         for body in bodies
-            push!(constraints,EqualityConstraint(OriginConnection(origin,body)))
+            push!(eqc,EqualityConstraint(OriginConnection(origin,body)))
         end
-        Mechanism(origin,bodies,constraints,tend=tend, dt=dt, g=g, No=No)
-    end
-
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},constraints::Vector{<:EqualityConstraint{T}};
-        tend::T=10., dt::T=.01, g::T=-9.81, No=2) where T
-
-        ineqconstraints = InequalityConstraint{T}[] # Vector{InequalityConstraint{T}}(undef,0)
-        Mechanism(origin,bodies,constraints,ineqconstraints,tend=tend, dt=dt, g=g, No=No)
-    end
+        Mechanism(origin,bodies,eqc,tend=tend, dt=dt, g=g, No=No)
+    end    
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T}) where {T}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,0}) where {T,N}
     summary(io, M); println(io, " with ", length(M.bodies), " bodies and ", length(M.eqconstraints), " constraints")
+end
+
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,Ni}) where {T,N,Ni}
+    summary(io, M); println(io, " with ", length(M.bodies), " bodies, ", length(M.eqconstraints), " equality constraints, and ", Ni, " inequality constraints")
 end
 
 function setentries!(mechanism::Mechanism)
@@ -158,17 +170,6 @@ end
 @inline geteqconstraint(mechanism::Mechanism,id::Int64) = mechanism.eqconstraints[id]
 @inline getineqconstraint(mechanism::Mechanism,id::Int64) = mechanism.ineqconstraints[id]
 
-# @inline function getnode(mechanism::Mechanism,id::Int64) # should only be used in setup
-#      if haskey(mechanism.bdict,id)
-#          return getbody(mechanism,id)
-#      elseif haskey(mechanism.cdict,id)
-#          return getconstraint(mechanism,id)
-#      elseif id == mechanism.originid
-#          return mechanism.origin
-#      else
-#          error("not found.")
-#      end
-#  end
 
 @inline function normf(body::Body{T},mechanism::Mechanism) where T
     f = dynamics(body,mechanism)
@@ -188,7 +189,7 @@ end
 
 @inline function normfμ(ineqc::InequalityConstraint,mechanism::Mechanism)
     f = gs(ineqc,mechanism)
-    d = hμ(ineqc,mechanism.μ)
+    d = hμ(ineqc)
     return dot(f,f)+dot(d,d)
 end
 
@@ -199,7 +200,6 @@ end
 
 @inline function NtγTof!(body::Body,ineqc::InequalityConstraint,mechanism)
     body.f -= ∂g∂pos(ineqc,body,mechanism)'*ineqc.γ1
-    extrafriction!(ineqc,body,mechanism)
     return
 end
 
@@ -257,52 +257,56 @@ end
     return
 end
 
-function computeα!(mechanism::Mechanism)
-    ldu = mechanism.ldu
-
-    τ = 0.995
-    # αmax = 1.
-    mechanism.αmax = 1.
-
-    for ineqc in mechanism.ineqconstraints
-        computeα!(ineqc,getineq(ldu,ineqc.id),τ,mechanism)
-        # Δs = getineq(ldu,ineqc.id).Δs
-        # Δγ = getineq(ldu,ineqc.id).Δγ
-
-        # for (i,el) in enumerate(Δs)
-        #     if el > 0
-        #         temp = minimum([1.;τ*ineqc.s1[i]/el])
-        #         αmax = minimum([αmax;temp])
-        #     end
-        # end
-
-        # for (i,el) in enumerate(Δγ)
-        #     if el > 0
-        #         temp = minimum([1.;τ*ineqc.γ1[i]/el])
-        #         αmax = minimum([αmax;temp])
-        #     end
-        # end
-    end
-
-    # mechanism.αmax = αmax
-
-    return
+function feasibilityStepLenth(ineqc::InequalityConstraint,ldu::SparseLDU)
+    feasibilityStepLenth(ineqc,getineqentry(ldu,ineqc.id))
 end
 
-function computeα!(ineqc::InequalityConstraint,ineqentry::InequalityEntry,τ, mechanism)
-    findminforα!(ineqc.s1,ineqentry.Δs,τ,mechanism)
-    findminforα!(ineqc.γ1,ineqentry.Δγ,τ,mechanism)
-    return
-end
+# function computeα!(mechanism::Mechanism)
+#     ldu = mechanism.ldu
 
-function findminforα!(sγ1::SVector{N,T},Δsγ::SVector{N,T},τ,mechanism) where {N,T}
-    for i=1:N
-        temp = τ*sγ1[i]/Δsγ[i]
-        (temp > 0) && (temp < mechanism.αmax) && (mechanism.αmax = temp)
-    end
+#     τ = 0.995
+#     # αmax = 1.
+#     mechanism.αmax = 1.
 
-    return 
-end
+#     for ineqc in mechanism.ineqconstraints
+#         computeα!(ineqc,getineq(ldu,ineqc.id),τ,mechanism)
+#         # Δs = getineq(ldu,ineqc.id).Δs
+#         # Δγ = getineq(ldu,ineqc.id).Δγ
+
+#         # for (i,el) in enumerate(Δs)
+#         #     if el > 0
+#         #         temp = minimum([1.;τ*ineqc.s1[i]/el])
+#         #         αmax = minimum([αmax;temp])
+#         #     end
+#         # end
+
+#         # for (i,el) in enumerate(Δγ)
+#         #     if el > 0
+#         #         temp = minimum([1.;τ*ineqc.γ1[i]/el])
+#         #         αmax = minimum([αmax;temp])
+#         #     end
+#         # end
+#     end
+
+#     # mechanism.αmax = αmax
+
+#     return
+# end
+
+# function computeα!(ineqc::InequalityConstraint,ineqentry::InequalityEntry,τ, mechanism)
+#     findminforα!(ineqc.s1,ineqentry.Δs,τ,mechanism)
+#     findminforα!(ineqc.γ1,ineqentry.Δγ,τ,mechanism)
+#     return
+# end
+
+# function findminforα!(sγ1::SVector{N,T},Δsγ::SVector{N,T},τ,mechanism) where {N,T}
+#     for i=1:N
+#         temp = τ*sγ1[i]/Δsγ[i]
+#         (temp > 0) && (temp < mechanism.αmax) && (mechanism.αmax = temp)
+#     end
+
+#     return 
+# end
 
 function saveToTraj!(mechanism::Mechanism,t)
     No = mechanism.No
@@ -326,24 +330,7 @@ end
 end
 
 
-function simulate!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,disp::Bool=false)
-    bodies = mechanism.bodies
-    constraints = mechanism.eqconstraints
-    dt = mechanism.dt
-    foreach(s0tos1!,bodies)
-    foreach(s0tos1!,constraints)
-
-    for i=mechanism.steps
-        newton!(mechanism,warning=debug)
-        save && saveToTraj!(mechanism,i)
-        foreach(updatePos!,bodies,dt)
-
-        disp && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
-    end
-    return
-end
-
-function simulate_ip!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,disp::Bool=false)
+function simulate!(mechanism::Mechanism;save::Bool=false,debug::Bool=false)
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
@@ -353,16 +340,33 @@ function simulate_ip!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,di
     foreach(s0tos1!,ineqcs)
 
     for i=mechanism.steps
-        # newton!(mechanism,warning=debug)
-        # newton_ip!(mechanism,bodies[1])
-        newton_ip!(mechanism,warning=debug)
+        newton!(mechanism,warning=debug)
         save && saveToTraj!(mechanism,i)
         foreach(updatePos!,bodies,dt)
 
-        disp && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
+        # debug && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
     end
     return
 end
+
+# function simulate_ip!(mechanism::Mechanism;save::Bool=false,debug::Bool=false,disp::Bool=false)
+#     bodies = mechanism.bodies
+#     eqcs = mechanism.eqconstraints
+#     ineqcs = mechanism.ineqconstraints
+#     dt = mechanism.dt
+#     foreach(s0tos1!,bodies)
+#     foreach(s0tos1!,eqcs)
+#     foreach(s0tos1!,ineqcs)
+
+#     for i=mechanism.steps
+#         newton_ip!(mechanism,warning=debug)
+#         save && saveToTraj!(mechanism,i)
+#         foreach(updatePos!,bodies,dt)
+
+#         disp && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
+#     end
+#     return
+# end
 
 
 function plotθ(mechanism::Mechanism{T},id) where T

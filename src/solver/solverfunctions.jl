@@ -122,7 +122,7 @@ function solve!(graph::Graph,ldu::SparseLDU,mechanism)
 
         # inequalities
         for cid in ineqchildren(graph,id)
-            eliminatedSol!(getineq(ldu,cid),diagonal,getbody(mechanism,id),getineqconstraint(mechanism,cid),mechanism)
+            eliminatedSol!(getineqentry(ldu,cid),diagonal,getbody(mechanism,id),getineqconstraint(mechanism,cid),mechanism)
         end
     end
 end
@@ -139,7 +139,7 @@ function update!(eq::EqualityConstraint,diagonal::DiagonalEntry,αγmax)
     return
 end
 
-@inline update!(ineq::InequalityConstraint,ldu::SparseLDU,αsmax,αγmax) = update!(ineq,getineq(ldu,ineq.id),αsmax,αγmax)
+@inline update!(ineq::InequalityConstraint,ldu::SparseLDU,αsmax,αγmax) = update!(ineq,getineqentry(ldu,ineq.id),αsmax,αγmax)
 function update!(ineq::InequalityConstraint,entry::InequalityEntry,αsmax,αγmax)
     ineq.sl1 = ineq.sl0 - αsmax*entry.sl
     ineq.ga1 = ineq.ga0 - αγmax*entry.ga
@@ -229,7 +229,7 @@ end
 
 function eliminatedSol!(ineqentry::InequalityEntry,diagonal::DiagonalEntry,body::Body,ineqc::InequalityConstraint,mechanism::Mechanism)
     dt = mechanism.dt
-    μ = mechanism.μ
+    μ = ineqc.μ
     No = 2
 
     φ = g(ineqc,mechanism)
