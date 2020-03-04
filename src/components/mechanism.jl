@@ -303,6 +303,22 @@ function feasibilityStepLength!(ineqc::InequalityConstraint{T,N}, ineqentry::Ine
 end
 
 
+function setPosition!(mechanism::Mechanism{T}, body::Body{T};x::AbstractVector{T}=zeros(3),q::Quaternion{T}=Quaternion{T}()) where T
+    for i=1:mechanism.No
+        body.x[i] = x
+        body.q[i] = q
+    end
+end
+
+# Assumes first order integrator
+# TODO higher order integrator
+function setVelocity!(mechanism::Mechanism{T}, body::Body{T};v::AbstractVector{T}=zeros(3),ω::AbstractVector{T}=zeros(3)) where T
+    body.s0 = [v;ω]
+    s0tos1!(body)
+    updatePos!(body, mechanism.dt)
+end
+
+
 function saveToStorage!(mechanism::Mechanism, t)
     No = mechanism.No
     for (ind, body) in enumerate(mechanism.bodies)
@@ -322,8 +338,17 @@ end
     return
 end
 
+function verifyConstraints(mechanism::Mechanism)
+    for eqc in mechanism.eqconstraints
+        if norm(g(eqc,mechanism)) > 1e-3
+            @info string("Probably disconnected bodies at constraint: ", eqc.id)
+        end
+    end
+end
+
 
 function simulate!(mechanism::Mechanism;save::Bool = false,debug::Bool = false)
+    verifyConstraints(mechanism)
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
