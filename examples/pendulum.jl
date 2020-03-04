@@ -27,10 +27,10 @@ joint_between_origin_and_link1 = EqualityConstraint(Revolute(origin,link1,zeros(
 
 links = [link1]
 constraints = [joint_between_origin_and_link1]
-shapes = [box]
+# shapes = [box]
 
 
-mech = Mechanism(origin, links, constraints)
+mech = Mechanism(origin, links, constraints, shapes=[box])
 
-simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+# simulate!(mech,save=true)
+# visualize!(mech)

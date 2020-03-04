@@ -28,11 +28,11 @@ ineqs = [joint1;joint2;joint3]
 shapes = [box1]
 
 
-mech = Mechanism(origin, links,ineqs)
+mech = Mechanism(origin, links,ineqs, shapes=shapes)
 
 for link in links
     link.x[2] += [0.01;0.005;0.05]
 end
 
 simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+visualize!(mech)

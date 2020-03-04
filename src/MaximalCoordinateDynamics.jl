@@ -44,7 +44,7 @@ export Box,
     simulate!,
     plotθ,
     plotλ,
-    visualize
+    visualize!
 
 
 include(joinpath("util", "util.jl"))

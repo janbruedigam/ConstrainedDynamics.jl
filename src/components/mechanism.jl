@@ -22,10 +22,12 @@ mutable struct Mechanism{T,N,Ni}
     α::T
     μ::T
 
+    shapes::Vector{<:Shape{T}}
+
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
         eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2) where T
+        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
 
         resetGlobalID()
@@ -57,6 +59,12 @@ mutable struct Mechanism{T,N,Ni}
 
             for ineqc in ineqcs
                 ineqc.pid == body.id && (ineqc.pid = currentid)
+            end
+
+            for shape in shapes
+                for (i,id) in enumerate(shape.bodyids)
+                    id == body.id && (shape.bodyids[i] = currentid)
+                end
             end
 
             body.id = currentid
@@ -100,34 +108,34 @@ mutable struct Mechanism{T,N,Ni}
         α = 1
         μ = 1
 
-        new{T,N,Ni}(tend, Base.OneTo(steps), dt, g, No, origin, bodies, eqcs, ineqcs, normf, normΔs, graph, ldu, storage, α, μ)
+        new{T,N,Ni}(tend, Base.OneTo(steps), dt, g, No, origin, bodies, eqcs, ineqcs, normf, normΔs, graph, ldu, storage, α, μ, shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2) where T
+        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         ineqcs = InequalityConstraint{T}[]
-        Mechanism(origin, bodies, eqcs, ineqcs, tend = tend, dt = dt, g = g, No = No)
+        Mechanism(origin, bodies, eqcs, ineqcs, tend = tend, dt = dt, g = g, No = No, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2) where T
+        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, ineqcs, tend = tend, dt = dt, g = g, No = No)
+        Mechanism(origin, bodies, eqc, ineqcs, tend = tend, dt = dt, g = g, No = No, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2) where T
+        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, tend = tend, dt = dt, g = g, No = No)
+        Mechanism(origin, bodies, eqc, tend = tend, dt = dt, g = g, No = No, shapes = shapes)
     end    
 end
 

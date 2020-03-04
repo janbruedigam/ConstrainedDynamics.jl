@@ -51,7 +51,7 @@ end
 
 shapes = [b1]
 
-mech = Mechanism(origin,links, constraints;tend=10.,dt=0.01)
+mech = Mechanism(origin,links, constraints;tend=10.,dt=0.01, shapes=shapes)
 
 simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+visualize!(mech)

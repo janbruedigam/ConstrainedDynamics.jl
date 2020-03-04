@@ -33,7 +33,7 @@ mutable struct Body{T} <: AbstractBody{T}
 
     function Body(shape::Shape)
         L = Body(shape.m, shape.J)
-        push!(shape.bodies, L)
+        push!(shape.bodyids, L.id)
         return L
     end
 end

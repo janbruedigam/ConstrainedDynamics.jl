@@ -1,7 +1,24 @@
-abstract type Shape end
+abstract type Shape{T} end
 
-mutable struct Box{T} <: Shape
-    bodies::Vector
+struct CustomShape{T} <: Shape{T}
+    bodyids::Vector{Int64}
+    m::T
+    J::SMatrix{3,3,T,9}
+
+    xyz::SVector{3,T}
+    color::RGBA
+
+    # Currently only works for box shaped shapes
+    # TODO use vectex description to create some kind of polygon
+    # function CustomShape(m::T, J::AbstractMatrix{T}, vertices::Vector{AbstractVector{T}};color = RGBA(0.5, 0.5, 0.5)) where T
+    function CustomShape(m::T, J::AbstractMatrix{T}, xyz::AbstractVector{T};color = RGBA(0.5, 0.5, 0.5)) where T
+        bodyids = Int64[]
+        new{T}(bodyids, m, J, xyz, color)
+    end
+end
+
+struct Box{T} <: Shape{T}
+    bodyids::Vector{Int64}
     m::T
     J::SMatrix{3,3,T,9}
 
@@ -10,26 +27,27 @@ mutable struct Box{T} <: Shape
 
     function Box(x, y, z, m::T;color = RGBA(0.5, 0.5, 0.5)) where T
         J = 1 / 12 * m * diagm([y^2 + z^2;x^2 + z^2;x^2 + y^2])
-        bodies = []
+        bodyids = Int64[]
 
-        new{T}(bodies, m, J, [x;y;z], color)
+        new{T}(bodyids, m, J, [x;y;z], color)
     end
 end
 
-mutable struct Cylinder{T} <: Shape
-    bodies::Vector
+struct Cylinder{T} <: Shape{T}
+    bodyids::Vector{Int64}
     m::T
     J::SMatrix{3,3,T,9}
 
     rh::SVector{2,T}
     color::RGBA
 
-    # by defaul the cylinder points in the z direction
+    # by default the cylinder points in the z direction
     # TODO other direction
     function Cylinder(r, h, m::T;color = RGBA(0.5, 0.5, 0.5)) where T
         J = 1 / 2 * m * diagm([r^2 + 1 / 6 * h^2;r^2 + 1 / 6 * h^2;r^2])
-        bodies = []
+        bodyids = Int64[]
 
-        new{T}(bodies, m, J, [r;h], color)
+        new{T}(bodyids, m, J, [r;h], color)
     end
 end
+

@@ -38,7 +38,7 @@ links = [link1; link2]
 constraints = [joint0to12;joint1to2]
 shapes = [b1]
 
-mech = Mechanism(origin,links, constraints)
+mech = Mechanism(origin,links, constraints, shapes=shapes)
 
 simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+visualize!(mech)

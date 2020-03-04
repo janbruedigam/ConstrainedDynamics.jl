@@ -40,7 +40,7 @@ constraints = [socket0to1;socket1to2]
 shapes = [b1,b2]
 
 
-mech = Mechanism(origin,links, constraints)
+mech = Mechanism(origin,links, constraints, shapes=shapes)
 
 simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+visualize!(mech)

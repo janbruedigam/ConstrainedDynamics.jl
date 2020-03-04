@@ -121,9 +121,9 @@ end
 
 shapes = [b1,b2,b3,b4]
 
-mech = Mechanism(origin,links, constraints)
+mech = Mechanism(origin,links, constraints, shapes=shapes)
 
 
 
 simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+visualize!(mech)

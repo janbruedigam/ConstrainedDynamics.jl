@@ -69,7 +69,7 @@ ineqs = [joint2;joint3;joint4;joint5;joint6;joint7;joint8;joint9]
 shapes = [box1;b1]
 
 
-mech = Mechanism(origin, links,constraints,ineqs)
+mech = Mechanism(origin, links,constraints,ineqs,shapes=shapes)
 # link1.q[2] = Quaternion(AngleAxis(-rand()-0.2,rand(3)-ones(3)*0.5...))
 link1.q[2] = Quaternion(SVector([0.9127362490430289;-0.19667611676218716;-0.01932481073253633;-0.3575718060311244]...))
 # link1.q[2] = Quaternion(SVector([0.8264247451585373;0.007903070296695762;0.42943709893585524;-0.364065186645316]...))
@@ -81,4 +81,4 @@ for link in links
 end
 
 simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+visualize!(mech)

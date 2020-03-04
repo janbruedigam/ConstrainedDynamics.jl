@@ -72,7 +72,7 @@ links = [link1; link2; link3; link4; link5; link6; link7; link8]
 constraints = [joint0to1; joint1to23; joint3to4; joint2to4; joint4to5;joint5to67;joint7to8;joint6to8]
 shapes = [b1,b2,b3,b4]
 
-mech = Mechanism(origin,links, constraints,InequalityConstraint{Float64}[])
+mech = Mechanism(origin,links, constraints,InequalityConstraint{Float64}[],shapes=shapes)
 
 simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+visualize!(mech)

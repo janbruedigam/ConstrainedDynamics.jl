@@ -42,8 +42,8 @@ links = [link1; link2]
 constraints = [joint0to12;joint1to2]
 shapes = [box,cyl]
 
-mech = Mechanism(origin,links,constraints)
+mech = Mechanism(origin,links,constraints,shapes=shapes)
 # link2.q[2] = Quaternion(RotZ(0.05))
 
 simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+visualize!(mech)

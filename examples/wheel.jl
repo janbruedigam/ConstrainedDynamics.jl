@@ -42,8 +42,8 @@ constraints = [socket0to1;joint1to5]
 shapes = [b1;b5]
 
 
-mech = Mechanism(origin,links, constraints;tend=10.0,dt=0.001)
+mech = Mechanism(origin,links, constraints;tend=10.0,dt=0.001, shapes=shapes)
 link5.q[2] = Quaternion(RotX(0.05))
 
 simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+visualize!(mech)
