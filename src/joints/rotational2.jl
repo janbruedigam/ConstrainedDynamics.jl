@@ -42,7 +42,7 @@ end
     if body2.id == joint.cid
         V = @SMatrix zeros(T, 1, 3)
 
-        Ω = dt^2 / 4 * joint.plane' * VRmat(ωbar(body2, dt)) * Rmat(body2.q[No]) * Rᵀmat(body1.q[No]) * Tmat(T) * derivωbar(body1, dt)
+        Ω = joint.plane' * VRmat(ωbar(body2, dt)) * Rmat(body2.q[No]) * Rᵀmat(body1.q[No]) * Tmat(T) * derivωbar(body1, dt)
 
         return [V Ω]
     else
@@ -54,7 +54,7 @@ end
     if body2.id == joint.cid
         V = @SMatrix zeros(T, 1, 3)
 
-        Ω = dt^2 / 4 * joint.plane' * VLᵀmat(ωbar(body1, dt)) * Lᵀmat(body1.q[No]) * Lmat(body2.q[No]) * derivωbar(body2, dt)
+        Ω = joint.plane' * VLᵀmat(ωbar(body1, dt)) * Lᵀmat(body1.q[No]) * Lmat(body2.q[No]) * derivωbar(body2, dt)
 
         return [V Ω]
     else
@@ -81,7 +81,7 @@ end
     if body2.id == joint.cid
         V = @SMatrix zeros(T, 1, 3)
 
-        Ω = dt / 2 * joint.plane' * VLmat(body2.q[No]) * derivωbar(body2, dt)
+        Ω = joint.plane' * VLmat(body2.q[No]) * derivωbar(body2, dt)
 
         return [V Ω]
     else

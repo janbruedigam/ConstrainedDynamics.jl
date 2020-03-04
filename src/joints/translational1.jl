@@ -53,11 +53,11 @@ end
     if body2.id == joint.cid
         q1 = body1.q[No]
         ωbar1 = ωbar(body1, dt)
-        point2 = body2.x[No] + dt * getvnew(body2) + dt^2 / 4 * vrotate(vrotate(joint.vertices[2], ωbar(body2, dt)), body2.q[No])
+        point2 = body2.x[No] + dt * getvnew(body2) + vrotate(vrotate(joint.vertices[2], ωbar(body2, dt)), body2.q[No])
 
-        V = -dt^3 / 4 * joint.V12 * VLᵀmat(ωbar1)Lᵀmat(q1)Rmat(ωbar1)RVᵀmat(q1)
+        V = -dt * joint.V12 * VLᵀmat(ωbar1) * Lᵀmat(q1) * Rmat(ωbar1) * RVᵀmat(q1)
 
-        Ω = 2 * dt^2 / 4 * joint.V12 * VLᵀmat(ωbar1) * Lᵀmat(q1) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(body1.x[No] + dt * getvnew(body1)))) * Lmat(q1) * derivωbar(body1, dt)
+        Ω = 2 * joint.V12 * VLᵀmat(ωbar1) * Lᵀmat(q1) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(body1.x[No] + dt * getvnew(body1)))) * Lmat(q1) * derivωbar(body1, dt)
 
         return [V Ω]
     else
@@ -70,9 +70,9 @@ end
         q1 = body1.q[No]
         q2 = body2.q[No]
         ωbar1 = ωbar(body1, dt)
-        V = dt^3 / 4 * joint.V12 * VLᵀmat(ωbar1)Lᵀmat(q1)Rmat(ωbar1)RVᵀmat(q1)
+        V = dt * joint.V12 * VLᵀmat(ωbar1)Lᵀmat(q1)Rmat(ωbar1)RVᵀmat(q1)
 
-        Ω = 2 * dt^4 / 16 * joint.V12 * VLᵀmat(ωbar1) * Lᵀmat(q1) * Lmat(q2) * Rmat(ωbar1) * Rmat(q1) * Rᵀmat(q2) * Rᵀmat(ωbar(body2, dt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, dt)
+        Ω = 2 * joint.V12 * VLᵀmat(ωbar1) * Lᵀmat(q1) * Lmat(q2) * Rmat(ωbar1) * Rmat(q1) * Rᵀmat(q2) * Rᵀmat(ωbar(body2, dt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, dt)
 
         return [V Ω]
     else
@@ -106,7 +106,7 @@ end
 
         V = dt * joint.V12
 
-        Ω = 2 * dt^2 / 4 * joint.V12 * VLmat(q2) * Rᵀmat(q2) * Rᵀmat(ωbar(body2, dt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, dt)
+        Ω = 2 * joint.V12 * VLmat(q2) * Rᵀmat(q2) * Rᵀmat(ωbar(body2, dt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, dt)
 
         return [V Ω]
     else

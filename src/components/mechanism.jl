@@ -307,12 +307,10 @@ function saveToTraj!(mechanism::Mechanism, t)
 end
 
 @inline function updatePos!(body::Body, dt)
-    x2 = body.x[2]
-    q2 = body.q[2]
-    body.x[1] = x2
-    body.x[2] = x2 + getvnew(body) * dt
-    body.q[1] = q2
-    body.q[2] = dt / 2 * (Lmat(q2) * ωbar(body, dt))
+    body.x[1] = body.x[2]
+    body.x[2] = getx3(body, dt)
+    body.q[1] = body.q[2]
+    body.q[2] = getq3(body, dt)
     return
 end
 

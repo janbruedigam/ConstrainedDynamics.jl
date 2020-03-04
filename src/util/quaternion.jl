@@ -8,7 +8,7 @@ end
 # Constructors
 Quaternion(s::Real,v1::Real,v2::Real,v3::Real) = Quaternion(promote(s, v1, v2, v3)...)
 Quaternion(s::Real) = Quaternion(s, 0, 0, 0)
-Quaternion(v::Vector) = Quaternion(0, v[1], v[2], v[3])
+# Quaternion(v::Vector) = Quaternion(0, v[1], v[2], v[3])
 Quaternion(v::SVector{3,T}) where T = Quaternion(0, v[1], v[2], v[3])
 Quaternion(s::T,v::SVector{3,T}) where T = Quaternion(s, v[1], v[2], v[3])
 Quaternion(R::Rotation) = Quaternion(Quat(R).w, Quat(R).x, Quat(R).y, Quat(R).z)
@@ -27,7 +27,8 @@ Base.:*(q1::Quaternion, q2::Quaternion) = Quaternion(  q1.s * q2.s - q1.v1 * q2.
                                                        q1.s * q2.v1 + q1.v1 * q2.s + q1.v2 * q2.v3 - q1.v3 * q2.v2,
                                                        q1.s * q2.v2 - q1.v1 * q2.v3 + q1.v2 * q2.s + q1.v3 * q2.v1,
                                                        q1.s * q2.v3 + q1.v1 * q2.v2 - q1.v2 * q2.v1 + q1.v3 * q2.s)
-
+Base.:*(q::Quaternion, x::Number) = Quaternion(q.s * x, q.v1 * x, q.v2 * x, q.v3 * x)
+Base.:*(x::Number, q::Quaternion) = q * x
 Base.:/(q1::Quaternion, q2::Quaternion) = q1 * inv(q2)
 Base.:\(q1::Quaternion, q2::Quaternion) = inv(q1) * q2
 

@@ -65,6 +65,9 @@ function setInit!(body1::Body{T}, body2::Body{T}, p1::AbstractVector, p2::Abstra
     F::AbstractVector = zeros(T, 3),
     τ::AbstractVector = zeros(T, 3)) where T
 
+    p1 = convert(SVector{3,T}, p1)
+    p2 = convert(SVector{3,T}, p2)
+
     x2 = body1.x[1] + vrotate(p1, body1.q[1]) - vrotate(p2, q)
     setInit!(body2; x = x2, q = q, F = F, τ = τ)
 end
@@ -74,12 +77,14 @@ function setInit!(body1::Origin{T}, body2::Body{T}, p1::AbstractVector, p2::Abst
     F::AbstractVector = zeros(T, 3),
     τ::AbstractVector = zeros(T, 3)) where T
 
+    p2 = convert(SVector{3,T}, p2)
+
     x2 = p1 - vrotate(p2, q)
     setInit!(body2; x = x2, q = q, F = F, τ = τ)
 end
 
 @inline getx3(body::Body, dt) = getvnew(body) * dt + body.x[2]
-@inline getq3(body::Body, dt) = Quaternion(dt / 2 * (Lmat(body.q[2]) * ωbar(body, dt)))
+@inline getq3(body::Body, dt) = Quaternion(Lmat(body.q[2]) * ωbar(body, dt))
 @inline getv1(body::Body, dt) = (body.x[2] - body.x[1]) / dt
 @inline function getω1(body::Body, dt)
     q1 = body.q[1]
@@ -97,12 +102,12 @@ end
 @inline function derivωbar(body::Body{T}, dt) where T
     ωnew = getωnew(body)
     msq = -sqrt(4 / dt^2 - dot(ωnew, ωnew))
-    [ωnew' / msq; SMatrix{3,3,T,9}(I)]
+    dt / 2 * [ωnew' / msq; SMatrix{3,3,T,9}(I)]
 end
 
 @inline function ωbar(body::Body, dt)
     ωnew = getωnew(body)
-    Quaternion(sqrt(4 / dt^2 - dot(ωnew, ωnew)), ωnew)
+    dt / 2 * Quaternion(sqrt(4 / dt^2 - dot(ωnew, ωnew)), ωnew)
 end
 
 @inline function dynamics(body::Body{T}, mechanism) where T

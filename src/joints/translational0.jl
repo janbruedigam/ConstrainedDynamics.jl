@@ -47,7 +47,7 @@ end
         V = SMatrix{3,3,T,9}(-dt * I)
 
         q = body1.q[No]
-        Ω = -2 * dt^2 / 4 * VRᵀmat(q) * Lmat(q) * Rᵀmat(ωbar(body1, dt)) * Rmat(Quaternion(joint.vertices[1])) * derivωbar(body1, dt)
+        Ω = -2 * VRᵀmat(q) * Lmat(q) * Rᵀmat(ωbar(body1, dt)) * Rmat(Quaternion(joint.vertices[1])) * derivωbar(body1, dt)
 
         return [V Ω]
     else
@@ -60,7 +60,7 @@ end
         V = SMatrix{3,3,T,9}(dt * I)
 
         q = body2.q[No]
-        Ω = 2 * dt^2 / 4 * VRᵀmat(q) * Lmat(q) * Rᵀmat(ωbar(body2, dt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, dt)
+        Ω = 2 * VRᵀmat(q) * Lmat(q) * Rᵀmat(ωbar(body2, dt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, dt)
 
         return [V Ω]
     else

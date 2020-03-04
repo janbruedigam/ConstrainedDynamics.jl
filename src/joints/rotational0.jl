@@ -11,7 +11,7 @@ mutable struct Rotational0{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline g(joint::Rotational0, body1::Body, body2::Body, dt, No) = (VLᵀmat(getq3(body1, dt)) * getq3(body2, dt)) - joint.offset
+@inline g(joint::Rotational0, body1::Body, body2::Body, dt, No) = VLᵀmat(getq3(body1, dt)) * getq3(body2, dt) - joint.offset
 
 @inline function ∂g∂posa(joint::Rotational0{T}, body1::Body, body2::Body, No) where T
     if body2.id == joint.cid
@@ -41,7 +41,7 @@ end
     if body2.id == joint.cid
         V = @SMatrix zeros(T, 3, 3)
 
-        Ω = dt^2 / 4 * VRmat(ωbar(body2, dt)) * Rmat(body2.q[No]) * Rᵀmat(body1.q[No]) * Tmat(T) * derivωbar(body1, dt)
+        Ω = VRmat(ωbar(body2, dt)) * Rmat(body2.q[No]) * Rᵀmat(body1.q[No]) * Tmat(T) * derivωbar(body1, dt)
 
         return [V Ω]
     else
@@ -53,7 +53,7 @@ end
     if body2.id == joint.cid
         V = @SMatrix zeros(T, 3, 3)
 
-        Ω = dt^2 / 4 * VLᵀmat(ωbar(body1, dt)) * Lᵀmat(body1.q[No]) * Lmat(body2.q[No]) * derivωbar(body2, dt)
+        Ω = VLᵀmat(ωbar(body1, dt)) * Lᵀmat(body1.q[No]) * Lmat(body2.q[No]) * derivωbar(body2, dt)
 
         return [V Ω]
     else
@@ -80,7 +80,7 @@ end
     if body2.id == joint.cid
         V = @SMatrix zeros(T, 3, 3)
 
-        Ω = dt / 2 * VLmat(body2.q[No]) * derivωbar(body2, dt)
+        Ω = VLmat(body2.q[No]) * derivωbar(body2, dt)
 
         return [V Ω]
     else
