@@ -295,14 +295,14 @@ function feasibilityStepLength!(ineqc::InequalityConstraint{T,N}, ineqentry::Ine
 end
 
 
-function saveToTraj!(mechanism::Mechanism, t)
+function saveToStorage!(mechanism::Mechanism, t)
     No = mechanism.No
     for (ind, body) in enumerate(mechanism.bodies)
         mechanism.storage.x[ind][t] = body.x[No]
         mechanism.storage.q[ind][t] = body.q[No]
     end
-    for (ind, constraint) in enumerate(mechanism.eqconstraints)
-        mechanism.storage.λ[ind][t] = constraint.s1
+    for (ind, eqc) in enumerate(mechanism.eqconstraints)
+        mechanism.storage.eqmultipliers[ind][t] = eqc.s1
     end
 end
 
@@ -326,7 +326,7 @@ function simulate!(mechanism::Mechanism;save::Bool = false,debug::Bool = false)
 
     for i = mechanism.steps
         newton!(mechanism, warning = debug)
-        save && saveToTraj!(mechanism, i)
+        save && saveToStorage!(mechanism, i)
         foreach(updatePos!, bodies, dt)
 
         # debug && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
