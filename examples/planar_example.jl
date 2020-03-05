@@ -23,8 +23,8 @@ q1, q2, q3 = Quaternion(RotZ(phi1)), Quaternion(RotZ(phi2)), Quaternion(RotZ(phi
 # Links
 origin = Origin{Float64}()
 link1 = Body(b1)
-link2 = Body(b1)
-link3 = Body(b1)
+link2 = deepcopy(link1,b1)
+link3 = deepcopy(link1,b1)
 
 # Constraints
 joint0to123 = EqualityConstraint(Planar(origin,link1,zeros(3),vert12,ez),Planar(origin,link2,zeros(3),vert12,ez),Planar(origin,link3,zeros(3),vert12,ez))

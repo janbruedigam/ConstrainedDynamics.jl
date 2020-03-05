@@ -78,6 +78,7 @@ include(joinpath("util", "storage.jl"))
 
 include(joinpath("solver", "sparseldu.jl"))
 include(joinpath("components", "mechanism.jl"))
+include(joinpath("components", "mechanism_functions.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 
 include(joinpath("solver", "newton.jl"))

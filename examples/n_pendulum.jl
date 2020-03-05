@@ -22,34 +22,17 @@ q1 = Quaternion(RotX(phi))
 N = 20
 
 origin = Origin{Float64}()
-link1 = Body(b1)
-
-links = [link1]
-
-for i=2:N
-    @eval begin
-        $(Symbol("link",i)) = Body(b1)
-        push!(links,$(Symbol("link",i)))
-    end
-end
+links = [Body(b1) for i=1:N]
 
 # Constraints
 jointb1 = EqualityConstraint(Revolute(origin,link1,zeros(3),vert11,ex))
-
-constraints = [jointb1]
-
-for i=2:N
-    @eval begin
-        $(Symbol("joint",i-1,i)) = EqualityConstraint(Revolute($(Symbol("link",i-1)),$(Symbol("link",i)),vert12,vert11,ex))
-        push!(constraints,$(Symbol("joint",i-1,i)))
-    end
-end
+constraints = [jointb1;[EqualityConstraint(Revolute(links[i-1],links[i],vert12,vert11,ex)) for i=2:N]]
 
 shapes = [b1]
 
 mech = Mechanism(origin,links, constraints;tend=10.,dt=0.01, shapes=shapes)
-setPosition!(mech,origin,link1,p2=vert11,Δq=q1)
-previd = link1.id
+setPosition!(mech,origin,links[1],p2=vert11,Δq=q1)
+previd = links[1].id
 for body in Iterators.drop(mech.bodies,1)
     global previd
     setPosition!(mech,MaximalCoordinateDynamics.getbody(mech,previd),body,p1=vert12,p2=vert11)

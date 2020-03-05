@@ -32,10 +32,13 @@ mutable struct Body{T} <: AbstractBody{T}
     end
 
     function Body(shape::Shape)
-        L = Body(shape.m, shape.J)
-        push!(shape.bodyids, L.id)
-        return L
+        body = Body(shape.m, shape.J)
+        push!(shape.bodyids, body.id)
+        return body
     end
+
+    Body(m::T, J::SMatrix{3,3,T,9}, x::Vector{SVector{3,T}}, q::Vector{Quaternion{T}}, F::Vector{SVector{3,T}}, τ::Vector{SVector{3,T}}, 
+        s0::SVector{6,T}, s1::SVector{6,T}, f::SVector{6,T}) where T = new{T}(getGlobalID(),m,J,x,q,F,τ,s0,s1,f)
 end
 
 mutable struct Origin{T} <: AbstractBody{T}
@@ -44,6 +47,26 @@ mutable struct Origin{T} <: AbstractBody{T}
     Origin{T}() where T = new{T}(getGlobalID())
 end
 
+function Base.deepcopy(b::Body)
+    contents = []
+    for i = 2:10
+        push!(contents, deepcopy(getfield(b, i)))
+    end
+
+    Body(contents...)
+end
+
+function Base.deepcopy(b::Body, shape::Shape)
+    contents = []
+    for i = 2:10
+        push!(contents, deepcopy(getfield(b, i)))
+    end
+
+    body = Body(contents...)
+    @assert (body.m == shape.m && body.J == shape.J)
+    push!(shape.bodyids, body.id)
+    return body
+end
 
 Base.length(::Body) = 6
 
