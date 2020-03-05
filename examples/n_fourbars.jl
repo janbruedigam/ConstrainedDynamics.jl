@@ -22,15 +22,14 @@ vert21 = [0.;0.;l2/2]
 vert22 = -vert21
 
 # Initial orientation
-offset = pi/4
-phi1, phi2, phi3, phi4 = pi/8+offset,-pi/8+offset,-pi/8+offset,pi/8+offset#pi/4, -pi/2, -pi/4, pi/2
-q1, q2, q3, q4 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX(phi3)), Quaternion(RotX(phi4))
+offset1 = pi/4
+offset2 = pi/2
+phi1 = pi/8
+q1 = Quaternion(RotX(phi1))
+qoff1 = Quaternion(RotX(offset1))
+qoff2 = Quaternion(RotX(offset2))
 
-offset = pi/2
-phi1, phi2, phi3, phi4 = pi/8+offset,-pi/8+offset,-pi/8+offset,pi/8+offset#pi/2, -pi/4, 0., 3*pi/4
-q5, q6, q7, q8 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX(phi3)), Quaternion(RotX(phi4))
-
-N = 3
+N = 10
 
 # Links
 origin = Origin{Float64}()
@@ -39,36 +38,22 @@ link1 = Body(b1)
 link2 = Body(b2)
 link3 = Body(b3)
 link4 = Body(b4)
-if N>1
-    setInit!(origin,link1,zeros(3),vert11,q=q1)
-    setInit!(link1,link2,vert12,vert21,q=q2)
-    setInit!(link1,link3,vert11,vert11,q=q3)
-    setInit!(link3,link4,vert12,vert21,q=q4)
-else
-    setInit!(origin,link1,zeros(3),vert11,q=q5)
-    setInit!(link1,link2,vert12,vert21,q=q6)
-    setInit!(link1,link3,vert11,vert11,q=q7)
-    setInit!(link3,link4,vert12,vert21,q=q8)
-end
+
 
 links = [link1;link2;link3;link4]
 
 for i=2:N-1
     @eval begin
         $(Symbol("link",(i-1)*4+1)) = Body(b1)
-        setInit!($links[($i-1)*4],$(Symbol("link",(i-1)*4+1)),vert22,vert11,q=q1)
         push!($links,$(Symbol("link",(i-1)*4+1)))
 
         $(Symbol("link",(i-1)*4+2)) = Body(b2)
-        setInit!($(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+2)),vert12,vert21,q=q2)
         push!($links,$(Symbol("link",(i-1)*4+2)))
 
         $(Symbol("link",(i-1)*4+3)) = Body(b3)
-        setInit!($(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+3)),vert11,vert11,q=q3)
         push!($links,$(Symbol("link",(i-1)*4+3)))
 
         $(Symbol("link",(i-1)*4+4)) = Body(b4)
-        setInit!($(Symbol("link",(i-1)*4+3)),$(Symbol("link",(i-1)*4+4)),vert12,vert21,q=q4)
         push!($links,$(Symbol("link",(i-1)*4+4)))
     end
 end
@@ -77,19 +62,15 @@ if N>1
     for i=N
         @eval begin
             $(Symbol("link",(i-1)*4+1)) = Body(b1)
-            setInit!($links[($i-1)*4],$(Symbol("link",(i-1)*4+1)),vert22,vert11,q=q5)
             push!($links,$(Symbol("link",(i-1)*4+1)))
 
             $(Symbol("link",(i-1)*4+2)) = Body(b2)
-            setInit!($(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+2)),vert12,vert21,q=q6)
             push!($links,$(Symbol("link",(i-1)*4+2)))
 
             $(Symbol("link",(i-1)*4+3)) = Body(b3)
-            setInit!($(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+3)),vert11,vert11,q=q7)
             push!($links,$(Symbol("link",(i-1)*4+3)))
 
             $(Symbol("link",(i-1)*4+4)) = Body(b4)
-            setInit!($(Symbol("link",(i-1)*4+3)),$(Symbol("link",(i-1)*4+4)),vert12,vert21,q=q8)
             push!($links,$(Symbol("link",(i-1)*4+4)))
         end
     end
@@ -122,7 +103,37 @@ end
 shapes = [b1,b2,b3,b4]
 
 mech = Mechanism(origin,links, constraints, shapes=shapes)
+if N>1
+    setPosition!(mech,origin,link1,p2=vert11,Δq=q1*qoff1)
+    setPosition!(mech,link1,link2,p1=vert12,p2=vert21,Δq=inv(q1)*inv(q1))
+    setPosition!(mech,link1,link3,p1=vert11,p2=vert11,Δq=inv(q1)*inv(q1))
+    setPosition!(mech,link3,link4,p1=vert12,p2=vert21,Δq=q1*q1)
+else
+    setPosition!(mech,origin,link1,p2=vert11,Δq=q1*qoff2)
+    setPosition!(mech,link1,link2,p1=vert12,p2=vert21,Δq=inv(q1)*inv(q1))
+    setPosition!(mech,link1,link3,p1=vert11,p2=vert11,Δq=inv(q1)*inv(q1))
+    setPosition!(mech,link3,link4,p1=vert12,p2=vert21,Δq=q1*q1)
+end
 
+for i=2:N-1
+    @eval begin
+        setPosition!(mech,$links[($i-1)*4],$(Symbol("link",(i-1)*4+1)),p1=vert22,p2=vert11)
+        setPosition!(mech,$(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+2)),p1=vert12,p2=vert21,Δq=inv(q1)*inv(q1))
+        setPosition!(mech,$(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+3)),p1=vert11,p2=vert11,Δq=inv(q1)*inv(q1))
+        setPosition!(mech,$(Symbol("link",(i-1)*4+3)),$(Symbol("link",(i-1)*4+4)),p1=vert12,p2=vert21,Δq=q1*q1)    
+    end
+end
+
+if N>1
+    for i=N
+        @eval begin
+            setPosition!(mech,$links[($i-1)*4],$(Symbol("link",(i-1)*4+1)),p1=vert22,p2=vert11,Δq=inv(qoff1)*qoff2)
+            setPosition!(mech,$(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+2)),p1=vert12,p2=vert21,Δq=inv(q1)*inv(q1))
+            setPosition!(mech,$(Symbol("link",(i-1)*4+1)),$(Symbol("link",(i-1)*4+3)),p1=vert11,p2=vert11,Δq=inv(q1)*inv(q1))
+            setPosition!(mech,$(Symbol("link",(i-1)*4+3)),$(Symbol("link",(i-1)*4+4)),p1=vert12,p2=vert21,Δq=q1*q1)       
+        end
+    end
+end
 
 
 simulate!(mech,save=true)

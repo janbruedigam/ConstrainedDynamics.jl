@@ -14,11 +14,9 @@ box1 = Box(width,depth,length1,1.,color=RGBA(1.,1.,0.))
 
 # Links
 origin = Origin{Float64}()
-
 link1 = Body(box1)
 
 # Constraints
-
 joint1 = InequalityConstraint(Impact(link1,[0;-0.1;1.0]),Impact(link1,[0;0.1;1.0]))
 joint2 = InequalityConstraint(Impact(link1,[0.1;0;1.0]))
 joint3 = InequalityConstraint(Impact(link1,[-0.1;0;1.0]))
@@ -29,10 +27,8 @@ shapes = [box1]
 
 
 mech = Mechanism(origin, links,ineqs, shapes=shapes)
+setVelocity!(mech,link1,v=[1;0.5;5])
 
-for link in links
-    link.x[2] += [0.01;0.005;0.05]
-end
 
 simulate!(mech,save=true)
 visualize!(mech)

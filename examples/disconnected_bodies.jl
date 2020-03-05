@@ -14,12 +14,8 @@ box2 = Box(width,depth,length1,length1,color=RGBA(1.,0.,0.))
 
 # Links
 origin = Origin{Float64}()
-
 link1 = Body(box1)
-setInit!(origin,link1,[0.;1.;0.],zeros(3))
-
 link2 = Body(box2)
-setInit!(origin,link2,[0.;-1.;0.],zeros(3))
 
 # Constraints
 joint1 = EqualityConstraint(OriginConnection(origin,link1))
@@ -31,9 +27,11 @@ shapes = [box1;box2]
 
 
 mech = Mechanism(origin, links, constraints,g=-5.,shapes=shapes)
-link1.x[2] = [-0.05;0.95;0.05]
-link2.x[2] = [-0.025;-0.975;0.05]
-link2.q[2] = Quaternion(RotZ(0.1))
+setPosition!(mech,link1,x=[0.;1.;0.])
+setPosition!(mech,link2,x=[0.;-1.;0.])
+setVelocity!(mech,link1,v=[-5.;-5;5])
+setVelocity!(mech,link2,v=[-2.5;2.5;5],ω=[2;4;10.])
+
 
 simulate!(mech,save=true)
 visualize!(mech)

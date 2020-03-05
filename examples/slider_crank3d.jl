@@ -27,20 +27,13 @@ q1 = Quaternion(RotY(pi/2))
 
 # Links
 origin = Origin{Float64}()
-
 link1 = Body(box)
-setInit!(origin,link1,zeros(3),p0)
-
 link2 = Body(cyl)
-setInit!(origin,link2,p3+p1,zeros(3),τ=[0;0;1.])
-
 link3 = Body(box2)
-setInit!(origin,link3,p2,zeros(3))
 
 # Constraints
 joint0to23 = EqualityConstraint(Revolute(origin,link2,p3+p1,zeros(3),ez),Revolute(origin,link3,p2,zeros(3),ex))
 joint1to23 = EqualityConstraint(Spherical(link1,link2,p1,p3),Spherical(link1,link3,p0,p3))
-
 
 
 links = [link1;link2;link3]
@@ -48,8 +41,13 @@ constraints = [joint0to23;joint1to23]
 shapes = [box,cyl,box2]
 
 mech = Mechanism(origin,links,constraints,g=0.,tend=20.,shapes=shapes)
-link2.q[2] = Quaternion(RotZ(0.01))
-link3.q[2] = Quaternion(RotX(0.01))
+setPosition!(mech,link1,x=-p0)
+setPosition!(mech,link2,x=p3+p1)
+setPosition!(mech,link3,x=-p2)
+setVelocity!(mech,link2,ω=[0;0;1.])
+setVelocity!(mech,link3,ω=[1.;0;0])
+setForce!(mech,link2,τ=[0;0;1.])
+
 
 simulate!(mech,save=true)
 visualize!(mech)

@@ -29,8 +29,11 @@ Base.:*(q1::Quaternion, q2::Quaternion) = Quaternion(  q1.s * q2.s - q1.v1 * q2.
                                                        q1.s * q2.v3 + q1.v1 * q2.v2 - q1.v2 * q2.v1 + q1.v3 * q2.s)
 Base.:*(q::Quaternion, x::Number) = Quaternion(q.s * x, q.v1 * x, q.v2 * x, q.v3 * x)
 Base.:*(x::Number, q::Quaternion) = q * x
+
 Base.:/(q1::Quaternion, q2::Quaternion) = q1 * inv(q2)
 Base.:\(q1::Quaternion, q2::Quaternion) = inv(q1) * q2
+
+# Base.:-(q::Quaternion) = Quaternion(-q.s,-q.v1,-q.v2,-q.v3)
 
 angleaxis(q::Quaternion) = angle(q), axis(q)
 angle(q::Quaternion) = 2 * atan(sqrt(q.v1^2 + q.v2^2 + q.v3^2), q.s)

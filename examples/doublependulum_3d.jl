@@ -19,17 +19,13 @@ vert12 = -vert11
 vert21 = [0.;0.;l2/2]
 
 # Initial orientation
-phi1, phi2 = pi/4, 0.
-q1, q2 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2))
+phi1 = pi/4
+q1 = Quaternion(RotX(phi1))
 
 # Links
 origin = Origin{Float64}()
-
 link1 = Body(b1)
-setInit!(origin,link1,zeros(3),vert11,q=q1)
-
 link2 = Body(b2)
-setInit!(link1,link2,vert12,vert21,q=q2,τ=[0.;0.2;0.])
 
 # Constraints
 socket0to1 = EqualityConstraint(Spherical(origin,link1,zeros(3),vert11))
@@ -41,6 +37,9 @@ shapes = [b1,b2]
 
 
 mech = Mechanism(origin,links, constraints, shapes=shapes)
+setPosition!(mech,origin,link1,p2=vert11,Δq=q1)
+setPosition!(mech,link1,link2,p1=vert12,p2=vert21,Δq=inv(q1))
+setForce!(mech,link2,τ=[0;0.2;0])
 
 simulate!(mech,save=true)
 visualize!(mech)

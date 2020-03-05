@@ -310,6 +310,25 @@ function setPosition!(mechanism::Mechanism{T}, body::Body{T};x::AbstractVector{T
     end
 end
 
+function setPosition!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
+    p1::AbstractVector{T}=zeros(3), p2::AbstractVector{T}=zeros(3), Δx::AbstractVector{T}=zeros(3),Δq::Quaternion{T}=Quaternion{T}()) where T
+
+    q = body1.q[1]*Δq
+    x = body1.x[1] + vrotate(SVector{3,T}(p1+Δx), body1.q[1]) - vrotate(SVector{3,T}(p2), q)
+    
+    setPosition!(mechanism, body2;x=x,q=q)
+end
+
+function setPosition!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
+    p1::AbstractVector{T}=zeros(3), p2::AbstractVector{T}=zeros(3), Δx::AbstractVector{T}=zeros(3),Δq::Quaternion{T}=Quaternion{T}()) where T
+
+    q = Δq
+    x = p1+Δx - vrotate(SVector{3,T}(p2), q)
+    
+
+    setPosition!(mechanism, body2;x=x,q=q)
+end
+
 # Assumes first order integrator
 # TODO higher order integrator
 function setVelocity!(mechanism::Mechanism{T}, body::Body{T};v::AbstractVector{T}=zeros(3),ω::AbstractVector{T}=zeros(3)) where T
@@ -318,6 +337,42 @@ function setVelocity!(mechanism::Mechanism{T}, body::Body{T};v::AbstractVector{T
     updatePos!(body, mechanism.dt)
 end
 
+# Assumes first order integrator
+# TODO higher order integrator
+function setVelocity!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
+    p1::AbstractVector{T}=zeros(3), p2::AbstractVector{T}=zeros(3), Δv2::AbstractVector{T}=zeros(3),Δω2::AbstractVector{T}=zeros(3)) where T
+
+    dt = mechanism.dt
+    x2 = body1.x[2] + vrotate(SVector{3,T}(p1), body1.q[2]) - vrotate(SVector{3,T}(p2), body2.q[2]) + vrotate(SVector{3,T}(Δv2),body1.q[1])*dt
+    q2 = body1.q[2]*(dt/2 * Quaternion(sqrt(4 / dt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2)))
+
+    v = (x2-body2.x[1])/dt
+    ω = 2/dt*Vmat(body2.q[1]\q2)
+
+    setVelocity!(mechanism, body2;v=v,ω=ω)
+end
+
+# Assumes first order integrator
+# TODO higher order integrator
+function setVelocity!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
+    p1::AbstractVector{T}=zeros(3), p2::AbstractVector{T}=zeros(3), Δv2::AbstractVector{T}=zeros(3),Δω2::AbstractVector{T}=zeros(3)) where T
+
+    dt = mechanism.dt
+    x2 = p1 - vrotate(SVector{3,T}(p2), body2.q[2]) + Δv2*dt
+    q2 = dt/2 * Quaternion(sqrt(4 / dt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2))
+
+    v = (x2-body2.x[1])/dt
+    ω = 2/dt*Vmat(body2.q[1]\q2)
+
+    setVelocity!(mechanism, body2;v=v,ω=ω)
+end
+
+function setForce!(mechanism::Mechanism{T}, body::Body{T};F::AbstractVector{T}=zeros(3),τ::AbstractVector{T}=zeros(3)) where T
+    for i=1:mechanism.No
+        body.F[i] = F
+        body.τ[i] = τ
+    end
+end
 
 function saveToStorage!(mechanism::Mechanism, t)
     No = mechanism.No
@@ -338,7 +393,7 @@ end
     return
 end
 
-function verifyConstraints(mechanism::Mechanism)
+function verifyConstraints!(mechanism::Mechanism)
     for eqc in mechanism.eqconstraints
         if norm(g(eqc,mechanism)) > 1e-3
             @info string("Probably disconnected bodies at constraint: ", eqc.id)
@@ -348,7 +403,7 @@ end
 
 
 function simulate!(mechanism::Mechanism;save::Bool = false,debug::Bool = false)
-    verifyConstraints(mechanism)
+    debug && verifyConstraints!(mechanism)
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints

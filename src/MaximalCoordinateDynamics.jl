@@ -40,7 +40,10 @@ export Box,
 
     Impact,
 
-    setInit!,
+    # setInit!,
+    setPosition!,
+    setVelocity!,
+    setForce!,
     simulate!,
     plotθ,
     plotλ,

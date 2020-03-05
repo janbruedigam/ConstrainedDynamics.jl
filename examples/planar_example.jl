@@ -22,15 +22,9 @@ q1, q2, q3 = Quaternion(RotZ(phi1)), Quaternion(RotZ(phi2)), Quaternion(RotZ(phi
 
 # Links
 origin = Origin{Float64}()
-
 link1 = Body(b1)
-setInit!(origin,link1,zeros(3),vert11,q=q1,τ=[0.;0.;2.])
-
 link2 = Body(b1)
-setInit!(origin,link2,zeros(3),vert11,q=q2,τ=[0.;0.;2.])
-
 link3 = Body(b1)
-setInit!(origin,link3,zeros(3),vert11,q=q3,τ=[0.;0.;2.])
 
 # Constraints
 joint0to123 = EqualityConstraint(Planar(origin,link1,zeros(3),vert12,ez),Planar(origin,link2,zeros(3),vert12,ez),Planar(origin,link3,zeros(3),vert12,ez))
@@ -43,6 +37,12 @@ constraints = [joint0to123;joint1to23]
 shapes = [b1]
 
 mech = Mechanism(origin,links,constraints, shapes=shapes)
+setPosition!(mech,origin,link1,p2=vert11,Δq=q1)
+setPosition!(mech,origin,link2,p2=vert11,Δq=q2)
+setPosition!(mech,origin,link3,p2=vert11,Δq=q3)
+setForce!(mech,link1,τ=[0;0;2.])
+setForce!(mech,link2,τ=[0;0;2.])
+setForce!(mech,link3,τ=[0;0;2.])
 
 simulate!(mech,save=true)
 visualize!(mech)

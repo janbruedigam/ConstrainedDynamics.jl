@@ -8,7 +8,7 @@ using Main.MaximalCoordinateDynamics
 ex = [1.;0.;0.]
 
 l1 = 1.0
-l2 = 1.0sqrt(2)/2
+l2 = 1.0#sqrt(2)/2
 x,y = .1,.1
 b1 = Box(x,y,l1,l1,color=RGBA(1.,1.,0.))
 b2 = Box(x,y,l2,l2,color=RGBA(1.,1.,0.))
@@ -22,39 +22,21 @@ vert21 = [0.;0.;l2/2]
 vert22 = -vert21
 
 # Initial orientation
-phi1, phi2, phi3, phi4 = pi/5, 0., 0., pi/5
-q1, q2, q3, q4 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX(phi3)), Quaternion(RotX(phi4))
-
-phi1, phi2, phi3, phi4 = -pi/5, pi/5, pi/5, -pi/5
-q5, q6, q7, q8 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX(phi3)), Quaternion(RotX(phi4))
+phi1 = pi/5
+q1 = Quaternion(RotX(phi1))
 
 # Links
 origin = Origin{Float64}()
 
 link1 = Body(b1)
-setInit!(origin,link1,zeros(3),vert11,q=q1)
-
 link2 = Body(b2)
-setInit!(link1,link2,vert12,vert21,q=q2)
-
 link3 = Body(b3)
-setInit!(link1,link3,vert11,vert11,q=q3)
-
 link4 = Body(b4)
-setInit!(link3,link4,vert12,vert21,q=q4)
-
 
 link5 = Body(b1)
-setInit!(link4,link5,zeros(3),vert11,q=q5)
-
 link6 = Body(b2)
-setInit!(link5,link6,vert12,vert21,q=q6)
-
 link7 = Body(b3)
-setInit!(link5,link7,vert11,vert11,q=q7)
-
 link8 = Body(b4)
-setInit!(link7,link8,vert12,vert21,q=q8)
 
 # Constraints
 joint0to1 = EqualityConstraint(Revolute(origin,link1,zeros(3),vert11,ex))
@@ -73,6 +55,17 @@ constraints = [joint0to1; joint1to23; joint3to4; joint2to4; joint4to5;joint5to67
 shapes = [b1,b2,b3,b4]
 
 mech = Mechanism(origin,links, constraints,InequalityConstraint{Float64}[],shapes=shapes)
+
+setPosition!(mech,origin,link1,p2=vert11,Δq=q1)
+setPosition!(mech,link1,link2,p1=vert12,p2=vert21,Δq=inv(q1))
+setPosition!(mech,link1,link3,p1=vert11,p2=vert11,Δq=inv(q1))
+setPosition!(mech,link3,link4,p1=vert12,p2=vert21,Δq=q1)
+
+setPosition!(mech,link4,link5,p2=vert11)
+setPosition!(mech,link5,link6,p1=vert12,p2=vert21,Δq=inv(q1)*inv(q1))
+setPosition!(mech,link5,link7,p1=vert11,p2=vert11,Δq=inv(q1)*inv(q1))
+setPosition!(mech,link7,link8,p1=vert12,p2=vert21,Δq=q1*q1)
+
 
 simulate!(mech,save=true)
 visualize!(mech)

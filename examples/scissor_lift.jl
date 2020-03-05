@@ -22,12 +22,8 @@ q1, q2, q3 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX(phi
 
 # Links
 origin = Origin{Float64}()
-
 link1 = Body(b1)
-setInit!(origin,link1,[0;-0.5*sqrt(2);0],vert11,q=q1)
-
 link2 = Body(b1)
-setInit!(origin,link2,zeros(3),vert11,q=q2)
 
 # Constraints
 joint0to12 = EqualityConstraint(CylindricalFree(origin,link1,zeros(3),vert11,ey),Spherical(origin,link2,zeros(3),vert11))
@@ -39,6 +35,8 @@ constraints = [joint0to12;joint1to2]
 shapes = [b1]
 
 mech = Mechanism(origin,links, constraints, shapes=shapes)
+setPosition!(mech,origin,link1,p1=[0;-0.5*sqrt(2);0],p2=vert11,Δq=q1)
+setPosition!(mech,origin,link2,p2=vert11,Δq=q2)
 
 simulate!(mech,save=true)
 visualize!(mech)
