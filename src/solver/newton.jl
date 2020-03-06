@@ -4,7 +4,7 @@ function newton!(mechanism::Mechanism{T,Nl,0}; ε = 1e-10, newtonIter = 100, lin
     eqcs = mechanism.eqconstraints
     graph = mechanism.graph
     ldu = mechanism.ldu
-    dt = mechanism.dt
+    Δt = mechanism.Δt
 
     normf0 = normf(mechanism)
     for n = Base.OneTo(newtonIter)
@@ -37,7 +37,7 @@ function newton!(mechanism::Mechanism{T,Nl}; ε = 1e-10, σ = 0.1, μ = 1.0, new
     ineqcs = mechanism.ineqconstraints
     graph = mechanism.graph
     ldu = mechanism.ldu
-    dt = mechanism.dt
+    Δt = mechanism.Δt
 
     foreach(resetVars!, ineqcs)
     mechanism.μ = μ

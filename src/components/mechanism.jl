@@ -1,7 +1,7 @@
 mutable struct Mechanism{T,N,Ni}
     tend::T
     steps::Base.OneTo{Int64}
-    dt::T
+    Δt::T
     g::T
     No::Int64 # order of integrator, currently only No=2 (1st order) implemented
 
@@ -27,7 +27,7 @@ mutable struct Mechanism{T,N,Ni}
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
         eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
 
         resetGlobalID()
@@ -36,7 +36,7 @@ mutable struct Mechanism{T,N,Ni}
         Ne = length(eqcs)
         Ni = length(ineqcs)
         N = Nb + Ne
-        steps = Int(ceil(tend / dt))
+        steps = Int(ceil(tend / Δt))
 
         currentid = 1
 
@@ -108,34 +108,34 @@ mutable struct Mechanism{T,N,Ni}
         α = 1
         μ = 1
 
-        new{T,N,Ni}(tend, Base.OneTo(steps), dt, g, No, origin, bodies, eqcs, ineqcs, normf, normΔs, graph, ldu, storage, α, μ, shapes)
+        new{T,N,Ni}(tend, Base.OneTo(steps), Δt, g, No, origin, bodies, eqcs, ineqcs, normf, normΔs, graph, ldu, storage, α, μ, shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         ineqcs = InequalityConstraint{T}[]
-        Mechanism(origin, bodies, eqcs, ineqcs, tend = tend, dt = dt, g = g, No = No, shapes = shapes)
+        Mechanism(origin, bodies, eqcs, ineqcs, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, ineqcs, tend = tend, dt = dt, g = g, No = No, shapes = shapes)
+        Mechanism(origin, bodies, eqc, ineqcs, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, tend = tend, dt = dt, g = g, No = No, shapes = shapes)
+        Mechanism(origin, bodies, eqc, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
     end    
 end
 
@@ -154,7 +154,7 @@ end
 @inline getineqconstraint(mechanism::Mechanism, id::Int64) = mechanism.ineqconstraints[id]
 
 
-function setPosition!(mechanism::Mechanism{T}, body::Body{T};x::AbstractVector{T}=zeros(3),q::Quaternion{T}=Quaternion{T}()) where T
+function setPosition!(mechanism::Mechanism{T}, body::Body{T};x::AbstractVector{T}=SVector{3,T}(0,0,0),q::Quaternion{T}=Quaternion{T}()) where T
     for i=1:mechanism.No
         body.x[i] = x
         body.q[i] = q
@@ -162,7 +162,7 @@ function setPosition!(mechanism::Mechanism{T}, body::Body{T};x::AbstractVector{T
 end
 
 function setPosition!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
-    p1::AbstractVector{T}=zeros(3), p2::AbstractVector{T}=zeros(3), Δx::AbstractVector{T}=zeros(3),Δq::Quaternion{T}=Quaternion{T}()) where T
+    p1::AbstractVector{T}=SVector{3,T}(0,0,0), p2::AbstractVector{T}=SVector{3,T}(0,0,0), Δx::AbstractVector{T}=SVector{3,T}(0,0,0),Δq::Quaternion{T}=Quaternion{T}()) where T
 
     q = body1.q[1]*Δq
     x = body1.x[1] + vrotate(SVector{3,T}(p1+Δx), body1.q[1]) - vrotate(SVector{3,T}(p2), q)
@@ -171,7 +171,7 @@ function setPosition!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
 end
 
 function setPosition!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
-    p1::AbstractVector{T}=zeros(3), p2::AbstractVector{T}=zeros(3), Δx::AbstractVector{T}=zeros(3),Δq::Quaternion{T}=Quaternion{T}()) where T
+    p1::AbstractVector{T}=SVector{3,T}(0,0,0), p2::AbstractVector{T}=SVector{3,T}(0,0,0), Δx::AbstractVector{T}=SVector{3,T}(0,0,0),Δq::Quaternion{T}=Quaternion{T}()) where T
 
     q = Δq
     x = p1+Δx - vrotate(SVector{3,T}(p2), q)
@@ -182,23 +182,23 @@ end
 
 # Assumes first order integrator
 # TODO higher order integrator
-function setVelocity!(mechanism::Mechanism{T}, body::Body{T};v::AbstractVector{T}=zeros(3),ω::AbstractVector{T}=zeros(3)) where T
+function setVelocity!(mechanism::Mechanism{T}, body::Body{T};v::AbstractVector{T}=SVector{3,T}(0,0,0),ω::AbstractVector{T}=SVector{3,T}(0,0,0)) where T
     body.s0 = [v;ω]
     s0tos1!(body)
-    updatePos!(body, mechanism.dt)
+    updatePos!(body, mechanism.Δt)
 end
 
 # Assumes first order integrator
 # TODO higher order integrator
 function setVelocity!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
-    p1::AbstractVector{T}=zeros(3), p2::AbstractVector{T}=zeros(3), Δv2::AbstractVector{T}=zeros(3),Δω2::AbstractVector{T}=zeros(3)) where T
+    p1::AbstractVector{T}=SVector{3,T}(0,0,0), p2::AbstractVector{T}=SVector{3,T}(0,0,0), Δv2::AbstractVector{T}=SVector{3,T}(0,0,0),Δω2::AbstractVector{T}=SVector{3,T}(0,0,0)) where T
 
-    dt = mechanism.dt
-    x2 = body1.x[2] + vrotate(SVector{3,T}(p1), body1.q[2]) - vrotate(SVector{3,T}(p2), body2.q[2]) + vrotate(SVector{3,T}(Δv2),body1.q[1])*dt
-    q2 = body1.q[2]*(dt/2 * Quaternion(sqrt(4 / dt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2)))
+    Δt = mechanism.Δt
+    x2 = body1.x[2] + vrotate(SVector{3,T}(p1), body1.q[2]) - vrotate(SVector{3,T}(p2), body2.q[2]) + vrotate(SVector{3,T}(Δv2),body1.q[1])*Δt
+    q2 = body1.q[2]*(Δt/2 * Quaternion(sqrt(4 / Δt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2)))
 
-    v = (x2-body2.x[1])/dt
-    ω = 2/dt*Vmat(body2.q[1]\q2)
+    v = (x2-body2.x[1])/Δt
+    ω = 2/Δt*Vmat(body2.q[1]\q2)
 
     setVelocity!(mechanism, body2;v=v,ω=ω)
 end
@@ -206,23 +206,21 @@ end
 # Assumes first order integrator
 # TODO higher order integrator
 function setVelocity!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
-    p1::AbstractVector{T}=zeros(3), p2::AbstractVector{T}=zeros(3), Δv2::AbstractVector{T}=zeros(3),Δω2::AbstractVector{T}=zeros(3)) where T
+    p1::AbstractVector{T}=SVector{3,T}(0,0,0), p2::AbstractVector{T}=SVector{3,T}(0,0,0), Δv2::AbstractVector{T}=SVector{3,T}(0,0,0),Δω2::AbstractVector{T}=SVector{3,T}(0,0,0)) where T
 
-    dt = mechanism.dt
-    x2 = p1 - vrotate(SVector{3,T}(p2), body2.q[2]) + Δv2*dt
-    q2 = dt/2 * Quaternion(sqrt(4 / dt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2))
+    Δt = mechanism.Δt
+    x2 = p1 - vrotate(SVector{3,T}(p2), body2.q[2]) + Δv2*Δt
+    q2 = Δt/2 * Quaternion(sqrt(4 / Δt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2))
 
-    v = (x2-body2.x[1])/dt
-    ω = 2/dt*Vmat(body2.q[1]\q2)
+    v = (x2-body2.x[1])/Δt
+    ω = 2/Δt*Vmat(body2.q[1]\q2)
 
     setVelocity!(mechanism, body2;v=v,ω=ω)
 end
 
-function setForce!(mechanism::Mechanism{T}, body::Body{T};F::AbstractVector{T}=zeros(3),τ::AbstractVector{T}=zeros(3)) where T
-    for i=1:mechanism.No
-        body.F[i] = F
-        body.τ[i] = τ
-    end
+function setForce!(mechanism::Mechanism{T}, body::Body{T};F::AbstractVector{T}=SVector{3,T}(0,0,0),r::AbstractVector{T}=SVector{3,T}(0,0,0),τ::AbstractVector{T}=SVector{3,T}(0,0,0)) where T
+    τ += torqueFromForce(F,r)
+    setForce!(body,F,τ,mechanism.No)
 end
 
 
@@ -236,9 +234,9 @@ function plotθ(mechanism::Mechanism{T}, id) where T
         end
     end
 
-    p = plot(collect(0:mechanism.dt:mechanism.tend - mechanism.dt), θ[id[1],:])
+    p = plot(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), θ[id[1],:])
     for ind in Iterators.rest(id, 2)
-        plot!(collect(0:mechanism.dt:mechanism.tend - mechanism.dt), θ[ind,:])
+        plot!(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), θ[ind,:])
     end
     return p
 end
@@ -259,9 +257,9 @@ function plotλ(mechanism::Mechanism{T}, id) where T
         startpos = endpos + 1
     end
 
-    p = plot(collect(0:mechanism.dt:mechanism.tend - mechanism.dt), λ[id[1],:])
+    p = plot(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), λ[id[1],:])
     for ind in Iterators.rest(id, 2)
-        plot!(collect(0:mechanism.dt:mechanism.tend - mechanism.dt), λ[ind,:])
+        plot!(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), λ[ind,:])
     end
     return p
 end

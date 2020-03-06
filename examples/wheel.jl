@@ -38,10 +38,11 @@ constraints = [socket0to1;joint1to5]
 shapes = [b1;b2]
 
 
-mech = Mechanism(origin,links, constraints;tend=10.0,dt=0.001, shapes=shapes)
+mech = Mechanism(origin,links, constraints;tend=10.0,Δt=0.001, shapes=shapes)
 setPosition!(mech,origin,link1,p2=vert11,Δq=q1)
 setPosition!(mech,link1,link2,p1=vert12,Δq=q1)
-setVelocity!(mech,link2,ω=[50.;0;0])
+setVelocity!(mech,link1,ω=[50.;0;0])
+setVelocity!(mech,link1,link2,p1=vert12)
 
 simulate!(mech,save=true)
 visualize!(mech)

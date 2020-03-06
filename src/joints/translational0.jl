@@ -11,13 +11,13 @@ mutable struct Translational0{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline function minimalCoordinates(joint::Translational0, body1::Body{T}, body2::Body, dt, No) where T
+@inline function minimalCoordinates(joint::Translational0, body1::Body{T}, body2::Body, Δt, No) where T
     SVector{0,T}()
 end
 
-@inline function g(joint::Translational0, body1::Body, body2::Body, dt, No)
+@inline function g(joint::Translational0, body1::Body, body2::Body, Δt, No)
     vertices = joint.vertices
-    getx3(body2, dt) + vrotate(vertices[2], getq3(body2, dt)) - (getx3(body1, dt) + vrotate(vertices[1], getq3(body1, dt)))
+    getx3(body2, Δt) + vrotate(vertices[2], getq3(body2, Δt)) - (getx3(body1, Δt) + vrotate(vertices[1], getq3(body1, Δt)))
 end
 
 @inline function ∂g∂posa(joint::Translational0{T}, body1::Body, body2::Body, No) where T
@@ -46,12 +46,12 @@ end
     end
 end
 
-@inline function ∂g∂vela(joint::Translational0{T}, body1::Body, body2::Body, dt, No) where T
+@inline function ∂g∂vela(joint::Translational0{T}, body1::Body, body2::Body, Δt, No) where T
     if body2.id == joint.cid
-        V = SMatrix{3,3,T,9}(-dt * I)
+        V = SMatrix{3,3,T,9}(-Δt * I)
 
         q = body1.q[No]
-        Ω = -2 * VRᵀmat(q) * Lmat(q) * Rᵀmat(ωbar(body1, dt)) * Rmat(Quaternion(joint.vertices[1])) * derivωbar(body1, dt)
+        Ω = -2 * VRᵀmat(q) * Lmat(q) * Rᵀmat(ωbar(body1, Δt)) * Rmat(Quaternion(joint.vertices[1])) * derivωbar(body1, Δt)
 
         return [V Ω]
     else
@@ -59,12 +59,12 @@ end
     end
 end
 
-@inline function ∂g∂velb(joint::Translational0{T}, body1::AbstractBody, body2::Body, dt, No) where T
+@inline function ∂g∂velb(joint::Translational0{T}, body1::AbstractBody, body2::Body, Δt, No) where T
     if body2.id == joint.cid
-        V = SMatrix{3,3,T,9}(dt * I)
+        V = SMatrix{3,3,T,9}(Δt * I)
 
         q = body2.q[No]
-        Ω = 2 * VRᵀmat(q) * Lmat(q) * Rᵀmat(ωbar(body2, dt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, dt)
+        Ω = 2 * VRᵀmat(q) * Lmat(q) * Rᵀmat(ωbar(body2, Δt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, Δt)
 
         return [V Ω]
     else
@@ -73,11 +73,11 @@ end
 end
 
 
-@inline function minimalCoordinates(joint::Translational0, body1::Origin{T}, body2::Body, dt, No) where T
+@inline function minimalCoordinates(joint::Translational0, body1::Origin{T}, body2::Body, Δt, No) where T
     SVector{0,T}()
 end
 
-@inline function g(joint::Translational0, body1::Origin, body2::Body, dt, No)
+@inline function g(joint::Translational0, body1::Origin, body2::Body, Δt, No)
     vertices = joint.vertices
-    getx3(body2, dt) + vrotate(vertices[2], getq3(body2, dt)) - vertices[1]
+    getx3(body2, Δt) + vrotate(vertices[2], getq3(body2, Δt)) - vertices[1]
 end

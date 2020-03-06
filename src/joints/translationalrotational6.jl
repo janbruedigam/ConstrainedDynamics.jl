@@ -9,12 +9,12 @@ mutable struct TranslationalRotational6{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline function minimalCoordinates(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, dt, No)
+@inline function minimalCoordinates(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, Δt, No)
     [body2.x[No];body2.q[No]]
 end
-@inline g(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, dt, No) = g(joint)
+@inline g(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, Δt, No) = g(joint)
 
 @inline ∂g∂posa(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, No) = ∂g∂posa(joint)
 @inline ∂g∂posb(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, No) = ∂g∂posb(joint)
-@inline ∂g∂vela(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, dt, No) = ∂g∂vela(joint)
-@inline ∂g∂velb(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, dt, No) = ∂g∂velb(joint)
+@inline ∂g∂vela(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, Δt, No) = ∂g∂vela(joint)
+@inline ∂g∂velb(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, Δt, No) = ∂g∂velb(joint)

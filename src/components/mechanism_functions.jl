@@ -159,11 +159,11 @@ function saveToStorage!(mechanism::Mechanism, t)
     end
 end
 
-@inline function updatePos!(body::Body, dt)
+@inline function updatePos!(body::Body, Δt)
     body.x[1] = body.x[2]
-    body.x[2] = getx3(body, dt)
+    body.x[2] = getx3(body, Δt)
     body.q[1] = body.q[2]
-    body.q[2] = getq3(body, dt)
+    body.q[2] = getq3(body, Δt)
     return
 end
 
@@ -181,7 +181,7 @@ function simulate!(mechanism::Mechanism;save::Bool = false,debug::Bool = false)
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
-    dt = mechanism.dt
+    Δt = mechanism.Δt
     foreach(s0tos1!, bodies)
     foreach(s0tos1!, eqcs)
     foreach(s0tos1!, ineqcs)
@@ -189,9 +189,35 @@ function simulate!(mechanism::Mechanism;save::Bool = false,debug::Bool = false)
     for i = mechanism.steps
         newton!(mechanism, warning = debug)
         save && saveToStorage!(mechanism, i)
-        foreach(updatePos!, bodies, dt)
+        foreach(updatePos!, bodies, Δt)
 
-        # debug && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
+        # debug && (i*Δt)%1<Δt*(1.0-.1) && display(i*Δt)
     end
     return
 end
+
+
+# function inputcontrol!(mechanism::Mechanism,controller::Controller)
+#     for body in mechanism.bodies
+#         inputcontrol!(body,controller)
+#     end
+# end
+
+# function simulate2!(mechanism::Mechanism,controller::Controller;save::Bool = false,debug::Bool = false)
+#     debug && verifyConstraints!(mechanism)
+#     bodies = mechanism.bodies
+#     eqcs = mechanism.eqconstraints
+#     ineqcs = mechanism.ineqconstraints
+#     Δt = mechanism.Δt
+#     foreach(s0tos1!, bodies)
+#     foreach(s0tos1!, eqcs)
+#     foreach(s0tos1!, ineqcs)
+
+#     for i = mechanism.steps
+#         inputcontrol!(mechanism,controller)
+#         newton!(mechanism, warning = debug)
+#         save && saveToStorage!(mechanism, i)
+#         foreach(updatePos!, bodies, Δt)
+#     end
+#     return
+# end

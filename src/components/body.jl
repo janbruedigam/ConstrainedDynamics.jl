@@ -106,14 +106,14 @@ function setInit!(body1::Origin{T}, body2::Body{T}, p1::AbstractVector, p2::Abst
     setInit!(body2; x = x2, q = q, F = F, τ = τ)
 end
 
-@inline getx3(body::Body, dt) = getvnew(body) * dt + body.x[2]
-@inline getq3(body::Body, dt) = Quaternion(Lmat(body.q[2]) * ωbar(body, dt))
-@inline getv1(body::Body, dt) = (body.x[2] - body.x[1]) / dt
-@inline function getω1(body::Body, dt)
+@inline getx3(body::Body, Δt) = getvnew(body) * Δt + body.x[2]
+@inline getq3(body::Body, Δt) = Quaternion(Lmat(body.q[2]) * ωbar(body, Δt))
+@inline getv1(body::Body, Δt) = (body.x[2] - body.x[1]) / Δt
+@inline function getω1(body::Body, Δt)
     q1 = body.q[1]
     q2 = body.q[2]
-    2 / dt * (q1.s * imag(q2) - q2.s * imag(q1) - cross(imag(q1), imag(q2)))
-    # 2/dt*(VLᵀmat(body.q[1])*body.q[2])
+    2 / Δt * (q1.s * imag(q2) - q2.s * imag(q1) - cross(imag(q1), imag(q2)))
+    # 2/Δt*(VLᵀmat(body.q[1])*body.q[2])
 end
 
 # TODO use SOneTo and SUnitRange once they are faster
@@ -122,29 +122,29 @@ end
 @inline getvnew(body::Body) = body.s1[SVector(1, 2, 3)]
 @inline getωnew(body::Body) = body.s1[SVector(4, 5, 6)]
 
-@inline function derivωbar(body::Body{T}, dt) where T
+@inline function derivωbar(body::Body{T}, Δt) where T
     ωnew = getωnew(body)
-    msq = -sqrt(4 / dt^2 - dot(ωnew, ωnew))
-    dt / 2 * [ωnew' / msq; SMatrix{3,3,T,9}(I)]
+    msq = -sqrt(4 / Δt^2 - dot(ωnew, ωnew))
+    Δt / 2 * [ωnew' / msq; SMatrix{3,3,T,9}(I)]
 end
 
-@inline function ωbar(body::Body, dt)
+@inline function ωbar(body::Body, Δt)
     ωnew = getωnew(body)
-    dt / 2 * Quaternion(sqrt(4 / dt^2 - dot(ωnew, ωnew)), ωnew)
+    Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ωnew, ωnew)), ωnew)
 end
 
 @inline function dynamics(body::Body{T}, mechanism) where T
     No = mechanism.No
-    dt = mechanism.dt
+    Δt = mechanism.Δt
 
     ezg = SVector{3,T}(0, 0, -mechanism.g)
-    dynT = body.m * ((getvnew(body) - getv1(body, dt)) / dt + ezg) - body.F[No]
+    dynT = body.m * ((getvnew(body) - getv1(body, Δt)) / Δt + ezg) - body.F[No]
 
     J = body.J
-    ω1 = getω1(body, dt)
+    ω1 = getω1(body, Δt)
     ωnew = getωnew(body)
-    sq1 = sqrt(4 / dt^2 - ω1' * ω1)
-    sq2 = sqrt(4 / dt^2 - ωnew' * ωnew)
+    sq1 = sqrt(4 / Δt^2 - ω1' * ω1)
+    sq2 = sqrt(4 / Δt^2 - ωnew' * ωnew)
     dynR = skewplusdiag(ωnew, sq2) * (J * ωnew) - skewplusdiag(ω1, sq1) * (J * ω1) - 2 * body.τ[No]
 
     body.f = [dynT;dynR]
@@ -160,15 +160,24 @@ end
     return body.f
 end
 
-@inline function ∂dyn∂vel(body::Body{T}, dt) where T
+@inline function ∂dyn∂vel(body::Body{T}, Δt) where T
     J = body.J
     ωnew = getωnew(body)
-    sq = sqrt(4 / dt^2 - ωnew' * ωnew)
+    sq = sqrt(4 / Δt^2 - ωnew' * ωnew)
 
-    dynT = SMatrix{3,3,T,9}(body.m / dt * I)
+    dynT = SMatrix{3,3,T,9}(body.m / Δt * I)
     dynR = skewplusdiag(ωnew, sq) * J - J * ωnew * (ωnew' / sq) - skew(J * ωnew)
 
     Z = @SMatrix zeros(T, 3, 3)
 
     return [[dynT; Z] [Z; dynR]]
 end
+
+@inline torqueFromForce(F::AbstractVector{T}, r::AbstractVector{T}) where T = cross(r,F)
+@inline function setForce!(body::Body, F, τ, No)
+    for i = 1:No
+        body.F[i] = F
+        body.τ[i] = τ
+    end
+end
+

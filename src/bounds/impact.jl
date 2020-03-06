@@ -19,15 +19,15 @@ mutable struct Impact{T} <: Bound{T}
 end
 
 
-@inline function g(impact::Impact, body::Body, dt, No)
-    impact.Nx[SVector(1, 2, 3)]' * (getx3(body, dt) - impact.offset[SVector(1, 2, 3)])
+@inline function g(impact::Impact, body::Body, Δt, No)
+    impact.Nx[SVector(1, 2, 3)]' * (getx3(body, Δt) - impact.offset[SVector(1, 2, 3)])
 end
 
 @inline ∂g∂pos(impact::Impact, No) = impact.Nx
-@inline ∂g∂vel(impact::Impact, dt, No) = impact.Nx * dt
+@inline ∂g∂vel(impact::Impact, Δt, No) = impact.Nx * Δt
 
-@inline function schurf(ineqc, impact::Impact, i, body::Body, μ, dt, No)
-    φ = g(impact, body, dt, No)
+@inline function schurf(ineqc, impact::Impact, i, body::Body, μ, Δt, No)
+    φ = g(impact, body, Δt, No)
 
     γ1 = ineqc.γ1[i]
     s1 = ineqc.s1[i]
@@ -35,9 +35,9 @@ end
     return impact.Nx' * (γ1 / s1 * φ - μ / s1)
 end
 
-@inline function schurD(ineqc, impact::Impact, i, body::Body, dt)
+@inline function schurD(ineqc, impact::Impact, i, body::Body, Δt)
     Nx = impact.Nx
-    Nv = dt * Nx
+    Nv = Δt * Nx
 
     γ1 = ineqc.γ1[i]
     s1 = ineqc.s1[i]

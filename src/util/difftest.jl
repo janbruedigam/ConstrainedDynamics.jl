@@ -20,7 +20,7 @@ function transfunc0pos(vars)
 end
 
 function transfunc0vel(vars)
-    dt = 0.01
+    Δt = 0.01
 
     xa = vars[1:3]
     qa = Quaternion(SVector(vars[4:7]...))
@@ -35,10 +35,10 @@ function transfunc0vel(vars)
     pa = vars[27:29]
     pb = vars[30:32]
 
-    xa = xa + dt * va
-    xb = xb + dt * vb
-    qa = Quaternion(dt / 2 * (qa * Quaternion(SVector(sqrt((2 / dt)^2 - wa' * wa), wa...))))
-    qb = Quaternion(dt / 2 * (qb * Quaternion(SVector(sqrt((2 / dt)^2 - wb' * wb), wb...))))
+    xa = xa + Δt * va
+    xb = xb + Δt * vb
+    qa = Quaternion(Δt / 2 * (qa * Quaternion(SVector(sqrt((2 / Δt)^2 - wa' * wa), wa...))))
+    qb = Quaternion(Δt / 2 * (qb * Quaternion(SVector(sqrt((2 / Δt)^2 - wb' * wb), wb...))))
 
     (xb + vrotate(pb, qb)) - (xa + vrotate(pa, qa))
 end
@@ -60,7 +60,7 @@ function transfunc1pos(vars)
 end
 
 function transfunc1vel(vars)
-    dt = 0.01
+    Δt = 0.01
 
     xa = vars[1:3]
     qa = Quaternion(SVector(vars[4:7]...))
@@ -79,10 +79,10 @@ function transfunc1vel(vars)
     V2 = vars[36:38]
     V12 = [V1';V2']
 
-    xa = xa + dt * va
-    xb = xb + dt * vb
-    qa = Quaternion(dt / 2 * (qa * Quaternion(SVector(sqrt((2 / dt)^2 - wa' * wa), wa...))))
-    qb = Quaternion(dt / 2 * (qb * Quaternion(SVector(sqrt((2 / dt)^2 - wb' * wb), wb...))))
+    xa = xa + Δt * va
+    xb = xb + Δt * vb
+    qa = Quaternion(Δt / 2 * (qa * Quaternion(SVector(sqrt((2 / Δt)^2 - wa' * wa), wa...))))
+    qb = Quaternion(Δt / 2 * (qb * Quaternion(SVector(sqrt((2 / Δt)^2 - wb' * wb), wb...))))
 
     V12 * vrotate((xb + vrotate(pb, qb)) - (xa + vrotate(pa, qa)), inv(qa))
 end
@@ -102,7 +102,7 @@ function transfunc2pos(vars)
 end
 
 function transfunc2vel(vars)
-    dt = 0.01
+    Δt = 0.01
 
     xa = vars[1:3]
     qa = Quaternion(SVector(vars[4:7]...))
@@ -119,10 +119,10 @@ function transfunc2vel(vars)
 
     v = vars[33:35]
 
-    xa = xa + dt * va
-    xb = xb + dt * vb
-    qa = Quaternion(dt / 2 * (qa * Quaternion(SVector(sqrt((2 / dt)^2 - wa' * wa), wa...))))
-    qb = Quaternion(dt / 2 * (qb * Quaternion(SVector(sqrt((2 / dt)^2 - wb' * wb), wb...))))
+    xa = xa + Δt * va
+    xb = xb + Δt * vb
+    qa = Quaternion(Δt / 2 * (qa * Quaternion(SVector(sqrt((2 / Δt)^2 - wa' * wa), wa...))))
+    qb = Quaternion(Δt / 2 * (qb * Quaternion(SVector(sqrt((2 / Δt)^2 - wb' * wb), wb...))))
 
     v' * vrotate((xb + vrotate(pb, qb)) - (xa + vrotate(pa, qa)), inv(qa))
 end
@@ -141,7 +141,7 @@ function rotfunc0pos(vars)
 end
 
 function rotfunc0vel(vars)
-    dt = 0.01
+    Δt = 0.01
 
     xa = vars[1:3]
     qa = Quaternion(SVector(vars[4:7]...))
@@ -155,10 +155,10 @@ function rotfunc0vel(vars)
 
     offset = Quaternion(SVector(vars[27:30]...))
 
-    xa = xa + dt * va
-    xb = xb + dt * vb
-    qa = Quaternion(dt / 2 * (qa * Quaternion(SVector(sqrt((2 / dt)^2 - wa' * wa), wa...))))
-    qb = Quaternion(dt / 2 * (qb * Quaternion(SVector(sqrt((2 / dt)^2 - wb' * wb), wb...))))
+    xa = xa + Δt * va
+    xb = xb + Δt * vb
+    qa = Quaternion(Δt / 2 * (qa * Quaternion(SVector(sqrt((2 / Δt)^2 - wa' * wa), wa...))))
+    qb = Quaternion(Δt / 2 * (qb * Quaternion(SVector(sqrt((2 / Δt)^2 - wb' * wb), wb...))))
 
     MaximalCoordinateDynamics.VLᵀmat(qa) * qb - offset[2:4]
 end
@@ -177,7 +177,7 @@ function rotfunc1pos(vars)
 end
 
 function rotfunc1vel(vars)
-    dt = 0.01
+    Δt = 0.01
 
     xa = vars[1:3]
     qa = Quaternion(SVector(vars[4:7]...))
@@ -193,10 +193,10 @@ function rotfunc1vel(vars)
     V2 = vars[30:32]
     V12 = [V1';V2']
 
-    xa = xa + dt * va
-    xb = xb + dt * vb
-    qa = Quaternion(dt / 2 * (qa * Quaternion(SVector(sqrt((2 / dt)^2 - wa' * wa), wa...))))
-    qb = Quaternion(dt / 2 * (qb * Quaternion(SVector(sqrt((2 / dt)^2 - wb' * wb), wb...))))
+    xa = xa + Δt * va
+    xb = xb + Δt * vb
+    qa = Quaternion(Δt / 2 * (qa * Quaternion(SVector(sqrt((2 / Δt)^2 - wa' * wa), wa...))))
+    qb = Quaternion(Δt / 2 * (qb * Quaternion(SVector(sqrt((2 / Δt)^2 - wb' * wb), wb...))))
 
     V12 * (MaximalCoordinateDynamics.VLᵀmat(qa) * qb)
 end

@@ -45,12 +45,12 @@ end
 Base.length(::EqualityConstraint{T,N}) where {T,N} = N
 
 @generated function minimalCoordinates(eqc::EqualityConstraint{T,N,Nc}, mechanism) where {T,N,Nc}
-    vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.dt, mechanism.No)) for i = 1:Nc]
+    vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     :(svcat($(vec...)))
 end
 
 @generated function g(eqc::EqualityConstraint{T,N,Nc}, mechanism) where {T,N,Nc}
-    vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.dt, mechanism.No)) for i = 1:Nc]
+    vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     :(svcat($(vec...)))
 end
 
@@ -73,11 +73,11 @@ end
 end
 
 @generated function ∂g∂vela(eqc::EqualityConstraint{T,N,Nc}, id::Int64, mechanism) where {T,N,Nc}
-    vec = [:(∂g∂vela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.dt, mechanism.No)) for i = 1:Nc]
+    vec = [:(∂g∂vela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
 @generated function ∂g∂velb(eqc::EqualityConstraint{T,N,Nc}, id::Int64, mechanism) where {T,N,Nc}
-    vec = [:(∂g∂velb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.dt, mechanism.No)) for i = 1:Nc]
+    vec = [:(∂g∂velb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end

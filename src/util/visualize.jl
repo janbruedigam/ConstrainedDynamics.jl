@@ -19,13 +19,15 @@ function visualize!(mechanism::Mechanism)
 
     for shape in mechanism.shapes
         for id in shape.bodyids
-            # body = getbody(mechanism, id)
-            visshape = shapeobject(shape)
-            setobject!(vis["bundle/visshape"*string(id)], visshape, MeshPhongMaterial(color=shape.color))
+            if id>=0
+                # body = getbody(mechanism, id)
+                visshape = shapeobject(shape)
+                setobject!(vis["bundle/visshape"*string(id)], visshape, MeshPhongMaterial(color=shape.color))
+            end
         end
     end
 
-    framerate = Int64(round(1/mechanism.dt))
+    framerate = Int64(round(1/mechanism.Δt))
     anim = MeshCat.Animation(Dict{MeshCat.SceneTrees.Path,MeshCat.AnimationClip}(), framerate)
 
     for k=mechanism.steps
