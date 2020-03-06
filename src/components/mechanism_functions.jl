@@ -203,21 +203,21 @@ end
 #     end
 # end
 
-# function simulate2!(mechanism::Mechanism,controller::Controller;save::Bool = false,debug::Bool = false)
-#     debug && verifyConstraints!(mechanism)
-#     bodies = mechanism.bodies
-#     eqcs = mechanism.eqconstraints
-#     ineqcs = mechanism.ineqconstraints
-#     Δt = mechanism.Δt
-#     foreach(s0tos1!, bodies)
-#     foreach(s0tos1!, eqcs)
-#     foreach(s0tos1!, ineqcs)
+function simulate!(mechanism::Mechanism,control!::Function;save::Bool = false,debug::Bool = false)
+    debug && verifyConstraints!(mechanism)
+    bodies = mechanism.bodies
+    eqcs = mechanism.eqconstraints
+    ineqcs = mechanism.ineqconstraints
+    Δt = mechanism.Δt
+    foreach(s0tos1!, bodies)
+    foreach(s0tos1!, eqcs)
+    foreach(s0tos1!, ineqcs)
 
-#     for i = mechanism.steps
-#         inputcontrol!(mechanism,controller)
-#         newton!(mechanism, warning = debug)
-#         save && saveToStorage!(mechanism, i)
-#         foreach(updatePos!, bodies, Δt)
-#     end
-#     return
-# end
+    for i = mechanism.steps
+        control!(mechanism,(i-1)*Δt)
+        newton!(mechanism, warning = debug)
+        save && saveToStorage!(mechanism, i)
+        foreach(updatePos!, bodies, Δt)
+    end
+    return
+end
