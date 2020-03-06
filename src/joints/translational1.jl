@@ -1,16 +1,28 @@
 mutable struct Translational1{T,Nc} <: Joint{T,Nc}
     vertices::NTuple{2,SVector{3,T}}
     V12::SMatrix{2,3,T,6}
+    V3::Adjoint{T,SVector{3,T}}
     cid::Int64
 
     function Translational1(body1::AbstractBody{T}, body2::AbstractBody{T}, p1::AbstractVector{T}, p2::AbstractVector{T}, axis::AbstractVector{T}) where T
         Nc = 2
         vertices = (p1, p2)
-        V12 = (@SMatrix [1 0 0; 0 1 0]) * svd(skew(axis)).Vt
+
+        axis = axis / norm(axis)
+        A = Array(svd(skew(axis)).Vt)
+        V12 = A[1:2,:]
+        V3 = axis' # A[3,:] for correct sign
         cid = body2.id
 
-        new{T,Nc}(vertices, V12, cid), body1.id, body2.id
+        new{T,Nc}(vertices, V12, V3, cid), body1.id, body2.id
     end
+end
+
+function minimalCoordinates(joint::Translational1, body1::Body, body2::Body, dt, No)
+    vertices = joint.vertices
+    q1 = body1.q[No] # getq3(body1, dt)
+    # joint.V3 * vrotate(getx3(body2, dt) + vrotate(vertices[2], getq3(body2, dt)) - (getx3(body1, dt) + vrotate(vertices[1], q1)), inv(q1))
+    joint.V3 * vrotate(body2.x[No] + vrotate(vertices[2], body2.q[No]) - (body1.x[No] + vrotate(vertices[1], q1)), inv(q1))
 end
 
 @inline function g(joint::Translational1, body1::Body, body2::Body, dt, No)
@@ -80,6 +92,12 @@ end
     end
 end
 
+
+@inline function minimalCoordinates(joint::Translational1, body1::Origin, body2::Body, dt, No)
+    vertices = joint.vertices
+    # joint.V3 * (getx3(body2, dt) + vrotate(vertices[2], getq3(body2, dt)) - vertices[1])
+    joint.V3 * (body2.x[No] + vrotate(vertices[2], body2.q[No]) - vertices[1])
+end
 
 @inline function g(joint::Translational1, body1::Origin, body2::Body, dt, No)
     vertices = joint.vertices

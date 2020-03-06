@@ -22,15 +22,13 @@ Cylindrical(body1,body2,p1,p2,axis) = Translational1(body1, body2, p1, p2, axis)
 # t3r1: ?
 # ?
 
+# What is r2?
 # t0r2: universal?
 # ?
-
 # t1r2: ?
 # ?
-
 # t2r2: ?
 # ?
-
 # t3r2: ?
 # ?
 

@@ -11,6 +11,8 @@ mutable struct Rotational0{T,Nc} <: Joint{T,Nc}
     end
 end
 
+@inline minimalCoordinates(joint::Rotational0, body1::Body{T}, body2::Body, dt, No) where T = SVector{0,T}()
+
 @inline g(joint::Rotational0, body1::Body, body2::Body, dt, No) = VLᵀmat(getq3(body1, dt)) * getq3(body2, dt) - joint.offset
 
 @inline function ∂g∂posa(joint::Rotational0{T}, body1::Body, body2::Body, No) where T
@@ -61,6 +63,7 @@ end
     end
 end
 
+@inline minimalCoordinates(joint::Rotational0, body1::Origin{T}, body2::Body, dt, No) where T = SVector{0,T}()
 
 @inline g(joint::Rotational0, body1::Origin, body2::Body, dt, No) = Vmat(getq3(body2, dt)) - joint.offset
 

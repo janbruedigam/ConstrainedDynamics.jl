@@ -1,14 +1,24 @@
 mutable struct Rotational1{T,Nc} <: Joint{T,Nc}
     V12::SMatrix{2,3,T,6}
+    V3::Adjoint{T,SVector{3,T}}
     cid::Int64
 
     function Rotational1(body1::AbstractBody{T}, body2::AbstractBody{T}, axis::AbstractVector{T}) where T
         Nc = 2
-        V12 = (@SMatrix [1 0 0; 0 1 0]) * svd(skew(axis)).Vt
+
+        axis = axis / norm(axis)
+        A = Array(svd(skew(axis)).Vt)
+        V12 = A[1:2,:]
+        V3 = axis' # A[3,:] for correct sign
         cid = body2.id
 
-        new{T,Nc}(V12, cid), body1.id, body2.id
+        new{T,Nc}(V12, V3, cid), body1.id, body2.id
     end
+end
+
+@inline function minimalCoordinates(joint::Rotational1, body1::Body, body2::Body, dt, No)
+    q = body1.q[No]\body2.q[No]
+    joint.V3*axis(q)*angle(q)
 end
 
 @inline g(joint::Rotational1, body1::Body, body2::Body, dt, No) = joint.V12 * (VLᵀmat(getq3(body1, dt)) * getq3(body2, dt))
@@ -61,6 +71,11 @@ end
     end
 end
 
+
+@inline function minimalCoordinates(joint::Rotational1, body1::Origin, body2::Body, dt, No)
+    q = body2.q[No]
+    joint.V3*axis(q)*angle(q) 
+end
 
 @inline g(joint::Rotational1, body1::Origin, body2::Body, dt, No) = joint.V12 * Vmat(getq3(body2, dt))
 

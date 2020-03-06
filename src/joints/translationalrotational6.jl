@@ -9,6 +9,9 @@ mutable struct TranslationalRotational6{T,Nc} <: Joint{T,Nc}
     end
 end
 
+@inline function minimalCoordinates(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, dt, No)
+    [body2.x[No];body2.q[No]]
+end
 @inline g(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, dt, No) = g(joint)
 
 @inline ∂g∂posa(joint::TranslationalRotational6, body1::AbstractBody, body2::AbstractBody, No) = ∂g∂posa(joint)

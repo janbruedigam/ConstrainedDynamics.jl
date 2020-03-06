@@ -5,6 +5,7 @@ Base.show(io::IO, joint::Joint) = summary(io, joint)
 getT(joint::Joint{T}) where T = T
 getNc(joint::Joint{T,Nc}) where {T,Nc} = Nc
 
+# @inline minimalCoordinates(joint::Joint{T,Nc}) where {T,Nc} = @SVector zeros(T, 3-Nc)
 @inline g(joint::Joint{T,Nc}) where {T,Nc} = @SVector zeros(T, Nc)
 
 @inline ∂g∂posa(joint::Joint{T,Nc}) where {T,Nc} = @SMatrix zeros(T, Nc, 6)

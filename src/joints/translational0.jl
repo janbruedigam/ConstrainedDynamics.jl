@@ -11,6 +11,10 @@ mutable struct Translational0{T,Nc} <: Joint{T,Nc}
     end
 end
 
+@inline function minimalCoordinates(joint::Translational0, body1::Body{T}, body2::Body, dt, No) where T
+    SVector{0,T}()
+end
+
 @inline function g(joint::Translational0, body1::Body, body2::Body, dt, No)
     vertices = joint.vertices
     getx3(body2, dt) + vrotate(vertices[2], getq3(body2, dt)) - (getx3(body1, dt) + vrotate(vertices[1], getq3(body1, dt)))
@@ -68,6 +72,10 @@ end
     end
 end
 
+
+@inline function minimalCoordinates(joint::Translational0, body1::Origin{T}, body2::Body, dt, No) where T
+    SVector{0,T}()
+end
 
 @inline function g(joint::Translational0, body1::Origin, body2::Body, dt, No)
     vertices = joint.vertices
