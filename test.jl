@@ -1,5 +1,6 @@
 using Rotations
 using Plots: RGBA
+using StaticArrays
 
 !(@isdefined MaximalCoordinateDynamics) && include(joinpath("src", "MaximalCoordinateDynamics.jl"))
 using Main.MaximalCoordinateDynamics
@@ -31,8 +32,8 @@ link3 = Body(b2)
 link4 = Body(b4)
 
 # Constraints
-joint0to1 = EqualityConstraint(OriginConnection(origin,link1))
-# joint0to1 = EqualityConstraint(Fixed(origin,link1,zeros(3),zeros(3)))
+# joint0to1 = EqualityConstraint(OriginConnection(origin,link1))
+joint0to1 = EqualityConstraint(Fixed(origin,link1,zeros(3),zeros(3)))
 joint1to23 = EqualityConstraint(Fixed(link1,link2,vert12,vert22),Fixed(link1,link3,vert11,vert22))
 joint1to4 = EqualityConstraint(Revolute(link1,link4,vert12,vert11,ex))
 
@@ -51,8 +52,13 @@ mech = Mechanism(origin,links,constraints, shapes=shapes,g=0.)
 # setForce!(mech,link2,τ=[0;0;2.])
 # setForce!(mech,link3,τ=[0;0;2.])
 setPosition!(mech,link1,link4,p1=vert12,p2=vert11)
-setForce!(mech,link1,τ=[-0.05;0;0])
-setForce!(mech,link4,τ=[0.05;0;0])
+# setForce!(mech,link1,τ=[-0.05;0;0])
+# setForce!(mech,link4,τ=[0.05;0;0])
 
-simulate!(mech,save=true)
+function controller!(mechanism,t)
+    τ = SVector{3,Float64}(1,0,0)*cos(2*t)
+    setForce!(mechanism,mechanism.bodies[2],τ=τ)
+end
+
+MaximalCoordinateDynamics.simulate2!(mech,controller!,save=true)
 visualize!(mech)

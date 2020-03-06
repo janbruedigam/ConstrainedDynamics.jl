@@ -27,6 +27,7 @@ export Box,
     EqualityConstraint,
     InequalityConstraint,
     Mechanism,
+    PID,
 
     OriginConnection,
     Prismatic,
@@ -76,12 +77,15 @@ include(joinpath("components", "inequalityconstraint.jl"))
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "storage.jl"))
 
+include(joinpath("control", "controller.jl"))
+
 include(joinpath("solver", "sparseldu.jl"))
 include(joinpath("components", "mechanism.jl"))
 include(joinpath("components", "mechanism_functions.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 
 include(joinpath("solver", "newton.jl"))
+
 
 include(joinpath("util", "visualize.jl"))
 

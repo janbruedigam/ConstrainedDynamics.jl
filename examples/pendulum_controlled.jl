@@ -33,11 +33,8 @@ shapes = [box]
 mech = Mechanism(origin, links, constraints, shapes = shapes,tend=10.)
 setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
 
-function controller!(mechanism,t)
-    τ = SVector{3,Float64}(1,0,0)*cos(0.5*t*2pi)
-    setForce!(mechanism,mechanism.bodies[1],τ=τ)
-end
+pid = PID(2,pi/2,P=10.,I=10.,D=5.)
 
 
-simulate!(mech,controller!,save = true)
+simulate!(mech,pid,save = true)
 visualize!(mech)

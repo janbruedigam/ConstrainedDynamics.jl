@@ -44,8 +44,8 @@ end
 
 Base.length(::EqualityConstraint{T,N}) where {T,N} = N
 
-@generated function minimalCoordinates(eqc::EqualityConstraint{T,N,Nc}, mechanism) where {T,N,Nc}
-    vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
+@generated function minimalCoordinates(eqc::EqualityConstraint{T,N,Nc}, mechanism; K=mechanism.No) where {T,N,Nc}
+    vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, K)) for i = 1:Nc]
     :(svcat($(vec...)))
 end
 
