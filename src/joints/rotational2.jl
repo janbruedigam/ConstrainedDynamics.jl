@@ -7,16 +7,30 @@ mutable struct Rotational2{T,Nc} <: Joint{T,Nc}
         Nc = 2
 
         axis = axis / norm(axis)
-        A = Array(svd(skew(axis)).Vt)
+        A = svd(skew(axis)).Vt
         V12 = A[1:2,:]
-        V3 = axis' # A[3,:] for correct sign
+        V3 = axis' # instead of A[3,:] for correct sign: abs(axis) = abs(A[3,:])
         cid = body2.id
 
         new{T,Nc}(V12, V3, cid), body1.id, body2.id
     end
 end
 
-@inline function minimalCoordinates(joint::Rotational2, body1::Body, body2::Body, Δt, No)
+function setForce!(joint::Rotational2, body1::AbstractBody, body2::Body, τ::SVector{0,T}, No) where T
+    return
+end
+
+function setForce!(joint::Rotational2, body1::AbstractBody, body2::Body, τ::Nothing, No)
+    return
+end
+
+function setForce!(joint::Rotational2, body1::Body, body2::Body{T}, τ::Union{T,SVector{1,T}}, No) where T
+    body1.τ[No] = joint.V3' * -τ
+    body2.τ[No] = joint.V3' * τ
+    return
+end
+
+@inline function minimalCoordinates(joint::Rotational2, body1::Body, body2::Body, No)
     q = body1.q[No]\body2.q[No]
     joint.V3*axis(q)*angle(q)
 end
@@ -72,7 +86,12 @@ end
 end
 
 
-@inline function minimalCoordinates(joint::Rotational2, body1::Origin, body2::Body, Δt, No)
+function setForce!(joint::Rotational2, body1::Origin, body2::Body{T}, τ::Union{T,SVector{1,T}}, No) where T
+    body2.τ[No] = joint.V3' * τ
+    return
+end
+
+@inline function minimalCoordinates(joint::Rotational2, body1::Origin, body2::Body, No)
     q = body2.q[No]
     joint.V3*axis(q)*angle(q) 
 end

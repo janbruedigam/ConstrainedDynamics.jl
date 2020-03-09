@@ -9,7 +9,26 @@ mutable struct Rotational0{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline function minimalCoordinates(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, Δt, No)
+function setForce!(joint::Rotational0, body1::AbstractBody, body2::Body, τ::SVector{0,T}, No) where T
+    return
+end
+
+function setForce!(joint::Rotational0, body1::AbstractBody, body2::Body, τ::Nothing, No)
+    return
+end
+
+function setForce!(joint::Rotational0, body1::Body, body2::Body{T}, τ::SVector{3,T}, No) where T
+    body1.τ[No] = -τ
+    body2.τ[No] = τ
+    return
+end
+
+function setForce!(joint::Rotational0, body1::Origin, body2::Body{T}, τ::SVector{3,T}, No) where T
+    body2.τ[No] = τ
+    return
+end
+
+@inline function minimalCoordinates(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, No)
     body2.q[No]
 end
 @inline g(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, Δt, No) = g(joint)

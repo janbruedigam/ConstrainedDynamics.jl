@@ -12,7 +12,7 @@ ez = [0.;0.;1.]
 
 l1 = 1.0
 x,z = .1,.1
-b1 = Box(x,l1,z,l1*1,color=RGBA(1.,1.,0.))
+b1 = Box(x,l1,z,l1*1000,color=RGBA(1.,1.,0.))
 b2 = Box(l1,x,z,l1,color=RGBA(1.,0.,0.))
 b3 = Box(l1*2,x,z,l1,color=RGBA(1.,0.,0.))
 b4 = Box(x,l1,z,l1*1,color=RGBA(1.,0.,0.))
@@ -32,8 +32,8 @@ link3 = Body(b2)
 link4 = Body(b4)
 
 # Constraints
-# joint0to1 = EqualityConstraint(OriginConnection(origin,link1))
-joint0to1 = EqualityConstraint(Fixed(origin,link1,zeros(3),zeros(3)))
+joint0to1 = EqualityConstraint(OriginConnection(origin,link1))
+# joint0to1 = EqualityConstraint(Fixed(origin,link1,zeros(3),zeros(3)))
 joint1to23 = EqualityConstraint(Fixed(link1,link2,vert12,vert22),Fixed(link1,link3,vert11,vert22))
 joint1to4 = EqualityConstraint(Revolute(link1,link4,vert12,vert11,ex))
 
@@ -55,10 +55,7 @@ setPosition!(mech,link1,link4,p1=vert12,p2=vert11)
 # setForce!(mech,link1,τ=[-0.05;0;0])
 # setForce!(mech,link4,τ=[0.05;0;0])
 
-function controller!(mechanism,t)
-    τ = SVector{3,Float64}(1,0,0)*cos(2*t)
-    setForce!(mechanism,mechanism.bodies[2],τ=τ)
-end
+setForce!([nothing;[0.05]],joint1to4,mech)
 
-MaximalCoordinateDynamics.simulate2!(mech,controller!,save=true)
+simulate!(mech,save=true)
 visualize!(mech)

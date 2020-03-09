@@ -11,7 +11,11 @@ mutable struct Rotational3{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline minimalCoordinates(joint::Rotational3, body1::Body{T}, body2::Body, Δt, No) where T = SVector{0,T}()
+function setForce!(joint::Rotational3, body1::AbstractBody, body2::Body, τ, No)
+    return
+end
+
+@inline minimalCoordinates(joint::Rotational3, body1::Body{T}, body2::Body, No) where T = SVector{0,T}()
 
 @inline g(joint::Rotational3, body1::Body, body2::Body, Δt, No) = VLᵀmat(getq3(body1, Δt)) * getq3(body2, Δt) - joint.offset
 
@@ -63,7 +67,7 @@ end
     end
 end
 
-@inline minimalCoordinates(joint::Rotational3, body1::Origin{T}, body2::Body, Δt, No) where T = SVector{0,T}()
+@inline minimalCoordinates(joint::Rotational3, body1::Origin{T}, body2::Body, No) where T = SVector{0,T}()
 
 @inline g(joint::Rotational3, body1::Origin, body2::Body, Δt, No) = Vmat(getq3(body2, Δt)) - joint.offset
 

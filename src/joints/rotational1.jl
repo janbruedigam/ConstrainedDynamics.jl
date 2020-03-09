@@ -9,16 +9,30 @@ mutable struct Rotational1{T,Nc} <: Joint{T,Nc}
         Nc = 1
 
         axis = axis / norm(axis)
-        A = Array(svd(skew(axis)).Vt)
+        A = svd(skew(axis)).Vt
         V12 = A[1:2,:]
-        V3 = axis' # A[3,:] for correct sign
+        V3 = axis' # instead of A[3,:] for correct sign: abs(axis) = abs(A[3,:])
         cid = body2.id
 
         new{T,Nc}(V12, V3, cid), body1.id, body2.id
     end
 end
 
-@inline minimalCoordinates(joint::Rotational1, body1::Body, body2::Body, Δt, No) = joint.V12 * (VLᵀmat(body1.q[No]) * body2.q[No])
+function setForce!(joint::Rotational1, body1::AbstractBody, body2::Body, τ::SVector{0,T}, No) where T
+    return
+end
+
+function setForce!(joint::Rotational1, body1::AbstractBody, body2::Body, τ::Nothing, No)
+    return
+end
+
+function setForce!(joint::Rotational1, body1::Body, body2::Body{T}, τ::SVector{2,T}, No) where T
+    body1.τ[No] = joint.V12' * -τ
+    body2.τ[No] = joint.V12' * τ
+    return
+end
+
+@inline minimalCoordinates(joint::Rotational1, body1::Body, body2::Body, No) = joint.V12 * (VLᵀmat(body1.q[No]) * body2.q[No])
 
 @inline g(joint::Rotational1, body1::Body, body2::Body, Δt, No) = joint.V3 * (VLᵀmat(getq3(body1, Δt)) * getq3(body2, Δt))
 
@@ -70,8 +84,12 @@ end
     end
 end
 
+function setForce!(joint::Rotational1, body1::Origin, body2::Body{T}, τ::SVector{2,T}, No) where T
+    body2.τ[No] = joint.V12' * τ
+    return
+end
 
-@inline minimalCoordinates(joint::Rotational1, body1::Origin, body2::Body, Δt, No) = joint.V12 * Vmat(body2.q[No])
+@inline minimalCoordinates(joint::Rotational1, body1::Origin, body2::Body, No) = joint.V12 * Vmat(body2.q[No])
 
 @inline g(joint::Rotational1, body1::Origin, body2::Body, Δt, No) = joint.V3 * Vmat(getq3(body2, Δt))
 

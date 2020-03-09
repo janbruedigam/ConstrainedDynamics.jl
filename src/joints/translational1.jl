@@ -9,19 +9,40 @@ mutable struct Translational1{T,Nc} <: Joint{T,Nc}
         vertices = (p1, p2)
 
         axis = axis / norm(axis)
-        A = Array(svd(skew(axis)).Vt)
+        A = svd(skew(axis)).Vt
         V12 = A[1:2,:]
-        V3 = axis' # A[3,:] for correct sign
+        V3 = axis' # instead of A[3,:] for correct sign: abs(axis) = abs(A[3,:])
         cid = body2.id
 
         new{T,Nc}(vertices, V12, V3, cid), body1.id, body2.id
     end
 end
 
-function minimalCoordinates(joint::Translational1, body1::Body, body2::Body, Δt, No)
+function setForce!(joint::Translational1, body1::AbstractBody, body2::Body, F::SVector{0,T}, No) where T
+    return
+end
+
+function setForce!(joint::Translational1, body1::AbstractBody, body2::Body, F::Nothing, No)
+    return
+end
+
+function setForce!(joint::Translational1, body1::Body, body2::Body{T}, F::SVector{2,T}, No) where T
+    F1 = joint.V12' * -F
+    F2 = -F1
+    τ1 = torqueFromForce(F1, joint.vertices[1])
+    τ2 = torqueFromForce(F2, joint.vertices[2])
+
+    body1.F[No] = F1
+    body1.τ[No] = τ1
+
+    body2.F[No] = F2
+    body2.τ[No] = τ2
+    return
+end
+
+function minimalCoordinates(joint::Translational1, body1::Body, body2::Body, No)
     vertices = joint.vertices
-    q1 = body1.q[No] # getq3(body1, Δt)
-    # joint.V12 * vrotate(getx3(body2, Δt) + vrotate(vertices[2], getq3(body2, Δt)) - (getx3(body1, Δt) + vrotate(vertices[1], q1)), inv(q1))
+    q1 = body1.q[No]
     joint.V12 * vrotate(body2.x[No] + vrotate(vertices[2], body2.q[No]) - (body1.x[No] + vrotate(vertices[1], q1)), inv(q1))
 end
 
@@ -93,7 +114,16 @@ end
 end
 
 
-@inline function minimalCoordinates(joint::Translational1, body1::Origin, body2::Body, Δt, No)
+function setForce!(joint::Translational1, body1::Origin, body2::Body{T}, F::SVector{2,T}, No) where T
+    F2 = joint.V12' * F
+    τ2 = torqueFromForce(F2, joint.vertices[2])
+
+    body2.F[No] = F2
+    body2.τ[No] = τ2
+    return
+end
+
+@inline function minimalCoordinates(joint::Translational1, body1::Origin, body2::Body, No)
     vertices = joint.vertices
     joint.V12 * (body2.x[No] + vrotate(vertices[2], body2.q[No]) - vertices[1])
 end

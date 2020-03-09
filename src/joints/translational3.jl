@@ -11,7 +11,11 @@ mutable struct Translational3{T,Nc} <: Joint{T,Nc}
     end
 end
 
-@inline function minimalCoordinates(joint::Translational3, body1::Body{T}, body2::Body, Δt, No) where T
+function setForce!(joint::Translational3, body1::AbstractBody, body2::Body, F, No)
+    return
+end
+
+@inline function minimalCoordinates(joint::Translational3, body1::AbstractBody{T}, body2::Body, No) where T
     SVector{0,T}()
 end
 
@@ -73,7 +77,7 @@ end
 end
 
 
-@inline function minimalCoordinates(joint::Translational3, body1::Origin{T}, body2::Body, Δt, No) where T
+@inline function minimalCoordinates(joint::Translational3, body1::Origin{T}, body2::Body, No) where T
     SVector{0,T}()
 end
 
