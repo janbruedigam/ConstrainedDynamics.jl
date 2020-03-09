@@ -1,7 +1,7 @@
 mutable struct Rotational0{T,Nc} <: Joint{T,Nc}
     cid::Int64
 
-    function Rotational0(body1::Origin{T}, body2::Body{T}) where T
+    function Rotational0(body1::AbstractBody{T}, body2::Body{T}) where T
         Nc = 0
         cid = body2.id
 
