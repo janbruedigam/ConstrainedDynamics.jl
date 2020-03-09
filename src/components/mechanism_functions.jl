@@ -197,12 +197,6 @@ function simulate!(mechanism::Mechanism;save::Bool = false,debug::Bool = false)
 end
 
 
-# function inputcontrol!(mechanism::Mechanism,controller::Controller)
-#     for body in mechanism.bodies
-#         inputcontrol!(body,controller)
-#     end
-# end
-
 function simulate!(mechanism::Mechanism,control!::Function;save::Bool = false,debug::Bool = false)
     debug && verifyConstraints!(mechanism)
     bodies = mechanism.bodies

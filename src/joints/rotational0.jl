@@ -18,8 +18,11 @@ function setForce!(joint::Rotational0, body1::AbstractBody, body2::Body, τ::Not
 end
 
 function setForce!(joint::Rotational0, body1::Body, body2::Body{T}, τ::SVector{3,T}, No) where T
-    body1.τ[No] = -τ
-    body2.τ[No] = τ
+    τ1 = vrotate(-τ,body1.q[No])
+    τ2 = -τ1
+
+    body1.τ[No] = τ1
+    body2.τ[No] = τ2
     return
 end
 

@@ -7,7 +7,7 @@ mutable struct Rotational2{T,Nc} <: Joint{T,Nc}
         Nc = 2
 
         axis = axis / norm(axis)
-        A = svd(skew(axis)).Vt
+        A = svd(skew(axis)).Vt # in frame of body1
         V12 = A[1:2,:]
         V3 = axis' # instead of A[3,:] for correct sign: abs(axis) = abs(A[3,:])
         cid = body2.id
@@ -25,8 +25,11 @@ function setForce!(joint::Rotational2, body1::AbstractBody, body2::Body, τ::Not
 end
 
 function setForce!(joint::Rotational2, body1::Body, body2::Body{T}, τ::Union{T,SVector{1,T}}, No) where T
-    body1.τ[No] = joint.V3' * -τ
-    body2.τ[No] = joint.V3' * τ
+    τ1 = vrotate(joint.V3' * -τ,body1.q[No])
+    τ2 = -τ1
+
+    body1.τ[No] = τ1
+    body2.τ[No] = τ2
     return
 end
 

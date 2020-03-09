@@ -18,8 +18,11 @@ function setForce!(joint::Translational0, body1::AbstractBody, body2::Body, F::N
 end
 
 function setForce!(joint::Translational0, body1::Body, body2::Body{T}, F::SVector{3,T}, No) where T
-    body2.F[No] = -F
-    body2.F[No] = F
+    F1 = vrotate(-F,body1.q[No])
+    F2 = -F1
+
+    body2.F[No] = F1
+    body2.F[No] = F2
     return
 end
 
