@@ -15,6 +15,7 @@ using Blink
 using Colors: RGBA, RGB
 using FileIO, MeshIO
 using MeshCat
+using LightXML
 
 using Plots
 
@@ -41,7 +42,6 @@ export Box,
 
     Impact,
 
-    # setInit!,
     setPosition!,
     setVelocity!,
     setForce!,
@@ -84,6 +84,8 @@ include(joinpath("solver", "sparseldu.jl"))
 include(joinpath("components", "mechanism.jl"))
 include(joinpath("components", "mechanism_functions.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
+
+include(joinpath("util", "urdf.jl"))
 
 include(joinpath("solver", "newton.jl"))
 

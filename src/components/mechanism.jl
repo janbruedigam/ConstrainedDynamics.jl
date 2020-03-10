@@ -137,6 +137,25 @@ mutable struct Mechanism{T,N,Ni}
         end
         Mechanism(origin, bodies, eqc, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
     end    
+
+    function Mechanism(filename::AbstractString; scalar_type::Type{T}=Float64, tend::T=10., Δt::T=.01, g::T=-9.81, No::Int64=2) where T
+        xdoc = LightXML.parse_file(filename)
+        xroot = LightXML.root(xdoc)
+        @assert LightXML.name(xroot) == "robot"
+    
+        xlinks = get_elements_by_tagname(xroot, "link")
+        xjoints = get_elements_by_tagname(xroot, "joint")
+    
+        ldict = parse_links(xlinks,T)
+    
+        origin, links, joints = parse_joints(xjoints,ldict)
+    
+        free(xdoc)
+    
+        Mechanism(origin, links, joints, tend=tend, Δt=Δt, g=g, No=No)
+        # return origin, links, joints
+        
+    end
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,0}) where {T,N}
