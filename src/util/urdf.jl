@@ -49,8 +49,44 @@ function parse_inertia(xinertial, T)
     x, q, mass, inertia
 end
 
+function parse_shape(xvisual, T)
+    xgeometry = find_element(xvisual, "geometry")
+    @assert xgeometry!=nothing
+
+    xmaterial = find_element(xvisual, "material")
+    if xmaterial != nothing
+        # colornode = child_nodes(xmaterial)
+        # @assert length(colornode)==1
+        colornode = find_element(xmaterial, "color")
+
+        cvec = parse_vector(colornode, "rgba", T, default="0.5 0.5 0.5 1")
+        color = RGBA(cvec[1:3]...)
+    else
+        color = RGBA(0.5, 0.5, 0.5)
+    end
+
+    # shapenode = child_nodes(xgeometry)
+    # @assert length(shapenode)==1
+    shapenode = find_element(xgeometry, "box")
+    if shapenode != nothing
+        xyz = parse_vector(shapenode, "size", T, default="1 1 1")
+        return Box(xyz...,zero(T),color=color)
+    else
+        shapenode = find_element(xgeometry, "cylinder")
+        if shapenode != nothing
+            r = parse_scalar(shapenode, "radius", T, default="0.5")
+            l = parse_scalar(shapenode, "length", T, default="1")
+            
+            return Cylinder(r,l,zero(T),color=color)
+        else
+            return nothing
+        end
+    end
+end
+
 function parse_link(xlink,::Type{T}) where T
     xinertial = find_element(xlink, "inertial")
+    xvisual = find_element(xlink, "visual")
     if xinertial!=nothing
         x, q, mass, inertia = parse_inertia(xinertial, T)
     else
@@ -59,23 +95,36 @@ function parse_link(xlink,::Type{T}) where T
         mass = zero(T)
         inertia = zeros(T,3,3)
     end
+    
     name = attribute(xlink, "name")
     link = Body(mass, inertia)
     link.x[1] = x
     link.q[1] = q
 
-    return name, link
+    if xvisual!=nothing
+        shape = parse_shape(xvisual, T)
+    else
+        shape = nothing
+    end
+
+    if shape != nothing
+        push!(shape.bodyids, link.id)
+    end
+
+    return name, link, shape
 end
 
 function parse_links(xlinks,::Type{T}) where T
     ldict = Dict{String,MaximalCoordinateDynamics.AbstractBody{T}}()
+    shapes = Shape{T}[]
 
     for xlink in xlinks
-        name, link = parse_link(xlink,T)
+        name, link, shape = parse_link(xlink,T)
         ldict[name] = link
+        shape != nothing && push!(shapes,shape)
     end
 
-    return ldict
+    return ldict, shapes
 end
 
 function parse_joint(xjoint, origin, plink, clink, ::Type{T}) where T

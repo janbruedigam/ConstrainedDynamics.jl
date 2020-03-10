@@ -3,4 +3,7 @@ using Main.MaximalCoordinateDynamics
 
 
 path = "src/util/twoTwoBarDiffLength.urdf"
-Mechanism(path)
+mech = Mechanism(path)
+
+simulate!(mech, save=true)
+visualize!(mech)

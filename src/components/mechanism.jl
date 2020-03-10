@@ -146,15 +146,13 @@ mutable struct Mechanism{T,N,Ni}
         xlinks = get_elements_by_tagname(xroot, "link")
         xjoints = get_elements_by_tagname(xroot, "joint")
     
-        ldict = parse_links(xlinks,T)
+        ldict, shapes = parse_links(xlinks,T)
     
         origin, links, joints = parse_joints(xjoints,ldict)
     
         free(xdoc)
     
-        Mechanism(origin, links, joints, tend=tend, Δt=Δt, g=g, No=No)
-        # return origin, links, joints
-        
+        Mechanism(origin, links, joints, shapes=shapes, tend=tend, Δt=Δt, g=g, No=No)
     end
 end
 
