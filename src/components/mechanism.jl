@@ -136,23 +136,76 @@ mutable struct Mechanism{T,N,Ni}
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
         Mechanism(origin, bodies, eqc, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
-    end    
+    end
 
     function Mechanism(filename::AbstractString; scalar_type::Type{T}=Float64, tend::T=10., Δt::T=.01, g::T=-9.81, No::Int64=2) where T
         xdoc = LightXML.parse_file(filename)
         xroot = LightXML.root(xdoc)
         @assert LightXML.name(xroot) == "robot"
-    
+
         xlinks = get_elements_by_tagname(xroot, "link")
         xjoints = get_elements_by_tagname(xroot, "joint")
-    
+
         ldict, shapes = parse_links(xlinks,T)
-    
-        origin, links, joints = parse_joints(xjoints,ldict)
-    
-        free(xdoc)
-    
-        Mechanism(origin, links, joints, shapes=shapes, tend=tend, Δt=Δt, g=g, No=No)
+
+        origin, links, joints, qlist = parse_joints(xjoints,ldict)
+
+        # free(xdoc)
+
+        mechanism = Mechanism(origin, links, joints, shapes=shapes, tend=tend, Δt=Δt, g=g, No=No)
+
+        graph = mechanism.graph
+
+        for id in graph.rdfslist
+            component = getcomponent(mechanism,id)
+            if typeof(component) <: Body
+                body1 = component
+                preds = predecessors(graph,id)
+                @assert length(preds) == 1
+                pid = preds[1]
+                constraint1 = geteqconstraint(mechanism,pid)
+                @assert length(constraint1.constraints) == 2
+
+                gpreds = predecessors(graph,pid)
+                if length(gpreds) > 0 # other link is predecessor
+                    @assert length(gpreds) == 1
+                    gpid = gpreds[1]
+
+                    body2 = getbody(mechanism,gpid)
+                    ggpreds = predecessors(graph,gpid)
+                    @assert length(ggpreds) == 1
+                    ggpid = ggpreds[1]
+                    constraint2 = geteqconstraint(mechanism,ggpid)
+                    @assert length(constraint2.constraints) == 2
+
+                    if typeof(constraint1.constraints[1]) <: Union{Translational1,Translational2,Translational3}
+                        p1 = constraint1.constraints[1].vertices[1]+constraint2.constraints[1].vertices[2]
+                        p2 = constraint1.constraints[1].vertices[2]
+                        constraint1.constraints[1].vertices = (p1, p2)
+
+                        q = body1.q[1]
+                        setPosition!(mechanism,body1)
+                        setPosition!(mechanism,body2,body1,p1=p1,p2=p2,Δq=q)
+                    else # Floating joint (relative to origin. floating relative to other joint not supported)
+                        error("Something is wrong.")
+                    end
+
+                else # origin is predecessor
+                    if typeof(constraint1.constraints[1]) <: Union{Translational1,Translational2,Translational3}
+                        p1 = constraint1.constraints[1].vertices[1]
+                        p2 = constraint1.constraints[1].vertices[2]
+
+                        q = body1.q[1]
+                        setPosition!(mechanism,body1)
+                        setPosition!(mechanism,mechanism.origin,body1,p1=p1,p2=p2,Δq=q)
+                    else # Floating joint (relative to origin. floating relative to other joint not supported)
+                        nothing
+                    end
+                end
+            end
+        end
+
+        return mechanism
     end
 end
 
@@ -169,7 +222,19 @@ end
 @inline getbody(mechanism::Mechanism, id::Nothing) = mechanism.origin
 @inline geteqconstraint(mechanism::Mechanism, id::Int64) = mechanism.eqconstraints[id]
 @inline getineqconstraint(mechanism::Mechanism, id::Int64) = mechanism.ineqconstraints[id]
-
+function getcomponent(mechanism::Mechanism, id)
+    if id==nothing
+        return mechanism.origin
+    elseif haskey(mechanism.bodies,id)
+        return getbody(mechanism,id)
+    elseif haskey(mechanism.eqconstraints,id)
+        return geteqconstraint(mechanism,id)
+    elseif haskey(mechanism.ineqconstraints,id)
+        return getineqconstraint(mechanism,id)
+    else
+        return nothing
+    end
+end
 
 function setPosition!(mechanism::Mechanism{T}, body::Body{T};x::AbstractVector{T}=SVector{3,T}(0,0,0),q::Quaternion{T}=Quaternion{T}()) where T
     for i=1:mechanism.No
@@ -183,7 +248,7 @@ function setPosition!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
 
     q = body1.q[1]*Δq
     x = body1.x[1] + vrotate(SVector{3,T}(p1+Δx), body1.q[1]) - vrotate(SVector{3,T}(p2), q)
-    
+
     setPosition!(mechanism, body2;x=x,q=q)
 end
 
@@ -192,7 +257,7 @@ function setPosition!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
 
     q = Δq
     x = p1+Δx - vrotate(SVector{3,T}(p2), q)
-    
+
 
     setPosition!(mechanism, body2;x=x,q=q)
 end

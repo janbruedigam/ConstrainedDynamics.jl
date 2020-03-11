@@ -25,7 +25,7 @@ origin = Origin{Float64}()
 links = [Body(b1) for i=1:N]
 
 # Constraints
-jointb1 = EqualityConstraint(Revolute(origin,link1,zeros(3),vert11,ex))
+jointb1 = EqualityConstraint(Revolute(origin,links[1],zeros(3),vert11,ex))
 constraints = [jointb1;[EqualityConstraint(Revolute(links[i-1],links[i],vert12,vert11,ex)) for i=2:N]]
 
 shapes = [b1]

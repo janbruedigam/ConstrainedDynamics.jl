@@ -44,9 +44,10 @@ end
 function parse_inertia(xinertial, T)
     x, q = parse_pose(find_element(xinertial, "origin"), T)
     inertia = parse_inertia_matrix(find_element(xinertial, "inertia"), T)
+    inertia = (Lmat(q)*Rᵀmat(q)*[zeros(T,4) [zeros(T,3)';inertia]]*Rmat(q)*Lᵀmat(q))[2:4,2:4]
     mass = parse_scalar(find_element(xinertial, "mass"), "value", T, default="0")
 
-    x, q, mass, inertia
+    x, mass, inertia
 end
 
 function parse_shape(xvisual, T)
@@ -55,8 +56,6 @@ function parse_shape(xvisual, T)
 
     xmaterial = find_element(xvisual, "material")
     if xmaterial != nothing
-        # colornode = child_nodes(xmaterial)
-        # @assert length(colornode)==1
         colornode = find_element(xmaterial, "color")
 
         cvec = parse_vector(colornode, "rgba", T, default="0.5 0.5 0.5 1")
@@ -65,8 +64,6 @@ function parse_shape(xvisual, T)
         color = RGBA(0.5, 0.5, 0.5)
     end
 
-    # shapenode = child_nodes(xgeometry)
-    # @assert length(shapenode)==1
     shapenode = find_element(xgeometry, "box")
     if shapenode != nothing
         xyz = parse_vector(shapenode, "size", T, default="1 1 1")
@@ -88,10 +85,9 @@ function parse_link(xlink,::Type{T}) where T
     xinertial = find_element(xlink, "inertial")
     xvisual = find_element(xlink, "visual")
     if xinertial!=nothing
-        x, q, mass, inertia = parse_inertia(xinertial, T)
+        x, mass, inertia = parse_inertia(xinertial, T)
     else
         x = zeros(T,3)
-        q = Quaternion{T}()
         mass = zero(T)
         inertia = zeros(T,3,3)
     end
@@ -99,7 +95,6 @@ function parse_link(xlink,::Type{T}) where T
     name = attribute(xlink, "name")
     link = Body(mass, inertia)
     link.x[1] = x
-    link.q[1] = q
 
     if xvisual!=nothing
         shape = parse_shape(xvisual, T)
@@ -132,7 +127,8 @@ function parse_joint(xjoint, origin, plink, clink, ::Type{T}) where T
     x, q = parse_pose(find_element(xjoint, "origin"), T)
     axis = parse_vector(find_element(xjoint, "axis"), "xyz", T, default="0 0 0")
     p1 = x
-    p2 = clink.x[1]
+    p2 = -clink.x[1]
+    clink.q[1] = q
     
 
     if joint_type == "revolute" || joint_type == "continuous"
@@ -143,11 +139,11 @@ function parse_joint(xjoint, origin, plink, clink, ::Type{T}) where T
         joint = EqualityConstraint(Planar(plink, clink, p1, p2, axis))
     elseif joint_type == "fixed"
         joint = EqualityConstraint(Fixed(plink, clink))
-    elseif joint_type == "floating"
+    elseif joint_type == "floating" # Floating relative to non-origin joint not supported
         joint = EqualityConstraint(OriginConnection(origin, clink))
     end
 
-    return x, q, joint
+    return q, joint
 end
 
 function parse_joints(xjoints,ldict)
@@ -155,7 +151,6 @@ function parse_joints(xjoints,ldict)
     origins = Origin{T}[]
     links = Body{T}[]
     joints = EqualityConstraint{T}[]
-    xlist = Vector{T}[]
     qlist = Quaternion{T}[]
 
     for name in keys(ldict)
@@ -190,11 +185,10 @@ function parse_joints(xjoints,ldict)
         xclink = find_element(xjoint, "child")
         clink = ldict[attribute(xclink, "link")]
 
-        x, q, joint = parse_joint(xjoint, origin, plink, clink,T)
-        push!(xlist,x)
+        q, joint = parse_joint(xjoint, origin, plink, clink,T)
         push!(qlist,q)
         push!(joints,joint)
     end
 
-    return origin, links, joints
+    return origin, links, joints, qlist
 end

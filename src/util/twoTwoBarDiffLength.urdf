@@ -14,7 +14,7 @@
 
   <link name="link1">
     <inertial>
-      <origin xyz="0 0 -0.5" rpy="0 0. 0." />
+      <origin xyz="0 0 -0.5" rpy="0. 0. 0." />
       <mass value="1" />
       <inertia ixx=".0841667" ixy="0" ixz="0" iyy=".0841667" iyz="0" izz=".00166667" />
     </inertial>
@@ -24,14 +24,14 @@
          <cylinder length="1" radius=".05" />
       </geometry>
       <material name="green">
-	       <color rgba="1 0 1 1" />
+	       <color rgba="1 0 0 1" />
       </material>
     </visual>
   </link>
 
 	<link name="link2">
     <inertial>
-      <origin xyz="0 0 -0.5" rpy="0 0. 0." />
+      <origin xyz="0 0 -0.3536" rpy="0 0. 0." />
       <mass value="1" />
       <inertia ixx=".0841667" ixy="0" ixz="0" iyy=".0841667" iyz="0" izz=".00166667" />
     </inertial>
@@ -41,7 +41,7 @@
          <cylinder length="0.7071" radius=".05" />
       </geometry>
       <material name="green">
-	       <color rgba="1 0 1 1" />
+	       <color rgba="0 1 0 1" />
       </material>
     </visual>
   </link>
@@ -58,14 +58,14 @@
          <cylinder length="1" radius=".05" />
       </geometry>
       <material name="red">
-	       <color rgba="1 0 0 1" />
+	       <color rgba="0 0 1 1" />
       </material>
     </visual>
   </link>
 
 	<link name="link4">
     <inertial>
-      <origin xyz="0 0 -0.5" rpy="0 0. 0." />
+      <origin xyz="0 0 -0.3536" rpy="0 0. 0." />
       <mass value="1" />
       <inertia ixx=".0841667" ixy="0" ixz="0" iyy=".0841667" iyz="0" izz=".00166667" />
     </inertial>
@@ -75,7 +75,7 @@
          <cylinder length="0.7071" radius=".05" />
       </geometry>
       <material name="red">
-	       <color rgba="1 0 0 1" />
+	       <color rgba="1 0 1 1" />
       </material>
     </visual>
   </link>
@@ -83,7 +83,7 @@
 	<joint name="joint1" type="continuous">
 		<parent link="base_link" />
 		<child link="link1" />
-		<origin xyz="0 0 0" />
+		<origin xyz="0 0 0" rpy="0. 0 0"/>
 		<axis xyz="1 0 0" />
 		<dynamics damping="0"/>
 	</joint>
@@ -91,7 +91,7 @@
 	<joint name="joint2" type="continuous">
 		<parent link="link1" />
 		<child link="link2" />
-		<origin xyz="0 0 -1" />
+		<origin xyz="0 0 -1" rpy="-0.2 0 0"/>
 		<axis xyz="1 0 0" />
 		<dynamics damping="0"/>
 	</joint>
@@ -99,7 +99,7 @@
 	<joint name="joint3" type="continuous">
 		<parent link="base_link" />
 		<child link="link3" />
-		<origin xyz="0 0 0" />
+		<origin xyz="0 1 0"  rpy="0.5 0 0"/>
 		<axis xyz="1 0 0" />
 		<dynamics damping="0"/>
 	</joint>
