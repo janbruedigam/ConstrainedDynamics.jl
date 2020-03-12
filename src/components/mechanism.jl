@@ -148,7 +148,7 @@ mutable struct Mechanism{T,N,Ni}
 
         ldict, shapes = parse_links(xlinks,T)
 
-        origin, links, joints, qlist = parse_joints(xjoints,ldict)
+        origin, links, joints, qlist = parse_joints(xjoints,ldict,shapes)
 
         # free(xdoc)
 

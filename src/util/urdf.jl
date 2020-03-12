@@ -148,7 +148,7 @@ function parse_links(xlinks,::Type{T}) where T
     return ldict, shapes
 end
 
-#TODO offset correct?
+#TODO offset correct (e.g. for Planar)?
 function parse_joint(xjoint, origin, plink, clink, ::Type{T}) where T
     joint_type = attribute(xjoint, "type")
     x, q = parse_pose(find_element(xjoint, "origin"), T)
@@ -159,13 +159,13 @@ function parse_joint(xjoint, origin, plink, clink, ::Type{T}) where T
     
 
     if joint_type == "revolute" || joint_type == "continuous"
-        joint = EqualityConstraint(Revolute(plink, clink, p1, p2, axis, offset=q))
+        joint = EqualityConstraint(Revolute(plink, clink, p1, p2, axis, offset=inv(q)))
     elseif joint_type == "prismatic"
-        joint = EqualityConstraint(Prismatic(plink, clink, p1, p2, axis, offset=q))
+        joint = EqualityConstraint(Prismatic(plink, clink, p1, p2, axis, offset=inv(q)))
     elseif joint_type == "planar"
         joint = EqualityConstraint(Planar(plink, clink, p1, p2, axis))
     elseif joint_type == "fixed"
-        joint = EqualityConstraint(Fixed(plink, clink, p1, p2, offset=q))
+        joint = EqualityConstraint(Fixed(plink, clink, p1, p2, offset=inv(q)))
     elseif joint_type == "floating" # Floating relative to non-origin joint not supported
         joint = EqualityConstraint(OriginConnection(origin, clink))
     end
@@ -173,7 +173,7 @@ function parse_joint(xjoint, origin, plink, clink, ::Type{T}) where T
     return q, joint
 end
 
-function parse_joints(xjoints,ldict)
+function parse_joints(xjoints,ldict,shapes)
     T = typeof(first(ldict).second.m)
     origins = Origin{T}[]
     links = Body{T}[]
@@ -213,6 +213,15 @@ function parse_joints(xjoints,ldict)
         clink = ldict[attribute(xclink, "link")]
 
         q, joint = parse_joint(xjoint, origin, plink, clink,T)
+        for shape in shapes
+            for id in shape.bodyids
+                if id==clink.id
+                    # shape.q = shape.q/clink.q[1]
+                    # shape.p = vrotate(shape.p,clink.q[1])
+                end
+            end
+        end
+
         push!(qlist,q)
         push!(joints,joint)
     end
