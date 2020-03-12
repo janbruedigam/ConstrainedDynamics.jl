@@ -11,10 +11,10 @@ Prismatic(body1,body2,p1,p2,axis;offset = Quaternion{T}()) where T = Translation
 FixedOrientation(body1::AbstractBody{T},body2;offset = Quaternion{T}()) where T = Translational0(body1, body2), Rotational3(body1, body2, offset = offset)
 
 # t3r2: Revolute
-Revolute(body1,body2,p1,p2,axis) = Translational3(body1, body2, p1, p2), Rotational2(body1, body2, axis)
+Revolute(body1,body2,p1,p2,axis;offset = Quaternion{T}()) = Translational3(body1, body2, p1, p2), Rotational2(body1, body2, axis, offset = offset)
 
 # t2r2: Cylindrical
-Cylindrical(body1,body2,p1,p2,axis) = Translational2(body1, body2, p1, p2, axis), Rotational2(body1, body2, axis)
+Cylindrical(body1,body2,p1,p2,axis;offset = Quaternion{T}()) = Translational2(body1, body2, p1, p2, axis), Rotational2(body1, body2, axis, offset = offset)
 
 # t1r2: ?
 # ?

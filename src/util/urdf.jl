@@ -148,6 +148,7 @@ function parse_links(xlinks,::Type{T}) where T
     return ldict, shapes
 end
 
+#TODO offset correct?
 function parse_joint(xjoint, origin, plink, clink, ::Type{T}) where T
     joint_type = attribute(xjoint, "type")
     x, q = parse_pose(find_element(xjoint, "origin"), T)
@@ -158,13 +159,13 @@ function parse_joint(xjoint, origin, plink, clink, ::Type{T}) where T
     
 
     if joint_type == "revolute" || joint_type == "continuous"
-        joint = EqualityConstraint(Revolute(plink, clink, p1, p2, axis))
+        joint = EqualityConstraint(Revolute(plink, clink, p1, p2, axis, offset=q))
     elseif joint_type == "prismatic"
-        joint = EqualityConstraint(Prismatic(plink, clink, p1, p2, axis))
+        joint = EqualityConstraint(Prismatic(plink, clink, p1, p2, axis, offset=q))
     elseif joint_type == "planar"
         joint = EqualityConstraint(Planar(plink, clink, p1, p2, axis))
     elseif joint_type == "fixed"
-        joint = EqualityConstraint(Fixed(plink, clink, p1, p2))
+        joint = EqualityConstraint(Fixed(plink, clink, p1, p2, offset=q))
     elseif joint_type == "floating" # Floating relative to non-origin joint not supported
         joint = EqualityConstraint(OriginConnection(origin, clink))
     end
