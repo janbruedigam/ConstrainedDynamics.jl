@@ -1,7 +1,9 @@
 using RigidBodyDynamics
+using AtlasRobot
 
-path = "src/util/twoTwoBarDiffLength.urdf"
-# path = "src/util/pendulum.urdf"
+# path = "src/util/atlas_simple.urdf"
+# path = "src/util/twoTwoBarDiffLength.urdf"
+path = "src/util/pendulum.urdf"
 doublependulum = RigidBodyDynamics.parse_urdf(path)
 
 state = MechanismState(doublependulum)
@@ -13,6 +15,6 @@ using Blink
 
 mvis = MechanismVisualizer(doublependulum, URDFVisuals(path));
 open(mvis, Blink.Window())
-MeshCatMechanisms.animate(mvis, ts, qs; realtimerate = 1.);
+MeshCatMechanisms.animate(mvis, ts, qs; realtimerate = 0.001);
 
 

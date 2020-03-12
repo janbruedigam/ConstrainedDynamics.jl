@@ -21,6 +21,7 @@ using Plots
 
 export Box,
     Cylinder,
+    Mesh,
 
     Quaternion,
     Origin,

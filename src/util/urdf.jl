@@ -64,26 +64,47 @@ function parse_shape(xvisual, T)
         color = RGBA(0.5, 0.5, 0.5)
     end
 
+    xorigin = find_element(xvisual, "origin")
+    if xorigin != nothing
+        p = parse_vector(xorigin, "xyz", T, default="0 0 0")
+        rpy = parse_vector(xorigin, "rpy", T, default="0 0 0")
+        q = Quaternion(RotZYX(rpy[3], rpy[2], rpy[1]))
+    else
+        p = zeros(T,3)
+        q = Quaternion{T}()
+    end
+
     shapenode = find_element(xgeometry, "box")
     if shapenode != nothing
         xyz = parse_vector(shapenode, "size", T, default="1 1 1")
-        return Box(xyz...,zero(T),color=color)
+        return Box(xyz...,zero(T),color=color,p=p,q=q)
     else
         shapenode = find_element(xgeometry, "cylinder")
         if shapenode != nothing
             r = parse_scalar(shapenode, "radius", T, default="0.5")
             l = parse_scalar(shapenode, "length", T, default="1")
-            
-            return Cylinder(r,l,zero(T),color=color)
+            return Cylinder(r,l,zero(T),color=color,p=p,q=q)
         else
-            return nothing
+            shapenode = find_element(xgeometry, "mesh")
+            if shapenode != nothing         
+                path = attribute(shapenode, "filename")      
+                if path != nothing
+                    return Mesh(path,zero(T),zeros(T,3,3),color=color,p=p,q=q)
+                else
+                    return nothing
+                end
+            else
+                return nothing
+            end
         end
     end
 end
 
+# TODO clean up relative shape to body frame
 function parse_link(xlink,::Type{T}) where T
     xinertial = find_element(xlink, "inertial")
     xvisual = find_element(xlink, "visual")
+
     if xinertial!=nothing
         x, mass, inertia = parse_inertia(xinertial, T)
     else
@@ -91,20 +112,25 @@ function parse_link(xlink,::Type{T}) where T
         mass = zero(T)
         inertia = zeros(T,3,3)
     end
-    
-    name = attribute(xlink, "name")
-    link = Body(mass, inertia)
-    link.x[1] = x
 
     if xvisual!=nothing
         shape = parse_shape(xvisual, T)
+        shape.m = mass
+        shape.J = inertia
     else
         shape = nothing
     end
 
     if shape != nothing
-        push!(shape.bodyids, link.id)
+        link = Body(shape)
+        shape.p = shape.p-x
+        shape.q = shape.q/link.q[1]
+    else
+        link = Body(mass, inertia)
     end
+
+    link.x[1] = x 
+    name = attribute(xlink, "name")
 
     return name, link, shape
 end
@@ -125,7 +151,7 @@ end
 function parse_joint(xjoint, origin, plink, clink, ::Type{T}) where T
     joint_type = attribute(xjoint, "type")
     x, q = parse_pose(find_element(xjoint, "origin"), T)
-    axis = parse_vector(find_element(xjoint, "axis"), "xyz", T, default="0 0 0")
+    axis = vrotate(SVector{3,T}(parse_vector(find_element(xjoint, "axis"), "xyz", T, default="0 0 0")...),q)
     p1 = x
     p2 = -clink.x[1]
     clink.q[1] = q
@@ -138,7 +164,7 @@ function parse_joint(xjoint, origin, plink, clink, ::Type{T}) where T
     elseif joint_type == "planar"
         joint = EqualityConstraint(Planar(plink, clink, p1, p2, axis))
     elseif joint_type == "fixed"
-        joint = EqualityConstraint(Fixed(plink, clink))
+        joint = EqualityConstraint(Fixed(plink, clink, p1, p2))
     elseif joint_type == "floating" # Floating relative to non-origin joint not supported
         joint = EqualityConstraint(OriginConnection(origin, clink))
     end

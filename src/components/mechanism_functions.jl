@@ -190,8 +190,6 @@ function simulate!(mechanism::Mechanism;save::Bool = false,debug::Bool = false)
         newton!(mechanism, warning = debug)
         save && saveToStorage!(mechanism, i)
         foreach(updatePos!, bodies, Δt)
-
-        # debug && (i*Δt)%1<Δt*(1.0-.1) && display(i*Δt)
     end
     return
 end

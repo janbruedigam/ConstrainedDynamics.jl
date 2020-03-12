@@ -8,9 +8,8 @@ function shapeobject(box::Box)
     GeometryTypes.HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
 end
 
-function shapeobject(box::CustomShape)
-    x,y,z = Tuple(box.xyz)
-    GeometryTypes.HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
+function shapeobject(mesh::Mesh)
+    shape = load(mesh.path, GLUVMesh)
 end
 
 function visualize!(mechanism::Mechanism)
@@ -20,7 +19,6 @@ function visualize!(mechanism::Mechanism)
     for shape in mechanism.shapes
         for id in shape.bodyids
             if id>=0
-                # body = getbody(mechanism, id)
                 visshape = shapeobject(shape)
                 setobject!(vis["bundle/visshape"*string(id)], visshape, MeshPhongMaterial(color=shape.color))
             end
@@ -33,7 +31,20 @@ function visualize!(mechanism::Mechanism)
     for k=mechanism.steps
         MeshCat.atframe(anim, k) do
             for (id,body) in pairs(mechanism.bodies)
-                settransform!(vis["bundle/visshape"*string(id)], compose(Translation(mechanism.storage.x[id][k]...),LinearMap(Quat(mechanism.storage.q[id][k]...))))
+                shape = nothing
+                for mshape in mechanism.shapes
+                    for sid in mshape.bodyids
+                        if sid==id
+                            shape = mshape
+                            break
+                        end
+                    end
+                end
+                if shape != nothing
+                    settransform!(vis["bundle/visshape"*string(id)], compose(Translation((mechanism.storage.x[id][k]+shape.p)...),LinearMap(Quat((mechanism.storage.q[id][k]*shape.q)...))))
+                else
+                    settransform!(vis["bundle/visshape"*string(id)], compose(Translation((mechanism.storage.x[id][k])...),LinearMap(Quat((mechanism.storage.q[id][k])...))))
+                end
             end
         end
     end
