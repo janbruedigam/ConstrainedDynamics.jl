@@ -139,18 +139,7 @@ mutable struct Mechanism{T,N,Ni}
     end
 
     function Mechanism(filename::AbstractString; scalar_type::Type{T}=Float64, tend::T=10., Δt::T=.01, g::T=-9.81, No::Int64=2) where T
-        xdoc = LightXML.parse_file(filename)
-        xroot = LightXML.root(xdoc)
-        @assert LightXML.name(xroot) == "robot"
-
-        xlinks = get_elements_by_tagname(xroot, "link")
-        xjoints = get_elements_by_tagname(xroot, "joint")
-
-        ldict, shapes = parse_links(xlinks,T)
-
-        origin, links, joints, qlist = parse_joints(xjoints,ldict,shapes)
-
-        # free(xdoc)
+        origin, links, joints, shapes = parse_urdf(filename, T)
 
         mechanism = Mechanism(origin, links, joints, shapes=shapes, tend=tend, Δt=Δt, g=g, No=No)
 
@@ -159,45 +148,81 @@ mutable struct Mechanism{T,N,Ni}
         for id in graph.rdfslist
             component = getcomponent(mechanism,id)
             if typeof(component) <: Body
-                body1 = component
+                body = component
                 preds = predecessors(graph,id)
                 @assert length(preds) == 1
                 pid = preds[1]
-                constraint1 = geteqconstraint(mechanism,pid)
-                @assert length(constraint1.constraints) == 2
+                constraint = geteqconstraint(mechanism,pid)
+                @assert length(constraint.constraints) == 2
 
                 gpreds = predecessors(graph,pid)
                 if length(gpreds) > 0 # other link is predecessor
                     @assert length(gpreds) == 1
                     gpid = gpreds[1]
 
-                    body2 = getbody(mechanism,gpid)
+                    pbody = getbody(mechanism,gpid)
                     ggpreds = predecessors(graph,gpid)
                     @assert length(ggpreds) == 1
                     ggpid = ggpreds[1]
-                    constraint2 = geteqconstraint(mechanism,ggpid)
-                    @assert length(constraint2.constraints) == 2
+                    pconstraint = geteqconstraint(mechanism,ggpid)
+                    @assert length(pconstraint.constraints) == 2
 
-                    if typeof(constraint1.constraints[1]) <: Union{Translational1,Translational2,Translational3}
-                        p1 = constraint1.constraints[1].vertices[1]+constraint2.constraints[1].vertices[2]
-                        p2 = constraint1.constraints[1].vertices[2]
-                        constraint1.constraints[1].vertices = (p1, p2)
+                    # TODO this only works for revolute joints right now
+                    if typeof(constraint.constraints[1]) <: Union{Translational1,Translational2,Translational3}
+                        xpjoint = pbody.x[1] + vrotate(pconstraint.constraints[1].vertices[2],pbody.q[1])
+                        qpjoint = pbody.q[1] * pconstraint.constraints[2].qoff
 
-                        q = body1.q[1]
-                        setPosition!(mechanism,body1)
-                        setPosition!(mechanism,body2,body1,p1=p1,p2=p2,Δq=q)
+                        # xjoint and qjoint in world frame
+                        xjoint = xpjoint + constraint.constraints[1].vertices[1]
+                        qjoint = qpjoint * constraint.constraints[2].qoff
+
+                        # difference to parent link/origin
+                        qjointdiff = constraint.constraints[2].qoff
+                        qbodydiff = qjointdiff*body.q[1]
+
+                        # actual joint properties
+                        p1 = vrotate(xjoint - pbody.x[1],inv(pbody.q[1])) # in parent's frame
+                        p2 = vrotate(-body.x[1],inv(body.q[1])) # in body frame
+                        constraint.constraints[1].vertices = (p1,p2)
+
+                        V3 = vrotate(constraint.constraints[2].V3',qjointdiff)
+                        V12 = (svd(skew(V3)).Vt)[1:2,:]
+                        constraint.constraints[2].V3 = V3'
+                        constraint.constraints[2].V12 = V12
+                        constraint.constraints[2].qoff = inv(qbodydiff)
+
+                        # actual body properties
+                        setPosition!(mechanism,body)
+                        setPosition!(mechanism,pbody,body,p1=p1,p2=p2,Δq=qbodydiff)
                     else # Floating joint (relative to origin. floating relative to other joint not supported)
                         error("Something is wrong.")
                     end
 
                 else # origin is predecessor
-                    if typeof(constraint1.constraints[1]) <: Union{Translational1,Translational2,Translational3}
-                        p1 = constraint1.constraints[1].vertices[1]
-                        p2 = constraint1.constraints[1].vertices[2]
+                    # TODO this only works for revolute joints right now
+                    if typeof(constraint.constraints[1]) <: Union{Translational1,Translational2,Translational3}
+                        # xjoint and qjoint in world frame
+                        xjoint = constraint.constraints[1].vertices[1]
+                        qjoint = constraint.constraints[2].qoff
 
-                        q = body1.q[1]
-                        setPosition!(mechanism,body1)
-                        setPosition!(mechanism,mechanism.origin,body1,p1=p1,p2=p2,Δq=q)
+                        # difference to parent link/origin
+                        qjointdiff = constraint.constraints[2].qoff
+                        qbodydiff = qjointdiff*body.q[1]
+
+                        # actual joint properties
+                        p1 = xjoint # in parent's frame
+                        p2 = vrotate(-body.x[1],inv(body.q[1])) # in body frame
+                        constraint.constraints[1].vertices = (p1,p2)
+
+                        V3 = vrotate(constraint.constraints[2].V3',qjointdiff)
+                        V12 = (svd(skew(V3)).Vt)[1:2,:]
+                        constraint.constraints[2].V3 = V3'
+                        constraint.constraints[2].V12 = V12
+                        constraint.constraints[2].qoff = inv(qbodydiff)
+                        
+                        # actual body properties
+                        setPosition!(mechanism,body) # set everything to zero
+                        setPosition!(mechanism,origin,body,p1=p1,p2=p2,Δq=qbodydiff)
                     else # Floating joint (relative to origin. floating relative to other joint not supported)
                         nothing
                     end

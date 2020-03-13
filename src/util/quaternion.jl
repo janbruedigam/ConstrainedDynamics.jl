@@ -47,7 +47,7 @@ function axis(q::Quaternion{T}) where T
 end
 
 qrotate(x::Quaternion,q::Quaternion) = q * x / q
-vrotate(x::AbstractVector,q::Quaternion) = imag(qrotate(Quaternion(x), q))
+vrotate(x::SVector,q::Quaternion) = imag(qrotate(Quaternion(x), q))
 
 # Matrix equivalences
 # 𝟙(::Type{T}) where T = Quaternion(one(T))
