@@ -1,7 +1,7 @@
 using Rotations
 using Plots: RGBA
 
-!(@isdefined MaximalCoordinateDynamics) && include(joinpath("..", "src", "MaximalCoordinateDynamics.jl"))
+!(@isdefined MaximalCoordinateDynamics) && include(joinpath(pwd(), "src", "MaximalCoordinateDynamics.jl"))
 using Main.MaximalCoordinateDynamics
 
 # Parameters
