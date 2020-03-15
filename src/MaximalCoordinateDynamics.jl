@@ -6,7 +6,7 @@ using StaticArrays: SUnitRange
 using Rotations
 
 using CoordinateTransformations
-using GeometryTypes: GeometryTypes, Vec, Point
+using GeometryTypes: GeometryTypes, Vec, Point, GLUVMesh
 using Blink
 using Colors: RGBA, RGB
 using FileIO, MeshIO

@@ -57,3 +57,22 @@ mutable struct Cylinder{T} <: Shape{T}
     end
 end
 
+mutable struct Sphere{T} <: Shape{T}
+    bodyids::Vector{Int64}
+    m::T
+    J::SMatrix{3,3,T,9}
+
+    xoff::SVector{3,T}
+    qoff::Quaternion{T}
+
+    r::T
+    color::RGBA
+
+    function Sphere(r, m::T;color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T}=zeros(3), qoff::Quaternion{T}=Quaternion{T}()) where T
+        J = 2 / 5 * m * diagm([r^2 for i=1:3])
+        bodyids = Int64[]
+
+        new{T}(bodyids, m, J, xoff, qoff, r, color)
+    end
+end
+

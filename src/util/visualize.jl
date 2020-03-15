@@ -1,15 +1,20 @@
-function shapeobject(cylinder::Cylinder)
-    r,h = Tuple(cylinder.rh)
-    GeometryTypes.Cylinder(Point(0.0,0.0,-h/2),Point(0.0,0.0,h/2), r)
-end
-
 function shapeobject(box::Box)
     x,y,z = Tuple(box.xyz)
-    GeometryTypes.HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
+    return GeometryTypes.HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
+end
+
+function shapeobject(cylinder::Cylinder)
+    r,h = Tuple(cylinder.rh)
+    return GeometryTypes.Cylinder(Point(0.0,0.0,-h/2),Point(0.0,0.0,h/2), r)
+end
+
+function shapeobject(sphere::Sphere)
+    r = sphere.r
+    return GeometryTypes.Sphere(Point(0.0,0.0,0.0), r)
 end
 
 function shapeobject(mesh::Mesh)
-    shape = load(mesh.path, GLUVMesh)
+    return shape = load(mesh.path, GLUVMesh)
 end
 
 function visualize!(mechanism::Mechanism)

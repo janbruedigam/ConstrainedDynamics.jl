@@ -37,5 +37,5 @@ mech = Mechanism(origin,links,constraints, shapes=shapes,tend=0.01)
 setPosition!(mech,origin,link1,p2=vert11,Δq=Quaternion(RotY(pi/4))*Quaternion(RotX(pi/4)))
 
 
-simulate!(mech,save=true)
-visualize!(mech)
+# simulate!(mech,save=true)
+# visualize!(mech)
