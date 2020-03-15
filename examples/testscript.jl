@@ -1,7 +1,7 @@
 using BenchmarkTools
 
-time = zeros(17)
-memory = zeros(17)
+time = zeros(19)
+memory = zeros(19)
 
 include("chain_in_chain.jl")
 t = @benchmarkable simulate!($mech)
@@ -104,5 +104,17 @@ memory[16] = r.memory
 # r = BenchmarkTools.minimum(run(t,samples=1))
 # time[17] = r.time
 # memory[17] = r.memory
+
+include("urdf_doublependulum.jl")
+t = @benchmarkable simulate!($mech)
+r = BenchmarkTools.minimum(run(t,samples=1))
+time[18] = r.time
+memory[18] = r.memory
+
+include("atlas.jl")
+t = @benchmarkable simulate!($mech)
+r = BenchmarkTools.minimum(run(t,samples=1))
+time[19] = r.time
+memory[19] = r.memory
 
 time /= 1e6
