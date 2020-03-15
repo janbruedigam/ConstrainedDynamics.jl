@@ -5,7 +5,7 @@ using LinearAlgebra
 
 !(@isdefined MaximalCoordinateDynamics) && include(joinpath("..", "MaximalCoordinateDynamics.jl"))
 using Main.MaximalCoordinateDynamics
-using Main.MaximalCoordinateDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, ∂g∂pos, ∂g∂vel, skew
+using Main.MaximalCoordinateDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, VLᵀmat, ∂g∂pos, ∂g∂vel, skew
 
 function transfunc3pos(vars)
     xa = vars[1:3]
@@ -137,7 +137,7 @@ function rotfunc3pos(vars)
     offset = Quaternion(SVector(vars[15:18]...))
 
     
-    MaximalCoordinateDynamics.VRmat(offset) * Lᵀmat(qa) * qb
+    VLᵀmat(offset) * Lᵀmat(qa) * qb
 end
 
 function rotfunc3vel(vars)
@@ -160,7 +160,7 @@ function rotfunc3vel(vars)
     qa = Quaternion(Δt / 2 * (qa * Quaternion(SVector(sqrt((2 / Δt)^2 - wa' * wa), wa...))))
     qb = Quaternion(Δt / 2 * (qb * Quaternion(SVector(sqrt((2 / Δt)^2 - wb' * wb), wb...))))
 
-    MaximalCoordinateDynamics.VRmat(offset) * Lᵀmat(qa) * qb
+    VLᵀmat(offset) * Lᵀmat(qa) * qb
 end
 
 function rotfunc2pos(vars)
@@ -175,7 +175,7 @@ function rotfunc2pos(vars)
     V2 = vars[22:24]
     V12 = [V1';V2']
 
-    V12 * (MaximalCoordinateDynamics.VRmat(offset) * Lᵀmat(qa) * qb)
+    V12 * (VLᵀmat(offset) * Lᵀmat(qa) * qb)
 end
 
 function rotfunc2vel(vars)
@@ -202,7 +202,7 @@ function rotfunc2vel(vars)
     qa = Quaternion(Δt / 2 * (qa * Quaternion(SVector(sqrt((2 / Δt)^2 - wa' * wa), wa...))))
     qb = Quaternion(Δt / 2 * (qb * Quaternion(SVector(sqrt((2 / Δt)^2 - wb' * wb), wb...))))
 
-    V12 * (MaximalCoordinateDynamics.VRmat(offset) * Lᵀmat(qa) * qb)
+    V12 * (VLᵀmat(offset) * Lᵀmat(qa) * qb)
 end
 
 function rotfunc1pos(vars)
@@ -215,7 +215,7 @@ function rotfunc1pos(vars)
 
     V3 = vars[19:21]
 
-    V3' * (MaximalCoordinateDynamics.VRmat(offset) * Lᵀmat(qa) * qb)
+    V3' * (VLᵀmat(offset) * Lᵀmat(qa) * qb)
 end
 
 function rotfunc1vel(vars)
@@ -240,7 +240,7 @@ function rotfunc1vel(vars)
     qa = Quaternion(Δt / 2 * (qa * Quaternion(SVector(sqrt((2 / Δt)^2 - wa' * wa), wa...))))
     qb = Quaternion(Δt / 2 * (qb * Quaternion(SVector(sqrt((2 / Δt)^2 - wb' * wb), wb...))))
 
-    V3' * (MaximalCoordinateDynamics.VRmat(offset) * Lᵀmat(qa) * qb)
+    V3' * (VLᵀmat(offset) * Lᵀmat(qa) * qb)
 end
 
 function transtest3()

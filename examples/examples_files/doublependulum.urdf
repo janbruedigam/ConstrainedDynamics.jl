@@ -14,8 +14,7 @@
       <origin xyz="0 0 -0.5" rpy="1.5707963268 0. 0." />
       <geometry>
          <!-- <cylinder length="1" radius=".05" /> -->
-         <box size="0.1 0.1 1" />
-         <!-- <mesh filename="src/util/meshes/r_larm.obj"/> -->
+         <box size=".1 1 .1" />
       </geometry>
       <material name="green">
 	       <color rgba="1 0 1 1" />
@@ -45,7 +44,7 @@
 	<joint name="joint1" type="continuous">
 		<parent link="base_link" />
 		<child link="link1" />
-		<origin rpy="0 0 1.5707963268" xyz="0 1 0" />
+		<origin rpy="0.4 0 1.5707963268" xyz="0 1 0" />
 		<axis xyz="1 0 0" />
 	</joint>
 

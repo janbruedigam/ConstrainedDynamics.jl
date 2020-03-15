@@ -144,11 +144,22 @@ mutable struct Mechanism{T,N,Ni}
         mechanism = Mechanism(origin, links, joints, shapes=shapes, tend=tend, Δt=Δt, g=g, No=No)
 
         graph = mechanism.graph
+        xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
+        qjointlist = Dict{Int64,Quaternion{T}}() # stores id, q in world frame
 
         for id in graph.rdfslist
             component = getcomponent(mechanism,id)
             if typeof(component) <: Body
                 body = component
+                shape = nothing
+                for s in shapes
+                    for sid in s.bodyids
+                        if sid == id
+                            shape = s
+                            break
+                        end
+                    end
+                end
                 preds = predecessors(graph,id)
                 @assert length(preds) == 1
                 pid = preds[1]
@@ -169,31 +180,44 @@ mutable struct Mechanism{T,N,Ni}
 
                     # TODO this only works for revolute joints right now
                     if typeof(constraint.constraints[1]) <: Union{Translational1,Translational2,Translational3}
-                        xpjoint = pbody.x[1] + vrotate(pconstraint.constraints[1].vertices[2],pbody.q[1])
-                        qpjoint = pbody.q[1] * pconstraint.constraints[2].qoff
+                        xpjointworld = xjointlist[pconstraint.id]
+                        qpjointworld = qjointlist[pconstraint.id]
 
-                        # xjoint and qjoint in world frame
-                        xjoint = xpjoint + constraint.constraints[1].vertices[1]
-                        qjoint = qpjoint * constraint.constraints[2].qoff
+                        # urdf joint's x and q in parent's (pbody) frame
+                        xjoint = vrotate(xpjointworld + vrotate(constraint.constraints[1].vertices[1],qpjointworld) - pbody.x[1], inv(pbody.q[1]))
+                        qjoint = pbody.q[1]\qpjointworld*constraint.constraints[2].qoff
 
-                        # difference to parent link/origin
-                        qjointdiff = constraint.constraints[2].qoff
-                        qbodydiff = qjointdiff*body.q[1]
+                        # store joint's x and q in world frame
+                        xjointworld = pbody.x[1] + vrotate(xjoint, pbody.q[1])
+                        qjointworld = pbody.q[1] * qjoint
+                        xjointlist[constraint.id] = xjointworld
+                        qjointlist[constraint.id] = qjointworld
+
+                        # difference to parent body (pbody)
+                        qbody = qjoint*body.q[1]
 
                         # actual joint properties
-                        p1 = vrotate(xjoint - pbody.x[1],inv(pbody.q[1])) # in parent's frame
-                        p2 = vrotate(-body.x[1],inv(body.q[1])) # in body frame
+                        p1 = xjoint # in parent's (pbody) frame
+                        p2 = vrotate(-body.x[1],inv(body.q[1])) # in body frame (body.x and body.q are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
                         constraint.constraints[1].vertices = (p1,p2)
 
-                        V3 = vrotate(constraint.constraints[2].V3',qjointdiff)
-                        V12 = (svd(skew(V3)).Vt)[1:2,:]
-                        constraint.constraints[2].V3 = V3'
-                        constraint.constraints[2].V12 = V12
-                        constraint.constraints[2].qoff = inv(qbodydiff)
+                        if typeof(constraint.constraints[2]) <: Union{Rotational1,Rotational2}
+                            V3 = vrotate(constraint.constraints[2].V3',qjoint) # in parent's (pbody) frame
+                            V12 = (svd(skew(V3)).Vt)[1:2,:]
+                            constraint.constraints[2].V3 = V3'
+                            constraint.constraints[2].V12 = V12
+                        end
+                        constraint.constraints[2].qoff = qbody # in parent's (pbody) frame
 
                         # actual body properties
-                        setPosition!(mechanism,body)
-                        setPosition!(mechanism,pbody,body,p1=p1,p2=p2,Δq=qbodydiff)
+                        setPosition!(mechanism,body) # set everything to zero
+                        setPosition!(mechanism,pbody,body,p1=p1,p2=p2,Δq=qbody)
+
+                        # shape relative
+                        if shape != nothing
+                            shape.xoff = vrotate(xjointworld + vrotate(shape.xoff,qjointworld) - body.x[1],inv(body.q[1]))
+                            shape.qoff = qbody\qjoint*shape.qoff
+                        end
                     else # Floating joint (relative to origin. floating relative to other joint not supported)
                         error("Something is wrong.")
                     end
@@ -201,28 +225,41 @@ mutable struct Mechanism{T,N,Ni}
                 else # origin is predecessor
                     # TODO this only works for revolute joints right now
                     if typeof(constraint.constraints[1]) <: Union{Translational1,Translational2,Translational3}
-                        # xjoint and qjoint in world frame
+                        # urdf joint's x and q in parent's (origin) frame
                         xjoint = constraint.constraints[1].vertices[1]
                         qjoint = constraint.constraints[2].qoff
 
-                        # difference to parent link/origin
-                        qjointdiff = constraint.constraints[2].qoff
-                        qbodydiff = qjointdiff*body.q[1]
+                        # store joint's x and q in world frame (same as origin frame)
+                        xjointworld = xjoint
+                        qjointworld = qjoint
+                        xjointlist[constraint.id] = xjointworld
+                        qjointlist[constraint.id] = qjointworld
+
+                        # difference to parent body (origin)
+                        qbody = qjoint*body.q[1]
 
                         # actual joint properties
-                        p1 = xjoint # in parent's frame
-                        p2 = vrotate(-body.x[1],inv(body.q[1])) # in body frame
+                        p1 = xjoint # in parent's (origin) frame
+                        p2 = vrotate(-body.x[1],inv(body.q[1])) # in body frame (body.x and body.q are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
                         constraint.constraints[1].vertices = (p1,p2)
 
-                        V3 = vrotate(constraint.constraints[2].V3',qjointdiff)
-                        V12 = (svd(skew(V3)).Vt)[1:2,:]
-                        constraint.constraints[2].V3 = V3'
-                        constraint.constraints[2].V12 = V12
-                        constraint.constraints[2].qoff = inv(qbodydiff)
-                        
+                        if typeof(constraint.constraints[2]) <: Union{Rotational1,Rotational2}
+                            V3 = vrotate(constraint.constraints[2].V3',qjoint) # in parent's (origin) frame
+                            V12 = (svd(skew(V3)).Vt)[1:2,:]
+                            constraint.constraints[2].V3 = V3'
+                            constraint.constraints[2].V12 = V12
+                        end
+                        constraint.constraints[2].qoff = qbody # in parent's (origin) frame
+
                         # actual body properties
                         setPosition!(mechanism,body) # set everything to zero
-                        setPosition!(mechanism,origin,body,p1=p1,p2=p2,Δq=qbodydiff)
+                        setPosition!(mechanism,origin,body,p1=p1,p2=p2,Δq=qbody)
+
+                        # shape relative
+                        if shape != nothing
+                            shape.xoff = vrotate(xjointworld + vrotate(shape.xoff,qjointworld) - body.x[1],inv(body.q[1]))
+                            shape.qoff = body.q[1]\qjoint*shape.qoff
+                        end
                     else # Floating joint (relative to origin. floating relative to other joint not supported)
                         nothing
                     end

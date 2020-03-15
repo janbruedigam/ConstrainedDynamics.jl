@@ -12,11 +12,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_clav.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_clav.obj"/>
       </geometry>
     </visual>
   </link>
-  <!-- <link name="l_foot">
+  <link name="l_foot">
     <inertial>
       <mass value="2.410"/>
       <origin rpy="0 0 0" xyz="0.027 0 -0.067"/>
@@ -24,7 +24,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/l_foot.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/l_foot.obj"/>
       </geometry>
     </visual>
     <visual group="heel">
@@ -63,15 +63,15 @@
         <sphere radius="0.01"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="l_hand">
+  </link>
+  <link name="l_hand">
     <inertial>
       <mass value="0.5839"/>
       <origin rpy="0 0 0" xyz="0.00016 -0.08159 0.00002"/>
       <inertia ixx="0.000388" ixy="0" ixz="0" iyy="0.000477" iyz="0" izz="0.000379"/>
     </inertial>
-  </link> -->
-  <!-- <link name="l_larm">
+  </link>
+  <link name="l_larm">
     <inertial>
       <mass value="3.248"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -79,11 +79,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_larm.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_larm.obj"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="l_lfarm">
+  </link>
+  <link name="l_lfarm">
     <inertial>
       <mass value="0.648"/>
       <origin rpy="0 0 0" xyz="0.00017 -0.02515 0.00163"/>
@@ -91,11 +91,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_hand.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_hand.obj"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="l_lglut">
+  </link>
+  <link name="l_lglut">
     <inertial>
       <mass value="0.898"/>
       <origin rpy="0 0 0" xyz="0.0133341 0.0170484 -0.0312052"/>
@@ -103,11 +103,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/l_lglut.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/l_lglut.obj"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="l_lleg">
+  </link>
+  <link name="l_lleg">
     <inertial>
       <mass value="4.515"/>
       <origin rpy="0 0 0" xyz="0.001 0 -0.187"/>
@@ -115,10 +115,10 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/l_lleg.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/l_lleg.obj"/>
       </geometry>
     </visual>
-  </link> -->
+  </link>
   <link name="l_scap">
     <inertial>
       <mass value="3.899"/>
@@ -127,11 +127,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_scap.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_scap.obj"/>
       </geometry>
     </visual>
   </link>
-  <!-- <link name="l_talus">
+  <link name="l_talus">
     <inertial>
       <mass value="0.125"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -139,10 +139,10 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/l_talus.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/l_talus.obj"/>
       </geometry>
     </visual>
-  </link> -->
+  </link>
   <link name="l_uarm">
     <inertial>
       <mass value="4.386"/>
@@ -151,11 +151,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_uarm.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_uarm.obj"/>
       </geometry>
     </visual>
   </link>
-  <!-- <link name="l_ufarm">
+  <link name="l_ufarm">
     <inertial>
       <mass value="2.4798"/>
       <origin rpy="0 0 0" xyz="0.00015 0.08296 0.00037"/>
@@ -163,11 +163,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_farm.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_farm.obj"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="l_uglut">
+  </link>
+  <link name="l_uglut">
     <inertial>
       <mass value="1.959"/>
       <origin rpy="0 0 0" xyz="0.00529262 -0.00344732 0.00313046"/>
@@ -175,11 +175,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/l_uglut.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/l_uglut.obj"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="l_uleg">
+  </link>
+  <link name="l_uleg">
     <inertial>
       <mass value="8.204"/>
       <origin rpy="0 0 0" xyz="0 0 -0.21"/>
@@ -187,10 +187,10 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/l_uleg.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/l_uleg.obj"/>
       </geometry>
     </visual>
-  </link> -->
+  </link>
   <link name="ltorso">
     <inertial>
       <mass value="2.270"/>
@@ -199,7 +199,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/ltorso.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/ltorso.obj"/>
       </geometry>
     </visual>
   </link>
@@ -211,7 +211,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/mtorso.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/mtorso.obj"/>
       </geometry>
     </visual>
   </link>
@@ -223,7 +223,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/pelvis.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/pelvis.obj"/>
       </geometry>
     </visual>
   </link>
@@ -235,11 +235,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_clav.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_clav.obj"/>
       </geometry>
     </visual>
   </link>
-  <!-- <link name="r_foot">
+  <link name="r_foot">
     <inertial>
       <mass value="2.41"/>
       <origin rpy="0 0 0" xyz="0.027 0 -0.067"/>
@@ -247,7 +247,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_foot.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_foot.obj"/>
       </geometry>
     </visual>
     <visual group="heel">
@@ -286,8 +286,8 @@
         <sphere radius="0.01"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="r_hand">
+  </link>
+  <link name="r_hand">
     <inertial>
       <mass value="0.5839"/>
       <origin rpy="0 0 0" xyz="0.00016 -0.08159 0.00002"/>
@@ -302,7 +302,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_larm.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_larm.obj"/>
       </geometry>
     </visual>
   </link>
@@ -314,11 +314,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_hand.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_hand.obj"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="r_lglut">
+  </link>
+  <link name="r_lglut">
     <inertial>
       <mass value="0.898"/>
       <origin rpy="0 0 0" xyz="0.0133341 -0.0170484 -0.0312052"/>
@@ -326,11 +326,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_lglut.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_lglut.obj"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="r_lleg">
+  </link>
+  <link name="r_lleg">
     <inertial>
       <mass value="4.515"/>
       <origin rpy="0 0 0" xyz="0.001 0 -0.187"/>
@@ -338,10 +338,10 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_lleg.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_lleg.obj"/>
       </geometry>
     </visual>
-  </link> -->
+  </link>
   <link name="r_scap">
     <inertial>
       <mass value="3.899"/>
@@ -350,11 +350,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_scap.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_scap.obj"/>
       </geometry>
     </visual>
   </link>
-  <!-- <link name="r_talus">
+  <link name="r_talus">
     <inertial>
       <mass value="0.125"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -362,10 +362,10 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_talus.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_talus.obj"/>
       </geometry>
     </visual>
-  </link> -->
+  </link>
   <link name="r_uarm">
     <inertial>
       <mass value="4.386"/>
@@ -374,11 +374,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_uarm.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_uarm.obj"/>
       </geometry>
     </visual>
   </link>
-  <!-- <link name="r_ufarm">
+  <link name="r_ufarm">
     <inertial>
       <mass value="2.4798"/>
       <origin rpy="0 0 0" xyz="0.00015 0.08296 0.00037"/>
@@ -386,11 +386,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_farm.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_farm.obj"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="r_uglut">
+  </link>
+  <link name="r_uglut">
     <inertial>
       <mass value="1.959"/>
       <origin rpy="0 0 0" xyz="0.00529262 0.00344732 0.00313046"/>
@@ -398,11 +398,11 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_uglut.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_uglut.obj"/>
       </geometry>
     </visual>
-  </link> -->
-  <!-- <link name="r_uleg">
+  </link>
+  <link name="r_uleg">
     <inertial>
       <mass value="8.204"/>
       <origin rpy="0 0 0" xyz="0 0 -0.21"/>
@@ -410,10 +410,10 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/r_uleg.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/r_uleg.obj"/>
       </geometry>
     </visual>
-  </link> -->
+  </link>
   <link name="utorso">
     <inertial>
       <mass value="84.409"/>
@@ -422,7 +422,7 @@
     </inertial>
     <visual>
       <geometry>
-        <mesh filename="src/util/meshes/utorso.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/utorso.obj"/>
       </geometry>
     </visual>
   </link>
@@ -453,7 +453,7 @@
     <limit effort="106" lower="-0.663225" upper="0.663225" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10.6632" soft_upper_limit="10.6632"/>
   </joint>
-  <!-- <joint name="l_arm_elx" type="revolute">
+  <joint name="l_arm_elx" type="revolute">
     <origin rpy="0 0 0" xyz="0 -0.119 0.0092"/>
     <axis xyz="-1.0 -0.0 -0.0"/>
     <parent link="l_uarm"/>
@@ -461,7 +461,7 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="112" lower="0" upper="2.35619" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10" soft_upper_limit="12.3562"/>
-  </joint> -->
+  </joint>
   <joint name="l_arm_ely" type="revolute">
     <origin rpy="0 0 0" xyz="0 -0.187 -0.016"/>
     <axis xyz="-0.0 -1.0 -0.0"/>
@@ -481,8 +481,7 @@
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-11.5708" soft_upper_limit="11.5708"/>
   </joint>
   <joint name="l_arm_shz" type="revolute">
-    <!-- <origin rpy="0 0 3.14159265359" xyz="0.1406 0.2256 0.4776"/> -->
-    <origin rpy="0 0 1.57" xyz="0.1406 0.2256 0.4776"/>
+    <origin rpy="0 0 3.14159265359" xyz="0.1406 0.2256 0.4776"/>
     <axis xyz="0 0 1"/>
     <parent link="utorso"/>
     <child link="l_clav"/>
@@ -490,7 +489,7 @@
     <limit effort="87" lower="-1.5708" upper="0.785398" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-11.5708" soft_upper_limit="10.7854"/>
   </joint>
-  <!-- <joint name="l_arm_mwx" type="revolute">
+  <joint name="l_arm_mwx" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <axis xyz="1 0 0"/>
     <parent link="l_ufarm"/>
@@ -498,8 +497,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="25" lower="-1.7628" upper="1.7628" velocity="10"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-11.7628" soft_upper_limit="11.7628"/>
-  </joint> -->
-  <!-- <joint name="l_arm_uwy" type="revolute">
+  </joint>
+  <joint name="l_arm_uwy" type="revolute">
     <origin rpy="0 3.14159265359 0" xyz="0 -0.29955 -0.00921"/>
     <axis xyz="-0.0 -1.0 -0.0"/>
     <parent link="l_larm"/>
@@ -507,8 +506,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="25" lower="-3.011" upper="3.011" velocity="10"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-13.011" soft_upper_limit="13.011"/>
-  </joint> -->
-  <!-- <joint name="l_arm_lwy" type="revolute">
+  </joint>
+  <joint name="l_arm_lwy" type="revolute">
     <origin rpy="0 3.14159265359 0" xyz="0 0 0"/>
     <axis xyz="-0.0 -1.0 -0.0"/>
     <parent link="l_lfarm"/>
@@ -516,8 +515,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="25" lower="-2.9671" upper="2.9671" velocity="10"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-12.9671" soft_upper_limit="12.9671"/>
-  </joint> -->
-  <!-- <joint name="l_leg_akx" type="revolute">
+  </joint>
+  <joint name="l_leg_akx" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <axis xyz="1 0 0"/>
     <parent link="l_talus"/>
@@ -525,8 +524,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="360" lower="-0.8" upper="0.8" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10.8" soft_upper_limit="10.8"/>
-  </joint> -->
-  <!-- <joint name="l_leg_aky" type="revolute">
+  </joint>
+  <joint name="l_leg_aky" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 -0.422"/>
     <axis xyz="0 1 0"/>
     <parent link="l_lleg"/>
@@ -534,8 +533,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="740" lower="-1" upper="0.7" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-11" soft_upper_limit="10.7"/>
-  </joint> -->
-  <!-- <joint name="l_leg_hpx" type="revolute">
+  </joint>
+  <joint name="l_leg_hpx" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <axis xyz="1 0 0"/>
     <parent link="l_uglut"/>
@@ -543,8 +542,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="530" lower="-0.523599" upper="0.523599" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10.5236" soft_upper_limit="10.5236"/>
-  </joint> -->
-  <!-- <joint name="l_leg_hpy" type="revolute">
+  </joint>
+  <joint name="l_leg_hpy" type="revolute">
     <origin rpy="0 0 0" xyz="0.05 0.0225 -0.066"/>
     <axis xyz="0 1 0"/>
     <parent link="l_lglut"/>
@@ -552,8 +551,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="840" lower="-1.61234" upper="0.65764" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-11.6123" soft_upper_limit="10.6576"/>
-  </joint> -->
-  <!-- <joint name="l_leg_hpz" type="revolute">
+  </joint>
+  <joint name="l_leg_hpz" type="revolute">
     <origin rpy="0 0 0" xyz="0 0.089 0"/>
     <axis xyz="0 0 1"/>
     <parent link="pelvis"/>
@@ -561,8 +560,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="275" lower="-0.174358" upper="0.786794" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10.1744" soft_upper_limit="10.7868"/>
-  </joint> -->
-  <!-- <joint name="l_leg_kny" type="revolute">
+  </joint>
+  <joint name="l_leg_kny" type="revolute">
     <origin rpy="0 0 0" xyz="-0.05 0 -0.374"/>
     <axis xyz="0 1 0"/>
     <parent link="l_uleg"/>
@@ -570,8 +569,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="890" lower="0" upper="2.35637" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10" soft_upper_limit="12.3564"/>
-  </joint> -->
-  <!-- <joint name="neck_ay" type="revolute">
+  </joint>
+  <joint name="neck_ay" type="revolute">
     <origin rpy="0 0 0" xyz="0.2546 0 0.6215"/>
     <axis xyz="0 1 0"/>
     <parent link="utorso"/>
@@ -579,8 +578,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="25" lower="-0.602139" upper="1.14319" velocity="6.28"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10.6021" soft_upper_limit="11.1432"/>
-  </joint> -->
-  <!-- <joint name="r_arm_elx" type="revolute">
+  </joint>
+  <joint name="r_arm_elx" type="revolute">
     <origin rpy="0 0 0" xyz="0 -0.119 0.0092"/>
     <axis xyz="1 0 0"/>
     <parent link="r_uarm"/>
@@ -588,7 +587,7 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="112" lower="-2.35619" upper="0" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-12.3562" soft_upper_limit="10"/>
-  </joint> -->
+  </joint>
   <joint name="r_arm_ely" type="revolute">
     <origin rpy="0 0 0" xyz="0 -0.187 -0.016"/>
     <axis xyz="0 1 0"/>
@@ -616,7 +615,7 @@
     <limit effort="87" lower="-0.785398" upper="1.5708" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10.7854" soft_upper_limit="11.5708"/>
   </joint>
-  <!-- <joint name="r_arm_mwx" type="revolute">
+  <joint name="r_arm_mwx" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <axis xyz="1 0 0"/>
     <parent link="r_ufarm"/>
@@ -642,8 +641,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="25" lower="-2.9671" upper="2.9671" velocity="10"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-12.9671" soft_upper_limit="12.9671"/>
-  </joint> -->
-  <!-- <joint name="r_leg_akx" type="revolute">
+  </joint>
+  <joint name="r_leg_akx" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <axis xyz="1 0 0"/>
     <parent link="r_talus"/>
@@ -651,8 +650,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="360" lower="-0.8" upper="0.8" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10.8" soft_upper_limit="10.8"/>
-  </joint> -->
-  <!-- <joint name="r_leg_aky" type="revolute">
+  </joint>
+  <joint name="r_leg_aky" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 -0.422"/>
     <axis xyz="0 1 0"/>
     <parent link="r_lleg"/>
@@ -660,8 +659,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="740" lower="-1" upper="0.7" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-11" soft_upper_limit="10.7"/>
-  </joint> -->
-  <!-- <joint name="r_leg_hpx" type="revolute">
+  </joint>
+  <joint name="r_leg_hpx" type="revolute">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <axis xyz="1 0 0"/>
     <parent link="r_uglut"/>
@@ -669,8 +668,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="530" lower="-0.523599" upper="0.523599" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10.5236" soft_upper_limit="10.5236"/>
-  </joint> -->
-  <!-- <joint name="r_leg_hpy" type="revolute">
+  </joint>
+  <joint name="r_leg_hpy" type="revolute">
     <origin rpy="0 0 0" xyz="0.05 -0.0225 -0.066"/>
     <axis xyz="0 1 0"/>
     <parent link="r_lglut"/>
@@ -678,8 +677,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="840" lower="-1.61234" upper="0.65764" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-11.6123" soft_upper_limit="10.6576"/>
-  </joint>  -->
-  <!-- <joint name="r_leg_hpz" type="revolute">
+  </joint> 
+  <joint name="r_leg_hpz" type="revolute">
     <origin rpy="0 0 0" xyz="0 -0.089 0"/>
     <axis xyz="0 0 1"/>
     <parent link="pelvis"/>
@@ -687,8 +686,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="275" lower="-0.786794" upper="0.174358" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10.7868" soft_upper_limit="10.1744"/>
-  </joint> -->
-  <!-- <joint name="r_leg_kny" type="revolute">
+  </joint>
+  <joint name="r_leg_kny" type="revolute">
     <origin rpy="0 0 0" xyz="-0.05 0 -0.374"/>
     <axis xyz="0 1 0"/>
     <parent link="r_uleg"/>
@@ -696,8 +695,8 @@
     <dynamics damping="0.1" friction="0"/>
     <limit effort="890" lower="0" upper="2.35637" velocity="12"/>
     <safety_controller k_position="100" k_velocity="100" soft_lower_limit="-10" soft_upper_limit="12.3564"/>
-  </joint> -->
-  <!-- <link name="head">
+  </joint>
+  <link name="head">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.075493 3.3383E-05 0.02774"/>
       <mass value="1.4199"/>
@@ -706,73 +705,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="src/util/meshes/head_chull.obj"/>
+        <mesh filename="examples/examples_files/atlas_mesh/head_chull.obj"/>
       </geometry>
       <material name="">
         <color rgba="0.9098 0.44314 0.031373 1"/>
       </material>
     </visual>
-  </link> -->
-  <!-- <link name="l_hand_force_torque">
-    <inertial>
-      <mass value="0.1"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <box size="0.01 0.01 0.01"/>
-      </geometry>
-    </visual>
-  </link> -->
-  <!-- <joint name="l_hand_force_torque_joint" type="fixed">
-    <origin rpy="0 0 3.141592" xyz="0 -0.1245 0"/>
-    <parent link="l_hand"/>
-    <child link="l_hand_force_torque"/>
-  </joint> -->
-  <!-- <link name="r_hand_force_torque">
-    <inertial>
-      <mass value="0.1"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
-    </inertial>
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <geometry>
-        <box size="0.01 0.01 0.01"/>
-      </geometry>
-    </visual>
   </link>
-  <joint name="r_hand_force_torque_joint" type="fixed">
-    <origin rpy="0 0 3.141592" xyz="0 -0.1245 0"/>
-    <parent link="r_hand"/>
-    <child link="r_hand_force_torque"/>
-  </joint> -->
-  <!-- <link name="left_palm">
-    <visual>
-      <origin rpy="-1.57079 -1.57079 0" xyz="0 0.1725 0"/>
-      <geometry>
-	      <mesh filename="src/util/meshes/GRIPPER_OPEN_chull.obj" scale="1 1 1"/>
-      </geometry>
-    </visual>
-  </link> -->
-  <!-- <joint name="left_palm_joint" type="fixed">
-    <parent link="l_hand_force_torque"/>
-    <child link="left_palm"/>
-  </joint> -->
-  <!-- <link name="right_palm">
-    <visual>
-      <origin rpy="-1.57079 -1.57079 0" xyz="0 0.1725 0"/>
-      <geometry>
-	      <mesh filename="src/util/meshes/GRIPPER_OPEN_chull.obj" scale="1 1 1"/>
-      </geometry>
-    </visual>
-  </link>
-  <joint name="right_palm_joint" type="fixed">
-    <parent link="r_hand_force_torque"/>
-    <child link="right_palm"/>
-  </joint> -->
 
   <!-- Own origin addition -->
   <link name="base_link">	</link>

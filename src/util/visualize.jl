@@ -41,7 +41,9 @@ function visualize!(mechanism::Mechanism)
                     end
                 end
                 if shape != nothing
-                    settransform!(vis["bundle/visshape"*string(id)], compose(Translation((mechanism.storage.x[id][k]+shape.xoff)...),LinearMap(Quat((mechanism.storage.q[id][k]*shape.qoff)...))))
+                    dx = vrotate(shape.xoff, mechanism.storage.q[id][k])
+                    dq = shape.qoff
+                    settransform!(vis["bundle/visshape"*string(id)], compose(Translation((mechanism.storage.x[id][k]+dx)...),LinearMap(Quat((mechanism.storage.q[id][k]*dq)...))))
                 else
                     settransform!(vis["bundle/visshape"*string(id)], compose(Translation((mechanism.storage.x[id][k])...),LinearMap(Quat((mechanism.storage.q[id][k])...))))
                 end

@@ -1,4 +1,3 @@
-
 function parse_scalar(xel, name::String, ::Type{T}; default::String) where T 
     if xel != nothing
         return parse(T, attribute(xel, name))
