@@ -16,9 +16,15 @@ function visualize!(mechanism::Mechanism)
     vis = Visualizer()
     open(vis, Blink.Window())
 
+    storage = mechanism.storage
+
     for shape in mechanism.shapes
         for id in shape.bodyids
-            if id>=0
+            if id >= 0
+                for i in mechanism.steps
+                    storage.x[id][i] += vrotate(shape.xoff, storage.q[id][i])
+                    storage.q[id][i] *= shape.qoff
+                end
                 visshape = shapeobject(shape)
                 setobject!(vis["bundle/visshape"*string(id)], visshape, MeshPhongMaterial(color=shape.color))
             end
@@ -31,22 +37,7 @@ function visualize!(mechanism::Mechanism)
     for k=mechanism.steps
         MeshCat.atframe(anim, k) do
             for (id,body) in pairs(mechanism.bodies)
-                shape = nothing
-                for mshape in mechanism.shapes
-                    for sid in mshape.bodyids
-                        if sid==id
-                            shape = mshape
-                            break
-                        end
-                    end
-                end
-                if shape != nothing
-                    dx = vrotate(shape.xoff, mechanism.storage.q[id][k])
-                    dq = shape.qoff
-                    settransform!(vis["bundle/visshape"*string(id)], compose(Translation((mechanism.storage.x[id][k]+dx)...),LinearMap(Quat((mechanism.storage.q[id][k]*dq)...))))
-                else
-                    settransform!(vis["bundle/visshape"*string(id)], compose(Translation((mechanism.storage.x[id][k])...),LinearMap(Quat((mechanism.storage.q[id][k])...))))
-                end
+                settransform!(vis["bundle/visshape"*string(id)], compose(Translation((mechanism.storage.x[id][k])...),LinearMap(Quat((mechanism.storage.q[id][k])...))))
             end
         end
     end

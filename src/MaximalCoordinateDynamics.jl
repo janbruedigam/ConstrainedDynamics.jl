@@ -1,16 +1,12 @@
 module MaximalCoordinateDynamics
 
-# using TimerOutputs
-# const to = TimerOutput()
-
-using LinearAlgebra, StaticArrays
+using LinearAlgebra
+using StaticArrays
 using StaticArrays: SUnitRange
 using Rotations
 
 using CoordinateTransformations
-using GeometryTypes:
-    GeometryPrimitive, GeometryTypes, Vec, Point, Rectangle,
-    HomogenousMesh, SignedDistanceField, HyperSphere, GLUVMesh, Pyramid
+using GeometryTypes: GeometryTypes, Vec, Point
 using Blink
 using Colors: RGBA, RGB
 using FileIO, MeshIO

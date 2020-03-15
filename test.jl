@@ -5,6 +5,7 @@ using StaticArrays
 !(@isdefined MaximalCoordinateDynamics) && include(joinpath(pwd(), "src", "MaximalCoordinateDynamics.jl"))
 using Main.MaximalCoordinateDynamics
 
+
 # Parameters
 ex = [1.;0.;0.]
 ey = [0.;1.;0.]
@@ -25,21 +26,15 @@ link2 = Body(b1)
 
 # Constraints
 joint0to1 = EqualityConstraint(Revolute(origin,link1,zeros(3),vert11,ex,offset=Quaternion(RotY(pi/4))))
-# joint0to1 = EqualityConstraint(Revolute(origin,link1,zeros(3),vert11,ex))
-# joint1to2 = EqualityConstraint(Revolute(link1,link2,vert12,vert11,ex,offset=Quaternion(RotZ(pi/3))))
 
 
 
-# links = [link1; link2; link3]
-# constraints = [joint0to1;joint1to23]
 links = [link1]
 constraints = [joint0to1]
 shapes = [b1]
 
-mech = Mechanism(origin,links,constraints, shapes=shapes)
+mech = Mechanism(origin,links,constraints, shapes=shapes,tend=0.01)
 setPosition!(mech,origin,link1,p2=vert11,Δq=Quaternion(RotY(pi/4))*Quaternion(RotX(pi/4)))
-# setPosition!(mech,origin,link1,p2=vert11,Δq=Quaternion(RotZ(pi/4)))
-# setPosition!(mech,link1,link2,p1=vert12,p2=vert11,Δq=Quaternion(RotZ(pi/3)))
 
 
 simulate!(mech,save=true)
