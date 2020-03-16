@@ -53,11 +53,10 @@ include(joinpath("util", "customdict.jl"))
 include(joinpath("util", "quaternion.jl"))
 include(joinpath("util", "shapes.jl"))
 include(joinpath("components", "component.jl"))
+
+include(joinpath("components", "body.jl"))
 include(joinpath("joints", "joint.jl"))
 include(joinpath("bounds", "bound.jl"))
-include(joinpath("components", "body.jl"))
-include(joinpath("components", "constraint.jl"))
-include(joinpath("bounds", "impact.jl"))
 
 include(joinpath("joints", "translational.jl"))
 include(joinpath("joints", "translational0.jl"))
@@ -70,6 +69,8 @@ include(joinpath("joints", "rotational1.jl"))
 include(joinpath("joints", "rotational2.jl"))
 include(joinpath("joints", "rotational3.jl"))
 include(joinpath("joints", "prototypes.jl"))
+
+include(joinpath("bounds", "impact.jl"))
 
 include(joinpath("components", "equalityconstraint.jl"))
 include(joinpath("components", "inequalityconstraint.jl"))
@@ -87,7 +88,6 @@ include(joinpath("solver", "solverfunctions.jl"))
 include(joinpath("util", "urdf.jl"))
 
 include(joinpath("solver", "newton.jl"))
-
 
 include(joinpath("util", "visualize.jl"))
 

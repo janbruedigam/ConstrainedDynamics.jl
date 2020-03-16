@@ -1,5 +1,3 @@
-abstract type AbstractBody{T} <: Component{T} end
-
 mutable struct Body{T} <: AbstractBody{T}
     id::Int64
 

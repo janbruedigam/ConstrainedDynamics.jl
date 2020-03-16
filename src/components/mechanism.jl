@@ -150,16 +150,9 @@ mutable struct Mechanism{T,N,Ni}
         for id in graph.rdfslist
             component = getcomponent(mechanism,id)
             if typeof(component) <: Body
+                shape = getshape(mechanism, id)
+
                 body = component
-                shape = nothing
-                for s in shapes
-                    for sid in s.bodyids
-                        if sid == id
-                            shape = s
-                            break
-                        end
-                    end
-                end
                 preds = predecessors(graph,id)
                 @assert length(preds) == 1
                 pid = preds[1]
@@ -167,7 +160,7 @@ mutable struct Mechanism{T,N,Ni}
                 @assert length(constraint.constraints) == 2
 
                 gpreds = predecessors(graph,pid)
-                if length(gpreds) > 0 # other link is predecessor
+                if length(gpreds) > 0 # predecessor is link
                     @assert length(gpreds) == 1
                     gpid = gpreds[1]
 
@@ -178,91 +171,53 @@ mutable struct Mechanism{T,N,Ni}
                     pconstraint = geteqconstraint(mechanism,ggpid)
                     @assert length(pconstraint.constraints) == 2
 
-                    # TODO this only works for revolute joints right now
-                    if typeof(constraint.constraints[1]) <: Union{Translational1,Translational2,Translational3}
-                        xpjointworld = xjointlist[pconstraint.id]
-                        qpjointworld = qjointlist[pconstraint.id]
+                    xpbody = pbody.x[1]
+                    qpbody = pbody.q[1]
 
-                        # urdf joint's x and q in parent's (pbody) frame
-                        xjoint = vrotate(xpjointworld + vrotate(constraint.constraints[1].vertices[1],qpjointworld) - pbody.x[1], inv(pbody.q[1]))
-                        qjoint = pbody.q[1]\qpjointworld*constraint.constraints[2].qoff
+                    xpjointworld = xjointlist[pconstraint.id]
+                    qpjointworld = qjointlist[pconstraint.id]
+                else # predecessor is origin
+                    pbody = origin
 
-                        # store joint's x and q in world frame
-                        xjointworld = pbody.x[1] + vrotate(xjoint, pbody.q[1])
-                        qjointworld = pbody.q[1] * qjoint
-                        xjointlist[constraint.id] = xjointworld
-                        qjointlist[constraint.id] = qjointworld
+                    xpbody = SVector{3,T}(0,0,0)
+                    qpbody = Quaternion{T}()
 
-                        # difference to parent body (pbody)
-                        qbody = qjoint*body.q[1]
+                    xpjointworld = SVector{3,T}(0,0,0)
+                    qpjointworld = Quaternion{T}()
+                end
 
-                        # actual joint properties
-                        p1 = xjoint # in parent's (pbody) frame
-                        p2 = vrotate(-body.x[1],inv(body.q[1])) # in body frame (body.x and body.q are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
-                        constraint.constraints[1].vertices = (p1,p2)
+                # urdf joint's x and q in parent's (pbody) frame
+                xjoint = vrotate(xpjointworld + vrotate(constraint.constraints[1].vertices[1],qpjointworld) - xpbody, inv(qpbody))
+                qjoint = qpbody\qpjointworld*constraint.constraints[2].qoff
 
-                        if typeof(constraint.constraints[2]) <: Union{Rotational1,Rotational2}
-                            V3 = vrotate(constraint.constraints[2].V3',qjoint) # in parent's (pbody) frame
-                            V12 = (svd(skew(V3)).Vt)[1:2,:]
-                            constraint.constraints[2].V3 = V3'
-                            constraint.constraints[2].V12 = V12
-                        end
-                        constraint.constraints[2].qoff = qbody # in parent's (pbody) frame
+                # store joint's x and q in world frame
+                xjointworld = xpbody + vrotate(xjoint, qpbody)
+                qjointworld = qpbody * qjoint
+                xjointlist[constraint.id] = xjointworld
+                qjointlist[constraint.id] = qjointworld
 
-                        # actual body properties
-                        setPosition!(mechanism,body) # set everything to zero
-                        setPosition!(mechanism,pbody,body,p1=p1,p2=p2,Δq=qbody)
+                # difference to parent body (pbody)
+                qbody = qjoint*body.q[1]
 
-                        # shape relative
-                        if shape != nothing
-                            shape.xoff = vrotate(xjointworld + vrotate(shape.xoff,qjointworld) - body.x[1],inv(body.q[1]))
-                            shape.qoff = qbody\qjoint*shape.qoff
-                        end
-                    else # Floating joint (relative to origin. floating relative to other joint not supported)
-                        error("Something is wrong.")
-                    end
+                # actual joint properties
+                p1 = xjoint # in parent's (pbody) frame
+                p2 = vrotate(-body.x[1],inv(body.q[1])) # in body frame (body.x and body.q are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
+                constraint.constraints[1].vertices = (p1,p2)
 
-                else # origin is predecessor
-                    # TODO this only works for revolute joints right now
-                    if typeof(constraint.constraints[1]) <: Union{Translational1,Translational2,Translational3}
-                        # urdf joint's x and q in parent's (origin) frame
-                        xjoint = constraint.constraints[1].vertices[1]
-                        qjoint = constraint.constraints[2].qoff
+                V3 = vrotate(constraint.constraints[2].V3',qjoint) # in parent's (pbody) frame
+                V12 = (svd(skew(V3)).Vt)[1:2,:]
+                constraint.constraints[2].V3 = V3'
+                constraint.constraints[2].V12 = V12
+                constraint.constraints[2].qoff = qbody # in parent's (pbody) frame
 
-                        # store joint's x and q in world frame (same as origin frame)
-                        xjointworld = xjoint
-                        qjointworld = qjoint
-                        xjointlist[constraint.id] = xjointworld
-                        qjointlist[constraint.id] = qjointworld
+                # actual body properties
+                setPosition!(mechanism,body) # set everything to zero
+                setPosition!(mechanism,pbody,body,p1=p1,p2=p2,Δq=qbody)
 
-                        # difference to parent body (origin)
-                        qbody = qjoint*body.q[1]
-
-                        # actual joint properties
-                        p1 = xjoint # in parent's (origin) frame
-                        p2 = vrotate(-body.x[1],inv(body.q[1])) # in body frame (body.x and body.q are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
-                        constraint.constraints[1].vertices = (p1,p2)
-
-                        if typeof(constraint.constraints[2]) <: Union{Rotational1,Rotational2}
-                            V3 = vrotate(constraint.constraints[2].V3',qjoint) # in parent's (origin) frame
-                            V12 = (svd(skew(V3)).Vt)[1:2,:]
-                            constraint.constraints[2].V3 = V3'
-                            constraint.constraints[2].V12 = V12
-                        end
-                        constraint.constraints[2].qoff = qbody # in parent's (origin) frame
-
-                        # actual body properties
-                        setPosition!(mechanism,body) # set everything to zero
-                        setPosition!(mechanism,origin,body,p1=p1,p2=p2,Δq=qbody)
-
-                        # shape relative
-                        if shape != nothing
-                            shape.xoff = vrotate(xjointworld + vrotate(shape.xoff,qjointworld) - body.x[1],inv(body.q[1]))
-                            shape.qoff = body.q[1]\qjoint*shape.qoff
-                        end
-                    else # Floating joint (relative to origin. floating relative to other joint not supported)
-                        nothing
-                    end
+                # shape relative
+                if shape != nothing
+                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff,qjointworld) - body.x[1],inv(body.q[1]))
+                    shape.qoff = qbody\qjoint*shape.qoff
                 end
             end
         end
@@ -284,6 +239,7 @@ end
 @inline getbody(mechanism::Mechanism, id::Nothing) = mechanism.origin
 @inline geteqconstraint(mechanism::Mechanism, id::Int64) = mechanism.eqconstraints[id]
 @inline getineqconstraint(mechanism::Mechanism, id::Int64) = mechanism.ineqconstraints[id]
+
 function getcomponent(mechanism::Mechanism, id)
     if id==nothing
         return mechanism.origin
@@ -296,6 +252,18 @@ function getcomponent(mechanism::Mechanism, id)
     else
         return nothing
     end
+end
+
+function getshape(mechanism::Mechanism, id)
+    for shape in mechanism.shapes
+        for bodyid in shape.bodyids
+            if bodyid == id
+                return shape
+            end
+        end
+    end
+
+    return nothing
 end
 
 function setPosition!(mechanism::Mechanism{T}, body::Body{T};x::AbstractVector{T}=SVector{3,T}(0,0,0),q::Quaternion{T}=Quaternion{T}()) where T

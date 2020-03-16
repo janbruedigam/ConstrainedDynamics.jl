@@ -8,7 +8,7 @@
 end
 
 @inline function setForce!(joint::Rotational2, body1::Origin, body2::Body{T}, τ::Union{T,SVector{1,T}}, No) where T
-    body2.τ[No] = joint.V3' * vrotate(τ, joint.qoff)
+    body2.τ[No] = vrotate(joint.V3' * τ, joint.qoff)
     return
 end
 
