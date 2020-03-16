@@ -4,8 +4,8 @@ mutable struct Rotational{T,Nc} <: Joint{T,Nc}
     qoff::Quaternion{T}
     cid::Int64
 
-    function Rotational{T,Nc}(body1::AbstractBody{T}, body2::AbstractBody{T}; axis::AbstractVector{T}=zeros(3), offset::Quaternion{T} = Quaternion{T}()) where {T,Nc}
-        axis = vrotate(SVector(axis...),inv(offset))
+    function Rotational{T,Nc}(body1::AbstractBody{T}, body2::AbstractBody{T}; axis::AbstractVector{T} = zeros(3), offset::Quaternion{T} = Quaternion{T}()) where {T,Nc}
+        axis = vrotate(SVector(axis...), inv(offset))
         if norm(axis) != 0
             axis = axis / norm(axis)
         end

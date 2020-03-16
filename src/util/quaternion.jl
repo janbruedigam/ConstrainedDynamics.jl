@@ -42,7 +42,7 @@ function axis(q::Quaternion{T}) where T
         return SVector{3,T}(0, 0, 0)
     else 
         a = SVector(q.v1, q.v2, q.v3)
-        return a/norm(a)
+        return a / norm(a)
     end
 end
 

@@ -268,8 +268,8 @@ function transtest3()
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(bot,link1,x=xa,q=qa)
-    setPosition!(bot,link2,x=xb,q=qb)
+    setPosition!(bot, link1, x = xa, q = qa)
+    setPosition!(bot, link2, x = xb, q = qb)
     link1.s1 = SVector([va;wa]...)
     link2.s1 = SVector([vb;wb]...)
 
@@ -295,8 +295,8 @@ function transtest3()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3,1:3])
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:3,4:6])
 
-    display((n11,n12,n21,n22))
-    display((n31,n32,n41,n42))
+    display((n11, n12, n21, n22))
+    display((n31, n32, n41, n42))
     return
 end
 
@@ -329,8 +329,8 @@ function transtest2()
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(bot,link1,x=xa,q=qa)
-    setPosition!(bot,link2,x=xb,q=qb)
+    setPosition!(bot, link1, x = xa, q = qa)
+    setPosition!(bot, link2, x = xb, q = qb)
     link1.s1 = SVector([va;wa]...)
     link2.s1 = SVector([vb;wb]...)
 
@@ -358,8 +358,8 @@ function transtest2()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:2,1:3])
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:2,4:6])
 
-    display((n11,n12,n21,n22))
-    display((n31,n32,n41,n42))
+    display((n11, n12, n21, n22))
+    display((n31, n32, n41, n42))
     return
 end
 
@@ -391,8 +391,8 @@ function transtest1()
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(bot,link1,x=xa,q=qa)
-    setPosition!(bot,link2,x=xb,q=qb)
+    setPosition!(bot, link1, x = xa, q = qa)
+    setPosition!(bot, link2, x = xb, q = qb)
     link1.s1 = SVector([va;wa]...)
     link2.s1 = SVector([vb;wb]...)
 
@@ -420,8 +420,8 @@ function transtest1()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3]')
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[4:6]')
 
-    display((n11,n12,n21,n22))
-    display((n31,n32,n41,n42))
+    display((n11, n12, n21, n22))
+    display((n31, n32, n41, n42))
     return
 end
 
@@ -446,12 +446,12 @@ function rottest3()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Rotational3(link1, link2, offset=offset))
+    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Rotational3(link1, link2, offset = offset))
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(bot,link1,x=xa,q=qa)
-    setPosition!(bot,link2,x=xb,q=qb)
+    setPosition!(bot, link1, x = xa, q = qa)
+    setPosition!(bot, link2, x = xb, q = qb)
     link1.s1 = SVector([va;wa]...)
     link2.s1 = SVector([vb;wb]...)
 
@@ -479,8 +479,8 @@ function rottest3()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3,1:3])
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:3,4:6])
 
-    display((n11,n12,n21,n22))
-    display((n31,n32,n41,n42))
+    display((n11, n12, n21, n22))
+    display((n31, n32, n41, n42))
     return
 end
 
@@ -506,13 +506,13 @@ function rottest2()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Rotational2(link1, link2, v, offset=offset))
+    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Rotational2(link1, link2, v, offset = offset))
     V12 = joint1.constraints[1].V12
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(bot,link1,x=xa,q=qa)
-    setPosition!(bot,link2,x=xb,q=qb)
+    setPosition!(bot, link1, x = xa, q = qa)
+    setPosition!(bot, link2, x = xb, q = qb)
     link1.s1 = SVector([va;wa]...)
     link2.s1 = SVector([vb;wb]...)
 
@@ -540,8 +540,8 @@ function rottest2()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:2,1:3])
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:2,4:6])
 
-    display((n11,n12,n21,n22))
-    display((n31,n32,n41,n42))
+    display((n11, n12, n21, n22))
+    display((n31, n32, n41, n42))
     return
 end
 
@@ -567,13 +567,13 @@ function rottest1()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Rotational1(link1, link2, v, offset=offset))
+    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Rotational1(link1, link2, v, offset = offset))
     V3 = joint1.constraints[1].V3'
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(bot,link1,x=xa,q=qa)
-    setPosition!(bot,link2,x=xb,q=qb)
+    setPosition!(bot, link1, x = xa, q = qa)
+    setPosition!(bot, link2, x = xb, q = qb)
     link1.s1 = SVector([va;wa]...)
     link2.s1 = SVector([vb;wb]...)
 
@@ -601,7 +601,7 @@ function rottest1()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3]')
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[4:6]')
 
-    display((n11,n12,n21,n22))
-    display((n31,n32,n41,n42))
+    display((n11, n12, n21, n22))
+    display((n31, n32, n41, n42))
     return
 end

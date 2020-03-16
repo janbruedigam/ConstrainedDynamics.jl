@@ -1,5 +1,5 @@
 @inline function setForce!(joint::Translational0, body1::Body, body2::Body{T}, F::SVector{3,T}, No) where T
-    F1 = vrotate(-F,body1.q[No])
+    F1 = vrotate(-F, body1.q[No])
     F2 = -F1
 
     body1.F[No] = F1

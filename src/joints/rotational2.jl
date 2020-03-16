@@ -1,5 +1,5 @@
 @inline function setForce!(joint::Rotational2, body1::Body, body2::Body{T}, τ::Union{T,SVector{1,T}}, No) where T
-    τ1 = vrotate(joint.V3' * -τ,body1.q[No] * joint.qoff)
+    τ1 = vrotate(joint.V3' * -τ, body1.q[No] * joint.qoff)
     τ2 = -τ1
 
     body1.τ[No] = τ1
@@ -15,12 +15,12 @@ end
 
 @inline function minimalCoordinates(joint::Rotational2, body1::Origin, body2::Body, No)
     q2 = body2.q[No]
-    joint.V3*axis(q2)*angle(q2) 
+    joint.V3 * axis(q2) * angle(q2) 
 end
 
 @inline function minimalCoordinates(joint::Rotational2, body1::Body, body2::Body, No)
-    q1 = body1.q[No]\body2.q[No]
-    joint.V3*axis(q1)*angle(q1)
+    q1 = body1.q[No] \ body2.q[No]
+    joint.V3 * axis(q1) * angle(q1)
 end
 
 

@@ -35,7 +35,7 @@ end
 
 function Base.ht_keyindex(h::UnitDict, key)
     for el in h.keys
-        if el==key
+        if el == key
             return true
         end
     end

@@ -21,9 +21,9 @@ Base.:*(u::AbstractVector, v::SVector{1,T}) where T = u * v[1]
 
 @inline svcat(a::T) where T = SVector{1,T}(a)
 @inline svcat(a::StaticArray) = a
-@inline svcat(a::T,b::T) where T = SVector{2,T}(a,b)
-@inline svcat(a::StaticArray, b::StaticArray) = vcat(a,b)
-@inline svcat(a::StaticArray{Tuple{N},T,1}, b::T) where {T,N} = vcat(a,SVector{1,T}(b))
-@inline svcat(a::T, b::StaticArray{Tuple{N},T,1}) where {T,N} = vcat(SVector{1,T}(a),b)
+@inline svcat(a::T, b::T) where T = SVector{2,T}(a, b)
+@inline svcat(a::StaticArray, b::StaticArray) = vcat(a, b)
+@inline svcat(a::StaticArray{Tuple{N},T,1}, b::T) where {T,N} = vcat(a, SVector{1,T}(b))
+@inline svcat(a::T, b::StaticArray{Tuple{N},T,1}) where {T,N} = vcat(SVector{1,T}(a), b)
 
-@inline svcat(a,b,c...) = svcat(svcat(a,b), svcat(c...))
+@inline svcat(a, b, c...) = svcat(svcat(a, b), svcat(c...))

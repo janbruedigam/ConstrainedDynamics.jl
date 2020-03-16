@@ -36,7 +36,7 @@ mutable struct Body{T} <: AbstractBody{T}
     end
 
     Body(m::T, J::SMatrix{3,3,T,9}, x::Vector{SVector{3,T}}, q::Vector{Quaternion{T}}, F::Vector{SVector{3,T}}, τ::Vector{SVector{3,T}}, 
-        s0::SVector{6,T}, s1::SVector{6,T}, f::SVector{6,T}) where T = new{T}(getGlobalID(),m,J,x,q,F,τ,s0,s1,f)
+        s0::SVector{6,T}, s1::SVector{6,T}, f::SVector{6,T}) where T = new{T}(getGlobalID(), m, J, x, q, F, τ, s0, s1, f)
 end
 
 mutable struct Origin{T} <: AbstractBody{T}
@@ -171,7 +171,7 @@ end
     return [[dynT; Z] [Z; dynR]]
 end
 
-@inline torqueFromForce(F::AbstractVector{T}, r::AbstractVector{T}) where T = cross(r,F)
+@inline torqueFromForce(F::AbstractVector{T}, r::AbstractVector{T}) where T = cross(r, F)
 @inline function setForce!(body::Body, F, τ, No)
     for i = 1:No
         body.F[i] = F

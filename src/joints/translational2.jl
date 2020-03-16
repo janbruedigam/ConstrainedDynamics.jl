@@ -2,11 +2,11 @@
     q1 = body1.q[No]
     q2 = body2.q[No]
 
-    F1 = vrotate(joint.V3' * -F,q1)
+    F1 = vrotate(joint.V3' * -F, q1)
     F2 = -F1
 
-    τ1 = torqueFromForce(F1, vrotate(joint.vertices[1],q1))
-    τ2 = torqueFromForce(F2, vrotate(joint.vertices[2],q2))
+    τ1 = torqueFromForce(F1, vrotate(joint.vertices[1], q1))
+    τ2 = torqueFromForce(F2, vrotate(joint.vertices[2], q2))
 
     body1.F[No] = F1
     body1.τ[No] = τ1
@@ -18,7 +18,7 @@ end
 
 @inline function setForce!(joint::Translational2, body1::Origin, body2::Body{T}, F::Union{T,SVector{1,T}}, No) where T
     F2 = joint.V3' * F
-    τ2 = torqueFromForce(F2, vrotate(joint.vertices[2],body2.q[No]))
+    τ2 = torqueFromForce(F2, vrotate(joint.vertices[2], body2.q[No]))
 
     body2.F[No] = F2
     body2.τ[No] = τ2

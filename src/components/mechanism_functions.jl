@@ -169,7 +169,7 @@ end
 
 function verifyConstraints!(mechanism::Mechanism)
     for eqc in mechanism.eqconstraints
-        if norm(g(eqc,mechanism)) > 1e-3
+        if norm(g(eqc, mechanism)) > 1e-3
             @info string("Probably disconnected bodies at constraint: ", eqc.id)
         end
     end
@@ -195,7 +195,7 @@ function simulate!(mechanism::Mechanism;save::Bool = false,debug::Bool = false)
 end
 
 
-function simulate!(mechanism::Mechanism,control!::Function;save::Bool = false,debug::Bool = false)
+function simulate!(mechanism::Mechanism, control!::Function;save::Bool = false,debug::Bool = false)
     debug && verifyConstraints!(mechanism)
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
@@ -206,7 +206,7 @@ function simulate!(mechanism::Mechanism,control!::Function;save::Bool = false,de
     foreach(s0tos1!, ineqcs)
 
     for i = mechanism.steps
-        control!(mechanism,(i-1)*Δt)
+        control!(mechanism, (i - 1) * Δt)
         newton!(mechanism, warning = debug)
         save && saveToStorage!(mechanism, i)
         foreach(updatePos!, bodies, Δt)
@@ -214,7 +214,7 @@ function simulate!(mechanism::Mechanism,control!::Function;save::Bool = false,de
     return
 end
 
-function simulate!(mechanism::Mechanism,controller::Controller;save::Bool = false,debug::Bool = false)
+function simulate!(mechanism::Mechanism, controller::Controller;save::Bool = false,debug::Bool = false)
     debug && verifyConstraints!(mechanism)
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
@@ -225,7 +225,7 @@ function simulate!(mechanism::Mechanism,controller::Controller;save::Bool = fals
     foreach(s0tos1!, ineqcs)
 
     for i = mechanism.steps
-        control!(mechanism,controller)
+        control!(mechanism, controller)
         newton!(mechanism, warning = debug)
         save && saveToStorage!(mechanism, i)
         foreach(updatePos!, bodies, Δt)

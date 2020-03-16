@@ -5,7 +5,7 @@ mutable struct Translational{T,Nc} <: Joint{T,Nc}
     cid::Int64
 
     function Translational{T,Nc}(body1::AbstractBody{T}, body2::AbstractBody{T};
-        p1::AbstractVector{T}=zeros(3), p2::AbstractVector{T}=zeros(3), axis::AbstractVector{T}=zeros(3)) where {T,Nc}
+        p1::AbstractVector{T} = zeros(3), p2::AbstractVector{T} = zeros(3), axis::AbstractVector{T} = zeros(3)) where {T,Nc}
         
         vertices = (p1, p2)
         if norm(axis) != 0

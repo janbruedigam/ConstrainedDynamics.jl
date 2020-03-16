@@ -62,7 +62,7 @@ mutable struct Mechanism{T,N,Ni}
             end
 
             for shape in shapes
-                for (i,id) in enumerate(shape.bodyids)
+                for (i, id) in enumerate(shape.bodyids)
                     id == body.id && (shape.bodyids[i] = currentid)
                 end
             end
@@ -138,37 +138,37 @@ mutable struct Mechanism{T,N,Ni}
         Mechanism(origin, bodies, eqc, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
     end
 
-    function Mechanism(filename::AbstractString; scalar_type::Type{T}=Float64, tend::T=10., Δt::T=.01, g::T=-9.81, No::Int64=2) where T
+    function Mechanism(filename::AbstractString; scalar_type::Type{T} = Float64, tend::T = 10., Δt::T = .01, g::T = -9.81, No::Int64 = 2) where T
         origin, links, joints, shapes = parse_urdf(filename, T)
 
-        mechanism = Mechanism(origin, links, joints, shapes=shapes, tend=tend, Δt=Δt, g=g, No=No)
+        mechanism = Mechanism(origin, links, joints, shapes = shapes, tend = tend, Δt = Δt, g = g, No = No)
 
         graph = mechanism.graph
         xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
         qjointlist = Dict{Int64,Quaternion{T}}() # stores id, q in world frame
 
         for id in graph.rdfslist
-            component = getcomponent(mechanism,id)
+            component = getcomponent(mechanism, id)
             if typeof(component) <: Body
                 shape = getshape(mechanism, id)
 
                 body = component
-                preds = predecessors(graph,id)
+                preds = predecessors(graph, id)
                 @assert length(preds) == 1
                 pid = preds[1]
-                constraint = geteqconstraint(mechanism,pid)
+                constraint = geteqconstraint(mechanism, pid)
                 @assert length(constraint.constraints) == 2
 
-                gpreds = predecessors(graph,pid)
+                gpreds = predecessors(graph, pid)
                 if length(gpreds) > 0 # predecessor is link
                     @assert length(gpreds) == 1
                     gpid = gpreds[1]
 
-                    pbody = getbody(mechanism,gpid)
-                    ggpreds = predecessors(graph,gpid)
+                    pbody = getbody(mechanism, gpid)
+                    ggpreds = predecessors(graph, gpid)
                     @assert length(ggpreds) == 1
                     ggpid = ggpreds[1]
-                    pconstraint = geteqconstraint(mechanism,ggpid)
+                    pconstraint = geteqconstraint(mechanism, ggpid)
                     @assert length(pconstraint.constraints) == 2
 
                     xpbody = pbody.x[1]
@@ -179,16 +179,16 @@ mutable struct Mechanism{T,N,Ni}
                 else # predecessor is origin
                     pbody = origin
 
-                    xpbody = SVector{3,T}(0,0,0)
+                    xpbody = SVector{3,T}(0, 0, 0)
                     qpbody = Quaternion{T}()
 
-                    xpjointworld = SVector{3,T}(0,0,0)
+                    xpjointworld = SVector{3,T}(0, 0, 0)
                     qpjointworld = Quaternion{T}()
                 end
 
                 # urdf joint's x and q in parent's (pbody) frame
-                xjoint = vrotate(xpjointworld + vrotate(constraint.constraints[1].vertices[1],qpjointworld) - xpbody, inv(qpbody))
-                qjoint = qpbody\qpjointworld*constraint.constraints[2].qoff
+                xjoint = vrotate(xpjointworld + vrotate(constraint.constraints[1].vertices[1], qpjointworld) - xpbody, inv(qpbody))
+                qjoint = qpbody \ qpjointworld * constraint.constraints[2].qoff
 
                 # store joint's x and q in world frame
                 xjointworld = xpbody + vrotate(xjoint, qpbody)
@@ -197,27 +197,27 @@ mutable struct Mechanism{T,N,Ni}
                 qjointlist[constraint.id] = qjointworld
 
                 # difference to parent body (pbody)
-                qbody = qjoint*body.q[1]
+                qbody = qjoint * body.q[1]
 
                 # actual joint properties
                 p1 = xjoint # in parent's (pbody) frame
-                p2 = vrotate(-body.x[1],inv(body.q[1])) # in body frame (body.x and body.q are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
-                constraint.constraints[1].vertices = (p1,p2)
+                p2 = vrotate(-body.x[1], inv(body.q[1])) # in body frame (body.x and body.q are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
+                constraint.constraints[1].vertices = (p1, p2)
 
-                V3 = vrotate(constraint.constraints[2].V3',qjoint) # in parent's (pbody) frame
+                V3 = vrotate(constraint.constraints[2].V3', qjoint) # in parent's (pbody) frame
                 V12 = (svd(skew(V3)).Vt)[1:2,:]
                 constraint.constraints[2].V3 = V3'
                 constraint.constraints[2].V12 = V12
                 constraint.constraints[2].qoff = qbody # in parent's (pbody) frame
 
                 # actual body properties
-                setPosition!(mechanism,body) # set everything to zero
-                setPosition!(mechanism,pbody,body,p1=p1,p2=p2,Δq=qbody)
+                setPosition!(mechanism, body) # set everything to zero
+                setPosition!(mechanism, pbody, body, p1 = p1, p2 = p2, Δq = qbody)
 
                 # shape relative
                 if shape != nothing
-                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff,qjointworld) - body.x[1],inv(body.q[1]))
-                    shape.qoff = qbody\qjoint*shape.qoff
+                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff, qjointworld) - body.x[1], inv(body.q[1]))
+                    shape.qoff = qbody \ qjoint * shape.qoff
                 end
             end
         end
@@ -241,14 +241,14 @@ end
 @inline getineqconstraint(mechanism::Mechanism, id::Int64) = mechanism.ineqconstraints[id]
 
 function getcomponent(mechanism::Mechanism, id)
-    if id==nothing
+    if id == nothing
         return mechanism.origin
-    elseif haskey(mechanism.bodies,id)
-        return getbody(mechanism,id)
-    elseif haskey(mechanism.eqconstraints,id)
-        return geteqconstraint(mechanism,id)
-    elseif haskey(mechanism.ineqconstraints,id)
-        return getineqconstraint(mechanism,id)
+    elseif haskey(mechanism.bodies, id)
+        return getbody(mechanism, id)
+    elseif haskey(mechanism.eqconstraints, id)
+        return geteqconstraint(mechanism, id)
+    elseif haskey(mechanism.ineqconstraints, id)
+        return getineqconstraint(mechanism, id)
     else
         return nothing
     end
@@ -266,35 +266,35 @@ function getshape(mechanism::Mechanism, id)
     return nothing
 end
 
-function setPosition!(mechanism::Mechanism{T}, body::Body{T};x::AbstractVector{T}=SVector{3,T}(0,0,0),q::Quaternion{T}=Quaternion{T}()) where T
-    for i=1:mechanism.No
+function setPosition!(mechanism::Mechanism{T}, body::Body{T};x::AbstractVector{T} = SVector{3,T}(0, 0, 0),q::Quaternion{T} = Quaternion{T}()) where T
+    for i = 1:mechanism.No
         body.x[i] = x
         body.q[i] = q
     end
 end
 
 function setPosition!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
-    p1::AbstractVector{T}=SVector{3,T}(0,0,0), p2::AbstractVector{T}=SVector{3,T}(0,0,0), Δx::AbstractVector{T}=SVector{3,T}(0,0,0),Δq::Quaternion{T}=Quaternion{T}()) where T
+    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::Quaternion{T} = Quaternion{T}()) where T
 
-    q = body1.q[1]*Δq
-    x = body1.x[1] + vrotate(SVector{3,T}(p1+Δx), body1.q[1]) - vrotate(SVector{3,T}(p2), q)
+    q = body1.q[1] * Δq
+    x = body1.x[1] + vrotate(SVector{3,T}(p1 + Δx), body1.q[1]) - vrotate(SVector{3,T}(p2), q)
 
-    setPosition!(mechanism, body2;x=x,q=q)
+    setPosition!(mechanism, body2;x = x,q = q)
 end
 
 function setPosition!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
-    p1::AbstractVector{T}=SVector{3,T}(0,0,0), p2::AbstractVector{T}=SVector{3,T}(0,0,0), Δx::AbstractVector{T}=SVector{3,T}(0,0,0),Δq::Quaternion{T}=Quaternion{T}()) where T
+    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::Quaternion{T} = Quaternion{T}()) where T
 
     q = Δq
-    x = p1+Δx - vrotate(SVector{3,T}(p2), q)
+    x = p1 + Δx - vrotate(SVector{3,T}(p2), q)
 
 
-    setPosition!(mechanism, body2;x=x,q=q)
+    setPosition!(mechanism, body2;x = x,q = q)
 end
 
 # Assumes first order integrator
 # TODO higher order integrator
-function setVelocity!(mechanism::Mechanism{T}, body::Body{T};v::AbstractVector{T}=SVector{3,T}(0,0,0),ω::AbstractVector{T}=SVector{3,T}(0,0,0)) where T
+function setVelocity!(mechanism::Mechanism{T}, body::Body{T};v::AbstractVector{T} = SVector{3,T}(0, 0, 0),ω::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
     body.s0 = [v;ω]
     s0tos1!(body)
     updatePos!(body, mechanism.Δt)
@@ -303,36 +303,36 @@ end
 # Assumes first order integrator
 # TODO higher order integrator
 function setVelocity!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
-    p1::AbstractVector{T}=SVector{3,T}(0,0,0), p2::AbstractVector{T}=SVector{3,T}(0,0,0), Δv2::AbstractVector{T}=SVector{3,T}(0,0,0),Δω2::AbstractVector{T}=SVector{3,T}(0,0,0)) where T
+    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δv2::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δω2::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
 
     Δt = mechanism.Δt
-    x2 = body1.x[2] + vrotate(SVector{3,T}(p1), body1.q[2]) - vrotate(SVector{3,T}(p2), body2.q[2]) + vrotate(SVector{3,T}(Δv2),body1.q[1])*Δt
-    q2 = body1.q[2]*(Δt/2 * Quaternion(sqrt(4 / Δt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2)))
+    x2 = body1.x[2] + vrotate(SVector{3,T}(p1), body1.q[2]) - vrotate(SVector{3,T}(p2), body2.q[2]) + vrotate(SVector{3,T}(Δv2), body1.q[1]) * Δt
+    q2 = body1.q[2] * (Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2)))
 
-    v = (x2-body2.x[1])/Δt
-    ω = 2/Δt*Vmat(body2.q[1]\q2)
+    v = (x2 - body2.x[1]) / Δt
+    ω = 2 / Δt * Vmat(body2.q[1] \ q2)
 
-    setVelocity!(mechanism, body2;v=v,ω=ω)
+    setVelocity!(mechanism, body2;v = v,ω = ω)
 end
 
 # Assumes first order integrator
 # TODO higher order integrator
 function setVelocity!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
-    p1::AbstractVector{T}=SVector{3,T}(0,0,0), p2::AbstractVector{T}=SVector{3,T}(0,0,0), Δv2::AbstractVector{T}=SVector{3,T}(0,0,0),Δω2::AbstractVector{T}=SVector{3,T}(0,0,0)) where T
+    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δv2::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δω2::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
 
     Δt = mechanism.Δt
-    x2 = p1 - vrotate(SVector{3,T}(p2), body2.q[2]) + Δv2*Δt
-    q2 = Δt/2 * Quaternion(sqrt(4 / Δt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2))
+    x2 = p1 - vrotate(SVector{3,T}(p2), body2.q[2]) + Δv2 * Δt
+    q2 = Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2))
 
-    v = (x2-body2.x[1])/Δt
-    ω = 2/Δt*Vmat(body2.q[1]\q2)
+    v = (x2 - body2.x[1]) / Δt
+    ω = 2 / Δt * Vmat(body2.q[1] \ q2)
 
-    setVelocity!(mechanism, body2;v=v,ω=ω)
+    setVelocity!(mechanism, body2;v = v,ω = ω)
 end
 
-function setForce!(mechanism::Mechanism{T}, body::Body{T};F::AbstractVector{T}=SVector{3,T}(0,0,0),r::AbstractVector{T}=SVector{3,T}(0,0,0),τ::AbstractVector{T}=SVector{3,T}(0,0,0)) where T
-    τ += torqueFromForce(F,r)
-    setForce!(body,F,τ,mechanism.No)
+function setForce!(mechanism::Mechanism{T}, body::Body{T};F::AbstractVector{T} = SVector{3,T}(0, 0, 0),r::AbstractVector{T} = SVector{3,T}(0, 0, 0),τ::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
+    τ += torqueFromForce(F, r)
+    setForce!(body, F, τ, mechanism.No)
 end
 
 

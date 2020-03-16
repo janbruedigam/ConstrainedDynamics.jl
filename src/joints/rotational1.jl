@@ -1,7 +1,7 @@
 # No idea what kind of joint this actually is...
 
 @inline function setForce!(joint::Rotational1, body1::Body, body2::Body{T}, τ::SVector{2,T}, No) where T
-    τ1 = vrotate(joint.V12' * -τ,body1.q[No] * joint.qoff)
+    τ1 = vrotate(joint.V12' * -τ, body1.q[No] * joint.qoff)
     τ2 = -τ1
 
     body1.τ[No] = τ1
