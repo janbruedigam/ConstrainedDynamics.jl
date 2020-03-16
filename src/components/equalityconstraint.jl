@@ -45,8 +45,6 @@ end
 Base.length(::EqualityConstraint{T,N}) where {T,N} = N
 
 function setForce!(Fτ, eqc::EqualityConstraint{T,N,Nc}, mechanism; K=mechanism.No) where {T,N,Nc}
-    # vec = [:(setForce!(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), Fτ[$i], K)) for i = 1:Nc]
-    # :(svcat($(vec...)))
     for i = 1:Nc
         setForce!(eqc.constraints[i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[i]), Fτ[i], K)
     end
