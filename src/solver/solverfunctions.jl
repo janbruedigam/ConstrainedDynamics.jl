@@ -1,11 +1,11 @@
 @inline function setDandΔs!(diagonal::DiagonalEntry, body::Body, mechanism::Mechanism)
-    diagonal.D = ∂dyn∂vel(body, mechanism.dt)
+    diagonal.D = ∂dyn∂vel(body, mechanism.Δt)
     diagonal.Δs = dynamics(body, mechanism)
     return
 end
 
 @inline function extendDandΔs!(diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint, mechanism::Mechanism)
-    diagonal.D += schurD(ineqc, body, mechanism.dt) # + SMatrix{6,6,Float64,36}(1e-5*I)
+    diagonal.D += schurD(ineqc, body, mechanism.Δt) # + SMatrix{6,6,Float64,36}(1e-5*I)
     diagonal.Δs += schurf(ineqc, body, mechanism)
     return
 end
@@ -161,7 +161,7 @@ end
 end
 
 function eliminatedSol!(ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint, mechanism::Mechanism)
-    dt = mechanism.dt
+    Δt = mechanism.Δt
     μ = mechanism.μ
     No = 2
 

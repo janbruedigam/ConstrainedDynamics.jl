@@ -1,7 +1,7 @@
 mutable struct Mechanism{T,N,Ni}
     tend::T
     steps::Base.OneTo{Int64}
-    dt::T
+    Δt::T
     g::T
     No::Int64 # order of integrator, currently only No=2 (1st order) implemented
 
@@ -22,10 +22,12 @@ mutable struct Mechanism{T,N,Ni}
     α::T
     μ::T
 
+    shapes::Vector{<:Shape{T}}
+
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
         eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2) where T
+        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
 
         resetGlobalID()
@@ -34,7 +36,7 @@ mutable struct Mechanism{T,N,Ni}
         Ne = length(eqcs)
         Ni = length(ineqcs)
         N = Nb + Ne
-        steps = Int(ceil(tend / dt))
+        steps = Int(ceil(tend / Δt))
 
         currentid = 1
 
@@ -57,6 +59,12 @@ mutable struct Mechanism{T,N,Ni}
 
             for ineqc in ineqcs
                 ineqc.pid == body.id && (ineqc.pid = currentid)
+            end
+
+            for shape in shapes
+                for (i, id) in enumerate(shape.bodyids)
+                    id == body.id && (shape.bodyids[i] = currentid)
+                end
             end
 
             body.id = currentid
@@ -100,35 +108,122 @@ mutable struct Mechanism{T,N,Ni}
         α = 1
         μ = 1
 
-        new{T,N,Ni}(tend, Base.OneTo(steps), dt, g, No, origin, bodies, eqcs, ineqcs, normf, normΔs, graph, ldu, storage, α, μ)
+        new{T,N,Ni}(tend, Base.OneTo(steps), Δt, g, No, origin, bodies, eqcs, ineqcs, normf, normΔs, graph, ldu, storage, α, μ, shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2) where T
+        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         ineqcs = InequalityConstraint{T}[]
-        Mechanism(origin, bodies, eqcs, ineqcs, tend = tend, dt = dt, g = g, No = No)
+        Mechanism(origin, bodies, eqcs, ineqcs, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2) where T
+        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, ineqcs, tend = tend, dt = dt, g = g, No = No)
+        Mechanism(origin, bodies, eqc, ineqcs, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
-        tend::T = 10., dt::T = .01, g::T = -9.81, No = 2) where T
+        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, tend = tend, dt = dt, g = g, No = No)
-    end    
+        Mechanism(origin, bodies, eqc, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
+    end
+
+    function Mechanism(filename::AbstractString; scalar_type::Type{T} = Float64, tend::T = 10., Δt::T = .01, g::T = -9.81, No::Int64 = 2) where T
+        origin, links, joints, shapes = parse_urdf(filename, T)
+
+        mechanism = Mechanism(origin, links, joints, shapes = shapes, tend = tend, Δt = Δt, g = g, No = No)
+
+        graph = mechanism.graph
+        xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
+        qjointlist = Dict{Int64,Quaternion{T}}() # stores id, q in world frame
+
+        for id in graph.rdfslist
+            component = getcomponent(mechanism, id)
+            if typeof(component) <: Body
+                shape = getshape(mechanism, id)
+
+                body = component
+                preds = predecessors(graph, id)
+                @assert length(preds) == 1
+                pid = preds[1]
+                constraint = geteqconstraint(mechanism, pid)
+                @assert length(constraint.constraints) == 2
+
+                gpreds = predecessors(graph, pid)
+                if length(gpreds) > 0 # predecessor is link
+                    @assert length(gpreds) == 1
+                    gpid = gpreds[1]
+
+                    pbody = getbody(mechanism, gpid)
+                    ggpreds = predecessors(graph, gpid)
+                    @assert length(ggpreds) == 1
+                    ggpid = ggpreds[1]
+                    pconstraint = geteqconstraint(mechanism, ggpid)
+                    @assert length(pconstraint.constraints) == 2
+
+                    xpbody = pbody.x[1]
+                    qpbody = pbody.q[1]
+
+                    xpjointworld = xjointlist[pconstraint.id]
+                    qpjointworld = qjointlist[pconstraint.id]
+                else # predecessor is origin
+                    pbody = origin
+
+                    xpbody = SVector{3,T}(0, 0, 0)
+                    qpbody = Quaternion{T}()
+
+                    xpjointworld = SVector{3,T}(0, 0, 0)
+                    qpjointworld = Quaternion{T}()
+                end
+
+                # urdf joint's x and q in parent's (pbody) frame
+                xjoint = vrotate(xpjointworld + vrotate(constraint.constraints[1].vertices[1], qpjointworld) - xpbody, inv(qpbody))
+                qjoint = qpbody \ qpjointworld * constraint.constraints[2].qoff
+
+                # store joint's x and q in world frame
+                xjointworld = xpbody + vrotate(xjoint, qpbody)
+                qjointworld = qpbody * qjoint
+                xjointlist[constraint.id] = xjointworld
+                qjointlist[constraint.id] = qjointworld
+
+                # difference to parent body (pbody)
+                qbody = qjoint * body.q[1]
+
+                # actual joint properties
+                p1 = xjoint # in parent's (pbody) frame
+                p2 = vrotate(-body.x[1], inv(body.q[1])) # in body frame (body.x and body.q are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
+                constraint.constraints[1].vertices = (p1, p2)
+
+                V3 = vrotate(constraint.constraints[2].V3', qjoint) # in parent's (pbody) frame
+                V12 = (svd(skew(V3)).Vt)[1:2,:]
+                constraint.constraints[2].V3 = V3'
+                constraint.constraints[2].V12 = V12
+                constraint.constraints[2].qoff = qbody # in parent's (pbody) frame
+
+                # actual body properties
+                setPosition!(mechanism, body) # set everything to zero
+                setPosition!(mechanism, pbody, body, p1 = p1, p2 = p2, Δq = qbody)
+
+                # shape relative
+                if shape != nothing
+                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff, qjointworld) - body.x[1], inv(body.q[1]))
+                    shape.qoff = qbody \ qjoint * shape.qoff
+                end
+            end
+        end
+
+        return mechanism
+    end
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,0}) where {T,N}
@@ -139,201 +234,105 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,Ni
     summary(io, M); println(io, " with ", length(M.bodies), " bodies, ", length(M.eqconstraints), " equality constraints, and ", Ni, " inequality constraints")
 end
 
-function setentries!(mechanism::Mechanism)
-    graph = mechanism.graph
-    ldu = mechanism.ldu
-
-    for (id, body) in pairs(mechanism.bodies)
-        for cid in directchildren(graph, id)
-            setLU!(getentry(ldu, (id, cid)), id, geteqconstraint(mechanism, cid), mechanism)
-        end
-
-        diagonal = getentry(ldu, id)
-        setDandΔs!(diagonal, body, mechanism)
-        for cid in ineqchildren(graph, id)
-            extendDandΔs!(diagonal, body, getineqconstraint(mechanism, cid), mechanism)
-        end
-    end
-
-    for node in mechanism.eqconstraints
-        id = node.id
-
-        for cid in directchildren(graph, id)
-            setLU!(getentry(ldu, (id, cid)), node, cid, mechanism)
-        end
-
-        for cid in loopchildren(graph, id)
-            setLU!(getentry(ldu, (id, cid)))
-        end
-
-        diagonal = getentry(ldu, id)
-        setDandΔs!(diagonal, node, mechanism)
-    end
-end
 
 @inline getbody(mechanism::Mechanism, id::Int64) = mechanism.bodies[id]
 @inline getbody(mechanism::Mechanism, id::Nothing) = mechanism.origin
 @inline geteqconstraint(mechanism::Mechanism, id::Int64) = mechanism.eqconstraints[id]
 @inline getineqconstraint(mechanism::Mechanism, id::Int64) = mechanism.ineqconstraints[id]
 
-
-@inline function normf(body::Body{T}, mechanism::Mechanism) where T
-    f = dynamics(body, mechanism)
-    return dot(f, f)
-end
-
-@inline function normf(c::EqualityConstraint, mechanism::Mechanism)
-    f = g(c, mechanism)
-    return dot(f, f)
-end
-
-@inline function normf(ineqc::InequalityConstraint, mechanism::Mechanism)
-    f = gs(ineqc, mechanism)
-    d = h(ineqc)
-    return dot(f, f) + dot(d, d)
-end
-
-@inline function normfμ(ineqc::InequalityConstraint, mechanism::Mechanism)
-    f = gs(ineqc, mechanism)
-    d = hμ(ineqc, mechanism.μ)
-    return dot(f, f) + dot(d, d)
-end
-
-@inline function GtλTof!(body::Body, eqc::EqualityConstraint, mechanism)
-    body.f -= ∂g∂pos(eqc, body.id, mechanism)' * eqc.s1
-    return
-end
-
-@inline function NtγTof!(body::Body, ineqc::InequalityConstraint, mechanism)
-    body.f -= ∂g∂pos(ineqc, body, mechanism)' * ineqc.γ1
-    return
-end
-
-@inline function normf(mechanism::Mechanism)
-    mechanism.normf = 0
-
-    # Allocates otherwise
-    for body in mechanism.bodies
-        mechanism.normf += normf(body, mechanism)
-    end
-    foreach(addNormf!, mechanism.eqconstraints, mechanism)
-    foreach(addNormf!, mechanism.ineqconstraints, mechanism)
-
-    return sqrt(mechanism.normf)
-end
-
-@inline function meritf(mechanism::Mechanism)
-    mechanism.normf = 0
-
-    # Allocates otherwise
-    for body in mechanism.bodies
-        mechanism.normf += normf(body, mechanism)
-    end
-    foreach(addNormf!, mechanism.eqconstraints, mechanism)
-    foreach(addNormfμ!, mechanism.ineqconstraints, mechanism)
-
-    return sqrt(mechanism.normf)
-end
-
-@inline function normΔs(mechanism::Mechanism)
-    mechanism.normΔs = 0
-
-    # Allocates otherwise
-    mechanism.normΔs += mapreduce(normΔs, +, mechanism.bodies)
-    foreach(addNormΔs!, mechanism.eqconstraints, mechanism)
-    foreach(addNormΔs!, mechanism.ineqconstraints, mechanism)
-
-    return sqrt(mechanism.normΔs)
-end
-
-@inline function addNormf!(ineqc::InequalityConstraint, mechanism::Mechanism)
-    mechanism.normf += normf(ineqc, mechanism)
-    return
-end
-
-@inline function addNormfμ!(ineqc::InequalityConstraint, mechanism::Mechanism)
-    mechanism.normf += normfμ(ineqc, mechanism)
-    return
-end
-
-@inline function addNormf!(eqc::EqualityConstraint, mechanism::Mechanism)
-    mechanism.normf += normf(eqc, mechanism)
-    return
-end
-
-@inline function addNormΔs!(component::Component, mechanism::Mechanism)
-    mechanism.normΔs += normΔs(component)
-    return
-end
-
-function feasibilityStepLength!(mechanism::Mechanism)
-    ldu = mechanism.ldu
-
-    τ = 0.995
-    mechanism.α = 1.
-
-    for ineqc in mechanism.ineqconstraints
-        feasibilityStepLength!(ineqc, getineqentry(ldu, ineqc.id), τ, mechanism)
-    end
-
-    return
-end
-
-function feasibilityStepLength!(ineqc::InequalityConstraint{T,N}, ineqentry::InequalityEntry, τ, mechanism) where {T,N}
-    s1 = ineqc.s1
-    γ1 = ineqc.γ1
-    Δs = ineqentry.Δs
-    Δγ = ineqentry.Δγ
-
-    for i = 1:N
-        αmax = τ * s1[i] / Δs[i]
-        (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
-        αmax = τ * γ1[i] / Δγ[i]
-        (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
-    end
-    return
-end
-
-
-function saveToTraj!(mechanism::Mechanism, t)
-    No = mechanism.No
-    for (ind, body) in enumerate(mechanism.bodies)
-        mechanism.storage.x[ind][t] = body.x[No]
-        mechanism.storage.q[ind][t] = body.q[No]
-    end
-    for (ind, constraint) in enumerate(mechanism.eqconstraints)
-        mechanism.storage.λ[ind][t] = constraint.s1
+function getcomponent(mechanism::Mechanism, id)
+    if id == nothing
+        return mechanism.origin
+    elseif haskey(mechanism.bodies, id)
+        return getbody(mechanism, id)
+    elseif haskey(mechanism.eqconstraints, id)
+        return geteqconstraint(mechanism, id)
+    elseif haskey(mechanism.ineqconstraints, id)
+        return getineqconstraint(mechanism, id)
+    else
+        return nothing
     end
 end
 
-@inline function updatePos!(body::Body, dt)
-    x2 = body.x[2]
-    q2 = body.q[2]
-    body.x[1] = x2
-    body.x[2] = x2 + getvnew(body) * dt
-    body.q[1] = q2
-    body.q[2] = dt / 2 * (Lmat(q2) * ωbar(body, dt))
-    return
+function getshape(mechanism::Mechanism, id)
+    for shape in mechanism.shapes
+        for bodyid in shape.bodyids
+            if bodyid == id
+                return shape
+            end
+        end
+    end
+
+    return nothing
 end
 
-
-function simulate!(mechanism::Mechanism;save::Bool = false,debug::Bool = false)
-    bodies = mechanism.bodies
-    eqcs = mechanism.eqconstraints
-    ineqcs = mechanism.ineqconstraints
-    dt = mechanism.dt
-    foreach(s0tos1!, bodies)
-    foreach(s0tos1!, eqcs)
-    foreach(s0tos1!, ineqcs)
-
-    for i = mechanism.steps
-        newton!(mechanism, warning = debug)
-        save && saveToTraj!(mechanism, i)
-        foreach(updatePos!, bodies, dt)
-
-        # debug && (i*dt)%1<dt*(1.0-.1) && display(i*dt)
+function setPosition!(mechanism::Mechanism{T}, body::Body{T};x::AbstractVector{T} = SVector{3,T}(0, 0, 0),q::Quaternion{T} = Quaternion{T}()) where T
+    for i = 1:mechanism.No
+        body.x[i] = x
+        body.q[i] = q
     end
-    return
+end
+
+function setPosition!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
+    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::Quaternion{T} = Quaternion{T}()) where T
+
+    q = body1.q[1] * Δq
+    x = body1.x[1] + vrotate(SVector{3,T}(p1 + Δx), body1.q[1]) - vrotate(SVector{3,T}(p2), q)
+
+    setPosition!(mechanism, body2;x = x,q = q)
+end
+
+function setPosition!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
+    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::Quaternion{T} = Quaternion{T}()) where T
+
+    q = Δq
+    x = p1 + Δx - vrotate(SVector{3,T}(p2), q)
+
+
+    setPosition!(mechanism, body2;x = x,q = q)
+end
+
+# Assumes first order integrator
+# TODO higher order integrator
+function setVelocity!(mechanism::Mechanism{T}, body::Body{T};v::AbstractVector{T} = SVector{3,T}(0, 0, 0),ω::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
+    body.s0 = [v;ω]
+    s0tos1!(body)
+    updatePos!(body, mechanism.Δt)
+end
+
+# Assumes first order integrator
+# TODO higher order integrator
+function setVelocity!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
+    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δv2::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δω2::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
+
+    Δt = mechanism.Δt
+    x2 = body1.x[2] + vrotate(SVector{3,T}(p1), body1.q[2]) - vrotate(SVector{3,T}(p2), body2.q[2]) + vrotate(SVector{3,T}(Δv2), body1.q[1]) * Δt
+    q2 = body1.q[2] * (Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2)))
+
+    v = (x2 - body2.x[1]) / Δt
+    ω = 2 / Δt * Vmat(body2.q[1] \ q2)
+
+    setVelocity!(mechanism, body2;v = v,ω = ω)
+end
+
+# Assumes first order integrator
+# TODO higher order integrator
+function setVelocity!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
+    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δv2::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δω2::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
+
+    Δt = mechanism.Δt
+    x2 = p1 - vrotate(SVector{3,T}(p2), body2.q[2]) + Δv2 * Δt
+    q2 = Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(Δω2, Δω2)), SVector{3,T}(Δω2))
+
+    v = (x2 - body2.x[1]) / Δt
+    ω = 2 / Δt * Vmat(body2.q[1] \ q2)
+
+    setVelocity!(mechanism, body2;v = v,ω = ω)
+end
+
+function setForce!(mechanism::Mechanism{T}, body::Body{T};F::AbstractVector{T} = SVector{3,T}(0, 0, 0),r::AbstractVector{T} = SVector{3,T}(0, 0, 0),τ::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
+    τ += torqueFromForce(F, r)
+    setForce!(body, F, τ, mechanism.No)
 end
 
 
@@ -347,9 +346,9 @@ function plotθ(mechanism::Mechanism{T}, id) where T
         end
     end
 
-    p = plot(collect(0:mechanism.dt:mechanism.tend - mechanism.dt), θ[id[1],:])
+    p = plot(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), θ[id[1],:])
     for ind in Iterators.rest(id, 2)
-        plot!(collect(0:mechanism.dt:mechanism.tend - mechanism.dt), θ[ind,:])
+        plot!(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), θ[ind,:])
     end
     return p
 end
@@ -370,9 +369,9 @@ function plotλ(mechanism::Mechanism{T}, id) where T
         startpos = endpos + 1
     end
 
-    p = plot(collect(0:mechanism.dt:mechanism.tend - mechanism.dt), λ[id[1],:])
+    p = plot(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), λ[id[1],:])
     for ind in Iterators.rest(id, 2)
-        plot!(collect(0:mechanism.dt:mechanism.tend - mechanism.dt), λ[ind,:])
+        plot!(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), λ[ind,:])
     end
     return p
 end
