@@ -1,78 +1,76 @@
 using Rotations
 using Plots: RGBA
 
-!(@isdefined MaximalCoordinateDynamics) && include(joinpath("..", "src", "MaximalCoordinateDynamics.jl"))
+!(@isdefined MaximalCoordinateDynamics) && include(joinpath(pwd(), "src", "MaximalCoordinateDynamics.jl"))
 using Main.MaximalCoordinateDynamics
 
 # Parameters
 ex = [1.;0.;0.]
 
 l1 = 1.0
-l2 = 1.0sqrt(2)/2
-x,y = .1,.1
-b1 = Box(x,y,l1,l1,color=RGBA(1.,1.,0.))
-b2 = Box(x,y,l2,l2,color=RGBA(1.,1.,0.))
-b3 = Box(x,y,l1,l1,color=RGBA(1.,0.,0.))
-b4 = Box(x,y,l2,l2,color=RGBA(1.,0.,0.))
+l2 = 1.0# sqrt(2)/2
+x, y = .1, .1
+b1 = Box(x, y, l1, l1, color = RGBA(1., 1., 0.))
+b2 = Box(x, y, l2, l2, color = RGBA(1., 1., 0.))
+b3 = Box(x, y, l1, l1, color = RGBA(1., 0., 0.))
+b4 = Box(x, y, l2, l2, color = RGBA(1., 0., 0.))
 
-vert11 = [0.;0.;l1/2]
+vert11 = [0.;0.;l1 / 2]
 vert12 = -vert11
 
-vert21 = [0.;0.;l2/2]
+vert21 = [0.;0.;l2 / 2]
 vert22 = -vert21
 
-# Initial orientation
-phi1, phi2, phi3, phi4 = pi/5, 0., 0., pi/5
-q1, q2, q3, q4 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX(phi3)), Quaternion(RotX(phi4))
+verts = [
+    [vert11]
+    [vert12]
+    [vert21]
+    [vert22]
+]
 
-phi1, phi2, phi3, phi4 = -pi/5, pi/5, pi/5, -pi/5
-q5, q6, q7, q8 = Quaternion(RotX(phi1)), Quaternion(RotX(phi2)), Quaternion(RotX(phi3)), Quaternion(RotX(phi4))
+# Initial orientation
+phi1 = pi / 5
+q1 = Quaternion(RotX(phi1))
 
 # Links
 origin = Origin{Float64}()
 
 link1 = Body(b1)
-setInit!(origin,link1,zeros(3),vert11,q=q1)
-
 link2 = Body(b2)
-setInit!(link1,link2,vert12,vert21,q=q2)
-
 link3 = Body(b3)
-setInit!(link1,link3,vert11,vert11,q=q3)
-
 link4 = Body(b4)
-setInit!(link3,link4,vert12,vert21,q=q4)
-
 
 link5 = Body(b1)
-setInit!(link4,link5,zeros(3),vert11,q=q5)
-
 link6 = Body(b2)
-setInit!(link5,link6,vert12,vert21,q=q6)
-
 link7 = Body(b3)
-setInit!(link5,link7,vert11,vert11,q=q7)
-
 link8 = Body(b4)
-setInit!(link7,link8,vert12,vert21,q=q8)
 
 # Constraints
-joint0to1 = EqualityConstraint(Revolute(origin,link1,zeros(3),vert11,ex))
-joint1to23 = EqualityConstraint(Revolute(link1,link2,vert12,vert21,ex),Cylindrical(link1,link3,vert11,vert11,ex))
-joint3to4 = EqualityConstraint(Revolute(link3,link4,vert12,vert21,ex))
-joint2to4 = EqualityConstraint(Revolute(link2,link4,vert22,vert22,ex))
+function fourbar(links, vertices, axis)
+    j1 = EqualityConstraint(Revolute(links[1], links[2], zeros(3), vertices[1], axis))
+    j2 = EqualityConstraint(Revolute(links[2], links[3], vertices[2], vertices[3], axis), Cylindrical(links[2], links[4], vertices[1], vertices[1], axis))
+    j3 = EqualityConstraint(Revolute(links[4], links[5], vertices[2], vertices[3], axis))
+    j4 = EqualityConstraint(Revolute(links[3], links[5], vertices[4], vertices[4], axis))
 
-joint4to5 = EqualityConstraint(Revolute(link4,link5,zeros(3),vert11,ex))
-joint5to67 = EqualityConstraint(Revolute(link5,link6,vert12,vert21,ex),Cylindrical(link5,link7,vert11,vert11,ex))
-joint7to8 = EqualityConstraint(Revolute(link7,link8,vert12,vert21,ex))
-joint6to8 = EqualityConstraint(Revolute(link6,link8,vert22,vert22,ex))
+    return j1, j2, j3, j4
+end
 
+function initfourbar!(mechanism, links, vertices, Δq1, Δq2)
+    setPosition!(mechanism, links[1], links[2], p2 = vertices[1], Δq = Δq1)
+    setPosition!(mechanism, links[2], links[3], p1 = vertices[2], p2 = vertices[3], Δq = inv(Δq2))
+    setPosition!(mechanism, links[2], links[4], p1 = vertices[1], p2 = vertices[1], Δq = inv(Δq2))
+    setPosition!(mechanism, links[4], links[5], p1 = vertices[2], p2 = vertices[3], Δq = Δq2)
+end
 
 links = [link1; link2; link3; link4; link5; link6; link7; link8]
-constraints = [joint0to1; joint1to23; joint3to4; joint2to4; joint4to5;joint5to67;joint7to8;joint6to8]
+constraints = [fourbar([origin;links[1:4]], verts, ex)...,fourbar([links[4];links[5:8]], verts, ex)...]
 shapes = [b1,b2,b3,b4]
 
-mech = Mechanism(origin,links, constraints,InequalityConstraint{Float64}[])
+mech = Mechanism(origin, links, constraints, InequalityConstraint{Float64}[], shapes = shapes)
 
-simulate!(mech,save=true)
-MaximalCoordinateDynamics.visualize(mech,shapes)
+initfourbar!(mech,[origin;links[1:4]],verts,q1,q1)
+initfourbar!(mech,[links[4];links[5:8]],verts,q1 / q1,q1)
+
+
+simulate!(mech,save = true)
+visualize!(mech)

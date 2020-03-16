@@ -4,7 +4,7 @@ function newton!(mechanism::Mechanism{T,Nl,0}; ε = 1e-10, newtonIter = 100, lin
     eqcs = mechanism.eqconstraints
     graph = mechanism.graph
     ldu = mechanism.ldu
-    dt = mechanism.dt
+    Δt = mechanism.Δt
 
     normf0 = normf(mechanism)
     for n = Base.OneTo(newtonIter)
@@ -18,7 +18,7 @@ function newton!(mechanism::Mechanism{T,Nl,0}; ε = 1e-10, newtonIter = 100, lin
         foreach(s1tos0!, bodies)
         foreach(s1tos0!, eqcs)
 
-        if normΔs1 < ε && normf1 < ε
+        if normf1 < ε && normΔs1 < ε
             # warning && (@info string("Newton iterations: ",n))
             return
         else
@@ -26,7 +26,7 @@ function newton!(mechanism::Mechanism{T,Nl,0}; ε = 1e-10, newtonIter = 100, lin
         end
     end
 
-    warning && (@info string("newton_ip! did not converge. n = ", newtonIter, ", tol = ", normf(mechanism), "."))
+    warning && (@info string("newton! did not converge. n = ", newtonIter, ", tol = ", normf(mechanism), "."))
     return
 end
 
@@ -37,7 +37,7 @@ function newton!(mechanism::Mechanism{T,Nl}; ε = 1e-10, σ = 0.1, μ = 1.0, new
     ineqcs = mechanism.ineqconstraints
     graph = mechanism.graph
     ldu = mechanism.ldu
-    dt = mechanism.dt
+    Δt = mechanism.Δt
 
     foreach(resetVars!, ineqcs)
     mechanism.μ = μ
@@ -69,7 +69,7 @@ function newton!(mechanism::Mechanism{T,Nl}; ε = 1e-10, σ = 0.1, μ = 1.0, new
         end
     end
 
-    warning && (@info string("newton_ip! did not converge. n = ", newtonIter, ", tol = ", normf(mechanism), "."))
+    warning && (@info string("newton! did not converge. n = ", newtonIter, ", tol = ", normf(mechanism), "."))
     return
 end
 
@@ -96,7 +96,7 @@ function lineSearch!(mechanism::Mechanism{T,N,0}, normf0;iter = 10, warning::Boo
         end
     end
 
-    warning && (@info string("lineSearch! did not converge. n = ", iter, "."))
+    warning && (@info string("lineSearch! did not converge. n = ", iter, ". Last tol: ", normf1))
     return normf1
 end
 
@@ -130,7 +130,7 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
         end
     end
 
-    warning && (@info string("lineSearch! did not converge. n = ", iter, "."))
+    warning && (@info string("lineSearch! did not converge. n = ", iter, ". Last tol: ", meritf1))
     return meritf1
 end
 

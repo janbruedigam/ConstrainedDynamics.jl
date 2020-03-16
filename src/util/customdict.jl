@@ -30,3 +30,14 @@ end
 @inline Base.pairs(d::UnitDict, i = 1) = Base.Generator(=>, d.keys, d.values)
 
 @inline Base.foreach(f, itr::UnitDict, arg...) = (for x in itr; f(x, arg...); end; return)
+
+@inline Base.haskey(d::UnitDict, key) = Base.ht_keyindex(d, key)
+
+function Base.ht_keyindex(h::UnitDict, key)
+    for el in h.keys
+        if el == key
+            return true
+        end
+    end
+    return false
+end
