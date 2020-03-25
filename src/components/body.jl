@@ -104,6 +104,8 @@ function setInit!(body1::Origin{T}, body2::Body{T}, p1::AbstractVector, p2::Abst
     setInit!(body2; x = x2, q = q, F = F, τ = τ)
 end
 
+@inline getM(body::Body{T}) where T = [[SMatrix{3,3,T,9}(I*body.m);@SMatrix zeros(T,3,3)] [@SMatrix zeros(T,3,3);body.J]]
+
 @inline getx3(body::Body, Δt) = getvnew(body) * Δt + body.x[2]
 @inline getq3(body::Body, Δt) = Quaternion(Lmat(body.q[2]) * ωbar(body, Δt))
 @inline getv1(body::Body, Δt) = (body.x[2] - body.x[1]) / Δt

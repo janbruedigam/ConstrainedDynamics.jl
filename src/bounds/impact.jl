@@ -6,8 +6,8 @@ mutable struct Impact{T} <: Bound{T}
     function Impact(body::Body{T}, normal::AbstractVector{T};offset::AbstractVector{T} = zeros(3)) where T
         normal = normal / norm(normal)
 
-        # Derived from plane equation
-        A = Array(svd(skew(normal)).V)
+        # Derived from plane equation a*v1 + b*v2 + distance*v3 = p - offset
+        A = Array(svd(skew(normal)).V) # gives two plane vectors
         A[:,3] = normal # to ensure correct sign
         Ainv = inv(A)
         ainv3 = Ainv[3,:]

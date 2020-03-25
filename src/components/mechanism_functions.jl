@@ -147,6 +147,10 @@ function feasibilityStepLength!(ineqc::InequalityConstraint{T,N}, ineqentry::Ine
     return
 end
 
+function setFrictionForce!(mechanism)
+    foreach(setFrictionForce!, mechanism.ineqconstraints, mechanism)
+end
+
 
 function saveToStorage!(mechanism::Mechanism, t)
     No = mechanism.No
