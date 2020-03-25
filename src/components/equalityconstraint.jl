@@ -1,4 +1,4 @@
-mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T}
+mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     id::Int64
 
     constraints::Cs
@@ -9,75 +9,81 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T}
     s1::SVector{N,T}
 
     function EqualityConstraint(data...)
-        # jointdata = Vector{Tuple{Joint,Int64,Int64}}(undef,0)
         jointdata = Tuple{Joint,Int64,Int64}[]
         for info in data
             if typeof(info[1]) <: Joint
-                push!(jointdata,info)
+                push!(jointdata, info)
             else
                 for subinfo in info
-                    push!(jointdata,subinfo)
+                    push!(jointdata, subinfo)
                 end
             end
         end
 
-        T = getT(jointdata[1][1])#.T
+        T = getT(jointdata[1][1])# .T
 
         pid = jointdata[1][2]
-        # bodyids = Vector{Int64}(undef,0)
-        # constraints = Vector{Joint{T}}(undef,0)
         bodyids = Int64[]
         constraints = Joint{T}[]
         N = 0
         for set in jointdata
-            push!(constraints,set[1])
+            push!(constraints, set[1])
             @assert set[2] == pid
-            push!(bodyids,set[3])
-            N += getNc(set[1])#.Nc
+            push!(bodyids, set[3])
+            N += getNc(set[1])
         end
         constraints = Tuple(constraints)
         Nc = length(constraints)
 
-        s0 = @SVector zeros(T,N)
-        s1 = @SVector zeros(T,N)
+        s0 = @SVector zeros(T, N)
+        s1 = @SVector zeros(T, N)
 
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(),constraints,pid,bodyids,s0,s1)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(), constraints, pid, bodyids, s0, s1)
     end
-
-    # EqualityConstraint(joint) = EqualityConstraint(joint...)
 end
 
 Base.length(::EqualityConstraint{T,N}) where {T,N} = N
 
-@generated function g(c::EqualityConstraint{T,N,Nc},mechanism) where {T,N,Nc}
-    vec = [:(g(c.constraints[$i],getbody(mechanism,c.pid),getbody(mechanism,c.bodyids[$i]),mechanism.dt,mechanism.No)) for i=1:Nc]
-    :(vcat($(vec...)))
+function setForce!(Fτ, eqc::EqualityConstraint{T,N,Nc}, mechanism; K = mechanism.No) where {T,N,Nc}
+    for i = 1:Nc
+        setForce!(eqc.constraints[i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[i]), Fτ[i], K)
+    end
 end
 
-@inline function ∂g∂pos(c::EqualityConstraint,id::Int64,mechanism)
-    id == c.pid ? ∂g∂posa(c,id,mechanism) : ∂g∂posb(c,id,mechanism)
+@generated function minimalCoordinates(eqc::EqualityConstraint{T,N,Nc}, mechanism; K = mechanism.No) where {T,N,Nc}
+    vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), K)) for i = 1:Nc]
+    :(svcat($(vec...)))
 end
 
-@inline function ∂g∂vel(c::EqualityConstraint,id::Int64,mechanism)
-    id == c.pid ? ∂g∂vela(c,id,mechanism) : ∂g∂velb(c,id,mechanism)
+@generated function g(eqc::EqualityConstraint{T,N,Nc}, mechanism) where {T,N,Nc}
+    vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
+    :(svcat($(vec...)))
 end
 
-@generated function ∂g∂posa(c::EqualityConstraint{T,N,Nc},id::Int64,mechanism) where {T,N,Nc}
-    vec = [:(∂g∂posa(c.constraints[$i],getbody(mechanism,id),getbody(mechanism,c.bodyids[$i]),mechanism.No)) for i=1:Nc]
+@inline function ∂g∂pos(eqc::EqualityConstraint, id::Int64, mechanism)
+    id == eqc.pid ? ∂g∂posa(eqc, id, mechanism) : ∂g∂posb(eqc, id, mechanism)
+end
+
+@inline function ∂g∂vel(eqc::EqualityConstraint, id::Int64, mechanism)
+    id == eqc.pid ? ∂g∂vela(eqc, id, mechanism) : ∂g∂velb(eqc, id, mechanism)
+end
+
+@generated function ∂g∂posa(eqc::EqualityConstraint{T,N,Nc}, id::Int64, mechanism) where {T,N,Nc}
+    vec = [:(∂g∂posa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂posb(c::EqualityConstraint{T,N,Nc},id::Int64,mechanism) where {T,N,Nc}
-    vec = [:(∂g∂posb(c.constraints[$i],getbody(mechanism,c.pid),getbody(mechanism,id),mechanism.No)) for i=1:Nc]
+@generated function ∂g∂posb(eqc::EqualityConstraint{T,N,Nc}, id::Int64, mechanism) where {T,N,Nc}
+    vec = [:(∂g∂posb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂vela(c::EqualityConstraint{T,N,Nc},id::Int64,mechanism) where {T,N,Nc}
-    vec = [:(∂g∂vela(c.constraints[$i],getbody(mechanism,id),getbody(mechanism,c.bodyids[$i]),mechanism.dt,mechanism.No)) for i=1:Nc]
+@generated function ∂g∂vela(eqc::EqualityConstraint{T,N,Nc}, id::Int64, mechanism) where {T,N,Nc}
+    vec = [:(∂g∂vela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂velb(c::EqualityConstraint{T,N,Nc},id::Int64,mechanism) where {T,N,Nc}
-    vec = [:(∂g∂velb(c.constraints[$i],getbody(mechanism,c.pid),getbody(mechanism,id),mechanism.dt,mechanism.No)) for i=1:Nc]
+@generated function ∂g∂velb(eqc::EqualityConstraint{T,N,Nc}, id::Int64, mechanism) where {T,N,Nc}
+    vec = [:(∂g∂velb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end

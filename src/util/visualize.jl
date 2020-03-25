@@ -1,48 +1,58 @@
-function shapeobject(cylinder::Cylinder)
-    r,h = Tuple(cylinder.rh)
-    GeometryTypes.Cylinder(Point(0.0,0.0,-h/2),Point(0.0,0.0,h/2), r)
-end
-
 function shapeobject(box::Box)
     x,y,z = Tuple(box.xyz)
-    GeometryTypes.HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
+    return GeometryTypes.HyperRectangle(Vec(-x/2,-y/2,-z/2),Vec(x,y,z))
 end
 
-function visualize(mechanism::Mechanism,shapes)
+function shapeobject(cylinder::Cylinder)
+    r,h = Tuple(cylinder.rh)
+    return GeometryTypes.Cylinder(Point(0.0,0.0,-h/2),Point(0.0,0.0,h/2), r)
+end
+
+function shapeobject(sphere::Sphere)
+    r = sphere.r
+    return GeometryTypes.Sphere(Point(0.0,0.0,0.0), r)
+end
+
+function shapeobject(mesh::Mesh)
+    return shape = load(mesh.path, GLUVMesh)
+end
+
+function visualize!(mechanism::Mechanism)
     vis = Visualizer()
     open(vis, Blink.Window())
-    # open(vis)
 
-    for body in mechanism.bodies
-        for shape in shapes
-            for shapebody in shape.bodies
-                if shapebody == body
-                    visbody = shapeobject(shape)
-                    setobject!(vis["bundle/visbody"*string(body.id)], visbody, MeshPhongMaterial(color=shape.color))
-                    break
+    storage = mechanism.storage
+
+    for shape in mechanism.shapes
+        for id in shape.bodyids
+            if id >= 0
+                for i in mechanism.steps
+                    storage.x[id][i] += vrotate(shape.xoff, storage.q[id][i])
+                    storage.q[id][i] *= shape.qoff
                 end
+                visshape = shapeobject(shape)
+                setobject!(vis["bundle/visshape"*string(id)], visshape, MeshPhongMaterial(color=shape.color))
             end
         end
     end
 
-    framerate = Int64(round(1/mechanism.dt))
+    framerate = Int64(round(1/mechanism.Δt))
     anim = MeshCat.Animation(Dict{MeshCat.SceneTrees.Path,MeshCat.AnimationClip}(), framerate)
 
     for k=mechanism.steps
         MeshCat.atframe(anim, k) do
             for (id,body) in pairs(mechanism.bodies)
-                settransform!(vis["bundle/visbody"*string(id)], compose(Translation(mechanism.storage.x[id][k]...),LinearMap(Quat(mechanism.storage.q[id][k]...))))
+                settransform!(vis["bundle/visshape"*string(id)], compose(Translation((mechanism.storage.x[id][k])...),LinearMap(Quat((mechanism.storage.q[id][k])...))))
             end
         end
     end
 
-    MeshCat.setanimation!(vis, anim);
+    MeshCat.setanimation!(vis, anim)
+    return
 end
 
 
-function convert_meshcat_to_video(;filename="video",
-    input_path="util\\",
-    output_path="util\\")
+function convert_meshcat_to_video(;filename="video",input_path="util\\",output_path="util\\")
     # Saving MeshCat sequence as a video.
     meshcat_sequence_dir = joinpath(@__DIR__, "..", input_path)
     if filename==nothing
