@@ -175,7 +175,7 @@ function parse_joint(xjoint, origin, plink, clink, T)
         joint = EqualityConstraint(Planar(plink, clink, p1, p2, axis))
     elseif joint_type == "fixed"
         joint = EqualityConstraint(Fixed(plink, clink, p1, p2, offset = q))
-    elseif joint_type == "floating" # Floating relative to non-origin joint not supported
+    elseif joint_type == "floating" # Floating relative to non-origin link not supported
         @assert origin == plink
         joint = EqualityConstraint(OriginConnection(origin, clink))
     end
@@ -183,10 +183,11 @@ function parse_joint(xjoint, origin, plink, clink, T)
     return joint
 end
 
-function parse_joints(xjoints, ldict, T)
+function parse_joints(xjoints, ldict, T, floating)
     origins = Origin{T}[]
     links = Body{T}[]
     joints = EqualityConstraint{T}[]
+    floatingname = ""
 
     for name in keys(ldict)
         child = false
@@ -202,7 +203,12 @@ function parse_joints(xjoints, ldict, T)
             push!(links, ldict[name])
         else
             origin = Origin{T}()
-            origin.id = ldict[name].id
+            if floating # keep current link and create new origin
+                push!(links, ldict[name])
+                floatingname = name
+            else # make current link origin
+                origin.id = ldict[name].id
+            end
             push!(origins, origin)
         end
     end
@@ -223,10 +229,15 @@ function parse_joints(xjoints, ldict, T)
         push!(joints, joint)
     end
 
+    if floating
+        originjoint = EqualityConstraint(OriginConnection(origin, ldict[floatingname]))
+        push!(joints, originjoint)
+    end
+
     return origin, links, joints
 end
 
-function parse_urdf(filename, ::Type{T}) where T
+function parse_urdf(filename, ::Type{T}, floating) where T
     xdoc = LightXML.parse_file(filename)
     xroot = LightXML.root(xdoc)
     @assert LightXML.name(xroot) == "robot"
@@ -235,7 +246,7 @@ function parse_urdf(filename, ::Type{T}) where T
     xjoints = get_elements_by_tagname(xroot, "joint")
 
     ldict, shapes = parse_links(xlinks, T)
-    origin, links, joints = parse_joints(xjoints, ldict, T)
+    origin, links, joints = parse_joints(xjoints, ldict, T, floating)
 
     free(xdoc)
 
