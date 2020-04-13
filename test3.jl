@@ -25,15 +25,15 @@ origin = Origin{Float64}()
 links = [Body(b1) for i = 1:N]
 
 # Constraints
-cf = 0.5
-ineqcs = [InequalityConstraint(Friction(links[i], [0;0;1.0], cf)) for i = 2:N-1]
+cf = 0.2
+ineqcs = [InequalityConstraint(Friction(links[i], [0;0;1.0],cf)) for i = 2:N-1]
 
 jointb1 = EqualityConstraint(OriginConnection(origin, links[1]))
 constraints = [jointb1;[EqualityConstraint(Revolute(links[i - 1], links[i], vert12, vert11, ex)) for i = 2:N]]
 
 shapes = [b1]
 
-mech = Mechanism(origin, links, constraints, ineqcs;tend = 10.,Δt = 0.01, shapes = shapes)
+mech = Mechanism(origin, links, constraints, ineqcs;tend = 20.,Δt = 0.01, shapes = shapes)
 setPosition!(mech,origin,links[1],p2 = vert11, Δx=[0;0;N*1.], Δq = q1)
 previd = links[1].id
 for body in Iterators.drop(mech.bodies, 1)
@@ -42,5 +42,5 @@ for body in Iterators.drop(mech.bodies, 1)
     previd = body.id
 end
 
-simulate!(mech,save = true)
+simulate!(mech,save = true,debug=false)
 visualize!(mech)

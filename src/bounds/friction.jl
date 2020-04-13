@@ -50,6 +50,7 @@ end
     return Nx' * γ1 / s1 * Nv
 end
 
+# Smooth stuff
 @inline function setFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
     Δt = mechanism.Δt
     No = mechanism.No
@@ -81,3 +82,45 @@ end
     setForce!(body,F,τ,No)
     return
 end
+
+# Prox stuff
+# @inline function setFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
+#     Δt = mechanism.Δt
+#     No = mechanism.No
+#     M = getM(body)
+#     v = body.s1
+#     cf = friction.cf
+#     γ1 = ineqc.γ1[i]
+#     D = friction.D
+
+#     B = D'*friction.b
+#     F = body.F[No] - B[SVector(1,2,3)]
+#     τ = body.τ[No] - B[SVector(4,5,6)]
+#     setForce!(body,F,τ,No)
+
+#     ψ = Δt*norm(D*v)
+    
+#     f = body.f
+#     body.s1 = @SVector zeros(6)
+#     dyn = dynamics(body,mechanism)
+#     # body.s1 = v
+#     # body.f = f
+
+#     friction.b = D*dyn
+#     if norm(friction.b) > cf*γ1
+#         friction.b = friction.b/norm(friction.b)*cf*γ1
+#     end
+
+#     B = D'*friction.b
+#     F += B[SVector(1,2,3)]
+#     τ += B[SVector(4,5,6)]
+#     setForce!(body,F,τ,No)
+
+#     body.s1 = v
+#     body.f = f
+#     # v = M\dynamics(body,mechanism)*Δt
+#     # body.s1 = v
+#     # dynamics(body,mechanism)
+
+#     return
+# end

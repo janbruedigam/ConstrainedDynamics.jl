@@ -32,8 +32,8 @@ links = [link1;[Body(b1) for i = 1:8]]
 
 # Constraints
 cf = 0.2
-joint1 = InequalityConstraint(Friction(link1, [0;0;1.0], cf))
-ineqcs = [joint1;[InequalityConstraint(Friction(links[i + 1], [0;0;1.0], cf)) for i = 1:8]]
+joint1 = InequalityConstraint(Friction(link1, [0;-0.1;1.0], cf))
+ineqcs = [joint1;[InequalityConstraint(Friction(links[i + 1], [0;-0.1;1.0], cf)) for i = 1:8]]
 
 joint0to1 = EqualityConstraint(OriginConnection(origin, link1))
 eqcs = [joint0to1;[EqualityConstraint(Fixed(link1, links[i + 1], corners[i], zeros(3))) for i = 1:8]]
@@ -41,20 +41,23 @@ eqcs = [joint0to1;[EqualityConstraint(Fixed(link1, links[i + 1], corners[i], zer
 shapes = [box1;b1]
 
 
-mech = Mechanism(origin, links, eqcs, ineqcs, shapes = shapes)
-# setPosition!(mech,link1,x = [0.;-2;1.5])
-setPosition!(mech,link1,x = [0.;0;0.25])
+mech = Mechanism(origin, links, eqcs, ineqcs, shapes = shapes,tend=15.)
+setPosition!(mech,link1,x = [0.;-2;1.5])
+# setPosition!(mech,link1,x = [0.;0;0.25])
 for i = 1:8
     setPosition!(mech, link1, links[i + 1], p1 = corners[i])
 end
 
-# setVelocity!(mech,link1,v = [0;3;7.],ω = (rand(3) .- 0.5) * 100)
+# ωtemp=(rand(3) .- 0.5) * 100
+# ωtemp = [12.15437;5.08323;-39.13073]
+# ωtemp = [19.46637;-18.17827;-44.33827]
+ωtemp = [-45.36396;23.93890;43.18141]
+setVelocity!(mech,link1,v = [0;3;7.],ω = ωtemp)
 # setVelocity!(mech,link1,v = [0;0.1;0],ω = (rand(3) .- 0.5) * 0)
 for i = 1:8
     setVelocity!(mech, link1, links[i + 1], p1 = corners[i])
 end
-setForce!(mech,link1,F=[0;10.;0])
 
 
-simulate!(mech,save = true)
+simulate!(mech,save = true,debug=false)
 visualize!(mech)
