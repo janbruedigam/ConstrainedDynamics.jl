@@ -1,0 +1,13 @@
+name = "ConstrainedDynamics"
+uuid = "65b0d8a9-e9fd-4f02-8653-a7163c490b26"
+authors = ["Jan Bruedigam"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
