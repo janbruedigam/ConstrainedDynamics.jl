@@ -41,12 +41,10 @@ function newton!(mechanism::Mechanism{T,Nl}; ε = 1e-10, σ = 0.1, μ = 1.0, new
 
     foreach(resetVars!, ineqcs)
     mechanism.μ = μ
-    # for ineq in ineqcs
-    #     ineq.μ = μ
-    # end
 
     meritf0 = meritf(mechanism)
     for n = Base.OneTo(newtonIter)
+        setFrictionForce!(mechanism)
         setentries!(mechanism)
         factor!(graph, ldu)
         solve!(mechanism) # x̂1 for each body and constraint

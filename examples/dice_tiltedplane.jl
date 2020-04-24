@@ -32,7 +32,7 @@ links = [link1;[Body(b1) for i = 1:8]]
 
 # Constraints
 cf = 0.2
-ineqcs = [InequalityConstraint(Friction(links[i + 1], [0;0;1.0], cf)) for i = 1:8]
+ineqcs = [InequalityConstraint(Friction(links[i + 1], [0;-0.1;1.0], cf)) for i = 1:8]
 
 joint0to1 = EqualityConstraint(OriginConnection(origin, link1))
 eqcs = [joint0to1;[EqualityConstraint(Fixed(link1, links[i + 1], corners[i], zeros(3))) for i = 1:8]]

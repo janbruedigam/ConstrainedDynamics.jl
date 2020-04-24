@@ -17,6 +17,7 @@ using Plots
 
 export Box,
     Cylinder,
+    Sphere,
     Mesh,
 
     Quaternion,
@@ -38,6 +39,7 @@ export Box,
     CylindricalFree,
 
     Impact,
+    Friction,
 
     setPosition!,
     setVelocity!,
@@ -71,6 +73,7 @@ include(joinpath("joints", "rotational3.jl"))
 include(joinpath("joints", "prototypes.jl"))
 
 include(joinpath("bounds", "impact.jl"))
+include(joinpath("bounds", "friction.jl"))
 
 include(joinpath("components", "equalityconstraint.jl"))
 include(joinpath("components", "inequalityconstraint.jl"))

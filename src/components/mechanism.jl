@@ -32,6 +32,12 @@ mutable struct Mechanism{T,N,Ni}
 
         resetGlobalID()
 
+        for body in bodies
+            if norm(body.m)==0 || norm(body.J)==0
+                @info "Potentially bad inertial properties detected"
+            end 
+        end
+
         Nb = length(bodies)
         Ne = length(eqcs)
         Ni = length(ineqcs)
@@ -138,8 +144,8 @@ mutable struct Mechanism{T,N,Ni}
         Mechanism(origin, bodies, eqc, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
     end
 
-    function Mechanism(filename::AbstractString; scalar_type::Type{T} = Float64, tend::T = 10., Δt::T = .01, g::T = -9.81, No::Int64 = 2) where T
-        origin, links, joints, shapes = parse_urdf(filename, T)
+    function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, tend::T = 10., Δt::T = .01, g::T = -9.81, No::Int64 = 2) where T
+        origin, links, joints, shapes = parse_urdf(filename, T, floating)
 
         mechanism = Mechanism(origin, links, joints, shapes = shapes, tend = tend, Δt = Δt, g = g, No = No)
 

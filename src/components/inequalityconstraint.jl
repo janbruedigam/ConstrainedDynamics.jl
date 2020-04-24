@@ -111,3 +111,12 @@ end
     vec = [:(∂g∂vel(ineqc.constraints[$i], mechanism.Δt, mechanism.No)) for i = 1:N]
     :(vcat($(vec...)))
 end
+
+function setFrictionForce!(ineqc::InequalityConstraint{T,N}, mechanism) where {T,N}
+    for i = 1:N
+        constraint = ineqc.constraints[i]
+        if typeof(constraint) <: Friction
+            setFrictionForce!(mechanism, ineqc, constraint, i, getbody(mechanism, ineqc.pid))
+        end
+    end
+end

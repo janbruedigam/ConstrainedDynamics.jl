@@ -1,41 +1,46 @@
 using Rotations
-using Plots: RGBA
-using StaticArrays
+using Plots
 
 !(@isdefined MaximalCoordinateDynamics) && include(joinpath(pwd(), "src", "MaximalCoordinateDynamics.jl"))
 using Main.MaximalCoordinateDynamics
 
-
 # Parameters
 ex = [1.;0.;0.]
-ey = [0.;1.;0.]
-ez = [0.;0.;1.]
 
-l1 = 1.0
-x,y = .1,.2
-b1 = Box(x,y,l1,l1,color=RGBA(1.,1.,0.))
+h = 1.
+r = .05
+b1 = Cylinder(r, h, h, color = RGBA(1., 0., 0.))
 
-vert11 = [0.;0;l1/2]
+vert11 = [0.;0.;h / 2]
 vert12 = -vert11
 
+# Initial orientation
+phi = pi / 4
+q1 = Quaternion(RotX(phi))
 
 # Links
+N = 6
+
 origin = Origin{Float64}()
-link1 = Body(b1)
-link2 = Body(b1)
+links = [Body(b1) for i = 1:N]
 
 # Constraints
-joint0to1 = EqualityConstraint(Revolute(origin,link1,zeros(3),vert11,ex,offset=Quaternion(RotY(pi/4))))
+cf = 0.2
+ineqcs = [InequalityConstraint(Friction(links[i], [0;0;1.0],cf)) for i = 2:N-1]
 
+jointb1 = EqualityConstraint(OriginConnection(origin, links[1]))
+constraints = [jointb1;[EqualityConstraint(Revolute(links[i - 1], links[i], vert12, vert11, ex)) for i = 2:N]]
 
-
-links = [link1]
-constraints = [joint0to1]
 shapes = [b1]
 
-mech = Mechanism(origin,links,constraints, shapes=shapes,tend=0.01)
-setPosition!(mech,origin,link1,p2=vert11,Δq=Quaternion(RotY(pi/4))*Quaternion(RotX(pi/4)))
+mech = Mechanism(origin, links, constraints, ineqcs;tend = 20.,Δt = 0.01, shapes = shapes)
+setPosition!(mech,origin,links[1],p2 = vert11, Δx=[0;0;N*1.], Δq = q1)
+previd = links[1].id
+for body in Iterators.drop(mech.bodies, 1)
+    global previd
+    setPosition!(mech, MaximalCoordinateDynamics.getbody(mech, previd), body, p1 = vert12, p2 = vert11)
+    previd = body.id
+end
 
-
-# simulate!(mech,save=true)
-# visualize!(mech)
+simulate!(mech,save = true,debug=false)
+visualize!(mech)

@@ -714,10 +714,10 @@
   </link>
 
   <!-- Own origin addition -->
-  <link name="base_link">	</link>
+  <!-- <link name="base_link">	</link>
   <joint name="toOrigin" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="base_link"/>
     <child link="pelvis"/>
-  </joint>
+  </joint> -->
 </robot>
