@@ -43,6 +43,12 @@ mutable struct Origin{T} <: AbstractBody{T}
     id::Int64
 
     Origin{T}() where T = new{T}(getGlobalID())
+
+    function Origin(shape::Shape{T}) where T
+        origin = Origin{T}()
+        push!(shape.bodyids, origin.id)
+        return origin
+    end
 end
 
 function Base.deepcopy(b::Body)
