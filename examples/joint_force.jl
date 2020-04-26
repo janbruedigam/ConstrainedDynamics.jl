@@ -35,7 +35,7 @@ constraints = [joint0to1;joint1to2]
 shapes = [b1;b2]
 
 function control!(mechanism, t)
-    setForce!([[.1];nothing], joint1to2, mechanism)
+    setForce!(mechanism, joint1to2, [[.1];nothing])
     return
 end
 

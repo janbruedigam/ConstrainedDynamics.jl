@@ -65,7 +65,7 @@ end
     f = body.f
     v = body.s1
     body.s1 = @SVector zeros(6)
-    dyn = dynamics(body,mechanism)
+    dyn = dynamics(mechanism, body)
     body.s1 = v
     body.f = f
 

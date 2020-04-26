@@ -141,7 +141,7 @@ end
     Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ωnew, ωnew)), ωnew)
 end
 
-@inline function dynamics(body::Body{T}, mechanism) where T
+@inline function dynamics(mechanism, body::Body{T}) where T
     No = mechanism.No
     Δt = mechanism.Δt
 
@@ -158,11 +158,11 @@ end
     body.f = [dynT;dynR]
 
     for cid in connections(mechanism.graph, body.id)
-        GtλTof!(body, geteqconstraint(mechanism, cid), mechanism)
+        GtλTof!(mechanism, body, geteqconstraint(mechanism, cid))
     end
 
     for cid in ineqchildren(mechanism.graph, body.id)
-        NtγTof!(body, getineqconstraint(mechanism, cid), mechanism)
+        NtγTof!(mechanism, body, getineqconstraint(mechanism, cid))
     end
 
     return body.f

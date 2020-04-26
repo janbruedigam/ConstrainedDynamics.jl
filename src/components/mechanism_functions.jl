@@ -4,13 +4,13 @@ function setentries!(mechanism::Mechanism)
 
     for (id, body) in pairs(mechanism.bodies)
         for cid in directchildren(graph, id)
-            setLU!(getentry(ldu, (id, cid)), id, geteqconstraint(mechanism, cid), mechanism)
+            setLU!(mechanism, getentry(ldu, (id, cid)), id, geteqconstraint(mechanism, cid))
         end
 
         diagonal = getentry(ldu, id)
-        setDandΔs!(diagonal, body, mechanism)
+        setDandΔs!(mechanism, diagonal, body)
         for cid in ineqchildren(graph, id)
-            extendDandΔs!(diagonal, body, getineqconstraint(mechanism, cid), mechanism)
+            extendDandΔs!(mechanism, diagonal, body, getineqconstraint(mechanism, cid))
         end
     end
 
@@ -18,7 +18,7 @@ function setentries!(mechanism::Mechanism)
         id = node.id
 
         for cid in directchildren(graph, id)
-            setLU!(getentry(ldu, (id, cid)), node, cid, mechanism)
+            setLU!(mechanism, getentry(ldu, (id, cid)), node, cid)
         end
 
         for cid in loopchildren(graph, id)
@@ -26,39 +26,39 @@ function setentries!(mechanism::Mechanism)
         end
 
         diagonal = getentry(ldu, id)
-        setDandΔs!(diagonal, node, mechanism)
+        setDandΔs!(mechanism, diagonal, node)
     end
 end
 
-@inline function normf(body::Body{T}, mechanism::Mechanism) where T
-    f = dynamics(body, mechanism)
+@inline function normf(mechanism::Mechanism, body::Body{T}) where T
+    f = dynamics(mechanism, body)
     return dot(f, f)
 end
 
-@inline function normf(c::EqualityConstraint, mechanism::Mechanism)
-    f = g(c, mechanism)
+@inline function normf(mechanism::Mechanism, c::EqualityConstraint)
+    f = g(mechanism, c)
     return dot(f, f)
 end
 
-@inline function normf(ineqc::InequalityConstraint, mechanism::Mechanism)
-    f = gs(ineqc, mechanism)
+@inline function normf(mechanism::Mechanism, ineqc::InequalityConstraint)
+    f = gs(mechanism, ineqc)
     d = h(ineqc)
     return dot(f, f) + dot(d, d)
 end
 
-@inline function normfμ(ineqc::InequalityConstraint, mechanism::Mechanism)
-    f = gs(ineqc, mechanism)
+@inline function normfμ(mechanism::Mechanism, ineqc::InequalityConstraint)
+    f = gs(mechanism, ineqc)
     d = hμ(ineqc, mechanism.μ)
     return dot(f, f) + dot(d, d)
 end
 
-@inline function GtλTof!(body::Body, eqc::EqualityConstraint, mechanism)
-    body.f -= ∂g∂pos(eqc, body.id, mechanism)' * eqc.s1
+@inline function GtλTof!(mechanism::Mechanism, body::Body, eqc::EqualityConstraint)
+    body.f -= ∂g∂pos(mechanism, eqc, body.id)' * eqc.s1
     return
 end
 
-@inline function NtγTof!(body::Body, ineqc::InequalityConstraint, mechanism)
-    body.f -= ∂g∂pos(ineqc, body, mechanism)' * ineqc.γ1
+@inline function NtγTof!(mechanism::Mechanism, body::Body, ineqc::InequalityConstraint)
+    body.f -= ∂g∂pos(mechanism, ineqc, body)' * ineqc.γ1
     return
 end
 
@@ -67,7 +67,7 @@ end
 
     # Allocates otherwise
     for body in mechanism.bodies
-        mechanism.normf += normf(body, mechanism)
+        mechanism.normf += normf(mechanism, body)
     end
     foreach(addNormf!, mechanism.eqconstraints, mechanism)
     foreach(addNormf!, mechanism.ineqconstraints, mechanism)
@@ -80,7 +80,7 @@ end
 
     # Allocates otherwise
     for body in mechanism.bodies
-        mechanism.normf += normf(body, mechanism)
+        mechanism.normf += normf(mechanism, body)
     end
     foreach(addNormf!, mechanism.eqconstraints, mechanism)
     foreach(addNormfμ!, mechanism.ineqconstraints, mechanism)
@@ -100,17 +100,17 @@ end
 end
 
 @inline function addNormf!(ineqc::InequalityConstraint, mechanism::Mechanism)
-    mechanism.normf += normf(ineqc, mechanism)
+    mechanism.normf += normf(mechanism, ineqc)
     return
 end
 
 @inline function addNormfμ!(ineqc::InequalityConstraint, mechanism::Mechanism)
-    mechanism.normf += normfμ(ineqc, mechanism)
+    mechanism.normf += normfμ(mechanism, ineqc)
     return
 end
 
 @inline function addNormf!(eqc::EqualityConstraint, mechanism::Mechanism)
-    mechanism.normf += normf(eqc, mechanism)
+    mechanism.normf += normf(mechanism, eqc)
     return
 end
 
@@ -126,13 +126,13 @@ function feasibilityStepLength!(mechanism::Mechanism)
     mechanism.α = 1.
 
     for ineqc in mechanism.ineqconstraints
-        feasibilityStepLength!(ineqc, getineqentry(ldu, ineqc.id), τ, mechanism)
+        feasibilityStepLength!(mechanism, ineqc, getineqentry(ldu, ineqc.id), τ)
     end
 
     return
 end
 
-function feasibilityStepLength!(ineqc::InequalityConstraint{T,N}, ineqentry::InequalityEntry, τ, mechanism) where {T,N}
+function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, ineqentry::InequalityEntry, τ) where {T,N}
     s1 = ineqc.s1
     γ1 = ineqc.γ1
     Δs = ineqentry.Δs

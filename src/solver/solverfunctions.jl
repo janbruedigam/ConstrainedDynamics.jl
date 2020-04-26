@@ -1,32 +1,32 @@
-@inline function setDandΔs!(diagonal::DiagonalEntry, body::Body, mechanism::Mechanism)
+@inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry, body::Body)
     diagonal.D = ∂dyn∂vel(body, mechanism.Δt)
-    diagonal.Δs = dynamics(body, mechanism)
+    diagonal.Δs = dynamics(mechanism, body)
     return
 end
 
-@inline function extendDandΔs!(diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint, mechanism::Mechanism)
+@inline function extendDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
     diagonal.D += schurD(ineqc, body, mechanism.Δt) # + SMatrix{6,6,Float64,36}(1e-5*I)
-    diagonal.Δs += schurf(ineqc, body, mechanism)
+    diagonal.Δs += schurf(mechanism, ineqc, body)
     return
 end
 
-@inline function setDandΔs!(diagonal::DiagonalEntry{T,N}, eqc::EqualityConstraint, mechanism::Mechanism) where {T,N}
+@inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry{T,N}, eqc::EqualityConstraint) where {T,N}
     diagonal.D = @SMatrix zeros(T, N, N)
     # μ = 1e-5
     # d.D = SMatrix{N,N,T,N*N}(μ*I) # TODO Positiv because of weird system? fix generally
-    diagonal.Δs = g(eqc, mechanism)
+    diagonal.Δs = g(mechanism, eqc)
     return
 end
 
-@inline function setLU!(offdiagonal::OffDiagonalEntry, bodyid::Int64, eqc::EqualityConstraint, mechanism)
-    offdiagonal.L = -∂g∂pos(eqc, bodyid, mechanism)'
-    offdiagonal.U = ∂g∂vel(eqc, bodyid, mechanism)
+@inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, bodyid::Int64, eqc::EqualityConstraint)
+    offdiagonal.L = -∂g∂pos(mechanism, eqc, bodyid)'
+    offdiagonal.U = ∂g∂vel(mechanism, eqc, bodyid)
     return
 end
 
-@inline function setLU!(offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, bodyid::Int64, mechanism)
-    offdiagonal.L = ∂g∂vel(eqc, bodyid, mechanism)
-    offdiagonal.U = -∂g∂pos(eqc, bodyid, mechanism)'
+@inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, bodyid::Int64)
+    offdiagonal.L = ∂g∂vel(mechanism, eqc, bodyid)
+    offdiagonal.U = -∂g∂pos(mechanism, eqc, bodyid)'
     return
 end
 
@@ -122,7 +122,7 @@ function solve!(mechanism)
         end
 
         for childid in ineqchildren(graph, id)
-            eliminatedSol!(getineqentry(ldu, childid), diagonal, getbody(mechanism, id), getineqconstraint(mechanism, childid), mechanism)
+            eliminatedSol!(mechanism, getineqentry(ldu, childid), diagonal, getbody(mechanism, id), getineqconstraint(mechanism, childid))
         end
     end
 end
@@ -160,15 +160,15 @@ end
     return dot(d1, d1) + dot(d2, d2)
 end
 
-function eliminatedSol!(ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint, mechanism::Mechanism)
+function eliminatedSol!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
     Δt = mechanism.Δt
     μ = mechanism.μ
     No = 2
 
-    φ = g(ineqc, mechanism)
+    φ = g(mechanism, ineqc)
 
-    Nx = ∂g∂pos(ineqc, body, mechanism)
-    Nv = ∂g∂vel(ineqc, body, mechanism)
+    Nx = ∂g∂pos(mechanism, ineqc, body)
+    Nv = ∂g∂vel(mechanism, ineqc, body)
 
     γ1 = ineqc.γ1
     s1 = ineqc.s1
