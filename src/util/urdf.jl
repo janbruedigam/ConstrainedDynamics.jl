@@ -162,7 +162,7 @@ end
 function parse_joint(xjoint, origin, plink, clink, T)
     joint_type = attribute(xjoint, "type")
     x, q = parse_pose(find_element(xjoint, "origin"), T)
-    axis = parse_vector(find_element(xjoint, "axis"), "xyz", T, default = "0 0 0")
+    axis = parse_vector(find_element(xjoint, "axis"), "xyz", T, default = "1 0 0")
     p1 = x
     p2 = zeros(T, 3)
     
