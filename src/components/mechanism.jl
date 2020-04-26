@@ -243,13 +243,40 @@ end
 
 @inline getbody(mechanism::Mechanism, id::Int64) = mechanism.bodies[id]
 @inline getbody(mechanism::Mechanism, id::Nothing) = mechanism.origin
-@inline geteqconstraint(mechanism::Mechanism, id::Int64) = mechanism.eqconstraints[id]
-@inline getineqconstraint(mechanism::Mechanism, id::Int64) = mechanism.ineqconstraints[id]
-
-function getcomponent(mechanism::Mechanism, id)
-    if id == nothing
+function getbody(mechanism::Mechanism, name::String)
+    if mechanism.origin.name == name
         return mechanism.origin
-    elseif haskey(mechanism.bodies, id)
+    else
+        for body in mechanism.bodies
+            if body.name == name
+                return body
+            end
+        end
+    end
+    return nothing
+end
+@inline geteqconstraint(mechanism::Mechanism, id::Int64) = mechanism.eqconstraints[id]
+function geteqconstraint(mechanism::Mechanism, name::String)
+    for eqc in mechanism.eqconstraints
+        if eqc.name == name
+            return eqc
+        end
+    end
+    return nothing
+end
+@inline getineqconstraint(mechanism::Mechanism, id::Int64) = mechanism.ineqconstraints[id]
+function getineqconstraint(mechanism::Mechanism, name::String)
+    for ineqc in mechanism.eqconstraints
+        if ineqc.name == name
+            return ineqc
+        end
+    end
+    return nothing
+end
+
+getcomponent(mechanism::Mechanism, id::Nothing) = mechanism.origin
+function getcomponent(mechanism::Mechanism, id::Int64)
+    if haskey(mechanism.bodies, id)
         return getbody(mechanism, id)
     elseif haskey(mechanism.eqconstraints, id)
         return geteqconstraint(mechanism, id)
@@ -258,6 +285,17 @@ function getcomponent(mechanism::Mechanism, id)
     else
         return nothing
     end
+end
+
+function getcomponent(mechanism::Mechanism, name::String)
+    component = getbody(mechanism,name)
+    if component == nothing
+        component = geteqconstraint(mechanism,name)
+    end
+    if component == nothing
+        component = getineqconstraint(mechanism,name)
+    end
+    return component
 end
 
 function getshape(mechanism::Mechanism, id)

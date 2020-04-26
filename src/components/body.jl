@@ -1,5 +1,6 @@
 mutable struct Body{T} <: AbstractBody{T}
     id::Int64
+    name::String
 
     m::T
     J::SMatrix{3,3,T,9}
@@ -15,7 +16,7 @@ mutable struct Body{T} <: AbstractBody{T}
     f::SVector{6,T}
 
 
-    function Body(m::T, J::AbstractArray{T,2}) where T
+    function Body(m::T, J::AbstractArray{T,2}; name::String="") where T
         x = [zeros(T, 3)]
         q = [Quaternion{T}()]
 
@@ -26,26 +27,27 @@ mutable struct Body{T} <: AbstractBody{T}
         s1 = zeros(T, 6)
         f = zeros(T, 6)
 
-        new{T}(getGlobalID(), m, J, x, q, F, τ, s0, s1, f)
+        new{T}(getGlobalID(), name, m, J, x, q, F, τ, s0, s1, f)
     end
 
-    function Body(shape::Shape)
-        body = Body(shape.m, shape.J)
+    function Body(shape::Shape; name::String="")
+        body = Body(shape.m, shape.J; name=name)
         push!(shape.bodyids, body.id)
         return body
     end
 
-    Body(m::T, J::SMatrix{3,3,T,9}, x::Vector{SVector{3,T}}, q::Vector{Quaternion{T}}, F::Vector{SVector{3,T}}, τ::Vector{SVector{3,T}}, 
-        s0::SVector{6,T}, s1::SVector{6,T}, f::SVector{6,T}) where T = new{T}(getGlobalID(), m, J, x, q, F, τ, s0, s1, f)
+    # Body(m::T, J::SMatrix{3,3,T,9}, x::Vector{SVector{3,T}}, q::Vector{Quaternion{T}}, F::Vector{SVector{3,T}}, τ::Vector{SVector{3,T}}, 
+    #     s0::SVector{6,T}, s1::SVector{6,T}, f::SVector{6,T}) where T = new{T}(getGlobalID(), m, J, x, q, F, τ, s0, s1, f)
 end
 
 mutable struct Origin{T} <: AbstractBody{T}
     id::Int64
+    name::String
 
-    Origin{T}() where T = new{T}(getGlobalID())
+    Origin{T}(; name::String="") where T = new{T}(getGlobalID(), name)
 
-    function Origin(shape::Shape{T}) where T
-        origin = Origin{T}()
+    function Origin(shape::Shape{T}; name::String="") where T
+        origin = Origin{T}(name=name)
         push!(shape.bodyids, origin.id)
         return origin
     end

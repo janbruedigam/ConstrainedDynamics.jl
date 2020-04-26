@@ -1,5 +1,6 @@
 mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     id::Int64
+    name::String
 
     constraints::Cs
     pid::Union{Int64,Nothing}
@@ -8,7 +9,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     s0::SVector{N,T}
     s1::SVector{N,T}
 
-    function EqualityConstraint(data...)
+    function EqualityConstraint(data...; name::String="")
         jointdata = Tuple{Joint,Int64,Int64}[]
         for info in data
             if typeof(info[1]) <: Joint
@@ -38,7 +39,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
         s0 = @SVector zeros(T, N)
         s1 = @SVector zeros(T, N)
 
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(), constraints, pid, bodyids, s0, s1)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, pid, bodyids, s0, s1)
     end
 end
 

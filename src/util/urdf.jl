@@ -129,20 +129,21 @@ function parse_link(xlink, T)
 
     x, q, m, J = parse_inertia(find_element(xlink, "inertial"), T)
     shape = parse_shape(find_element(xlink, "visual"), T)
+    name = attribute(xlink, "name")
 
     if shape == nothing
-        link = Body(m, J)
+        link = Body(m, J, name=name)
     else
         shape.m = m
         shape.J = J
-        link = Body(shape)
+        link = Body(shape, name=name)
     end
 
     link.x[1] = x 
     link.q[1] = q
-    name = attribute(xlink, "name")
+    
 
-    return name, link, shape
+    return link, shape
 end
 
 function parse_links(xlinks, T)
@@ -150,8 +151,8 @@ function parse_links(xlinks, T)
     shapes = Shape{T}[]
 
     for xlink in xlinks
-        name, link, shape = parse_link(xlink, T)
-        ldict[name] = link
+        link, shape = parse_link(xlink, T)
+        ldict[link.name] = link
         shape != nothing && push!(shapes, shape)
     end
 
@@ -165,19 +166,20 @@ function parse_joint(xjoint, origin, plink, clink, T)
     axis = parse_vector(find_element(xjoint, "axis"), "xyz", T, default = "1 0 0")
     p1 = x
     p2 = zeros(T, 3)
+    name = attribute(xjoint, "name")
     
     # TODO limits for revolute joint?
     if joint_type == "revolute" || joint_type == "continuous"
-        joint = EqualityConstraint(Revolute(plink, clink, p1, p2, axis, offset = q))
+        joint = EqualityConstraint(Revolute(plink, clink, p1, p2, axis, offset = q), name=name)
     elseif joint_type == "prismatic"
-        joint = EqualityConstraint(Prismatic(plink, clink, p1, p2, axis, offset = q))
+        joint = EqualityConstraint(Prismatic(plink, clink, p1, p2, axis, offset = q), name=name)
     elseif joint_type == "planar"
-        joint = EqualityConstraint(Planar(plink, clink, p1, p2, axis))
+        joint = EqualityConstraint(Planar(plink, clink, p1, p2, axis), name=name)
     elseif joint_type == "fixed"
-        joint = EqualityConstraint(Fixed(plink, clink, p1, p2, offset = q))
+        joint = EqualityConstraint(Fixed(plink, clink, p1, p2, offset = q), name=name)
     elseif joint_type == "floating" # Floating relative to non-origin link not supported
         @assert origin == plink
-        joint = EqualityConstraint(OriginConnection(origin, clink))
+        joint = EqualityConstraint(OriginConnection(origin, clink), name=name)
     end
 
     return joint
@@ -208,6 +210,7 @@ function parse_joints(xjoints, ldict, T, floating)
                 floatingname = name
             else # make current link origin
                 origin.id = ldict[name].id
+                origin.name = name
             end
             push!(origins, origin)
         end

@@ -1,5 +1,6 @@
 mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
     id::Int64
+    name::String
 
     constraints::Cs
     pid::Int64
@@ -11,7 +12,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
     γ1::SVector{N,T}
     
 
-    function InequalityConstraint(data...)
+    function InequalityConstraint(data...; name::String="")
         bounddata = Tuple{Bound,Int64}[]
         for info in data
             if typeof(info[1]) <: Bound
@@ -42,7 +43,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
         γ0 = ones(T, N)
         γ1 = ones(T, N)
 
-        new{T,N,typeof(constraints)}(getGlobalID(), constraints, pid, s0, s1, γ0, γ1)
+        new{T,N,typeof(constraints)}(getGlobalID(), name, constraints, pid, s0, s1, γ0, γ1)
     end
 end
 

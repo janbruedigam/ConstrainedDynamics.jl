@@ -49,6 +49,11 @@ export Box,
     plotλ,
     visualize!,
 
+    getcomponent,
+    getbody,
+    geteqconstraint,
+    getineqconstraint,
+
     RotX,
     RotY,
     RotZ,
