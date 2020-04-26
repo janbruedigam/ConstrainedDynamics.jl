@@ -1,5 +1,4 @@
-!(@isdefined MaximalCoordinateDynamics) && include(joinpath(pwd(), "src", "MaximalCoordinateDynamics.jl"))
-using Main.MaximalCoordinateDynamics
+using ConstrainedDynamics
 
 path = "examples/examples_files/atlas_simple.urdf"
 mech = Mechanism(path, floating=true, g = -.5)

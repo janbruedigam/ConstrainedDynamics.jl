@@ -47,7 +47,12 @@ export Box,
     simulate!,
     plotθ,
     plotλ,
-    visualize!
+    visualize!,
+
+    RotX,
+    RotY,
+    RotZ,
+    RGBA
 
 
 include(joinpath("util", "util.jl"))

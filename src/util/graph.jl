@@ -154,7 +154,7 @@ function fillins(dfsgraph::Matrix, pattern::Matrix, dict::Dict, loops::Vector{Ve
     return convert(Matrix{Bool}, fil), convert(Matrix{Bool}, originals)
 end
 
-function parent(dfsgraph::Matrix, dict::Dict, childid::Int64) where {N,T}
+function parent(dfsgraph::Matrix, dict::Dict, childid::Int64)
     j = dict[childid]
     for (parentid, i) in dict
         dfsgraph[i,j] && (return parentid)

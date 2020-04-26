@@ -3,9 +3,8 @@ using Rotations
 using StaticArrays
 using LinearAlgebra
 
-!(@isdefined MaximalCoordinateDynamics) && include(joinpath("..", "MaximalCoordinateDynamics.jl"))
-using Main.MaximalCoordinateDynamics
-using Main.MaximalCoordinateDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, VLᵀmat, ∂g∂pos, ∂g∂vel, skew
+using ConstrainedDynamics
+using ConstrainedDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, VLᵀmat, ∂g∂pos, ∂g∂vel, skew
 
 function transfunc3pos(vars)
     xa = vars[1:3]
@@ -264,7 +263,7 @@ function transtest3()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Translational3(link1, link2, pa, pb))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Translational3(link1, link2, pa, pb))
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
@@ -324,7 +323,7 @@ function transtest2()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Translational2(link1, link2, pa, pb, v))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Translational2(link1, link2, pa, pb, v))
     V12 = joint1.constraints[1].V12
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
@@ -386,7 +385,7 @@ function transtest1()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Translational1(link1, link2, pa, pb, v))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Translational1(link1, link2, pa, pb, v))
     v = joint1.constraints[1].V3'
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
@@ -446,7 +445,7 @@ function rottest3()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Rotational3(link1, link2, offset = offset))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Rotational3(link1, link2, offset = offset))
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
@@ -506,7 +505,7 @@ function rottest2()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Rotational2(link1, link2, v, offset = offset))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Rotational2(link1, link2, v, offset = offset))
     V12 = joint1.constraints[1].V12
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
@@ -567,7 +566,7 @@ function rottest1()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(MaximalCoordinateDynamics.Rotational1(link1, link2, v, offset = offset))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Rotational1(link1, link2, v, offset = offset))
     V3 = joint1.constraints[1].V3'
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
