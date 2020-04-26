@@ -49,6 +49,7 @@ export Box,
     plotλ,
     visualize!,
 
+    disassemble,
     getcomponent,
     getbody,
     geteqconstraint,

@@ -13,7 +13,7 @@ end
 @inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry{T,N}, eqc::EqualityConstraint) where {T,N}
     diagonal.D = @SMatrix zeros(T, N, N)
     # μ = 1e-5
-    # d.D = SMatrix{N,N,T,N*N}(μ*I) # TODO Positiv because of weird system? fix generally
+    # diagonal.D = SMatrix{N,N,T,N*N}(μ*I) # TODO Positiv because of weird system? fix generally
     diagonal.Δs = g(mechanism, eqc)
     return
 end

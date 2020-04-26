@@ -48,10 +48,14 @@ mutable struct Mechanism{T,N,Ni}
 
         bdict = Dict{Int64,Int64}()
         for (ind, body) in enumerate(bodies)
-            push!(body.x, [body.x[1] for i = 1:No - 1]...)
-            push!(body.q, [body.q[1] for i = 1:No - 1]...)
-            push!(body.F, [body.F[1] for i = 1:No - 1]...)
-            push!(body.τ, [body.τ[1] for i = 1:No - 1]...)
+            body.x = [body.x[1] for i = 1:No]
+            body.q = [body.q[1] for i = 1:No]
+            body.F = [body.F[1] for i = 1:No]
+            body.τ = [body.τ[1] for i = 1:No]
+            # push!(body.x, [body.x[1] for i = 1:No - 1]...)
+            # push!(body.q, [body.q[1] for i = 1:No - 1]...)
+            # push!(body.F, [body.F[1] for i = 1:No - 1]...)
+            # push!(body.τ, [body.τ[1] for i = 1:No - 1]...)
 
             for eqc in eqcs
                 eqc.pid == body.id && (eqc.pid = currentid)
@@ -230,6 +234,61 @@ mutable struct Mechanism{T,N,Ni}
 
         return mechanism
     end
+end
+
+function disassemble(mechanism::Mechanism)
+    origin = mechanism.origin
+    bodies = mechanism.bodies.values
+    eqconstraints = mechanism.eqconstraints.values
+    ineqconstraints = mechanism.ineqconstraints.values
+    shapes = mechanism.shapes
+
+    for body in bodies
+        body.id *= -1
+    end
+    for eqc in eqconstraints
+        eqc.id *= -1
+        if eqc.pid == nothing
+            eqc.pid = origin.id
+        else
+            eqc.pid *= -1
+        end
+        eqc.bodyids *= -1
+    end
+    for ineqc in ineqconstraints
+        ineqc.id *= -1
+        if ineqc.pid == nothing
+            ineqc.pid = origin.id
+        else
+            ineqc.pid *= -1
+        end
+        ineqc.bodyids *= -1
+    end
+    for shape in shapes
+        shape.bodyids *= -1
+    end
+
+    global CURRENTID = -1
+    if origin.id < CURRENTID
+        CURRENTID = origin.id
+    end
+    for body in bodies
+        if body.id < CURRENTID
+            CURRENTID = body.id
+        end
+    end
+    for eqc in eqconstraints
+        if eqc.id < CURRENTID
+            CURRENTID = eqc.id
+        end
+    end
+    for ineqc in ineqconstraints
+        if ineqc.id < CURRENTID
+            CURRENTID = ineqc.id
+        end
+    end
+
+    return origin, bodies, eqconstraints, ineqconstraints, shapes
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,0}) where {T,N}
