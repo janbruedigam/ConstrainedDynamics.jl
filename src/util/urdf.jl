@@ -233,7 +233,7 @@ function parse_joints(xjoints, ldict, T, floating)
     end
 
     if floating
-        originjoint = EqualityConstraint(OriginConnection(origin, ldict[floatingname]))
+        originjoint = EqualityConstraint(OriginConnection(origin, ldict[floatingname]),name="autoorigincon")
         push!(joints, originjoint)
     end
 

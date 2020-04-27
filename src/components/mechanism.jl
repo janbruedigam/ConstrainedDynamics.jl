@@ -379,20 +379,20 @@ end
 function setPosition!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
     p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::Quaternion{T} = Quaternion{T}()) where T
 
-    q = body1.q[1] * Δq
-    x = body1.x[1] + vrotate(SVector{3,T}(p1 + Δx), body1.q[1]) - vrotate(SVector{3,T}(p2), q)
+    q2 = body1.q[1] * Δq
+    x2 = body1.x[1] + vrotate(SVector{3,T}(p1 + Δx), body1.q[1]) - vrotate(SVector{3,T}(p2), q2)
 
-    setPosition!(mechanism, body2;x = x,q = q)
+    setPosition!(mechanism, body2;x = x2,q = q2)
 end
 
 function setPosition!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
     p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::Quaternion{T} = Quaternion{T}()) where T
 
-    q = Δq
-    x = p1 + Δx - vrotate(SVector{3,T}(p2), q)
+    q2 = Δq
+    x2 = p1 + Δx - vrotate(SVector{3,T}(p2), q2)
 
 
-    setPosition!(mechanism, body2;x = x,q = q)
+    setPosition!(mechanism, body2;x = x2,q = q2)
 end
 
 # Assumes first order integrator

@@ -51,6 +51,20 @@ function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ; K = mechanis
     end
 end
 
+function setPosition!(mechanism, eqc::EqualityConstraint{T,N,Nc}, coordinates) where {T,N,Nc}
+    # TODO currently assumed constraints are in order which is the case unless very low level constraint setting and only joints
+    n = Int64(Nc/2)
+    body1 = getbody(mechanism, eqc.pid)
+    for i = 1:n
+        body2 = getbody(mechanism, eqc.bodyids[i])
+        Δx = getDelta(eqc.constraints[i], body1, body2, coordinates[i])
+        Δq = getDelta(eqc.constraints[i+1], body1, body2, coordinates[i+1])
+        
+        p1, p2 = eqc.constraints[i].vertices
+        setPosition!(mechanism, body1, body2; p1 = p1, p2 = p2, Δx = Δx, Δq = Δq)
+    end
+end
+
 @generated function minimalCoordinates(mechanism, eqc::EqualityConstraint{T,N,Nc}; K = mechanism.No) where {T,N,Nc}
     vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), K)) for i = 1:Nc]
     :(svcat($(vec...)))

@@ -1,3 +1,8 @@
+@inline function getDelta(joint::Rotational0, body1::AbstractBody, body2::Body{T}, coordinates::Quaternion{T}) where T
+    Δq = coordinates # in body1 frame
+    return Δq
+end
+
 @inline function setForce!(joint::Rotational0, body1::Body, body2::Body{T}, τ::SVector{3,T}, No) where T
     τ1 = vrotate(-τ, body1.q[No] * joint.qoff)
     τ2 = -τ1

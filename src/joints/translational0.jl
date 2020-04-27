@@ -1,3 +1,8 @@
+@inline function getDelta(joint::Translational0, body1::AbstractBody, body2::Body{T}, coordinates::SVector{3,T}) where T
+    Δx = coordinates # in body1 frame
+    return Δx
+end
+
 @inline function setForce!(joint::Translational0, body1::Body, body2::Body{T}, F::SVector{3,T}, No) where T
     F1 = vrotate(-F, body1.q[No])
     F2 = -F1

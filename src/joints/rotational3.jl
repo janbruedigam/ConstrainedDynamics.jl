@@ -1,3 +1,8 @@
+@inline function getDelta(joint::Rotational3, body1::AbstractBody, body2::Body{T}, coordinates::Union{Nothing,SVector{0,T}}) where T
+    Δq = Quaternion{T}()
+    return Δq
+end
+
 @inline function minimalCoordinates(joint::Rotational3, body1::AbstractBody{T}, body2::Body, No) where T
     SVector{0,T}()
 end
