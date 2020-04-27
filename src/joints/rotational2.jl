@@ -14,13 +14,13 @@ end
 
 
 @inline function minimalCoordinates(joint::Rotational2, body1::Origin, body2::Body, No)
-    q2 = body2.q[No]
+    q2 = joint.qoff \ body2.q[No]
     joint.V3 * axis(q2) * angle(q2) 
 end
 
 @inline function minimalCoordinates(joint::Rotational2, body1::Body, body2::Body, No)
-    q1 = body1.q[No] \ body2.q[No]
-    joint.V3 * axis(q1) * angle(q1)
+    q2 = joint.qoff \ (body1.q[No] \ body2.q[No])
+    joint.V3 * axis(q2) * angle(q2)
 end
 
 

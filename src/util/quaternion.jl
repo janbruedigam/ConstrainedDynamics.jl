@@ -38,11 +38,11 @@ Base.:\(q1::Quaternion, q2::Quaternion) = inv(q1) * q2
 angleaxis(q::Quaternion) = angle(q), axis(q)
 angle(q::Quaternion) = 2 * atan(sqrt(q.v1^2 + q.v2^2 + q.v3^2), q.s)
 function axis(q::Quaternion{T}) where T
-    if q.s == 1
+    qv = SVector(q.v1, q.v2, q.v3)
+    if norm(qv) == 0
         return SVector{3,T}(0, 0, 0)
     else 
-        a = SVector(q.v1, q.v2, q.v3)
-        return a / norm(a)
+        return qv / norm(qv)
     end
 end
 
