@@ -1,4 +1,4 @@
-@inline function getVelocityDelta(joint::Rotational0, body1::AbstractBody, body2::Body{T}, ω::Quaternion{T}) where T
+@inline function getVelocityDelta(joint::Rotational0, body1::AbstractBody, body2::Body{T}, ω::SVector{3,T}) where T
     Δω = ω # in body1 frame
     return Δω
 end

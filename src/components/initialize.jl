@@ -29,7 +29,7 @@ end
 function setVelocity!(mechanism::Mechanism{T}, body::Body{T};v::AbstractVector{T} = SVector{3,T}(0, 0, 0),ω::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
     Δt = mechanism.Δt
     body.x[1] = body.x[2] - v * Δt
-    body.q[1] = body.q[2] * Δt/2 * Quaternion(sqrt(4 / Δt^2 - dot(ω, ω)), -SVector{3,T}(ω)) # this accounts for the non-unit-quaternion inverse (q2 * conj(ωbar))
+    body.q[1] = Δt/2 * (body.q[2] * Quaternion(sqrt(4 / Δt^2 - dot(ω, ω)), -SVector{3,T}(ω))) # this accounts for the non-unit-quaternion inverse (q2 * conj(ωbar))
     body.s0 = [v;ω]
     s0tos1!(body)
     return

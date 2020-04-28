@@ -1,5 +1,5 @@
 @inline function getVelocityDelta(joint::Rotational2, body1::AbstractBody, body2::Body{T}, ω::Union{T,SVector{1,T}}) where T
-    ω = joint.V3 * ω
+    ω = joint.V3' * ω
     Δω = vrotate(ω, joint.qoff) # in body1 frame
     return Δω
 end

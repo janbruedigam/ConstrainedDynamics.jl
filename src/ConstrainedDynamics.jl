@@ -54,6 +54,7 @@ export Box,
     getbody,
     geteqconstraint,
     getineqconstraint,
+    minimalCoordinates,
 
     RotX,
     RotY,
