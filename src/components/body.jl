@@ -116,6 +116,7 @@ end
 
 @inline getx3(body::Body, Δt) = getvnew(body) * Δt + body.x[2]
 @inline getq3(body::Body, Δt) = Quaternion(Lmat(body.q[2]) * ωbar(body, Δt))
+#TODO why not simple from s0?
 @inline getv1(body::Body, Δt) = (body.x[2] - body.x[1]) / Δt
 @inline function getω1(body::Body, Δt)
     q1 = body.q[1]

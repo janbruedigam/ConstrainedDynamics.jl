@@ -1,3 +1,72 @@
+@inline getbody(mechanism::Mechanism, id::Int64) = mechanism.bodies[id]
+@inline getbody(mechanism::Mechanism, id::Nothing) = mechanism.origin
+function getbody(mechanism::Mechanism, name::String)
+    if mechanism.origin.name == name
+        return mechanism.origin
+    else
+        for body in mechanism.bodies
+            if body.name == name
+                return body
+            end
+        end
+    end
+    return nothing
+end
+@inline geteqconstraint(mechanism::Mechanism, id::Int64) = mechanism.eqconstraints[id]
+function geteqconstraint(mechanism::Mechanism, name::String)
+    for eqc in mechanism.eqconstraints
+        if eqc.name == name
+            return eqc
+        end
+    end
+    return nothing
+end
+@inline getineqconstraint(mechanism::Mechanism, id::Int64) = mechanism.ineqconstraints[id]
+function getineqconstraint(mechanism::Mechanism, name::String)
+    for ineqc in mechanism.eqconstraints
+        if ineqc.name == name
+            return ineqc
+        end
+    end
+    return nothing
+end
+
+getcomponent(mechanism::Mechanism, id::Nothing) = mechanism.origin
+function getcomponent(mechanism::Mechanism, id::Int64)
+    if haskey(mechanism.bodies, id)
+        return getbody(mechanism, id)
+    elseif haskey(mechanism.eqconstraints, id)
+        return geteqconstraint(mechanism, id)
+    elseif haskey(mechanism.ineqconstraints, id)
+        return getineqconstraint(mechanism, id)
+    else
+        return nothing
+    end
+end
+
+function getcomponent(mechanism::Mechanism, name::String)
+    component = getbody(mechanism,name)
+    if component == nothing
+        component = geteqconstraint(mechanism,name)
+    end
+    if component == nothing
+        component = getineqconstraint(mechanism,name)
+    end
+    return component
+end
+
+function getshape(mechanism::Mechanism, id)
+    for shape in mechanism.shapes
+        for bodyid in shape.bodyids
+            if bodyid == id
+                return shape
+            end
+        end
+    end
+
+    return nothing
+end
+
 function setentries!(mechanism::Mechanism)
     graph = mechanism.graph
     ldu = mechanism.ldu
@@ -235,4 +304,44 @@ function simulate!(mechanism::Mechanism, controller::Controller;save::Bool = fal
         foreach(updatePos!, bodies, Δt)
     end
     return
+end
+
+function plotθ(mechanism::Mechanism{T}, id) where T
+    n = length(mechanism.bodies)
+    θ = zeros(T, n, length(mechanism.steps))
+    for i = 1:n
+        qs = mechanism.storage.q[i]
+        for (t, q) in enumerate(qs)
+            θ[i,t] = angleaxis(q)[1] * sign(angleaxis(q)[2][1])
+        end
+    end
+
+    p = plot(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), θ[id[1],:])
+    for ind in Iterators.rest(id, 2)
+        plot!(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), θ[ind,:])
+    end
+    return p
+end
+
+function plotλ(mechanism::Mechanism{T}, id) where T
+    n = sum(length.(mechanism.eqconstraints))
+    λ = zeros(T, n, length(mechanism.steps))
+    startpos = 1
+    endpos = 0
+    for i = 1:length(mechanism.eqconstraints)
+        endpos = startpos + length(mechanism.eqconstraints[i]) - 1
+
+        λs = mechanism.storage.λ[i]
+        for (t, val) in enumerate(λs)
+            λ[startpos:endpos,t] = val
+        end
+
+        startpos = endpos + 1
+    end
+
+    p = plot(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), λ[id[1],:])
+    for ind in Iterators.rest(id, 2)
+        plot!(collect(0:mechanism.Δt:mechanism.tend - mechanism.Δt), λ[ind,:])
+    end
+    return p
 end

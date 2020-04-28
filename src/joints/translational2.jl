@@ -1,5 +1,10 @@
-@inline function getDelta(joint::Translational2, body1::AbstractBody, body2::Body{T}, coordinates::Union{T,SVector{1,T}}) where T
-    Δx = joint.V3' * coordinates # in body1 frame
+@inline function getVelocityDelta(joint::Translational2, body1::AbstractBody, body2::Body{T}, v::Union{T,SVector{1,T}}) where T
+    Δv = joint.V3' * v # in body1 frame
+    return Δv
+end
+
+@inline function getPositionDelta(joint::Translational2, body1::AbstractBody, body2::Body{T}, x::Union{T,SVector{1,T}}) where T
+    Δx = joint.V3' * x # in body1 frame
     return Δx
 end
 

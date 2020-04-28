@@ -1,5 +1,10 @@
-@inline function getDelta(joint::Rotational0, body1::AbstractBody, body2::Body{T}, coordinates::Quaternion{T}) where T
-    Δq = coordinates # in body1 frame
+@inline function getVelocityDelta(joint::Rotational0, body1::AbstractBody, body2::Body{T}, ω::Quaternion{T}) where T
+    Δω = ω # in body1 frame
+    return Δω
+end
+
+@inline function getPositionDelta(joint::Rotational0, body1::AbstractBody, body2::Body{T}, θ::Quaternion{T}) where T
+    Δq = θ # in body1 frame
     return Δq
 end
 

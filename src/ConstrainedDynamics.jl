@@ -97,6 +97,7 @@ include(joinpath("control", "controller.jl"))
 include(joinpath("solver", "sparseldu.jl"))
 include(joinpath("components", "mechanism.jl"))
 include(joinpath("components", "mechanism_functions.jl"))
+include(joinpath("components", "initialize.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 
 include(joinpath("util", "urdf.jl"))

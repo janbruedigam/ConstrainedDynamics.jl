@@ -1,5 +1,11 @@
-@inline function getDelta(joint::Rotational2, body1::AbstractBody, body2::Body{T}, coordinates::Union{T,SVector{1,T}}) where T
-    q = Quaternion(cos(coordinates/2),(joint.V3*sin(coordinates/2))...)
+@inline function getVelocityDelta(joint::Rotational2, body1::AbstractBody, body2::Body{T}, ω::Union{T,SVector{1,T}}) where T
+    ω = joint.V3 * ω
+    Δω = vrotate(ω, joint.qoff) # in body1 frame
+    return Δω
+end
+
+@inline function getPositionDelta(joint::Rotational2, body1::AbstractBody, body2::Body{T}, θ::Union{T,SVector{1,T}}) where T
+    q = Quaternion(cos(θ/2),(joint.V3*sin(θ/2))...)
     Δq = joint.qoff * q # in body1 frame
     return Δq
 end
