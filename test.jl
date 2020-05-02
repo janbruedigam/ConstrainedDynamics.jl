@@ -40,3 +40,8 @@ end
 
 simulate!(mech,save = true,debug=false)
 visualize!(mech)
+
+# include("examples/n_pendulum.jl")
+# ConstrainedDynamics.setentries!(mech)
+# A=ConstrainedDynamics.formMatrix(mech)
+# cond(A)
