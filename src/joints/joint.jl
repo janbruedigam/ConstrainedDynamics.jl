@@ -16,3 +16,4 @@ getNc(joint::Joint{T,Nc}) where {T,Nc} = Nc
 @inline ∂g∂posb(joint::Joint{T,Nc}) where {T,Nc} = @SMatrix zeros(T, Nc, 6)
 @inline ∂g∂vela(joint::Joint{T,Nc}) where {T,Nc} = @SMatrix zeros(T, Nc, 6)
 @inline ∂g∂velb(joint::Joint{T,Nc}) where {T,Nc} = @SMatrix zeros(T, Nc, 6)
+@inline ∂g∂con(joint::Joint{T,Nc}) where {T,Nc} = @SMatrix zeros(T, Nc, 6)

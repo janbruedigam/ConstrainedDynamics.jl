@@ -169,6 +169,19 @@ end
     return body.f
 end
 
+@inline function ∂dyn∂pos(body::Body{T}, Δt) where T
+    J = body.J
+    ωnew = getωnew(body)
+    sq = sqrt(4 / Δt^2 - ωnew' * ωnew)
+
+    dynT = SMatrix{3,3,T,9}(body.m / Δt^2 * I)
+    dynR = (skewplusdiag(ωnew, sq) * J - J * ωnew * (ωnew' / sq) - skew(J * ωnew)) * 2/Δt * VLᵀmat(body.q[2])*LVᵀmat(getq3(body,Δt))
+
+    Z = @SMatrix zeros(T, 3, 3)
+
+    return [[dynT; Z] [Z; dynR]]
+end
+
 @inline function ∂dyn∂vel(body::Body{T}, Δt) where T
     J = body.J
     ωnew = getωnew(body)
@@ -176,6 +189,15 @@ end
 
     dynT = SMatrix{3,3,T,9}(body.m / Δt * I)
     dynR = skewplusdiag(ωnew, sq) * J - J * ωnew * (ωnew' / sq) - skew(J * ωnew)
+
+    Z = @SMatrix zeros(T, 3, 3)
+
+    return [[dynT; Z] [Z; dynR]]
+end
+
+@inline function ∂dyn∂con(body::Body{T}, Δt) where T
+    dynT = SMatrix{3,3,T,9}(-I)
+    dynR = SMatrix{3,3,T,9}(-2*I)
 
     Z = @SMatrix zeros(T, 3, 3)
 
