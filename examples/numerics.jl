@@ -9,6 +9,7 @@ width = 1.
 height = 1.
 mass = 1.
 b1 = Box(depth,width,height,mass, color = RGBA(1., 0., 0.)) # link type
+# b1.J = [1.0 2 3;4 5 6;7 8 9]; b1.m = 10.0   to change inertial properties for testing
 
 # joint connection points
 vert11 = [0.;0.;height / 2]
