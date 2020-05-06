@@ -23,7 +23,11 @@ links = [Body(b1) for i = 1:N]
 
 # Constraints
 jointb1 = EqualityConstraint(Revolute(origin, links[1], zeros(3), vert11, ex))
-constraints = [jointb1;[EqualityConstraint(Revolute(links[i - 1], links[i], vert12, vert11, ex)) for i = 2:N]]
+if N>1
+    constraints = [jointb1;[EqualityConstraint(Revolute(links[i - 1], links[i], vert12, vert11, ex)) for i = 2:N]]
+else
+    constraints = [jointb1]
+end
 
 shapes = [b1]
 
