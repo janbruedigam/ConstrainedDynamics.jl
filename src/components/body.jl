@@ -195,6 +195,35 @@ end
     return [[dynT; Z] [Z; dynR]]
 end
 
+@inline function ∂dyn∂posm1(body::Body{T}, Δt) where T
+    J = body.J
+    ω1 = getω1(body, Δt)
+    sq1 = sqrt(4 / Δt^2 - ω1' * ω1)
+    ωnew = getωnew(body)
+    sqnew = sqrt(4 / Δt^2 - ωnew' * ωnew)
+
+    dynT = SMatrix{3,3,T,9}(-2*body.m / Δt^2 * I)
+    dynR = -(skewplusdiag(ωnew, sqnew) * J - J * ωnew * (ωnew' / sqnew) - skew(J * ωnew)) * 2/Δt * VRmat(getq3(body,Δt))*RᵀVᵀmat(body.q[2]) +
+        (skewplusdiag(ω1, -sq1) * J + J * ω1 * (ω1' / sq1) - skew(J * ω1)) * 2/Δt * VLᵀmat(body.q[1])*LVᵀmat(body.q[2])
+
+    Z = @SMatrix zeros(T, 3, 3)
+
+    return [[dynT; Z] [Z; dynR]]
+end
+
+@inline function ∂dyn∂velm1(body::Body{T}, Δt) where T
+    J = body.J
+    ω1 = getω1(body, Δt)
+    sq = sqrt(4 / Δt^2 - ω1' * ω1)
+
+    dynT = SMatrix{3,3,T,9}(-body.m / Δt * I)
+    dynR = skewplusdiag(ω1, -sq) * J + J * ω1 * (ω1' / sq) - skew(J * ω1)
+
+    Z = @SMatrix zeros(T, 3, 3)
+
+    return [[dynT; Z] [Z; dynR]]
+end
+
 @inline function ∂dyn∂con(body::Body{T}, Δt) where T
     dynT = SMatrix{3,3,T,9}(-I)
     dynR = SMatrix{3,3,T,9}(-2*I)

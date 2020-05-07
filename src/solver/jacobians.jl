@@ -110,7 +110,43 @@ function formΔsVector(mechanism::Mechanism{T}) where T
     return Δs
 end
 
-function ∂dyn∂pos(mechanism::Mechanism{T}) where T
+function ∂dyn∂posk(mechanism::Mechanism{T}) where T
+    bodies = mechanism.bodies
+    
+    n = 0
+    for body in bodies
+        n += length(body)
+    end
+
+    A = zeros(T,n,n)
+
+    for body in bodies
+        id = body.id
+        A[(id-1)*6+1:(id-1)*6+6,(id-1)*6+1:(id-1)*6+6] = ∂dyn∂posm1(body, mechanism.Δt)
+    end
+
+    return A
+end
+
+function ∂dyn∂velk(mechanism::Mechanism{T}) where T
+    bodies = mechanism.bodies
+    
+    n = 0
+    for body in bodies
+        n += length(body)
+    end
+
+    A = zeros(T,n,n)
+
+    for body in bodies
+        id = body.id
+        A[(id-1)*6+1:(id-1)*6+6,(id-1)*6+1:(id-1)*6+6] = ∂dyn∂velm1(body, mechanism.Δt)
+    end
+
+    return A
+end
+
+function ∂dyn∂poskp1(mechanism::Mechanism{T}) where T
     bodies = mechanism.bodies
     
     n = 0
@@ -128,7 +164,7 @@ function ∂dyn∂pos(mechanism::Mechanism{T}) where T
     return A
 end
 
-function ∂dyn∂vel(mechanism::Mechanism{T}) where T
+function ∂dyn∂velkp1(mechanism::Mechanism{T}) where T
     bodies = mechanism.bodies
     
     n = 0
@@ -146,7 +182,7 @@ function ∂dyn∂vel(mechanism::Mechanism{T}) where T
     return A
 end
 
-function ∂dyn∂con(mechanism::Mechanism{T}) where T
+function ∂dyn∂conk(mechanism::Mechanism{T}) where T
     bodies = mechanism.bodies
     
     n = 0
@@ -164,88 +200,88 @@ function ∂dyn∂con(mechanism::Mechanism{T}) where T
     return A
 end
 
-function ∂g∂pos(mechanism::Mechanism{T}) where T
-    bodies = mechanism.bodies
-    eqcs = mechanism.eqconstraints
+# function ∂g∂pos(mechanism::Mechanism{T}) where T
+#     bodies = mechanism.bodies
+#     eqcs = mechanism.eqconstraints
     
-    nb = 0
-    nc = 0
-    for body in bodies
-        nb += length(body)
-    end
-    for eqc in eqcs
-        nc += length(eqc)
-    end
+#     nb = 0
+#     nc = 0
+#     for body in bodies
+#         nb += length(body)
+#     end
+#     for eqc in eqcs
+#         nc += length(eqc)
+#     end
 
-    A = zeros(T,nc,nb)
+#     A = zeros(T,nc,nb)
 
-    n1 = 1
-    n2 = 0
-    for eqc in eqcs
-        n2 += length(eqc)
+#     n1 = 1
+#     n2 = 0
+#     for eqc in eqcs
+#         n2 += length(eqc)
 
-        pid = eqc.pid
-        bodyids = unique(eqc.bodyids)
+#         pid = eqc.pid
+#         bodyids = unique(eqc.bodyids)
 
-        pid!=nothing && (A[n1:n2,(pid-1)*6+1:(pid-1)*6+6] = ∂g∂pos(mechanism,eqc,pid))
-        for id in bodyids
-            A[n1:n2,(id-1)*6+1:(id-1)*6+6] = ∂g∂pos(mechanism,eqc,id)
-        end
+#         pid!=nothing && (A[n1:n2,(pid-1)*6+1:(pid-1)*6+6] = ∂g∂pos(mechanism,eqc,pid))
+#         for id in bodyids
+#             A[n1:n2,(id-1)*6+1:(id-1)*6+6] = ∂g∂pos(mechanism,eqc,id)
+#         end
 
-        n1 = n2+1
-    end
+#         n1 = n2+1
+#     end
 
-    return A
-end
+#     return A
+# end
 
-function ∂g∂vel(mechanism::Mechanism{T}) where T
-    bodies = mechanism.bodies
-    eqcs = mechanism.eqconstraints
+# function ∂g∂vel(mechanism::Mechanism{T}) where T
+#     bodies = mechanism.bodies
+#     eqcs = mechanism.eqconstraints
     
-    nb = 0
-    nc = 0
-    for body in bodies
-        nb += length(body)
-    end
-    for eqc in eqcs
-        nc += length(eqc)
-    end
+#     nb = 0
+#     nc = 0
+#     for body in bodies
+#         nb += length(body)
+#     end
+#     for eqc in eqcs
+#         nc += length(eqc)
+#     end
 
-    A = zeros(T,nc,nb)
+#     A = zeros(T,nc,nb)
 
-    n1 = 1
-    n2 = 0
-    for eqc in eqcs
-        n2 += length(eqc)
+#     n1 = 1
+#     n2 = 0
+#     for eqc in eqcs
+#         n2 += length(eqc)
 
-        pid = eqc.pid
-        bodyids = unique(eqc.bodyids)
+#         pid = eqc.pid
+#         bodyids = unique(eqc.bodyids)
 
-        pid!=nothing && (A[n1:n2,(pid-1)*6+1:(pid-1)*6+6] = ∂g∂vel(mechanism,eqc,pid))
-        for id in bodyids
-            A[n1:n2,(id-1)*6+1:(id-1)*6+6] = ∂g∂vel(mechanism,eqc,id)
-        end
+#         pid!=nothing && (A[n1:n2,(pid-1)*6+1:(pid-1)*6+6] = ∂g∂vel(mechanism,eqc,pid))
+#         for id in bodyids
+#             A[n1:n2,(id-1)*6+1:(id-1)*6+6] = ∂g∂vel(mechanism,eqc,id)
+#         end
 
-        n1 = n2+1
-    end
+#         n1 = n2+1
+#     end
 
-    return A
-end
+#     return A
+# end
 
-function ∂g∂con(mechanism::Mechanism{T}) where T
-    bodies = mechanism.bodies
-    eqcs = mechanism.eqconstraints
+# function ∂g∂con(mechanism::Mechanism{T}) where T
+#     bodies = mechanism.bodies
+#     eqcs = mechanism.eqconstraints
     
-    nb = 0
-    nc = 0
-    for body in bodies
-        nb += length(body)
-    end
-    for eqc in eqcs
-        nc += length(eqc)
-    end
+#     nb = 0
+#     nc = 0
+#     for body in bodies
+#         nb += length(body)
+#     end
+#     for eqc in eqcs
+#         nc += length(eqc)
+#     end
 
-    A = zeros(T,nc,nb)
+#     A = zeros(T,nc,nb)
 
-    return A
-end
+#     return A
+# end
