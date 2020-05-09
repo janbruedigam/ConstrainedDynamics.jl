@@ -27,3 +27,11 @@ Base.:*(u::AbstractVector, v::SVector{1,T}) where T = u * v[1]
 @inline svcat(a::T, b::StaticArray{Tuple{N},T,1}) where {T,N} = vcat(SVector{1,T}(a), b)
 
 @inline svcat(a, b, c...) = svcat(svcat(a, b), svcat(c...))
+
+function getfieldnumber(obj)
+    i = 1
+    while true
+        !isdefined(obj, i) ? break : (i+=1)
+    end
+    return i-1
+end

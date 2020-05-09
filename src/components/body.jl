@@ -36,8 +36,8 @@ mutable struct Body{T} <: AbstractBody{T}
         return body
     end
 
-    # Body(m::T, J::SMatrix{3,3,T,9}, x::Vector{SVector{3,T}}, q::Vector{Quaternion{T}}, F::Vector{SVector{3,T}}, τ::Vector{SVector{3,T}}, 
-    #     s0::SVector{6,T}, s1::SVector{6,T}, f::SVector{6,T}) where T = new{T}(getGlobalID(), m, J, x, q, F, τ, s0, s1, f)
+    Body(name::String, m::T, J::SMatrix{3,3,T,9}, x::Vector{SVector{3,T}}, q::Vector{Quaternion{T}}, F::Vector{SVector{3,T}}, τ::Vector{SVector{3,T}}, 
+        s0::SVector{6,T}, s1::SVector{6,T}, f::SVector{6,T}) where T = new{T}(getGlobalID(), name, m, J, x, q, F, τ, s0, s1, f)
 end
 
 mutable struct Origin{T} <: AbstractBody{T}
@@ -55,7 +55,7 @@ end
 
 function Base.deepcopy(b::Body)
     contents = []
-    for i = 2:10
+    for i = 2:getfieldnumber(b)
         push!(contents, deepcopy(getfield(b, i)))
     end
 
@@ -64,7 +64,8 @@ end
 
 function Base.deepcopy(b::Body, shape::Shape)
     contents = []
-    for i = 2:10
+    
+    for i = 2:getfieldnumber(b)
         push!(contents, deepcopy(getfield(b, i)))
     end
 
