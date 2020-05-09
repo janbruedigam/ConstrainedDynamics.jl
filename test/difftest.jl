@@ -294,9 +294,9 @@ function transtest3()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3,1:3])
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:3,4:6])
 
-    display((n11, n12, n21, n22))
-    display((n31, n32, n41, n42))
-    return
+    # display((n11, n12, n21, n22))
+    # display((n31, n32, n41, n42))
+    return n11+n12+n21+n22+n31+n32+n41+n42
 end
 
 
@@ -357,9 +357,9 @@ function transtest2()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:2,1:3])
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:2,4:6])
 
-    display((n11, n12, n21, n22))
-    display((n31, n32, n41, n42))
-    return
+    # display((n11, n12, n21, n22))
+    # display((n31, n32, n41, n42))
+    return n11+n12+n21+n22+n31+n32+n41+n42
 end
 
 function transtest1()
@@ -419,9 +419,9 @@ function transtest1()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3]')
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[4:6]')
 
-    display((n11, n12, n21, n22))
-    display((n31, n32, n41, n42))
-    return
+    # display((n11, n12, n21, n22))
+    # display((n31, n32, n41, n42))
+    return n11+n12+n21+n22+n31+n32+n41+n42
 end
 
 
@@ -478,9 +478,9 @@ function rottest3()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3,1:3])
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:3,4:6])
 
-    display((n11, n12, n21, n22))
-    display((n31, n32, n41, n42))
-    return
+    # display((n11, n12, n21, n22))
+    # display((n31, n32, n41, n42))
+    return n11+n12+n21+n22+n31+n32+n41+n42
 end
 
 function rottest2()
@@ -539,9 +539,9 @@ function rottest2()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:2,1:3])
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:2,4:6])
 
-    display((n11, n12, n21, n22))
-    display((n31, n32, n41, n42))
-    return
+    # display((n11, n12, n21, n22))
+    # display((n31, n32, n41, n42))
+    return n11+n12+n21+n22+n31+n32+n41+n42
 end
 
 function rottest1()
@@ -600,7 +600,14 @@ function rottest1()
     n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3]')
     n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[4:6]')
 
-    display((n11, n12, n21, n22))
-    display((n31, n32, n41, n42))
-    return
+    # display((n11, n12, n21, n22))
+    # display((n31, n32, n41, n42))
+    return n11+n12+n21+n22+n31+n32+n41+n42
 end
+
+@test transtest3() ≈ 0.0
+@test transtest2() ≈ 0.0
+@test transtest1() ≈ 0.0
+@test rottest3() ≈ 0.0
+@test rottest2() ≈ 0.0
+@test rottest1() ≈ 0.0
