@@ -297,6 +297,8 @@ function simulate!(mechanism::Mechanism, controller::Controller;save::Bool = fal
     foreach(s0tos1!, eqcs)
     foreach(s0tos1!, ineqcs)
 
+    control! = controller.control!
+
     for i = mechanism.steps
         control!(mechanism, controller)
         newton!(mechanism, warning = debug)
