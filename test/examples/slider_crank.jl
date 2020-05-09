@@ -54,5 +54,5 @@ a4 = 0.3 # SVector{1,Float64}(0.3)
 a = [[a1];[a2];[a3];[a4]]
 # a = [a1;a2;a3;a4]
 
-setForce!(a,joint0to12,mech)
+setForce!(mech,joint0to12,a)
 # setForce!(mech,link2,τ=[0;0;0.3])
