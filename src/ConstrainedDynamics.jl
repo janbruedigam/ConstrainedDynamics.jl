@@ -26,7 +26,7 @@ export Box,
     EqualityConstraint,
     InequalityConstraint,
     Mechanism,
-    PID,
+    Controller,
 
     OriginConnection,
     Prismatic,
