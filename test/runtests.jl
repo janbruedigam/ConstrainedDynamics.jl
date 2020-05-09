@@ -10,6 +10,10 @@ end
     include("pendulum_test.jl")
 end
 
-@safetestset "Allocation Tests" begin
-    include("allocation_test.jl")
+@safetestset "Example Tests" begin
+    include("example_test.jl")
 end
+
+# @safetestset "Allocation Tests" begin
+#     include("allocation_test.jl")
+# end
