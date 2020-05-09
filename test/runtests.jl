@@ -6,6 +6,10 @@ using SafeTestsets
     include("jointdiff_test.jl")
 end
 
-@safetestset "Pendulum Period Test" begin
+@safetestset "Pendulum Period Tests" begin
     include("pendulum_test.jl")
+end
+
+@safetestset "Allocation Tests" begin
+    include("allocation_test.jl")
 end
