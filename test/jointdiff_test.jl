@@ -1,9 +1,9 @@
+using ConstrainedDynamics
 using ForwardDiff
 using Rotations
 using StaticArrays
 using LinearAlgebra
 
-using ConstrainedDynamics
 using ConstrainedDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, VLᵀmat, ∂g∂pos, ∂g∂vel, skew
 
 function transfunc3pos(vars)
@@ -263,7 +263,7 @@ function transtest3()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(ConstrainedDynamics.Translational3(link1, link2, pa, pb))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Translational3{Float64}(link1, link2, p1=pa, p2=pb))
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
@@ -278,10 +278,10 @@ function transtest3()
     X2 = res[1:3,8:10]
     Q2 = res[1:3,11:14] * Lmat(Quaternion(qb)) * Vᵀmat()
 
-    n11 = norm(X1 - ∂g∂pos(joint1, 1, bot)[1:3,1:3])
-    n12 = norm(Q1 - ∂g∂pos(joint1, 1, bot)[1:3,4:6])
-    n21 = norm(X2 - ∂g∂pos(joint1, 2, bot)[1:3,1:3])
-    n22 = norm(Q2 - ∂g∂pos(joint1, 2, bot)[1:3,4:6])
+    n11 = norm(X1 - ∂g∂pos(bot, joint1, 1)[1:3,1:3])
+    n12 = norm(Q1 - ∂g∂pos(bot, joint1, 1)[1:3,4:6])
+    n21 = norm(X2 - ∂g∂pos(bot, joint1, 2)[1:3,1:3])
+    n22 = norm(Q2 - ∂g∂pos(bot, joint1, 2)[1:3,4:6])
 
     res = ForwardDiff.jacobian(transfunc3vel, [xa;qa;xb;qb;va;wa;vb;wb;pa;pb])
     V1 = res[1:3,15:17]
@@ -289,10 +289,10 @@ function transtest3()
     V2 = res[1:3,21:23]
     W2 = res[1:3,24:26]
 
-    n31 = norm(V1 - ∂g∂vel(joint1, 1, bot)[1:3,1:3])
-    n32 = norm(W1 - ∂g∂vel(joint1, 1, bot)[1:3,4:6])
-    n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3,1:3])
-    n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:3,4:6])
+    n31 = norm(V1 - ∂g∂vel(bot, joint1, 1)[1:3,1:3])
+    n32 = norm(W1 - ∂g∂vel(bot, joint1, 1)[1:3,4:6])
+    n41 = norm(V2 - ∂g∂vel(bot, joint1, 2)[1:3,1:3])
+    n42 = norm(W2 - ∂g∂vel(bot, joint1, 2)[1:3,4:6])
 
     # display((n11, n12, n21, n22))
     # display((n31, n32, n41, n42))
@@ -323,7 +323,7 @@ function transtest2()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(ConstrainedDynamics.Translational2(link1, link2, pa, pb, v))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Translational2{Float64}(link1, link2, p1=pa, p2=pb, axis=v))
     V12 = joint1.constraints[1].V12
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
@@ -340,10 +340,10 @@ function transtest2()
     X2 = res[1:2,8:10]
     Q2 = res[1:2,11:14] * Lmat(Quaternion(qb)) * Vᵀmat()
 
-    n11 = norm(X1 - ∂g∂pos(joint1, 1, bot)[1:2,1:3])
-    n12 = norm(Q1 - ∂g∂pos(joint1, 1, bot)[1:2,4:6])
-    n21 = norm(X2 - ∂g∂pos(joint1, 2, bot)[1:2,1:3])
-    n22 = norm(Q2 - ∂g∂pos(joint1, 2, bot)[1:2,4:6])
+    n11 = norm(X1 - ∂g∂pos(bot, joint1, 1)[1:2,1:3])
+    n12 = norm(Q1 - ∂g∂pos(bot, joint1, 1)[1:2,4:6])
+    n21 = norm(X2 - ∂g∂pos(bot, joint1, 2)[1:2,1:3])
+    n22 = norm(Q2 - ∂g∂pos(bot, joint1, 2)[1:2,4:6])
 
 
     res = ForwardDiff.jacobian(transfunc2vel, [xa;qa;xb;qb;va;wa;vb;wb;pa;pb;V12[1,:];V12[2,:]])
@@ -352,10 +352,10 @@ function transtest2()
     V2 = res[1:2,21:23]
     W2 = res[1:2,24:26]
 
-    n31 = norm(V1 - ∂g∂vel(joint1, 1, bot)[1:2,1:3])
-    n32 = norm(W1 - ∂g∂vel(joint1, 1, bot)[1:2,4:6])
-    n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:2,1:3])
-    n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:2,4:6])
+    n31 = norm(V1 - ∂g∂vel(bot, joint1, 1)[1:2,1:3])
+    n32 = norm(W1 - ∂g∂vel(bot, joint1, 1)[1:2,4:6])
+    n41 = norm(V2 - ∂g∂vel(bot, joint1, 2)[1:2,1:3])
+    n42 = norm(W2 - ∂g∂vel(bot, joint1, 2)[1:2,4:6])
 
     # display((n11, n12, n21, n22))
     # display((n31, n32, n41, n42))
@@ -385,7 +385,7 @@ function transtest1()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(ConstrainedDynamics.Translational1(link1, link2, pa, pb, v))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Translational1{Float64}(link1, link2, p1=pa, p2=pb, axis=v))
     v = joint1.constraints[1].V3'
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
@@ -402,10 +402,10 @@ function transtest1()
     X2 = res[8:10]'
     Q2 = res[11:14]' * Lmat(Quaternion(qb)) * Vᵀmat()
 
-    n11 = norm(X1 - ∂g∂pos(joint1, 1, bot)[1:3]')
-    n12 = norm(Q1 - ∂g∂pos(joint1, 1, bot)[4:6]')
-    n21 = norm(X2 - ∂g∂pos(joint1, 2, bot)[1:3]')
-    n22 = norm(Q2 - ∂g∂pos(joint1, 2, bot)[4:6]')
+    n11 = norm(X1 - ∂g∂pos(bot, joint1, 1)[1:3]')
+    n12 = norm(Q1 - ∂g∂pos(bot, joint1, 1)[4:6]')
+    n21 = norm(X2 - ∂g∂pos(bot, joint1, 2)[1:3]')
+    n22 = norm(Q2 - ∂g∂pos(bot, joint1, 2)[4:6]')
 
 
     res = ForwardDiff.gradient(transfunc1vel, [xa;qa;xb;qb;va;wa;vb;wb;pa;pb;v])
@@ -414,10 +414,10 @@ function transtest1()
     V2 = res[21:23]'
     W2 = res[24:26]'
 
-    n31 = norm(V1 - ∂g∂vel(joint1, 1, bot)[1:3]')
-    n32 = norm(W1 - ∂g∂vel(joint1, 1, bot)[4:6]')
-    n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3]')
-    n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[4:6]')
+    n31 = norm(V1 - ∂g∂vel(bot, joint1, 1)[1:3]')
+    n32 = norm(W1 - ∂g∂vel(bot, joint1, 1)[4:6]')
+    n41 = norm(V2 - ∂g∂vel(bot, joint1, 2)[1:3]')
+    n42 = norm(W2 - ∂g∂vel(bot, joint1, 2)[4:6]')
 
     # display((n11, n12, n21, n22))
     # display((n31, n32, n41, n42))
@@ -445,7 +445,7 @@ function rottest3()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(ConstrainedDynamics.Rotational3(link1, link2, offset = offset))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Rotational3{Float64}(link1, link2, offset = offset))
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
@@ -461,10 +461,10 @@ function rottest3()
     X2 = res[1:3,8:10]
     Q2 = res[1:3,11:14] * Lmat(Quaternion(qb)) * Vᵀmat()
 
-    n11 = norm(X1 - ∂g∂pos(joint1, 1, bot)[1:3,1:3])
-    n12 = norm(Q1 - ∂g∂pos(joint1, 1, bot)[1:3,4:6])
-    n21 = norm(X2 - ∂g∂pos(joint1, 2, bot)[1:3,1:3])
-    n22 = norm(Q2 - ∂g∂pos(joint1, 2, bot)[1:3,4:6])
+    n11 = norm(X1 - ∂g∂pos(bot, joint1, 1)[1:3,1:3])
+    n12 = norm(Q1 - ∂g∂pos(bot, joint1, 1)[1:3,4:6])
+    n21 = norm(X2 - ∂g∂pos(bot, joint1, 2)[1:3,1:3])
+    n22 = norm(Q2 - ∂g∂pos(bot, joint1, 2)[1:3,4:6])
 
 
     res = ForwardDiff.jacobian(rotfunc3vel, [xa;qa;xb;qb;va;wa;vb;wb;offset])
@@ -473,10 +473,10 @@ function rottest3()
     V2 = res[1:3,21:23]
     W2 = res[1:3,24:26]
 
-    n31 = norm(V1 - ∂g∂vel(joint1, 1, bot)[1:3,1:3])
-    n32 = norm(W1 - ∂g∂vel(joint1, 1, bot)[1:3,4:6])
-    n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3,1:3])
-    n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:3,4:6])
+    n31 = norm(V1 - ∂g∂vel(bot, joint1, 1)[1:3,1:3])
+    n32 = norm(W1 - ∂g∂vel(bot, joint1, 1)[1:3,4:6])
+    n41 = norm(V2 - ∂g∂vel(bot, joint1, 2)[1:3,1:3])
+    n42 = norm(W2 - ∂g∂vel(bot, joint1, 2)[1:3,4:6])
 
     # display((n11, n12, n21, n22))
     # display((n31, n32, n41, n42))
@@ -505,7 +505,7 @@ function rottest2()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(ConstrainedDynamics.Rotational2(link1, link2, v, offset = offset))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Rotational2{Float64}(link1, link2, axis = v, offset = offset))
     V12 = joint1.constraints[1].V12
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
@@ -522,10 +522,10 @@ function rottest2()
     X2 = res[1:2,8:10]
     Q2 = res[1:2,11:14] * Lmat(Quaternion(qb)) * Vᵀmat()
 
-    n11 = norm(X1 - ∂g∂pos(joint1, 1, bot)[1:2,1:3])
-    n12 = norm(Q1 - ∂g∂pos(joint1, 1, bot)[1:2,4:6])
-    n21 = norm(X2 - ∂g∂pos(joint1, 2, bot)[1:2,1:3])
-    n22 = norm(Q2 - ∂g∂pos(joint1, 2, bot)[1:2,4:6])
+    n11 = norm(X1 - ∂g∂pos(bot, joint1, 1)[1:2,1:3])
+    n12 = norm(Q1 - ∂g∂pos(bot, joint1, 1)[1:2,4:6])
+    n21 = norm(X2 - ∂g∂pos(bot, joint1, 2)[1:2,1:3])
+    n22 = norm(Q2 - ∂g∂pos(bot, joint1, 2)[1:2,4:6])
 
 
     res = ForwardDiff.jacobian(rotfunc2vel, [xa;qa;xb;qb;va;wa;vb;wb;offset;V12[1,:];V12[2,:]])
@@ -534,10 +534,10 @@ function rottest2()
     V2 = res[1:2,21:23]
     W2 = res[1:2,24:26]
 
-    n31 = norm(V1 - ∂g∂vel(joint1, 1, bot)[1:2,1:3])
-    n32 = norm(W1 - ∂g∂vel(joint1, 1, bot)[1:2,4:6])
-    n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:2,1:3])
-    n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[1:2,4:6])
+    n31 = norm(V1 - ∂g∂vel(bot, joint1, 1)[1:2,1:3])
+    n32 = norm(W1 - ∂g∂vel(bot, joint1, 1)[1:2,4:6])
+    n41 = norm(V2 - ∂g∂vel(bot, joint1, 2)[1:2,1:3])
+    n42 = norm(W2 - ∂g∂vel(bot, joint1, 2)[1:2,4:6])
 
     # display((n11, n12, n21, n22))
     # display((n31, n32, n41, n42))
@@ -566,7 +566,7 @@ function rottest1()
 
     oc1 = EqualityConstraint(OriginConnection(origin, link1))
     oc2 = EqualityConstraint(OriginConnection(origin, link2))
-    joint1 = EqualityConstraint(ConstrainedDynamics.Rotational1(link1, link2, v, offset = offset))
+    joint1 = EqualityConstraint(ConstrainedDynamics.Rotational1{Float64}(link1, link2, axis = v, offset = offset))
     V3 = joint1.constraints[1].V3'
 
     bot = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
@@ -583,10 +583,10 @@ function rottest1()
     X2 = res[8:10]'
     Q2 = res[11:14]' * Lmat(Quaternion(qb)) * Vᵀmat()
 
-    n11 = norm(X1 - ∂g∂pos(joint1, 1, bot)[1:3]')
-    n12 = norm(Q1 - ∂g∂pos(joint1, 1, bot)[4:6]')
-    n21 = norm(X2 - ∂g∂pos(joint1, 2, bot)[1:3]')
-    n22 = norm(Q2 - ∂g∂pos(joint1, 2, bot)[4:6]')
+    n11 = norm(X1 - ∂g∂pos(bot, joint1, 1)[1:3]')
+    n12 = norm(Q1 - ∂g∂pos(bot, joint1, 1)[4:6]')
+    n21 = norm(X2 - ∂g∂pos(bot, joint1, 2)[1:3]')
+    n22 = norm(Q2 - ∂g∂pos(bot, joint1, 2)[4:6]')
 
 
     res = ForwardDiff.gradient(rotfunc1vel, [xa;qa;xb;qb;va;wa;vb;wb;offset;V3])
@@ -595,19 +595,21 @@ function rottest1()
     V2 = res[21:23]'
     W2 = res[24:26]'
 
-    n31 = norm(V1 - ∂g∂vel(joint1, 1, bot)[1:3]')
-    n32 = norm(W1 - ∂g∂vel(joint1, 1, bot)[4:6]')
-    n41 = norm(V2 - ∂g∂vel(joint1, 2, bot)[1:3]')
-    n42 = norm(W2 - ∂g∂vel(joint1, 2, bot)[4:6]')
+    n31 = norm(V1 - ∂g∂vel(bot, joint1, 1)[1:3]')
+    n32 = norm(W1 - ∂g∂vel(bot, joint1, 1)[4:6]')
+    n41 = norm(V2 - ∂g∂vel(bot, joint1, 2)[1:3]')
+    n42 = norm(W2 - ∂g∂vel(bot, joint1, 2)[4:6]')
 
     # display((n11, n12, n21, n22))
     # display((n31, n32, n41, n42))
     return n11+n12+n21+n22+n31+n32+n41+n42
 end
 
-@test transtest3() ≈ 0.0
-@test transtest2() ≈ 0.0
-@test transtest1() ≈ 0.0
-@test rottest3() ≈ 0.0
-@test rottest2() ≈ 0.0
-@test rottest1() ≈ 0.0
+for i=1:10
+    @test isapprox(transtest3(), 0.0; atol = 1e-8)
+    @test isapprox(transtest2(), 0.0; atol = 1e-8)
+    @test isapprox(transtest1(), 0.0; atol = 1e-8)
+    @test isapprox(rottest3(), 0.0; atol = 1e-8)
+    @test isapprox(rottest2(), 0.0; atol = 1e-8)
+    @test isapprox(rottest1(), 0.0; atol = 1e-8)
+end

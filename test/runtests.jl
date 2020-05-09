@@ -1,7 +1,7 @@
-using ConstrainedDynamics
 using Test
+using SafeTestsets
 
 
-@testset "ConstrainedDynamics.jl" begin
-    include("difftest.jl")
+@safetestset "Joint Diff Tests" begin
+    include("jointdiff_test.jl")
 end
