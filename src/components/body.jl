@@ -36,7 +36,9 @@ mutable struct Body{T} <: AbstractBody{T}
         return body
     end
 
-    Body(contents...) where T = new{T}(getGlobalID(), contents...)
+    function Body(::Type{T},contents...) where T
+        new{T}(getGlobalID(), contents...)
+    end
 end
 
 mutable struct Origin{T} <: AbstractBody{T}
@@ -52,23 +54,23 @@ mutable struct Origin{T} <: AbstractBody{T}
     end
 end
 
-function Base.deepcopy(b::Body)
+function Base.deepcopy(b::Body{T}) where T
     contents = []
     for i = 2:getfieldnumber(b)
         push!(contents, deepcopy(getfield(b, i)))
     end
 
-    Body(contents...)
+    Body(T, contents...)
 end
 
-function Base.deepcopy(b::Body, shape::Shape)
+function Base.deepcopy(b::Body{T}, shape::Shape) where T
     contents = []
     
     for i = 2:getfieldnumber(b)
         push!(contents, deepcopy(getfield(b, i)))
     end
 
-    body = Body(contents...)
+    body = Body(T, contents...)
     @assert (body.m == shape.m && body.J == shape.J)
     push!(shape.bodyids, body.id)
     return body
