@@ -88,7 +88,7 @@ function adjacencyMatrix(eqconstraints::Vector{<:EqualityConstraint}, bodies::Ve
     convert(Matrix{Bool}, A), dict
 end
 
-function dfs(adjacency::Matrix, dict::Dict, originid::Int)
+function dfs(adjacency::Matrix, dict::Dict, originid::Integer)
     N = size(adjacency)[1]
     dfsgraph = zeros(Bool, N, N)
     dfslist = zeros(Int64, N)
@@ -104,7 +104,7 @@ function dfs(adjacency::Matrix, dict::Dict, originid::Int)
     return dfsgraph, convert(SVector{N}, dfslist), loops
 end
 
-function dfs!(A::Matrix, Adfs::Matrix, dict::Dict, list::Vector, visited::Vector, loops::Vector{Vector{Int}}, index::Int, currentid::Int, parentid::Int)
+function dfs!(A::Matrix, Adfs::Matrix, dict::Dict, list::Vector, visited::Vector, loops::Vector{<:Vector{<:Integer}}, index::Integer, currentid::Integer, parentid::Integer)
     i = dict[currentid]
     for (childid, j) in dict
         if A[i,j] && parentid != childid # connection from i to j in adjacency && not a direct connection back to the parent
@@ -122,7 +122,7 @@ function dfs!(A::Matrix, Adfs::Matrix, dict::Dict, list::Vector, visited::Vector
     return index
 end
 
-function pattern(dfsgraph::Matrix, dict::Dict, loops::Vector{Vector{Int}})
+function pattern(dfsgraph::Matrix, dict::Dict, loops::Vector{<:Vector{<:Integer}})
     pat = deepcopy(dfsgraph)
 
     for loop in loops # loop = [index of starting constraint, index of last body in loop]
@@ -140,7 +140,7 @@ function pattern(dfsgraph::Matrix, dict::Dict, loops::Vector{Vector{Int}})
     return pat
 end
 
-function fillins(dfsgraph::Matrix, pattern::Matrix, dict::Dict, loops::Vector{Vector{Int}})
+function fillins(dfsgraph::Matrix, pattern::Matrix, dict::Dict, loops::Vector{<:Vector{<:Integer}})
     fil = deepcopy(dfsgraph .⊻ pattern) # xor so only fillins remain (+ to be removed loop closure since this is a child)
     originals = deepcopy(dfsgraph)
 
@@ -154,7 +154,7 @@ function fillins(dfsgraph::Matrix, pattern::Matrix, dict::Dict, loops::Vector{Ve
     return convert(Matrix{Bool}, fil), convert(Matrix{Bool}, originals)
 end
 
-function parent(dfsgraph::Matrix, dict::Dict, childid::Int)
+function parent(dfsgraph::Matrix, dict::Dict, childid::Integer)
     j = dict[childid]
     for (parentid, i) in dict
         dfsgraph[i,j] && (return parentid)
@@ -239,12 +239,12 @@ function connections(dfslist, adjacency, dict::Dict)
     return cons
 end
 
-@inline directchildren(graph, id::Int) = graph.directchildren[graph.dict[id]]
-@inline loopchildren(graph, id::Int) = graph.loopchildren[graph.dict[id]]
-@inline ineqchildren(graph, id::Int) = graph.ineqchildren[graph.dict[id]]
-@inline successors(graph, id::Int) = graph.successors[graph.dict[id]]
-@inline predecessors(graph, id::Int) = graph.predecessors[graph.dict[id]]
-@inline connections(graph, id::Int) = graph.connections[graph.dict[id]]
+@inline directchildren(graph, id::Integer) = graph.directchildren[graph.dict[id]]
+@inline loopchildren(graph, id::Integer) = graph.loopchildren[graph.dict[id]]
+@inline ineqchildren(graph, id::Integer) = graph.ineqchildren[graph.dict[id]]
+@inline successors(graph, id::Integer) = graph.successors[graph.dict[id]]
+@inline predecessors(graph, id::Integer) = graph.predecessors[graph.dict[id]]
+@inline connections(graph, id::Integer) = graph.connections[graph.dict[id]]
 
 @inline function hassuccessor(graph::Graph{N}, id, cid) where N
     for val in graph.successors[graph.dict[id]]

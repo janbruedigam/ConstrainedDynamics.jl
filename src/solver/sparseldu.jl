@@ -83,6 +83,6 @@ struct SparseLDU{T}
     end
 end
 
-@inline getentry(ldu::SparseLDU, id::Int) = ldu.diagonals[id]
-@inline getentry(ldu::SparseLDU, ids::Tuple{Int,Int}) = ldu.offdiagonals[ids]
-@inline getineqentry(ldu::SparseLDU, id::Int) = ldu.inequalities[id]
+@inline getentry(ldu::SparseLDU, id::Integer) = ldu.diagonals[id]
+@inline getentry(ldu::SparseLDU, ids::Tuple{Integer,Integer}) = ldu.offdiagonals[ids]
+@inline getineqentry(ldu::SparseLDU, id::Integer) = ldu.inequalities[id]

@@ -100,34 +100,34 @@ end
     :(svcat($(vec...)))
 end
 
-@inline function ∂g∂pos(mechanism, eqc::EqualityConstraint, id::Int)
+@inline function ∂g∂pos(mechanism, eqc::EqualityConstraint, id::Integer)
     id == eqc.pid ? ∂g∂posa(mechanism, eqc, id) : ∂g∂posb(mechanism, eqc, id)
 end
 
-@inline function ∂g∂vel(mechanism, eqc::EqualityConstraint, id::Int)
+@inline function ∂g∂vel(mechanism, eqc::EqualityConstraint, id::Integer)
     id == eqc.pid ? ∂g∂vela(mechanism, eqc, id) : ∂g∂velb(mechanism, eqc, id)
 end
 
-@inline function ∂g∂con(mechanism, eqc::EqualityConstraint, id::Int)
+@inline function ∂g∂con(mechanism, eqc::EqualityConstraint, id::Integer)
     ∂g∂con(mechanism, eqc)
 end
 
-@generated function ∂g∂posa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Int) where {T,N,Nc}
+@generated function ∂g∂posa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂posa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂posb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Int) where {T,N,Nc}
+@generated function ∂g∂posb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂posb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂vela(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Int) where {T,N,Nc}
+@generated function ∂g∂vela(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂vela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂velb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Int) where {T,N,Nc}
+@generated function ∂g∂velb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂velb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
