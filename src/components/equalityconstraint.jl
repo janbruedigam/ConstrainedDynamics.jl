@@ -33,15 +33,18 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
             push!(constraints, set[1])
             @assert set[2] == pid
             push!(bodyids, set[3])
+
+            Nset = getN(set[1])
             if isempty(inds)
-                push!(inds, [1;3-getN(set[1])])
+                push!(inds, [1;3-Nset])
             else
-                push!(inds, [last(inds)[2]+1;last(inds)[2]+3-getN(set[1])])
+                push!(inds, [last(inds)[2]+1;last(inds)[2]+3-Nset])
             end
+            N += Nset
         end
         constraints = Tuple(constraints)
-        N = last(inds)[2]
         Nc = length(constraints)
+        
 
         s0 = @SVector zeros(T, N)
         s1 = @SVector zeros(T, N)
