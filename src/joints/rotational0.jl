@@ -9,16 +9,24 @@ end
 end
 
 @inline function setForce!(joint::Rotational0, body1::Body, body2::Body{T}, τ::SVector{3,T}, No) where T
-    τ1 = vrotate(-τ, body1.q[No] * joint.qoff)
-    τ2 = -τ1
+    clearForce!(joint, body1, body2, No)
 
-    body1.τ[No] = τ1
-    body2.τ[No] = τ2
+    τ1 = vrotate(-τ, body1.q[No])
+    τ2 = -τ1
+    F1 =  @SVector zeros(T,3)
+    F2 =  @SVector zeros(T,3)
+
+    updateForce!(joint, body1, body2, F1, τ1, F2, τ2, No)
     return
 end
 
 @inline function setForce!(joint::Rotational0, body1::Origin, body2::Body{T}, τ::SVector{3,T}, No) where T
-    body2.τ[No] = vrotate(τ, joint.qoff)
+    clearForce!(joint, body2, No)
+
+    τ2 = τ
+    F2 =  @SVector zeros(T,3)
+
+    updateForce!(joint, body2, F2, τ2, No)
     return
 end
 

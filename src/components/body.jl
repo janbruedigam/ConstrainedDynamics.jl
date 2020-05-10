@@ -36,8 +36,7 @@ mutable struct Body{T} <: AbstractBody{T}
         return body
     end
 
-    Body(name::String, m::T, J::SMatrix{3,3,T,9}, x::Vector{SVector{3,T}}, q::Vector{Quaternion{T}}, F::Vector{SVector{3,T}}, τ::Vector{SVector{3,T}}, 
-        s0::SVector{6,T}, s1::SVector{6,T}, f::SVector{6,T}) where T = new{T}(getGlobalID(), name, m, J, x, q, F, τ, s0, s1, f)
+    Body(contents...) where T = new{T}(getGlobalID(), contents...)
 end
 
 mutable struct Origin{T} <: AbstractBody{T}

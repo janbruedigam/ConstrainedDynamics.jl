@@ -9,16 +9,28 @@ end
 end
 
 @inline function setForce!(joint::Translational0, body1::Body, body2::Body{T}, F::SVector{3,T}, No) where T
-    F1 = vrotate(-F, body1.q[No])
+    clearForce!(joint, body1, body2, No)
+
+    q1 = body1.q[No]
+    q2 = body2.q[No]
+
+    F1 = vrotate(-F, q1)
     F2 = -F1
 
-    body1.F[No] = F1
-    body2.F[No] = F2
+    τ1 = torqueFromForce(F1, vrotate(joint.vertices[1], q1))
+    τ2 = torqueFromForce(F2, vrotate(joint.vertices[2], q2))
+
+    updateForce!(joint, body1, body2, F1, τ1, F2, τ2, No)
     return
 end
 
 @inline function setForce!(joint::Translational0, body1::Origin, body2::Body{T}, F::SVector{3,T}, No) where T
-    body2.F[No] = F
+    clearForce!(joint, body2, No)
+
+    F2 = F
+    τ2 = torqueFromForce(F2, vrotate(joint.vertices[2], body2.q[No]))
+
+    updateForce!(joint, body2, F2, τ2, No)
     return
 end
 
