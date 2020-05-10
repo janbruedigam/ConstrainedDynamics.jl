@@ -33,4 +33,4 @@ shapes = [b1;b2]
 mech = Mechanism(origin, links, constraints, shapes = shapes, g = 0.)
 setPosition!(mech,link1,link2,p1 = vert12,p2 = vert11)
 
-setForce!(mech, joint1to2, [nothing;[0.05]])
+setForce!(mech, joint1to2, [0.05])

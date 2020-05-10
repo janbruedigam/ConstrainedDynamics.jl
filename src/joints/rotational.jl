@@ -1,10 +1,14 @@
-mutable struct Rotational{T,Nc} <: Joint{T,Nc}
+mutable struct Rotational{T,N} <: Joint{T,N}
     V12::SMatrix{2,3,T,6}
     V3::Adjoint{T,SVector{3,T}}
     qoff::Quaternion{T}
+
+    F::Vector{SVector{3,T}}
+    τ::Vector{SVector{3,T}}
+
     cid::Int64
 
-    function Rotational{T,Nc}(body1::AbstractBody{T}, body2::AbstractBody{T}; axis::AbstractVector{T} = zeros(3), offset::Quaternion{T} = Quaternion{T}()) where {T,Nc}
+    function Rotational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T}; axis::AbstractVector{T} = zeros(3), offset::Quaternion{T} = Quaternion{T}()) where {T,N}
         axis = vrotate(SVector(axis...), inv(offset))
         if norm(axis) != 0
             axis = axis / norm(axis)
@@ -12,9 +16,13 @@ mutable struct Rotational{T,Nc} <: Joint{T,Nc}
         A = svd(skew(axis)).Vt # in frame of body1
         V12 = A[1:2,:]
         V3 = axis' # instead of A[3,:] for correct sign: abs(axis) = abs(A[3,:])
+
+        F = [zeros(T,3) for i=1:2]
+        τ = [zeros(T,3) for i=1:2]
+
         cid = body2.id
 
-        new{T,Nc}(V12, V3, offset, cid), body1.id, body2.id
+        new{T,N}(V12, V3, offset, F, τ, cid), body1.id, body2.id
     end
 end
 

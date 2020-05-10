@@ -33,7 +33,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
         for set in bounddata
             push!(constraints, set[1])
             @assert set[2] == pid
-            N += 1 # getNc(set[1])
+            N += 1 # getN(set[1])
         end
         constraints = Tuple(constraints)
         # Nc = length(constraints)

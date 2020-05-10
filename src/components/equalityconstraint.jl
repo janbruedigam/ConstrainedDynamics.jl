@@ -5,6 +5,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     constraints::Cs
     pid::Union{Int64,Nothing}
     bodyids::SVector{Nc,Int64}
+    inds::SVector{Nc,SVector{2,Int64}} # indices for minimal coordinates, assumes joints
 
     s0::SVector{N,T}
     s1::SVector{N,T}
@@ -26,28 +27,38 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
         pid = jointdata[1][2]
         bodyids = Int64[]
         constraints = Joint{T}[]
+        inds = Vector{Int64}[]
         N = 0
         for set in jointdata
             push!(constraints, set[1])
             @assert set[2] == pid
             push!(bodyids, set[3])
-            N += getNc(set[1])
+
+            Nset = getN(set[1])
+            if isempty(inds)
+                push!(inds, [1;3-Nset])
+            else
+                push!(inds, [last(inds)[2]+1;last(inds)[2]+3-Nset])
+            end
+            N += Nset
         end
         constraints = Tuple(constraints)
         Nc = length(constraints)
+        
 
         s0 = @SVector zeros(T, N)
         s1 = @SVector zeros(T, N)
 
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, pid, bodyids, s0, s1)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, pid, bodyids, inds, s0, s1)
     end
 end
 
 Base.length(::EqualityConstraint{T,N}) where {T,N} = N
 
-function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ; K = mechanism.No) where {T,N,Nc}
+function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ::AbstractVector{T}; K = mechanism.No) where {T,N,Nc}
+    @assert length(Fτ)==3*Nc-N
     for i = 1:Nc
-        setForce!(eqc.constraints[i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[i]), Fτ[i], K)
+        setForce!(eqc.constraints[i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[i]), Fτ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])], K)
     end
 end
 
@@ -89,34 +100,34 @@ end
     :(svcat($(vec...)))
 end
 
-@inline function ∂g∂pos(mechanism, eqc::EqualityConstraint, id::Int64)
+@inline function ∂g∂pos(mechanism, eqc::EqualityConstraint, id::Integer)
     id == eqc.pid ? ∂g∂posa(mechanism, eqc, id) : ∂g∂posb(mechanism, eqc, id)
 end
 
-@inline function ∂g∂vel(mechanism, eqc::EqualityConstraint, id::Int64)
+@inline function ∂g∂vel(mechanism, eqc::EqualityConstraint, id::Integer)
     id == eqc.pid ? ∂g∂vela(mechanism, eqc, id) : ∂g∂velb(mechanism, eqc, id)
 end
 
-@inline function ∂g∂con(mechanism, eqc::EqualityConstraint, id::Int64)
+@inline function ∂g∂con(mechanism, eqc::EqualityConstraint, id::Integer)
     ∂g∂con(mechanism, eqc)
 end
 
-@generated function ∂g∂posa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Int64) where {T,N,Nc}
+@generated function ∂g∂posa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂posa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂posb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Int64) where {T,N,Nc}
+@generated function ∂g∂posb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂posb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂vela(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Int64) where {T,N,Nc}
+@generated function ∂g∂vela(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂vela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂velb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Int64) where {T,N,Nc}
+@generated function ∂g∂velb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂velb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end

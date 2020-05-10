@@ -1,4 +1,4 @@
-@inline getbody(mechanism::Mechanism, id::Int64) = mechanism.bodies[id]
+@inline getbody(mechanism::Mechanism, id::Integer) = mechanism.bodies[id]
 @inline getbody(mechanism::Mechanism, id::Nothing) = mechanism.origin
 function getbody(mechanism::Mechanism, name::String)
     if mechanism.origin.name == name
@@ -12,7 +12,7 @@ function getbody(mechanism::Mechanism, name::String)
     end
     return nothing
 end
-@inline geteqconstraint(mechanism::Mechanism, id::Int64) = mechanism.eqconstraints[id]
+@inline geteqconstraint(mechanism::Mechanism, id::Integer) = mechanism.eqconstraints[id]
 function geteqconstraint(mechanism::Mechanism, name::String)
     for eqc in mechanism.eqconstraints
         if eqc.name == name
@@ -21,7 +21,7 @@ function geteqconstraint(mechanism::Mechanism, name::String)
     end
     return nothing
 end
-@inline getineqconstraint(mechanism::Mechanism, id::Int64) = mechanism.ineqconstraints[id]
+@inline getineqconstraint(mechanism::Mechanism, id::Integer) = mechanism.ineqconstraints[id]
 function getineqconstraint(mechanism::Mechanism, name::String)
     for ineqc in mechanism.eqconstraints
         if ineqc.name == name
@@ -32,7 +32,7 @@ function getineqconstraint(mechanism::Mechanism, name::String)
 end
 
 getcomponent(mechanism::Mechanism, id::Nothing) = mechanism.origin
-function getcomponent(mechanism::Mechanism, id::Int64)
+function getcomponent(mechanism::Mechanism, id::Integer)
     if haskey(mechanism.bodies, id)
         return getbody(mechanism, id)
     elseif haskey(mechanism.eqconstraints, id)

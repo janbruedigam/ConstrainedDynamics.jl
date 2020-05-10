@@ -18,13 +18,13 @@ end
     return
 end
 
-@inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, bodyid::Int64, eqc::EqualityConstraint)
+@inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, bodyid::Integer, eqc::EqualityConstraint)
     offdiagonal.L = -∂g∂pos(mechanism, eqc, bodyid)'
     offdiagonal.U = ∂g∂vel(mechanism, eqc, bodyid)
     return
 end
 
-@inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, bodyid::Int64)
+@inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, bodyid::Integer)
     offdiagonal.L = ∂g∂vel(mechanism, eqc, bodyid)
     offdiagonal.U = -∂g∂pos(mechanism, eqc, bodyid)'
     return
