@@ -255,8 +255,8 @@ end
 
     # This calculates the ϵ for q⊗Δq = q⊗(1 ϵᵀ)ᵀ
     # AposR = Δt/2*([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
-    AposR = Δt/2 * VLmat(ωnew) * ([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
-    BposR = Δt/2 * VLmat(ωnew) * Lmat(qd)*derivωbar(body, Δt)*BvelR
+    AposR = Δt/2 * VLmat(getq3(body,Δt)) * ([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
+    BposR = Δt/2 * VLmat(getq3(body,Δt)) * Lmat(qd)*derivωbar(body, Δt)*BvelR
 
     AT = [[AposT;AvelT] [Z2;Z2]]
     # AR = [[Z432;Z2] [AposR;AvelR]]
