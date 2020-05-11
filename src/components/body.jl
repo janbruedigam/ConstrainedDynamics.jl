@@ -223,7 +223,7 @@ end
 
 # TODO tensor terms
 @inline function ∂zp1∂z(mechanism, body::Body{T}, xd, vd, Fd, qd, ωd, τd, Δt) where T
-    xold, vold, Fold, qold, ωold, τold, s0old, s1old, fold = settempvars(body, xd, vd, Fd, qd, ωd, τd, [vd;ωd], [vd;ωd], zeros(6,T), Δt)
+    xold, vold, Fold, qold, ωold, τold, s0old, s1old, fold = settempvars(body, xd, vd, Fd, qd, ωd, τd, [vd;ωd], [vd;ωd], zeros(T,6), Δt)
 
     newton!(mechanism)
 
