@@ -41,7 +41,7 @@ for i = 1:8
     setPosition!(mech, link1, links[i + 1], p1 = corners[i])
 end
 
-setVelocity!(mech,link1,v = [0;3;7.],ω = (rand(3) .- 0.5) * 100)
+setVelocity!(mech,link1,v = [0;3;7.],ω = [0.1;0.1;0.1])
 for i = 1:8
     setVelocity!(mech, link1, links[i + 1], p1 = corners[i])
 end
