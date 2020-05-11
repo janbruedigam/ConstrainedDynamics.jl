@@ -1,123 +1,43 @@
 using BenchmarkTools
 
-include("examples/atlas.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t))
-# @test r.time < ...
-@test r.memory == 0
-display(r.time)
+time = zeros(20)
+files = [
+    "atlas"
+    "chain_in_chain"
+    "dice_nofriction"
+    "dice_tiltedplane"
+    "dice"
+    "disconnected_bodies"
+    "doublependulum_3d"
+    "inverted_pyramid_plane"
+    "joint_force"
+    "joint_torque"
+    "n_fourbars"
+    "n_pendulum"
+    "pendulum_forced"
+    "pendulum"
+    "planar_example"
+    "scissor_lift"
+    "slider_crank"
+    "slider_crank3d"
+    "urdf_doublependulum"
+    "wheel"
+]
+c1 = maximum(length.(files))+2
+c2 = 9
 
-include("examples/chain_in_chain.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
+for i=1:19
+    include("examples/"*files[i]*".jl")
+    t = @benchmarkable simulate!($mech)
+    r = BenchmarkTools.minimum(run(t, samples=1))
+    @test r.memory == 0
+    time[i] = r.time/1e6
+end
 
-include("examples/dice_nofriction.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/dice_tiltedplane.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/dice.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/disconnected_bodies.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/doublependulum_3d.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/inverted_pyramid_plane.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/joint_force.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/joint_torque.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/n_fourbars.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/n_pendulum.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/pendulum_forced.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/pendulum.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/planar_example.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/scissor_lift.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/slider_crank.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/slider_crank3d.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-include("examples/urdf_doublependulum.jl")
-t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
-# @test r.time < ...
-@test r.memory == 0
-
-# include("examples/wheel.jl")
-# t = @benchmarkable simulate!($mech)
-# r = BenchmarkTools.minimum(run(t,samples=1))
-# @test r.time < ...
-# @test r.memory == 0
+println(" "^(c1-7)*" Files | Time")
+println("-"^(c1+c2+1))
+for i=1:20
+    l = length(files[i])
+    println((" "^(c1-l-1))*files[i]*" | "*string(time[i]))
+end
 
