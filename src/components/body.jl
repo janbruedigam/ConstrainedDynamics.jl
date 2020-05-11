@@ -232,7 +232,6 @@ end
     Z43 = @SMatrix zeros(T,4,3)
     Z2 = [Z Z]
     Z2t = Z2'
-    # Z432 = [Z43 Z43]
     E = SMatrix{3,3,T,9}(I)
 
     AvelT = [Z E]
@@ -243,7 +242,6 @@ end
     ωnew = getωnew(body)
     sq1 = sqrt(4 / Δt^2 - ω1' * ω1)
     sq2 = sqrt(4 / Δt^2 - ωnew' * ωnew)
-    dynR = skewplusdiag(ωnew, sq2) * (J * ωnew) - skewplusdiag(ω1, sq1) * (J * ω1) - 2 * body.τ[2]
 
     ω1func = skewplusdiag(-ω1, sq1) * J - J * ω1 * (ω1' / sq1) + skew(J * ω1)
     ω2func = skewplusdiag(ωnew, sq2) * J - J * ωnew * (ωnew' / sq2) - skew(J * ωnew)
@@ -255,12 +253,10 @@ end
     BposT = BvelT*Δt
 
     # This calculates the ϵ for q⊗Δq = q⊗(1 ϵᵀ)ᵀ
-    # AposR = Δt/2*([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
-    AposR = Δt/2 * VLmat(getq3(body,Δt)) * ([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z43] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
-    BposR = Δt/2 * VLmat(getq3(body,Δt)) * Lmat(qd)*derivωbar(body, Δt)*BvelR
+    AposR = VLmat(getq3(body,Δt)) * ([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z43] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
+    BposR = VLmat(getq3(body,Δt)) * Lmat(qd)*derivωbar(body, Δt)*BvelR
 
     AT = [[AposT;AvelT] [Z2;Z2]]
-    # AR = [[Z432;Z2] [AposR;AvelR]]
     AR = [[Z2;Z2] [AposR;AvelR]]
     BT = [[BposT;BvelT] Z2t]
     BR = [Z2t [BposR;BvelR]]
