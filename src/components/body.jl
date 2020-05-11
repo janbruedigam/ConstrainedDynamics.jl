@@ -229,9 +229,9 @@ end
 
     # Velocity
     Z = @SMatrix zeros(T,3,3)
-    Z43 = @SMatrix zeros(T,4,3)
+    # Z43 = @SMatrix zeros(T,4,3)
     Z2 = [Z Z]
-    Z432 = [Z43 Z43]
+    # Z432 = [Z43 Z43]
     E = SMatrix{3,3,T,9}(I)
 
     AvelT = [Z E]
@@ -253,11 +253,14 @@ end
     AposT = [E Z] + AvelT*Δt
     BposT = BvelT*Δt
 
-    AposR = Δt/2*([Lmat(ωbar(body, Δt))*LVᵀmat(qd) Z] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
-    BposR = Δt/2*Lmat(qd)*derivωbar(body, Δt)*BvelR
+    # This calculates the ϵ for q⊗Δq = q⊗(1 ϵᵀ)ᵀ
+    # AposR = Δt/2*([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
+    AposR = Δt/2 * VLmat(ωnew) * ([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
+    BposR = Δt/2 * VLmat(ωnew) * Lmat(qd)*derivωbar(body, Δt)*BvelR
 
     AT = [[AposT;AvelT] [Z2;Z2]]
-    AR = [[Z432;Z2] [AposR;AvelR]]
+    # AR = [[Z432;Z2] [AposR;AvelR]]
+    AR = [[Z2;Z2] [AposR;AvelR]]
     BT = [BposT;BvelT]
     BR = [BposR;BvelR]
 
