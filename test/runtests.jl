@@ -14,6 +14,6 @@ end
     include("example_test.jl")
 end
 
-# @safetestset "Allocation Tests" begin
-#     include("allocation_test.jl")
-# end
+@safetestset "Allocation Tests" begin
+    include("allocation_test.jl")
+end
