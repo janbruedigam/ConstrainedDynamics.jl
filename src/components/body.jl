@@ -231,6 +231,7 @@ end
     Z = @SMatrix zeros(T,3,3)
     Z43 = @SMatrix zeros(T,4,3)
     Z2 = [Z Z]
+    Z2t = Z2'
     # Z432 = [Z43 Z43]
     E = SMatrix{3,3,T,9}(I)
 
@@ -261,8 +262,8 @@ end
     AT = [[AposT;AvelT] [Z2;Z2]]
     # AR = [[Z432;Z2] [AposR;AvelR]]
     AR = [[Z2;Z2] [AposR;AvelR]]
-    BT = [BposT;BvelT]
-    BR = [BposR;BvelR]
+    BT = [[BposT;BvelT] Z2t]
+    BR = [Z2t [BposR;BvelR]]
 
     settempvars(body, xold, vold, Fold, qold, ωold, τold, s0old, s1old, fold, Δt)
     return [AT;AR], [BT;BR]
