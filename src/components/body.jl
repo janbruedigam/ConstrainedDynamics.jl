@@ -144,6 +144,30 @@ end
     Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ωnew, ωnew)), ωnew)
 end
 
+@inline function settempvars(body::Body{T}, x, v, F, q, ω, τ, s0, s1, f, Δt) where T
+    xold = body.x[2]
+    vold = getv1(body,Δt)
+    Fold = body.F[2]
+    qold = body.q[2]
+    ωold = getω1(body,Δt)
+    τold = body.τ[2]
+    s0old = body.s0
+    s1old = body.s1
+    fold = body.f
+    
+
+    body.x[2] = x
+    body.x[1] = x - v*Δt
+    body.F[2] = F
+    body.q[2] = q
+    body.q[1] = Δt/2 * (q * Quaternion(sqrt(4 / Δt^2 - dot(ω, ω)), -SVector{3,T}(ω))) # this accounts for the non-unit-quaternion inverse (q2 * conj(ωbar))
+    body.τ[2] = τ
+    body.s0 = s0
+    body.s1 = s1
+    body.f = f
+    return xold, vold, Fold, qold, ωold, τold, s0old, s1old, fold
+end
+
 @inline function dynamics(mechanism, body::Body{T}) where T
     No = mechanism.No
     Δt = mechanism.Δt
@@ -197,43 +221,88 @@ end
     return [[dynT; Z] [Z; dynR]]
 end
 
-@inline function ∂dyn∂posm1(body::Body{T}, Δt) where T
+# TODO tensor terms
+@inline function ∂zp1∂z(mechanism, body::Body{T}, xd, vd, Fd, qd, ωd, τd, Δt) where T
+    xold, vold, Fold, qold, ωold, τold, s0old, s1old, fold = settempvars(body, xd, vd, Fd, qd, ωd, τd, [vd;ωd], [vd;ωd], zeros(T,6), Δt)
+
+    newton!(mechanism)
+
+    # Velocity
+    Z = @SMatrix zeros(T,3,3)
+    Z43 = @SMatrix zeros(T,4,3)
+    Z2 = [Z Z]
+    Z2t = Z2'
+    E = SMatrix{3,3,T,9}(I)
+
+    AvelT = [Z E]
+    BvelT = E*Δt/body.m
+
     J = body.J
     ω1 = getω1(body, Δt)
-    sq1 = sqrt(4 / Δt^2 - ω1' * ω1)
     ωnew = getωnew(body)
-    sqnew = sqrt(4 / Δt^2 - ωnew' * ωnew)
+    sq1 = sqrt(4 / Δt^2 - ω1' * ω1)
+    sq2 = sqrt(4 / Δt^2 - ωnew' * ωnew)
 
-    dynT = SMatrix{3,3,T,9}(-2*body.m / Δt^2 * I)
-    dynR = -(skewplusdiag(ωnew, sqnew) * J - J * ωnew * (ωnew' / sqnew) - skew(J * ωnew)) * 2/Δt * VRmat(getq3(body,Δt))*RᵀVᵀmat(body.q[2]) +
-        (skewplusdiag(ω1, -sq1) * J + J * ω1 * (ω1' / sq1) - skew(J * ω1)) * 2/Δt * VLᵀmat(body.q[1])*LVᵀmat(body.q[2])
+    ω1func = skewplusdiag(-ω1, sq1) * J - J * ω1 * (ω1' / sq1) + skew(J * ω1)
+    ω2func = skewplusdiag(ωnew, sq2) * J - J * ωnew * (ωnew' / sq2) - skew(J * ωnew)
+    AvelR = [Z ω2func\ω1func]
+    BvelR = 2*E
 
-    Z = @SMatrix zeros(T, 3, 3)
+    # Position
+    AposT = [E Z] + AvelT*Δt
+    BposT = BvelT*Δt
 
-    return [[dynT; Z] [Z; dynR]]
+    # This calculates the ϵ for q⊗Δq = q⊗(1 ϵᵀ)ᵀ
+    AposR = VLmat(getq3(body,Δt)) * ([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z43] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
+    BposR = VLmat(getq3(body,Δt)) * Lmat(qd)*derivωbar(body, Δt)*BvelR
+
+    AT = [[AposT;AvelT] [Z2;Z2]]
+    AR = [[Z2;Z2] [AposR;AvelR]]
+    BT = [[BposT;BvelT] Z2t]
+    BR = [Z2t [BposR;BvelR]]
+
+    settempvars(body, xold, vold, Fold, qold, ωold, τold, s0old, s1old, fold, Δt)
+    return [AT;AR], [BT;BR]
 end
 
-@inline function ∂dyn∂velm1(body::Body{T}, Δt) where T
-    J = body.J
-    ω1 = getω1(body, Δt)
-    sq = sqrt(4 / Δt^2 - ω1' * ω1)
 
-    dynT = SMatrix{3,3,T,9}(-body.m / Δt * I)
-    dynR = skewplusdiag(ω1, -sq) * J + J * ω1 * (ω1' / sq) - skew(J * ω1)
+# @inline function ∂dyn∂posm1(body::Body{T}, Δt) where T
+#     J = body.J
+#     ω1 = getω1(body, Δt)
+#     sq1 = sqrt(4 / Δt^2 - ω1' * ω1)
+#     ωnew = getωnew(body)
+#     sqnew = sqrt(4 / Δt^2 - ωnew' * ωnew)
 
-    Z = @SMatrix zeros(T, 3, 3)
+#     dynT = SMatrix{3,3,T,9}(-2*body.m / Δt^2 * I)
+#     dynR = -(skewplusdiag(ωnew, sqnew) * J - J * ωnew * (ωnew' / sqnew) - skew(J * ωnew)) * 2/Δt * VRmat(getq3(body,Δt))*RᵀVᵀmat(body.q[2]) +
+#         (skewplusdiag(ω1, -sq1) * J + J * ω1 * (ω1' / sq1) - skew(J * ω1)) * 2/Δt * VLᵀmat(body.q[1])*LVᵀmat(body.q[2])
 
-    return [[dynT; Z] [Z; dynR]]
-end
+#     Z = @SMatrix zeros(T, 3, 3)
 
-@inline function ∂dyn∂con(body::Body{T}, Δt) where T
-    dynT = SMatrix{3,3,T,9}(-I)
-    dynR = SMatrix{3,3,T,9}(-2*I)
+#     return [[dynT; Z] [Z; dynR]]
+# end
 
-    Z = @SMatrix zeros(T, 3, 3)
+# @inline function ∂dyn∂velm1(body::Body{T}, Δt) where T
+#     J = body.J
+#     ω1 = getω1(body, Δt)
+#     sq = sqrt(4 / Δt^2 - ω1' * ω1)
 
-    return [[dynT; Z] [Z; dynR]]
-end
+#     dynT = SMatrix{3,3,T,9}(-body.m / Δt * I)
+#     dynR = skewplusdiag(ω1, -sq) * J + J * ω1 * (ω1' / sq) - skew(J * ω1)
+
+#     Z = @SMatrix zeros(T, 3, 3)
+
+#     return [[dynT; Z] [Z; dynR]]
+# end
+
+# @inline function ∂dyn∂con(body::Body{T}, Δt) where T
+#     dynT = SMatrix{3,3,T,9}(-I)
+#     dynR = SMatrix{3,3,T,9}(-2*I)
+
+#     Z = @SMatrix zeros(T, 3, 3)
+
+#     return [[dynT; Z] [Z; dynR]]
+# end
 
 @inline torqueFromForce(F::AbstractVector{T}, r::AbstractVector{T}) where T = cross(r, F)
 @inline function setForce!(body::Body, F, τ, No)
