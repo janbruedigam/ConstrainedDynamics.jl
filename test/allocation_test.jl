@@ -2,9 +2,10 @@ using BenchmarkTools
 
 include("examples/atlas.jl")
 t = @benchmarkable simulate!($mech)
-r = BenchmarkTools.minimum(run(t, samples = 1))
+r = BenchmarkTools.minimum(run(t))
 # @test r.time < ...
 @test r.memory == 0
+display(r.time)
 
 include("examples/chain_in_chain.jl")
 t = @benchmarkable simulate!($mech)
