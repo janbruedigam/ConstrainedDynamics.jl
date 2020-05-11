@@ -242,7 +242,7 @@ end
     ωnew = getωnew(body)
     sq1 = sqrt(4 / Δt^2 - ω1' * ω1)
     sq2 = sqrt(4 / Δt^2 - ωnew' * ωnew)
-    dynR = skewplusdiag(ωnew, sq2) * (J * ωnew) - skewplusdiag(ω1, sq1) * (J * ω1) - 2 * body.τ[No]
+    dynR = skewplusdiag(ωnew, sq2) * (J * ωnew) - skewplusdiag(ω1, sq1) * (J * ω1) - 2 * body.τ[2]
 
     ω1func = skewplusdiag(-ω1, sq1) * J - J * ω1 * (ω1' / sq1) + skew(J * ω1)
     ω2func = skewplusdiag(ωnew, sq2) * J - J * ωnew * (ωnew' / sq2) - skew(J * ωnew)
