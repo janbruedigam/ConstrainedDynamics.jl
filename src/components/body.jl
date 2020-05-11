@@ -229,7 +229,7 @@ end
 
     # Velocity
     Z = @SMatrix zeros(T,3,3)
-    # Z43 = @SMatrix zeros(T,4,3)
+    Z43 = @SMatrix zeros(T,4,3)
     Z2 = [Z Z]
     # Z432 = [Z43 Z43]
     E = SMatrix{3,3,T,9}(I)
@@ -255,7 +255,7 @@ end
 
     # This calculates the ϵ for q⊗Δq = q⊗(1 ϵᵀ)ᵀ
     # AposR = Δt/2*([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
-    AposR = Δt/2 * VLmat(getq3(body,Δt)) * ([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
+    AposR = Δt/2 * VLmat(getq3(body,Δt)) * ([Rmat(ωbar(body, Δt))*LVᵀmat(qd) Z43] + Lmat(qd)*derivωbar(body, Δt)*AvelR)
     BposR = Δt/2 * VLmat(getq3(body,Δt)) * Lmat(qd)*derivωbar(body, Δt)*BvelR
 
     AT = [[AposT;AvelT] [Z2;Z2]]
