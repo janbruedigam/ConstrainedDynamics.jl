@@ -69,5 +69,5 @@ initfourbar!(mech,[origin;links[1:4]],verts,q1,q1)
 initfourbar!(mech,[links[4];links[5:8]],verts,q1 / q1,q1)
 
 
-simulate!(mech,save = true)
-visualize!(mech)
+storage = simulate!(mech, 10., record = true)
+visualize!(mech, storage, shapes)

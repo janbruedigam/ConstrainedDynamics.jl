@@ -47,5 +47,5 @@ a = [0;0;0;0;0.3]
 setForce!(mech,joint0to12,a)
 # setForce!(mech,link2,τ=[0;0;0.3])
 
-simulate!(mech,save = true)
-visualize!(mech)
+storage = simulate!(mech, 10., record = true)
+visualize!(mech, storage, shapes)

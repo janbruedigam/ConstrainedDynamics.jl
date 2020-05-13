@@ -39,5 +39,5 @@ setPosition!(mech,origin,link1,p2 = vert11,Δq = q1)
 setPosition!(mech,link1,link2,p1 = vert12,p2 = vert21,Δq = inv(q1))
 setForce!(mech,link2,τ = [0;0.2;0])
 
-simulate!(mech,save = true)
-visualize!(mech)
+storage = simulate!(mech, 10., record = true)
+visualize!(mech, storage, shapes)

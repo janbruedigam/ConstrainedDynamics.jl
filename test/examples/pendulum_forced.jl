@@ -30,7 +30,7 @@ shapes = [box]
 mech = Mechanism(origin, links, constraints, shapes = shapes, tend = 10.)
 setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
 
-function controller!(mechanism, t)
-    τ = SVector{3,Float64}(1, 0, 0) * cos(0.5 * t * 2pi)
+function control!(mechanism, k)
+    τ = SVector{3,Float64}(1, 0, 0) * cos(0.5 * k*0.01 * 2pi)
     setForce!(mechanism, mechanism.bodies[1], τ = τ)
 end

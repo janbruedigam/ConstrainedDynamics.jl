@@ -159,7 +159,7 @@ mutable struct Mechanism{T,N,Ni}
         for id in graph.rdfslist
             component = getcomponent(mechanism, id)
             if typeof(component) <: Body
-                shape = getshape(mechanism, id)
+                shape = getshape(shapes, id)
 
                 body = component
                 preds = predecessors(graph, id)
@@ -231,7 +231,7 @@ mutable struct Mechanism{T,N,Ni}
             end
         end
 
-        return mechanism
+        return mechanism, shapes
     end
 end
 

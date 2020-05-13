@@ -26,5 +26,5 @@ mech = Mechanism(origin, links, ineqs, shapes = shapes)
 setVelocity!(mech,link1,v = [1;0.5;5])
 
 
-simulate!(mech,save = true)
-visualize!(mech)
+storage = simulate!(mech, 10., record = true)
+visualize!(mech, storage, shapes)

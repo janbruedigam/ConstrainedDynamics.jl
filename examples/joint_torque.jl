@@ -35,5 +35,5 @@ setPosition!(mech,link1,link2,p1 = vert12,p2 = vert11)
 
 setForce!(mech, joint1to2, [0.05])
 
-simulate!(mech,save = true)
-visualize!(mech)
+storage = simulate!(mech, 10., record = true)
+visualize!(mech, storage, shapes)

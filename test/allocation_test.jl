@@ -50,7 +50,11 @@ c2 = 9
 
 for i=1:19
     include("examples/"*files[i]*".jl")
-    t = @benchmarkable simulate!($mech)
+    if files[i]=="joint_force" || files[i]=="pendulum_forced"
+        t = @benchmarkable simulate!($mech, 10., control!)
+    else
+        t = @benchmarkable simulate!($mech, 10.)
+    end
     r = BenchmarkTools.minimum(run(t, samples=1))
     @test r.memory == 0
     time[i] = r.time/1e6

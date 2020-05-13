@@ -55,7 +55,7 @@ function getcomponent(mechanism::Mechanism, name::String)
     return component
 end
 
-function getshape(shapes::Vector{Shape}, id)
+function getshape(shapes::Vector{<:Shape}, id)
     for shape in shapes
         for bodyid in shape.bodyids
             if bodyid == id
