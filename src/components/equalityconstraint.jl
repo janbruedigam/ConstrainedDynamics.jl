@@ -95,6 +95,11 @@ end
     :(svcat($(vec...)))
 end
 
+@inline function GtλTof!(mechanism, body::Body, eqc::EqualityConstraint)
+    body.f -= ∂g∂pos(mechanism, eqc, body.id)' * eqc.s1
+    return
+end
+
 @generated function g(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
     vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
     :(svcat($(vec...)))

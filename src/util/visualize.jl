@@ -17,18 +17,19 @@ function shapeobject(mesh::Mesh)
     return shape = load(mesh.path, GLUVMesh)
 end
 
-function visualize!(mechanism::Mechanism)
+function visualize!(mechanism::Mechanism, storage::Storage{T,N}, shapes::Vector{<:Shape}) where {T,N}
     vis = Visualizer()
     open(vis, Blink.Window())
 
-    storage = deepcopy(mechanism.storage)
+    storage = deepcopy(storage)
+    steps = Base.OneTo(N)
     oid = mechanism.origin.id
     oshapeind = 0
 
-    for (ind,shape) in enumerate(mechanism.shapes)
+    for (ind,shape) in enumerate(shapes)
         for id in shape.bodyids
             if id >= 0
-                for i in mechanism.steps
+                for i in steps
                     storage.x[id][i] += vrotate(shape.xoff, storage.q[id][i])
                     storage.q[id][i] *= shape.qoff
                 end
@@ -46,13 +47,15 @@ function visualize!(mechanism::Mechanism)
     framerate = Int64(round(1/mechanism.Δt))
     anim = MeshCat.Animation(Dict{MeshCat.SceneTrees.Path,MeshCat.AnimationClip}(), framerate)
 
-    for k=mechanism.steps
+    bodies = mechanism.bodies
+
+    for k = steps
         MeshCat.atframe(anim, k) do
-            for (id,body) in pairs(mechanism.bodies)
+            for (id,body) in pairs(bodies)
                 settransform!(vis["bundle/visshape"*string(id)], compose(Translation((storage.x[id][k])...),LinearMap(Quat((storage.q[id][k])...))))
             end
             if oshapeind > 0
-                shape = mechanism.shapes[oshapeind]
+                shape = shapes[oshapeind]
                 settransform!(vis["bundle/visshape"*string(oid)], compose(Translation((shape.xoff)...),LinearMap(Quat((shape.qoff)...))))
             end
         end

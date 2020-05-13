@@ -76,6 +76,91 @@ end
 end
 
 
+function feasibilityStepLength!(mechanism::Mechanism)
+    ldu = mechanism.ldu
+
+    τ = 0.995
+    mechanism.α = 1.
+
+    for ineqc in mechanism.ineqconstraints
+        feasibilityStepLength!(mechanism, ineqc, getineqentry(ldu, ineqc.id), τ)
+    end
+
+    return
+end
+
+function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, ineqentry::InequalityEntry, τ) where {T,N}
+    s1 = ineqc.s1
+    γ1 = ineqc.γ1
+    Δs = ineqentry.Δs
+    Δγ = ineqentry.Δγ
+
+    for i = 1:N
+        αmax = τ * s1[i] / Δs[i]
+        (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
+        αmax = τ * γ1[i] / Δγ[i]
+        (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
+    end
+    return
+end
+
+function setFrictionForce!(mechanism)
+    foreach(setFrictionForce!, mechanism.ineqconstraints, mechanism)
+end
+
+function eliminatedSol!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
+    Δt = mechanism.Δt
+    μ = mechanism.μ
+    No = 2
+
+    φ = g(mechanism, ineqc)
+
+    Nx = ∂g∂pos(mechanism, ineqc, body)
+    Nv = ∂g∂vel(mechanism, ineqc, body)
+
+    γ1 = ineqc.γ1
+    s1 = ineqc.s1
+
+    Δv = diagonal.Δs
+    ineqentry.Δγ = γ1 ./ s1 .* φ - μ ./ s1 - γ1 ./ s1 .* (Nv * Δv)
+    ineqentry.Δs = s1 .- μ ./ γ1 - s1 ./ γ1 .* ineqentry.Δγ
+
+    return
+end
+
+
+function setentries!(mechanism::Mechanism)
+    graph = mechanism.graph
+    ldu = mechanism.ldu
+
+    for (id, body) in pairs(mechanism.bodies)
+        for cid in directchildren(graph, id)
+            setLU!(mechanism, getentry(ldu, (id, cid)), id, geteqconstraint(mechanism, cid))
+        end
+
+        diagonal = getentry(ldu, id)
+        setDandΔs!(mechanism, diagonal, body)
+        for cid in ineqchildren(graph, id)
+            extendDandΔs!(mechanism, diagonal, body, getineqconstraint(mechanism, cid))
+        end
+    end
+
+    for node in mechanism.eqconstraints
+        id = node.id
+
+        for cid in directchildren(graph, id)
+            setLU!(mechanism, getentry(ldu, (id, cid)), node, cid)
+        end
+
+        for cid in loopchildren(graph, id)
+            setLU!(getentry(ldu, (id, cid)))
+        end
+
+        diagonal = getentry(ldu, id)
+        setDandΔs!(mechanism, diagonal, node)
+    end
+end
+
 function factor!(graph::Graph, ldu::SparseLDU)
     for id in graph.dfslist
         sucs = successors(graph, id)
@@ -160,22 +245,4 @@ end
     return dot(d1, d1) + dot(d2, d2)
 end
 
-function eliminatedSol!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
-    Δt = mechanism.Δt
-    μ = mechanism.μ
-    No = 2
 
-    φ = g(mechanism, ineqc)
-
-    Nx = ∂g∂pos(mechanism, ineqc, body)
-    Nv = ∂g∂vel(mechanism, ineqc, body)
-
-    γ1 = ineqc.γ1
-    s1 = ineqc.s1
-
-    Δv = diagonal.Δs
-    ineqentry.Δγ = γ1 ./ s1 .* φ - μ ./ s1 - γ1 ./ s1 .* (Nv * Δv)
-    ineqentry.Δs = s1 .- μ ./ γ1 - s1 ./ γ1 .* ineqentry.Δγ
-
-    return
-end
