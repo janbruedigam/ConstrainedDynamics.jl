@@ -1,5 +1,5 @@
 using ConstrainedDynamics
-
+using StaticArrays
 
 # Parameters
 ex = [1.;0.;0.]
@@ -34,12 +34,13 @@ links = [link1; link2]
 constraints = [joint0to1;joint1to2]
 shapes = [b1;b2]
 
-function control!(mechanism, t)
-    setForce!(mechanism, joint1to2, [0.1;0.])
+function control!(mechanism, k)
+    F = SVector{2,Float64}(0.1,0.)
+    setForce!(mechanism, joint1to2, F)
     return
 end
 
-mech = Mechanism(origin, links, constraints, shapes = shapes, g = 0., tend = 10.)
+mech = Mechanism(origin, links, constraints, shapes = shapes, g = 0.)
 setPosition!(mech,link1,q = Quaternion(RotX(pi / 2)))
 setPosition!(mech,link1,link2,p1 = vert12,p2 = vert21)
 # setVelocity!(mech,link1,ω=[2.;0;0])

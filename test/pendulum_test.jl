@@ -32,28 +32,28 @@ t0 = 1
 
 q1 = Quaternion(RotX(π / 2))
 setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
-simulate!(mech,save = true)
+storage = simulate!(mech,10.,record = true)
 T = T0*1.18
 Δ = Int(round(T/Δt))
-traj = getindex.(mech.storage.x[1],2)
+traj = getindex.(storage.x[1],2)
 diff = traj[1:Δ]-traj[Δ+1:2*Δ]
 @test maximum(diff)<0.1
 
 q1 = Quaternion(RotX(π / 3))
 setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
-simulate!(mech,save = true)
+storage = simulate!(mech,10.,record = true)
 T = T0*1.073
 Δ = Int(round(T/Δt))
-traj = getindex.(mech.storage.x[1],2)
+traj = getindex.(storage.x[1],2)
 diff = traj[1:Δ]-traj[Δ+1:2*Δ]
 @test maximum(diff)<0.1
 
 q1 = Quaternion(RotX(π / 6))
 setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
-simulate!(mech,save = true)
+storage = simulate!(mech,10.,record = true)
 T = T0*1.017
 Δ = Int(round(T/Δt))
-traj = getindex.(mech.storage.x[1],2)
+traj = getindex.(storage.x[1],2)
 diff = traj[1:Δ]-traj[Δ+1:2*Δ]
 @test maximum(diff)<0.1
 

@@ -2,7 +2,7 @@ using ConstrainedDynamics
 
 
 path = "examples/examples_files/doublependulum.urdf"
-mech = Mechanism(path)
+mech, shapes = Mechanism(path)
 
-simulate!(mech, save = true)
-visualize!(mech)
+storage = simulate!(mech, 10., record = true)
+visualize!(mech, storage, shapes)

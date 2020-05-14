@@ -1,33 +1,32 @@
 mutable struct Mechanism{T,N,Ni}
-    tend::T
-    steps::Base.OneTo{Int64}
-    Δt::T
-    g::T
-    No::Int64 # order of integrator, currently only No=2 (1st order) implemented
-
+    # tend::T
+    # steps::Base.OneTo{Int64}
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
     eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
     ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
+    graph::Graph{N}
+    ldu::SparseLDU{T}
+    # storage::Storage{T}
+
     # TODO remove once EqualityConstraint is homogenous
     normf::T
     normΔs::T
 
-    graph::Graph{N}
-
-    ldu::SparseLDU{T}
-    storage::Storage{T}
+    Δt::T
+    g::T
+    No::Int64 # order of integrator, currently only No=2 (1st order) implemented
 
     α::T
     μ::T
 
-    shapes::Vector{<:Shape{T}}
+    # shapes::Vector{<:Shape{T}}
 
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
         eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
-        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
 
         resetGlobalID()
@@ -42,7 +41,7 @@ mutable struct Mechanism{T,N,Ni}
         Ne = length(eqcs)
         Ni = length(ineqcs)
         N = Nb + Ne
-        steps = Int64(ceil(tend / Δt))
+        # steps = Int64(ceil(tend / Δt))
 
         currentid = 1
 
@@ -105,7 +104,7 @@ mutable struct Mechanism{T,N,Ni}
         graph = Graph(origin, bodies, eqcs, ineqcs)
         ldu = SparseLDU(graph, bodies, eqcs, ineqcs, bdict, eqdict, ineqdict)
 
-        storage = Storage{T}(steps, Nb, Ne)
+        # storage = Storage{T}(steps, Nb, Ne)
 
         bodies = UnitDict(bodies)
         eqcs = UnitDict((eqcs[1].id):(eqcs[Ne].id), eqcs)
@@ -118,40 +117,40 @@ mutable struct Mechanism{T,N,Ni}
         α = 1
         μ = 1
 
-        new{T,N,Ni}(tend, Base.OneTo(steps), Δt, g, No, origin, bodies, eqcs, ineqcs, normf, normΔs, graph, ldu, storage, α, μ, shapes)
+        new{T,N,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, No, α, μ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
-        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         ineqcs = InequalityConstraint{T}[]
-        Mechanism(origin, bodies, eqcs, ineqcs, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
+        Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, No = No, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
-        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, ineqcs, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
+        Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, No = No, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
-        tend::T = 10., Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, tend = tend, Δt = Δt, g = g, No = No, shapes = shapes)
+        Mechanism(origin, bodies, eqc, Δt = Δt, g = g, No = No, shapes = shapes)
     end
 
-    function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, tend::T = 10., Δt::T = .01, g::T = -9.81, No::Integer = 2) where T
+    function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, Δt::T = .01, g::T = -9.81, No::Integer = 2) where T
         origin, links, joints, shapes = parse_urdf(filename, T, floating)
 
-        mechanism = Mechanism(origin, links, joints, shapes = shapes, tend = tend, Δt = Δt, g = g, No = No)
+        mechanism = Mechanism(origin, links, joints, shapes = shapes, Δt = Δt, g = g, No = No)
 
         graph = mechanism.graph
         xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
@@ -160,7 +159,7 @@ mutable struct Mechanism{T,N,Ni}
         for id in graph.rdfslist
             component = getcomponent(mechanism, id)
             if typeof(component) <: Body
-                shape = getshape(mechanism, id)
+                shape = getshape(shapes, id)
 
                 body = component
                 preds = predecessors(graph, id)
@@ -225,14 +224,14 @@ mutable struct Mechanism{T,N,Ni}
                 setPosition!(mechanism, pbody, body, p1 = p1, p2 = p2, Δq = qbody)
 
                 # shape relative
-                if shape != nothing
+                if shape !== nothing
                     shape.xoff = vrotate(xjointworld + vrotate(shape.xoff, qjointworld) - body.x[1], inv(body.q[1]))
                     shape.qoff = qbody \ qjoint * shape.qoff
                 end
             end
         end
 
-        return mechanism
+        return mechanism, shapes
     end
 end
 
@@ -248,7 +247,7 @@ function disassemble(mechanism::Mechanism)
     end
     for eqc in eqconstraints
         eqc.id *= -1
-        if eqc.pid == nothing
+        if eqc.pid === nothing
             eqc.pid = origin.id
         else
             eqc.pid *= -1
@@ -257,7 +256,7 @@ function disassemble(mechanism::Mechanism)
     end
     for ineqc in ineqconstraints
         ineqc.id *= -1
-        if ineqc.pid == nothing
+        if ineqc.pid === nothing
             ineqc.pid = origin.id
         else
             ineqc.pid *= -1

@@ -31,7 +31,7 @@ end
 
 shapes = [b1]
 
-mech = Mechanism(origin, links, constraints;tend = 10.,Δt = 0.01, shapes = shapes)
+mech = Mechanism(origin, links, constraints;Δt = 0.01, shapes = shapes)
 setPosition!(mech,origin,links[1],p2 = vert11,Δq = q1)
 previd = links[1].id
 for body in Iterators.drop(mech.bodies, 1)
@@ -40,5 +40,5 @@ for body in Iterators.drop(mech.bodies, 1)
     previd = body.id
 end
 
-simulate!(mech,save = true)
-visualize!(mech)
+storage = simulate!(mech, 10., record = true)
+visualize!(mech, storage, shapes)

@@ -1,7 +1,7 @@
 using ConstrainedDynamics
 
 path = "examples/examples_files/atlas_simple.urdf"
-mech = Mechanism(path, floating=true, g = -.5)
+mech, shapes = Mechanism(path, floating=true, g = -.5)
 
-simulate!(mech, save = true)
-visualize!(mech)
+storage = simulate!(mech, 10., record = true)
+visualize!(mech, storage, shapes)

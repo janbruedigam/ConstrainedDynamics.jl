@@ -68,5 +68,5 @@ if N > 1
 end
 
 
-simulate!(mech,save = true)
-visualize!(mech)
+storage = simulate!(mech, 10., record = true)
+visualize!(mech, storage, shapes)

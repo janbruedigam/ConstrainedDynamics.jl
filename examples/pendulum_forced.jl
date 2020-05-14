@@ -27,14 +27,14 @@ constraints = [joint_between_origin_and_link1]
 shapes = [box]
 
 
-mech = Mechanism(origin, links, constraints, shapes = shapes, tend = 10.)
+mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
 
-function controller!(mechanism, t)
-    τ = SVector{3,Float64}(1, 0, 0) * cos(0.5 * t * 2pi)
+function controller!(mechanism, k)
+    τ = SVector{3,Float64}(1, 0, 0) * cos(0.5 * k*0.01 * 2pi)
     setForce!(mechanism, mechanism.bodies[1], τ = τ)
 end
 
+storage = simulate!(mech, 10., controller!, record = true)
+visualize!(mech, storage, shapes)
 
-simulate!(mech,controller!,save = true)
-visualize!(mech)

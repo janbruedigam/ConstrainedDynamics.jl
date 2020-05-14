@@ -35,5 +35,5 @@ mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(mech,origin,link1,p1 = [0;-0.5 * sqrt(2);0],p2 = vert11,Δq = q1)
 setPosition!(mech,origin,link2,p2 = vert11,Δq = q2)
 
-simulate!(mech,save = true)
-visualize!(mech)
+storage = simulate!(mech, 10., record = true)
+visualize!(mech, storage, shapes)
