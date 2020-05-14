@@ -27,7 +27,7 @@ constraints = [joint_between_origin_and_link1]
 shapes = [box]
 
 
-mech = Mechanism(origin, links, constraints, shapes = shapes, tend = 10.)
+mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
 
 function control!(mechanism, k)

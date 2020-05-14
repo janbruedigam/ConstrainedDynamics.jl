@@ -32,10 +32,10 @@ for file in files
     end
     n = length(storage.x)
     for i=1:n
-        @test !any(isnan.(mech.storage.x[i]))
-        @test !any(isnan.(mech.storage.q[i]))
-        @test !any(isnan.(mech.storage.v[i]))
-        @test !any(isnan.(mech.storage.ω[i]))
+        @test !any(isnan.(storage.x[i]))
+        @test !any(isnan.(storage.q[i]))
+        @test !any(isnan.(storage.v[i]))
+        @test !any(isnan.(storage.ω[i]))
     end
 end
 

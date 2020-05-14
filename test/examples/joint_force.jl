@@ -1,5 +1,5 @@
 using ConstrainedDynamics
-
+using StaticArrays
 
 # Parameters
 ex = [1.;0.;0.]
@@ -35,7 +35,8 @@ constraints = [joint0to1;joint1to2]
 shapes = [b1;b2]
 
 function control!(mechanism, k)
-    setForce!(mechanism, joint1to2, [0.1;0.])
+    F = SVector{2,Float64}(0.1,0.)
+    setForce!(mechanism, joint1to2, F)
     return
 end
 

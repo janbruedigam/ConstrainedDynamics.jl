@@ -50,10 +50,14 @@ c2 = 9
 
 for i=1:19
     include("examples/"*files[i]*".jl")
-    if files[i]=="joint_force" || files[i]=="pendulum_forced"
-        t = @benchmarkable simulate!($mech, 10., control!)
+    steps = Base.OneTo(1000)
+    storage = Storage{Float64}(steps,length(mech.bodies))
+    if files[i]=="pendulum_forced"
+        t = @benchmarkable simulate!($mech, $steps, $storage, $control!)
+    # elseif files[i]=="joint_force"
+        # TODO once zero alloc works
     else
-        t = @benchmarkable simulate!($mech, 10.)
+        t = @benchmarkable simulate!($mech, $steps, $storage)
     end
     r = BenchmarkTools.minimum(run(t, samples=1))
     @test r.memory == 0

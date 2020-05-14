@@ -26,6 +26,7 @@ export Box,
     EqualityConstraint,
     InequalityConstraint,
     Mechanism,
+    Storage,
     Controller,
 
     OriginConnection,
