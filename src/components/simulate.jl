@@ -39,9 +39,9 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
     Δt = mechanism.Δt
     bodies = mechanism.bodies
 
-    for i = steps
-        record && saveToStorage!(mechanism, storage, i)
-        control!(mechanism, i)
+    for k = steps
+        record && saveToStorage!(mechanism, storage, k)
+        control!(mechanism, k)
         newton!(mechanism, warning = debug)
         foreach(updatePos!, bodies, Δt)
     end
@@ -56,9 +56,9 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
 
     control! = controller.control!
 
-    for i = steps
-        record && saveToStorage!(mechanism, storage, i)
-        control!(mechanism, controller, i)
+    for k = steps
+        record && saveToStorage!(mechanism, storage, k)
+        control!(mechanism, controller, k)
         newton!(mechanism, warning = debug)
         foreach(updatePos!, bodies, Δt)
     end
@@ -71,9 +71,9 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
     Δt = mechanism.Δt
     bodies = mechanism.bodies
    
-    for i = steps
+    for k = steps
         newton!(mechanism, warning = debug)
-        record && saveToStorage!(mechanism, storage, i)
+        record && saveToStorage!(mechanism, storage, k)
         foreach(updatePos!, bodies, Δt)
     end
     record ? (return storage) : (return) 
