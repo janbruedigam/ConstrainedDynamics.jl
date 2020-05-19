@@ -21,7 +21,6 @@ files = [
     "pendulum_forced"
     "pendulum"
     "planar_example"
-    "rel_rot"
     "scissor_lift"
     "slider_crank"
     "slider_crank3d"
@@ -48,7 +47,6 @@ warningtimes = [
     25.0 # 11.376999
     25.0 # 11.785099
     100.0 # 45.874299
-    9999.0 #
     100.0 # 42.6032
     100.0 # 59.4295
     500.0 # 173.376601

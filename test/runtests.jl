@@ -14,6 +14,10 @@ end
     include("pendulum_test.jl")
 end
 
+@safetestset "Initialization Tests" begin
+    include("initialize_test.jl")
+end
+
 @safetestset "Example Tests" begin
     include("example_test.jl")
 end

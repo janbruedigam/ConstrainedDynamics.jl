@@ -20,7 +20,6 @@ files = [
     "pendulum_forced"
     "pendulum"
     "planar_example"
-    "rel_rot"
     "scissor_lift"
     "slider_crank"
     "slider_crank3d"
