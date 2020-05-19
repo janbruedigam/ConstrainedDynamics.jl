@@ -59,8 +59,11 @@ function resetVars!(ineqc::InequalityConstraint{T,N}) where {T,N}
     return 
 end
 
-@inline function NtγTof!(mechanism, body::Body, ineqc::InequalityConstraint)
+@inline function NtγTof!(mechanism, body::Body, ineqc::InequalityConstraint{T,N}) where {T,N}
     body.f -= ∂g∂pos(mechanism, ineqc, body)' * ineqc.γ1
+    for i=1:N
+        body.f -= additionalforce(ineqc.constraints[i])
+    end
     return
 end
 
@@ -117,11 +120,11 @@ end
     :(vcat($(vec...)))
 end
 
-function setFrictionForce!(ineqc::InequalityConstraint{T,N}, mechanism) where {T,N}
+function calcFrictionForce!(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
     for i = 1:N
         constraint = ineqc.constraints[i]
         if typeof(constraint) <: Friction
-            setFrictionForce!(mechanism, ineqc, constraint, i, getbody(mechanism, ineqc.pid))
+            calcFrictionForce!(mechanism, ineqc, constraint, i, getbody(mechanism, ineqc.pid))
         end
     end
 end

@@ -104,30 +104,6 @@ function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, ine
     return
 end
 
-function setFrictionForce!(mechanism)
-    foreach(setFrictionForce!, mechanism.ineqconstraints, mechanism)
-end
-
-function eliminatedSol!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
-    Δt = mechanism.Δt
-    μ = mechanism.μ
-    No = 2
-
-    φ = g(mechanism, ineqc)
-
-    Nx = ∂g∂pos(mechanism, ineqc, body)
-    Nv = ∂g∂vel(mechanism, ineqc, body)
-
-    γ1 = ineqc.γ1
-    s1 = ineqc.s1
-
-    Δv = diagonal.Δs
-    ineqentry.Δγ = γ1 ./ s1 .* φ - μ ./ s1 - γ1 ./ s1 .* (Nv * Δv)
-    ineqentry.Δs = s1 .- μ ./ γ1 - s1 ./ γ1 .* ineqentry.Δγ
-
-    return
-end
-
 
 function setentries!(mechanism::Mechanism)
     graph = mechanism.graph
@@ -141,7 +117,9 @@ function setentries!(mechanism::Mechanism)
         diagonal = getentry(ldu, id)
         setDandΔs!(mechanism, diagonal, body)
         for cid in ineqchildren(graph, id)
-            extendDandΔs!(mechanism, diagonal, body, getineqconstraint(mechanism, cid))
+            ineqc = getineqconstraint(mechanism, cid)
+            calcFrictionForce!(mechanism, ineqc)
+            extendDandΔs!(mechanism, diagonal, body, ineqc)
         end
     end
 
@@ -207,9 +185,29 @@ function solve!(mechanism)
         end
 
         for childid in ineqchildren(graph, id)
-            eliminatedSol!(mechanism, getineqentry(ldu, childid), diagonal, getbody(mechanism, id), getineqconstraint(mechanism, childid))
+            eliminatedsolve!(mechanism, getineqentry(ldu, childid), diagonal, getbody(mechanism, id), getineqconstraint(mechanism, childid))
         end
     end
+end
+
+function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
+    Δt = mechanism.Δt
+    μ = mechanism.μ
+    No = 2
+
+    φ = g(mechanism, ineqc)
+
+    Nx = ∂g∂pos(mechanism, ineqc, body)
+    Nv = ∂g∂vel(mechanism, ineqc, body)
+
+    γ1 = ineqc.γ1
+    s1 = ineqc.s1
+
+    Δv = diagonal.Δs
+    ineqentry.Δγ = γ1 ./ s1 .* φ - μ ./ s1 - γ1 ./ s1 .* (Nv * Δv)
+    ineqentry.Δs = s1 .- μ ./ γ1 - s1 ./ γ1 .* ineqentry.Δγ
+
+    return
 end
 
 @inline function s0tos1!(component::Component)

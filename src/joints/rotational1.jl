@@ -1,10 +1,10 @@
 # No idea what kind of joint this actually is...
-@inline function getVelocityDelta(joint::Rotational1, body1::AbstractBody, body2::Body{T}, ω) where T
+@inline function getPositionDelta(joint::Rotational1, body1::AbstractBody, body2::Body{T}, θ) where T
     #TODO define this function
     @error("not defined for rot2")
 end
 
-@inline function getPositionDelta(joint::Rotational1, body1::AbstractBody, body2::Body{T}, θ) where T
+@inline function getVelocityDelta(joint::Rotational1, body1::AbstractBody, body2::Body{T}, ω) where T
     #TODO define this function
     @error("not defined for rot2")
 end
@@ -12,8 +12,15 @@ end
 @inline function setForce!(joint::Rotational1, body1::Body, body2::Body{T}, τ::SVector{2,T}, No) where T
     clearForce!(joint, body1, body2, No)
 
-    τ1 = vrotate(joint.V12' * -τ, body1.q[No])
-    τ2 = -τ1
+    q1 = body1.q[No]
+    q2 = body2.q[No]
+
+    τ1 = vrotate(joint.V12' * -τ, q1*joint.qoff) # in world coordinates
+    τ2 = -τ1 # in world coordinates
+
+    τ1 = vrotate(τ1,inv(q1)) # in local coordinates
+    τ2 = vrotate(τ2,inv(q2)) # in local coordinates
+
     F1 =  @SVector zeros(T,3)
     F2 =  @SVector zeros(T,3)
 
@@ -24,7 +31,13 @@ end
 @inline function setForce!(joint::Rotational1, body1::Origin, body2::Body{T}, τ::SVector{2,T}, No) where T
     clearForce!(joint, body2, No)
 
-    τ2 = joint.V12' * τ
+    q2 = body2.q[No]
+
+    τ1 = vrotate(joint.V12' * -τ, joint.qoff) # in world coordinates
+    τ2 = -τ  # in world coordinates
+    
+    τ2 = vrotate(τ2,inv(q2)) # in local coordinates
+
     F2 = @SVector zeros(T,3)
 
     updateForce!(joint, body2, F2, τ2, No)

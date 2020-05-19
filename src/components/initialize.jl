@@ -43,16 +43,16 @@ function setVelocity!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
     Δt = mechanism.Δt
     
     v1 = getv1(body1, Δt)
-    ω1 = getω1(body1, Δt)
+    ω1 = vrotate(getω1(body1, Δt),body1.q[2]) # in world coordinates
     
     vp1 = v1 + cross(ω1,p1)
     ωp1 = ω1
 
     vp2 = vp1 + Δv
-    ωp2 = ωp1 + Δω
+    ωp2 = ωp1 + vrotate(convert(SVector{3,Float64},Δω),body2.q[2]) # in world coordinates
 
     v2 = vp2 + cross(ωp2,-p2)
-    ω2 = ωp2
+    ω2 = vrotate(ωp2,inv(body2.q[2])) # in local coordinates
 
     setVelocity!(mechanism, body2;v = v2,ω = ω2)
 end
@@ -63,15 +63,15 @@ function setVelocity!(mechanism::Mechanism{T}, body1::Origin{T}, body2::Body{T};
     p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δv::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δω::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
     
     vp2 = Δv
-    ωp2 = Δω
+    ωp2 = vrotate(convert(SVector{3,Float64},Δω),body2.q[2]) # in world coordinates
 
     v2 = vp2 + cross(ωp2,-p2)
-    ω2 = ωp2
+    ω2 = vrotate(ωp2,inv(body2.q[2])) # in local coordinates
 
     setVelocity!(mechanism, body2;v = v2,ω = ω2)
 end
 
 function setForce!(mechanism::Mechanism{T}, body::Body{T};F::AbstractVector{T} = SVector{3,T}(0, 0, 0),r::AbstractVector{T} = SVector{3,T}(0, 0, 0),τ::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
-    τ += torqueFromForce(F, r)
+    τ += vrotate(torqueFromForce(F, r),inv(body.q[2])) # in local coordinates
     setForce!(body, F, τ, mechanism.No)
 end

@@ -31,6 +31,8 @@ end
 @inline ∂g∂pos(friction::Friction, No) = friction.Nx
 @inline ∂g∂vel(friction::Friction, Δt, No) = friction.Nx * Δt
 
+@inline additionalforce(friction::Friction) = friction.D'*friction.b
+
 @inline function schurf(ineqc, friction::Friction, i, body::Body, μ, Δt, No)
     φ = g(friction, body, Δt, No)
 
@@ -51,16 +53,11 @@ end
 end
 
 # Direct stuff
-@inline function setFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
+@inline function calcFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
     No = mechanism.No
     cf = friction.cf
     γ1 = ineqc.γ1[i]
     D = friction.D
-
-    B = D'*friction.b
-    F = body.F[No] - B[SVector(1,2,3)]
-    τ = body.τ[No] - B[SVector(4,5,6)]
-    setForce!(body,F,τ,No)
 
     f = body.f
     v = body.s1
@@ -69,19 +66,13 @@ end
     body.s1 = v
     body.f = f
 
-    b0 = D*dyn
+    b0 = D*dyn + friction.b # remove old friction force
 
     if norm(b0) > cf*γ1
         friction.b = b0/norm(b0)*cf*γ1
     else
         friction.b = b0
-    end
-
-    B = D'*friction.b
-    F += B[SVector(1,2,3)]
-    τ += B[SVector(4,5,6)]
-    setForce!(body,F,τ,No)
-    
+    end    
     return
 end
 

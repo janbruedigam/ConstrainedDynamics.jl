@@ -1,20 +1,27 @@
-@inline function getVelocityDelta(joint::Rotational2, body1::AbstractBody, body2::Body{T}, ω::Union{T,SVector{1,T}}) where T
-    ω = joint.V3' * ω
-    Δω = vrotate(ω, joint.qoff) # in body1 frame
-    return Δω
-end
-
-@inline function getPositionDelta(joint::Rotational2, body1::AbstractBody, body2::Body{T}, θ::Union{T,SVector{1,T}}) where T
+@inline function getPositionDelta(joint::Rotational2, body1::AbstractBody, body2::Body{T}, θ::SVector{1,T}) where T
     q = Quaternion(cos(θ/2),(joint.V3*sin(θ/2))...)
     Δq = joint.qoff * q # in body1 frame
     return Δq
 end
 
+@inline function getVelocityDelta(joint::Rotational2, body1::AbstractBody, body2::Body{T}, ω::SVector{1,T}) where T
+    ω = joint.V3' * ω
+    Δω = vrotate(ω, inv(body2.q[2])*body1.q[2]*joint.qoff) # in body2 frame
+    return Δω
+end
+
 @inline function setForce!(joint::Rotational2, body1::Body, body2::Body{T}, τ::SVector{1,T}, No) where T
     clearForce!(joint, body1, body2, No)
 
-    τ1 = vrotate(joint.V3' * -τ, body1.q[No])
-    τ2 = -τ1
+    q1 = body1.q[No]
+    q2 = body2.q[No]
+
+    τ1 = vrotate(joint.V3' * -τ, q1*joint.qoff) # in world coordinates
+    τ2 = -τ1 # in world coordinates
+
+    τ1 = vrotate(τ1,inv(q1)) # in local coordinates
+    τ2 = vrotate(τ2,inv(q2)) # in local coordinates
+
     F1 =  @SVector zeros(T,3)
     F2 =  @SVector zeros(T,3)
 
@@ -25,7 +32,13 @@ end
 @inline function setForce!(joint::Rotational2, body1::Origin, body2::Body{T}, τ::SVector{1,T}, No) where T
     clearForce!(joint, body2, No)
 
-    τ2 = joint.V3' * τ
+    q2 = body2.q[No]
+
+    τ1 = vrotate(joint.V3' * -τ, joint.qoff) # in world coordinates
+    τ2 = -τ1 # in world coordinates
+
+    τ2 = vrotate(τ2,inv(q2)) # in local coordinates
+
     F2 = @SVector zeros(T,3)
 
     updateForce!(joint, body2, F2, τ2, No)
