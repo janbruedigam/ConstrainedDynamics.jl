@@ -2,6 +2,10 @@ using Test
 using SafeTestsets
 
 
+@safetestset "Dynamics Diff Tests" begin
+    include("dyndiff_test.jl")
+end
+
 @safetestset "Joint Diff Tests" begin
     include("jointdiff_test.jl")
 end
