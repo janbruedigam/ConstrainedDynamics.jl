@@ -1,14 +1,11 @@
 using ConstrainedDynamics
 using LinearAlgebra
 
+
 # Parameters
 h = .1
 r = 1.
 b1 = Cylinder(r, h, h*r, color = RGBA(1., 0., 0.))
-
-# length1 = 0.1
-# width, depth = 2., 2.
-# b1 = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
 
 # Links
 origin = Origin{Float64}()
@@ -25,7 +22,8 @@ shapes = [b1]
 mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
 
 axis = [0;0;1.]
-setVelocity!(mech,link1, ω = 2pi*axis)
+speed = 20pi #*0
+setVelocity!(mech,link1, ω = speed*axis)
 
 function controller!(mechanism, k)
     if k==1

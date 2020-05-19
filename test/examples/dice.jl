@@ -43,9 +43,6 @@ for i = 1:8
 end
 
 ωtemp = [0.1;0.1;0.1]
-# ωtemp = [12.15437;5.08323;-39.13073]
-# ωtemp = [19.46637;-18.17827;-44.33827]
-# ωtemp = [-45.36396;23.93890;43.18141]
 setVelocity!(mech,link1,v = [0;3;7.],ω = ωtemp)
 for i = 1:8
     setVelocity!(mech, link1, links[i + 1], p1 = corners[i])
