@@ -1,5 +1,6 @@
 using ConstrainedDynamics
 using LinearAlgebra
+using StaticArrays
 
 
 # Parameters
@@ -25,14 +26,11 @@ axis = [0;0;1.]
 speed = 20pi #*0
 setVelocity!(mech,link1, ω = speed*axis)
 
-function controller!(mechanism, k)
+function control!(mechanism, k)
     if k==1
-        setForce!(mechanism, mechanism.bodies[1], F = [0;0;2.], r=[0;1.;0])
+        setForce!(mechanism, mechanism.bodies[1], F = SA[0;0;2.], r=SA[0;1.;0])
     else
-        setForce!(mechanism, mechanism.bodies[1], F = [0;0;0.], r=[0;0.0;0])
+        setForce!(mechanism, mechanism.bodies[1], F = SA[0;0;0.], r=SA[0;0.0;0])
     end
     return
 end
-
-storage = simulate!(mech, 10., controller!, record = true)
-visualize!(mech, storage, shapes)

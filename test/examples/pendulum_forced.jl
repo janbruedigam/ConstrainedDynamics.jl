@@ -31,7 +31,7 @@ mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
 
 jointid = constraints[1].id
-function controller!(mechanism, k)
+function control!(mechanism, k)
     τ = SVector{1,Float64}(cos(0.5 * k*0.01 * 2pi))
     setForce!(mechanism, geteqconstraint(mechanism,jointid), τ)
 end

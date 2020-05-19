@@ -1,5 +1,7 @@
 using ConstrainedDynamics
 using LinearAlgebra
+using StaticArrays
+
 
 # Parameters
 h = 0.06
@@ -44,17 +46,13 @@ setPosition!(mech,link4,link5,Δx = [0.;0.;0.03])
 
 spin = 0.35
 
-function controller!(mechanism, k)
+function control!(mechanism, k)
     if k<25
-        setForce!(mechanism, link3, F = [0.;25.;25.], τ=spin*[0.2;0.2;1.])
+        setForce!(mechanism, link3, F = SA[0.;25.;25.], τ=spin*SA[0.2;0.2;1.])
     elseif k==40
-        setForce!(mechanism, link3, τ = [0.;0.3;0.])
+        setForce!(mechanism, link3, τ = SA[0.;0.3;0.])
     else
         setForce!(mechanism, link3)
     end
     return
 end
-
-storage = simulate!(mech, 10., controller!, record = true)
-# storage = simulate!(mech, 10., record = true)
-visualize!(mech, storage, shapes)

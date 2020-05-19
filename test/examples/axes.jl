@@ -42,6 +42,3 @@ setPosition!(mech,origin,link3,Δq = Quaternion(RotX(0.)),p2=v3)
 # setVelocity!(mech,link2,v = [-2.5;2.5;5],ω = [2;4;10.])
 setForce!(mech,link1,τ=[0.1;0;0])
 
-
-storage = simulate!(mech, 10., record = true)
-visualize!(mech, storage, shapes)

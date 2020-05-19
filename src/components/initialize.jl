@@ -43,15 +43,15 @@ function setVelocity!(mechanism::Mechanism{T}, body1::Body{T}, body2::Body{T};
     Δt = mechanism.Δt
     
     v1 = getv1(body1, Δt)
-    ω1 = vrotate(getω1(body1, Δt),body1.q[2]) # in world coordinates
+    ω1 = getω1(body1, Δt) # in local coordinates
     
-    vp1 = v1 + cross(ω1,p1)
-    ωp1 = ω1
+    vp1 = v1 + vrotate(convert(SVector{3,Float64},cross(ω1,p1)),body1.q[2])
+    ωp1 = vrotate(ω1,body1.q[2]) # in world coordinates
 
-    vp2 = vp1 + Δv
+    vp2 = vp1 + vrotate(convert(SVector{3,Float64},Δv),body1.q[2])
     ωp2 = ωp1 + vrotate(convert(SVector{3,Float64},Δω),body2.q[2]) # in world coordinates
 
-    v2 = vp2 + cross(ωp2,-p2)
+    v2 = vp2 + vrotate(convert(SVector{3,Float64},cross(vrotate(ωp2,inv(body2.q[2])),-p2)),body2.q[2])
     ω2 = vrotate(ωp2,inv(body2.q[2])) # in local coordinates
 
     setVelocity!(mechanism, body2;v = v2,ω = ω2)

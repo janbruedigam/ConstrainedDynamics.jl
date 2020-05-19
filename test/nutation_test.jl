@@ -27,7 +27,7 @@ mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
 axis = [0;0;1.]
 setVelocity!(mech,link1, ω = 2pi*axis)
 
-function controller!(mechanism, k)
+function control!(mechanism, k)
     if k==1
         setForce!(mechanism, mechanism.bodies[1], F = [0;0;2.], r=[0;1.;0])
     else
@@ -37,4 +37,3 @@ function controller!(mechanism, k)
 end
 
 storage = simulate!(mech, 10., controller!, record = true)
-visualize!(mech, storage, shapes)
