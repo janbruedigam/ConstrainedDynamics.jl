@@ -4,10 +4,10 @@ using Rotations
 using StaticArrays
 using LinearAlgebra
 
-using ConstrainedDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, VLᵀmat, ∂g∂pos, ∂g∂vel, skew, skewplusdiag
+using ConstrainedDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, VLᵀmat, ∂dyn∂pos, ∂dyn∂vel, skew, skewplusdiag
 
 function dynTvel(vars)
-    ezg = SVector{3,T}(0, 0, 9.81)
+    ezg = SVector{3,Float64}(0, 0, 9.81)
     Δt = 0.01
     m = 1.
 
@@ -18,7 +18,7 @@ function dynTvel(vars)
 end
 
 function dynTpos(vars)
-    ezg = SVector{3,T}(0, 0, 9.81)
+    ezg = SVector{3,Float64}(0, 0, 9.81)
     Δt = 0.01
     m = 1.
 
@@ -57,23 +57,24 @@ function dynRpos(vars)
     sq2 = sqrt(4 / Δt^2 - ω2' * ω2)
     sq1 = sqrt(4 / Δt^2 - ω1' * ω1)
     
-    skewplusdiag(ω2, sq2) * (J * ω2) - skewplusdiag(ω1, sq1) * (J * ω1)
+    skewplusdiag(ω2, sq2) * (J * ω2) #- skewplusdiag(ω1, sq1) * (J * ω1)
 end
 
 function dyntestT()
     Δt = 0.01
 
-    x3 = rand(3)
-    x2 = rand(3)
     x1 = rand(3)
-    q3 = Quaternion(rand(RotMatrix{3}))
-    q2 = Quaternion(rand(RotMatrix{3}))
-    q1 = Quaternion(rand(RotMatrix{3}))
+    v1 = rand(3)
+    x2 = x1 + v1*Δt
+    v2 = rand(3)
+    x3 = x2 + v2*Δt
 
-    v2 = (x3-x2)/Δt
-    v1 = (x2-x1)/Δt
-    ω2 = 2/Δt * VLᵀmat(q2)*q3
-    ω1 = 2/Δt * VLᵀmat(q1)*q2
+    q1 = Quaternion(rand(RotMatrix{3}))
+    ω1 = @SVector rand(3)
+    q2 = Quaternion(Lmat(q1) * Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ω1, ω1)), ω1))
+    ω2 = @SVector rand(3)
+    q3 = Quaternion(Lmat(q2) * Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ω2, ω2)), ω2))
+
 
     origin = Origin{Float64}()
     link1 = Body(Box(1., 1., 1., 1.))
@@ -109,17 +110,18 @@ end
 function dyntestR()
     Δt = 0.01
 
-    x3 = rand(3)
-    x2 = rand(3)
     x1 = rand(3)
-    q3 = Quaternion(rand(RotMatrix{3}))
-    q2 = Quaternion(rand(RotMatrix{3}))
-    q1 = Quaternion(rand(RotMatrix{3}))
+    v1 = rand(3)
+    x2 = x1 + v1*Δt
+    v2 = rand(3)
+    x3 = x2 + v2*Δt
 
-    v2 = (x3-x2)/Δt
-    v1 = (x2-x1)/Δt
-    ω2 = 2/Δt * VLᵀmat(q2)*q3
-    ω1 = 2/Δt * VLᵀmat(q1)*q2
+    q1 = Quaternion(rand(RotMatrix{3}))
+    ω1 = @SVector rand(3)
+    q2 = Quaternion(Lmat(q1) * Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ω1, ω1)), ω1))
+    ω2 = @SVector rand(3)
+    q3 = Quaternion(Lmat(q2) * Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ω2, ω2)), ω2))
+
 
     origin = Origin{Float64}()
     link1 = Body(Box(1., 1., 1., 1.))
@@ -135,10 +137,13 @@ function dyntestR()
     link1.x[2] = x2
     link1.q[1] = q1
     link1.q[2] = q2
+    link1.s0 = SVector([v1;ω1]...)
     link1.s1 = SVector([v2;ω2]...)
 
-    res = ForwardDiff.jacobian(dynRpos, [q3;q2;q1])
-    Q3 = res[1:3,1:4] * Lmat(Quaternion(q3)) * Vᵀmat()
+    # res = ForwardDiff.jacobian(dynRpos, [q3;q2;q1])
+    # Q3 = res[1:3,1:4] * Lmat(Quaternion(q3)) * Vᵀmat()
+    res = ForwardDiff.jacobian(dynRvel, [ω2;ω1])
+    Q3 = res[1:3,1:3] * 2/Δt * VLᵀmat(q2) * Lmat(Quaternion(q3)) * Vᵀmat()
 
     n1 = norm(Q3 - ∂dyn∂pos(link1, Δt)[4:6,4:6])
 
