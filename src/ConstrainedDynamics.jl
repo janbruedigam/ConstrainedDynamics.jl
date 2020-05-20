@@ -48,7 +48,7 @@ export Box,
     simulate!,
     plotθ,
     plotλ,
-    visualize!,
+    visualize,
 
     disassemble,
     getcomponent,

@@ -50,7 +50,7 @@ end
 
 # simulate and visualize
 # simulate!(mech,save = true)
-# visualize!(mech)
+# visualize(mech)
 
 # numerics evaluation
 ConstrainedDynamics.setentries!(mech) # writes the entries into the A matrix and b vector for the current configuration

@@ -47,4 +47,4 @@ setForce!(mech,link2,τ = [0;0;1.])
 
 
 storage = simulate!(mech, 20., record = true)
-visualize!(mech, storage, shapes)
+visualize(mech, storage, shapes)

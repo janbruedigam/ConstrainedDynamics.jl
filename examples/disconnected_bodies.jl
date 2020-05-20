@@ -31,4 +31,4 @@ setVelocity!(mech,link2,v = [-2.5;2.5;5],ω = [2;4;10.])
 
 
 storage = simulate!(mech, 10., record = true)
-visualize!(mech, storage, shapes)
+visualize(mech, storage, shapes)

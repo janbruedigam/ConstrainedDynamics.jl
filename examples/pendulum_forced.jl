@@ -37,5 +37,5 @@ function controller!(mechanism, k)
 end
 
 storage = simulate!(mech, 10., controller!, record = true)
-visualize!(mech, storage, shapes)
+visualize(mech, storage, shapes)
 
