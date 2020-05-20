@@ -1,7 +1,6 @@
 using Test
 using SafeTestsets
 
-println(ENV["OS"])
 
 @safetestset "Dynamics Diff Tests" begin
     include("dyndiff_test.jl")
