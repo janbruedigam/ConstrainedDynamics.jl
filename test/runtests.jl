@@ -1,7 +1,7 @@
 using Test
 using SafeTestsets
 
-println(TRAVIS_JULIA_VERSION)
+println(ENV["OS"])
 
 @safetestset "Dynamics Diff Tests" begin
     include("dyndiff_test.jl")
