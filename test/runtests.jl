@@ -1,6 +1,7 @@
 using Test
 using SafeTestsets
 
+println(TRAVIS_JULIA_VERSION)
 
 @safetestset "Dynamics Diff Tests" begin
     include("dyndiff_test.jl")
