@@ -1,5 +1,5 @@
 @inline function getPositionDelta(joint::Rotational3, body1::AbstractBody, body2::Body{T}, θ::SVector{0,T}) where T
-    Δq = Quaternion{T}()
+    Δq = joint.qoff
     return Δq
 end
 
