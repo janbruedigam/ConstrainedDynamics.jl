@@ -4,6 +4,7 @@ using Rotations
 using StaticArrays
 using LinearAlgebra
 
+
 Δt = 0.01
 length1 = 1.0
 width, depth = 1.0, 1.0
@@ -29,7 +30,6 @@ for i=1:10
     shapes = [box1]
 
     mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
-    setPosition!(mech,link1, x = p1 - vrotate(SVector{3,Float64}(p2),qoff), q = qoff)
 
     setPosition!(mech,joint1,SVector{0,Float64}())
     setVelocity!(mech,joint1,SVector{0,Float64}())

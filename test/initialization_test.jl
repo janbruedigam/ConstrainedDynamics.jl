@@ -1,6 +1,6 @@
 include("initialization/body_initialization_test.jl")
 include("initialization/fixed_joint_test.jl")
-# include("initialization/prsimatic_joint_test.jl")
+include("initialization/prismatic_joint_test.jl")
 # include("initialization/revolute_joint_test.jl")
 # include("initialization/cylindrical_joint_test.jl")
 # include("initialization/spherical_joint_test.jl")
