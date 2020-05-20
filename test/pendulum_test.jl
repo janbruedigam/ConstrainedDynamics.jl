@@ -58,4 +58,19 @@ diff = traj[1:Δ]-traj[Δ+1:2*Δ]
 @test maximum(diff)<0.1
 
 
+q1 = Quaternion(RotX(π / 2))
+setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
+storage = simulate!(mech,10.,record = true)
+if haskey(ENV,"TRAVIS_OS_NAME")
+    if occursin("linux", lowercase(ENV["TRAVIS_OS_NAME"]))
+        # visualize(mech, storage, shapes)
+    elseif occursin("osx", lowercase(ENV["TRAVIS_OS_NAME"]))
+        visualize(mech, storage, shapes)
+    elseif occursin("windows", lowercase(ENV["TRAVIS_OS_NAME"]))
+        # visualize(mech, storage, shapes)
+    end
+end
+@test true
+
+
 

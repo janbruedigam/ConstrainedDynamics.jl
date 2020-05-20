@@ -30,4 +30,4 @@ mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
 
 storage = simulate!(mech, 10., record = true)
-visualize!(mech, storage, shapes)
+visualize(mech, storage, shapes)

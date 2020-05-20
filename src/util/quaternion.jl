@@ -8,7 +8,8 @@ end
 # Constructors
 Quaternion(s::Real,v1::Real,v2::Real,v3::Real) = Quaternion(promote(s, v1, v2, v3)...)
 Quaternion(s::Real) = Quaternion(s, 0, 0, 0)
-# Quaternion(v::Vector) = Quaternion(0, v[1], v[2], v[3])
+Quaternion(v::Vector) = (@assert length(v)==3; Quaternion(0, v[1], v[2], v[3]))
+Quaternion(s::T,v::Vector{T}) where T = (@assert length(v)==3; Quaternion(s, v[1], v[2], v[3]))
 Quaternion(v::SVector{3,T}) where T = Quaternion(0, v[1], v[2], v[3])
 Quaternion(s::T,v::SVector{3,T}) where T = Quaternion(s, v[1], v[2], v[3])
 Quaternion(R::Rotation) = Quaternion(Quat(R).w, Quat(R).x, Quat(R).y, Quat(R).z)
@@ -47,7 +48,7 @@ function axis(q::Quaternion{T}) where T
 end
 
 qrotate(x::Quaternion,q::Quaternion) = q * x / q
-vrotate(x::SVector,q::Quaternion) = imag(qrotate(Quaternion(x), q))
+vrotate(x::AbstractVector,q::Quaternion) = imag(qrotate(Quaternion(x), q))
 
 # Matrix equivalences
 # 𝟙(::Type{T}) where T = Quaternion(one(T))

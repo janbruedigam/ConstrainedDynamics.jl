@@ -56,40 +56,44 @@ end
 Base.length(::EqualityConstraint{T,N}) where {T,N} = N
 
 # TODO make zero alloc
-function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ::AbstractVector{T}; K = mechanism.No) where {T,N,Nc}
-    @assert length(Fτ)==3*Nc-N
-    for i = 1:Nc
-        setForce!(eqc.constraints[i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[i]),  Fτ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])], K)
-    end
-    return
-end
-
-function setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T,N,Nc}
-    # TODO currently assumed constraints are in order which is the case unless very low level constraint setting and only joints
+# TODO currently assumed constraints are in order and only joints which is the case unless very low level constraint setting
+function setPosition!(mechanism, eqc::EqualityConstraint{T,N,Nc}, xθ) where {T,N,Nc}
+    @assert length(xθ)==3*Nc-N
     n = Int64(Nc/2)
     body1 = getbody(mechanism, eqc.pid)
     for i = 1:n
         body2 = getbody(mechanism, eqc.bodyids[i])
-        Δv = getVelocityDelta(eqc.constraints[i], body1, body2, vω[i])
-        Δω = getVelocityDelta(eqc.constraints[i+1], body1, body2, vω[i+1])
+        Δx = getPositionDelta(eqc.constraints[i], body1, body2, xθ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])]) 
+        Δq = getPositionDelta(eqc.constraints[i+1], body1, body2, xθ[SUnitRange(eqc.inds[i+1][1],eqc.inds[i+1][2])])
+        
+        p1, p2 = eqc.constraints[i].vertices
+        setPosition!(mechanism, body1, body2; p1 = p1, p2 = p2, Δx = Δx, Δq = Δq)
+    end
+end
+
+# TODO make zero alloc
+# TODO currently assumed constraints are in order and only joints which is the case unless very low level constraint setting
+function setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T,N,Nc}
+    @assert length(vω)==3*Nc-N
+    n = Int64(Nc/2)
+    body1 = getbody(mechanism, eqc.pid)
+    for i = 1:n
+        body2 = getbody(mechanism, eqc.bodyids[i])
+        Δv = getVelocityDelta(eqc.constraints[i], body1, body2, vω[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])])
+        Δω = getVelocityDelta(eqc.constraints[i+1], body1, body2, vω[SUnitRange(eqc.inds[i+1][1],eqc.inds[i+1][2])])
         
         p1, p2 = eqc.constraints[i].vertices
         setVelocity!(mechanism, body1, body2; p1 = p1, p2 = p2, Δv = Δv, Δω = Δω)
     end
 end
 
-function setPosition!(mechanism, eqc::EqualityConstraint{T,N,Nc}, xθ) where {T,N,Nc}
-    # TODO currently assumed constraints are in order which is the case unless very low level constraint setting and only joints
-    n = Int64(Nc/2)
-    body1 = getbody(mechanism, eqc.pid)
-    for i = 1:n
-        body2 = getbody(mechanism, eqc.bodyids[i])
-        Δx = getPositionDelta(eqc.constraints[i], body1, body2, xθ[i])
-        Δq = getPositionDelta(eqc.constraints[i+1], body1, body2, xθ[i+1])
-        
-        p1, p2 = eqc.constraints[i].vertices
-        setPosition!(mechanism, body1, body2; p1 = p1, p2 = p2, Δx = Δx, Δq = Δq)
+# TODO make zero alloc
+function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ::AbstractVector{T}; K = mechanism.No) where {T,N,Nc}
+    @assert length(Fτ)==3*Nc-N
+    for i = 1:Nc
+        setForce!(eqc.constraints[i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[i]),  Fτ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])], K)
     end
+    return
 end
 
 @generated function minimalCoordinates(mechanism, eqc::EqualityConstraint{T,N,Nc}; K = mechanism.No) where {T,N,Nc}

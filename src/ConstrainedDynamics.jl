@@ -48,7 +48,7 @@ export Box,
     simulate!,
     plotθ,
     plotλ,
-    visualize!,
+    visualize,
 
     disassemble,
     getcomponent,
@@ -102,7 +102,7 @@ include(joinpath("components", "mechanism_functions.jl"))
 include(joinpath("components", "simulate.jl"))
 include(joinpath("components", "initialize.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
-include(joinpath("solver", "jacobians.jl"))
+include(joinpath("solver", "fullsystem.jl"))
 
 include(joinpath("util", "urdf.jl"))
 

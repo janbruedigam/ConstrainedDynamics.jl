@@ -39,7 +39,7 @@ for body in Iterators.drop(mech.bodies, 1)
 end
 
 simulate!(mech,save = true,debug=false)
-visualize!(mech)
+visualize(mech)
 
 # include("examples/n_pendulum.jl")
 # ConstrainedDynamics.setentries!(mech)

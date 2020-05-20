@@ -235,55 +235,74 @@ mutable struct Mechanism{T,N,Ni}
     end
 end
 
-function disassemble(mechanism::Mechanism)
+function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
     origin = mechanism.origin
     bodies = mechanism.bodies.values
     eqconstraints = mechanism.eqconstraints.values
     ineqconstraints = mechanism.ineqconstraints.values
-    shapes = mechanism.shapes
 
+    # Flip component ids
     for body in bodies
         body.id *= -1
     end
     for eqc in eqconstraints
         eqc.id *= -1
-        if eqc.pid === nothing
-            eqc.pid = origin.id
-        else
+        if eqc.pid !== nothing
             eqc.pid *= -1
         end
         eqc.bodyids *= -1
     end
     for ineqc in ineqconstraints
         ineqc.id *= -1
-        if ineqc.pid === nothing
-            ineqc.pid = origin.id
-        else
+        if ineqc.pid !== nothing
             ineqc.pid *= -1
         end
         ineqc.bodyids *= -1
     end
     for shape in shapes
-        shape.bodyids *= -1
+        for (i,bodyid) in enumerate(shape.bodyids)
+            if bodyid != origin.id 
+                shape.bodyids[i] *= -1
+            end
+        end
     end
 
+    # Set CURRENTID
     global CURRENTID = -1
-    if origin.id < CURRENTID
-        CURRENTID = origin.id
-    end
     for body in bodies
-        if body.id < CURRENTID
-            CURRENTID = body.id
+        if body.id <= CURRENTID
+            CURRENTID = body.id-1
         end
     end
     for eqc in eqconstraints
-        if eqc.id < CURRENTID
-            CURRENTID = eqc.id
+        if eqc.id <= CURRENTID
+            CURRENTID = eqc.id-1
         end
     end
     for ineqc in ineqconstraints
-        if ineqc.id < CURRENTID
-            CURRENTID = ineqc.id
+        if ineqc.id <= CURRENTID
+            CURRENTID = ineqc.id-1
+        end
+    end
+
+    # Set origin to next id
+    oldoid = origin.id
+    origin.id = getGlobalID()
+    for eqc in eqconstraints
+        if eqc.pid === nothing
+            eqc.pid = origin.id
+        end
+    end
+    for ineqc in ineqconstraints
+        if ineqc.pid == nothing
+            ineqc.pid = origin.id
+        end
+    end
+    for shape in shapes
+        for (i,bodyid) in enumerate(shape.bodyids)
+            if bodyid == oldoid 
+                shape.bodyids[i] = origin.id
+            end
         end
     end
 

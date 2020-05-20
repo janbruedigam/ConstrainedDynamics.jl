@@ -12,3 +12,5 @@ Base.show(io::IO, bound::Bound) = summary(io, bound)
 @inline schurf(bound::Bound{T}) where T = @SVector zeros(T, 6)
 @inline schurD(bound::Bound{T}) where T = @SMatrix zeros(T, 6, 6)
 
+@inline additionalforce(bound::Bound{T}) where T = @SVector zeros(T, 6)
+

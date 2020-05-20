@@ -69,4 +69,4 @@ end
 
 
 storage = simulate!(mech, 10., record = true)
-visualize!(mech, storage, shapes)
+visualize(mech, storage, shapes)

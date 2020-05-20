@@ -30,7 +30,8 @@ shapes = [box]
 mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
 
+jointid = constraints[1].id
 function control!(mechanism, k)
-    τ = SVector{3,Float64}(1, 0, 0) * cos(0.5 * k*0.01 * 2pi)
-    setForce!(mechanism, mechanism.bodies[1], τ = τ)
+    τ = SVector{1,Float64}(cos(0.5 * k*0.01 * 2pi))
+    setForce!(mechanism, geteqconstraint(mechanism,jointid), τ)
 end

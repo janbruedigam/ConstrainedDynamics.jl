@@ -44,7 +44,6 @@ function newton!(mechanism::Mechanism{T,Nl}; ε = 1e-10, σ = 0.1, μ = 1.0, new
 
     meritf0 = meritf(mechanism)
     for n = Base.OneTo(newtonIter)
-        setFrictionForce!(mechanism)
         setentries!(mechanism)
         factor!(graph, ldu)
         solve!(mechanism) # x̂1 for each body and constraint

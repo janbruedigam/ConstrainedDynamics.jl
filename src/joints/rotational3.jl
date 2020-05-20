@@ -1,11 +1,11 @@
-@inline function getVelocityDelta(joint::Rotational3, body1::AbstractBody, body2::Body{T}, ω::Union{Nothing,SVector{0,T}}) where T
-    Δω = @SVector zeros(T,3)
-    return Δω
+@inline function getPositionDelta(joint::Rotational3, body1::AbstractBody, body2::Body{T}, θ::SVector{0,T}) where T
+    Δq = joint.qoff
+    return Δq
 end
 
-@inline function getPositionDelta(joint::Rotational3, body1::AbstractBody, body2::Body{T}, θ::Union{Nothing,SVector{0,T}}) where T
-    Δq = Quaternion{T}()
-    return Δq
+@inline function getVelocityDelta(joint::Rotational3, body1::AbstractBody, body2::Body{T}, ω::SVector{0,T}) where T
+    Δω = @SVector zeros(T,3)
+    return Δω
 end
 
 @inline function minimalCoordinates(joint::Rotational3, body1::AbstractBody{T}, body2::Body, No) where T

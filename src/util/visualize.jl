@@ -17,7 +17,7 @@ function shapeobject(mesh::Mesh)
     return shape = load(mesh.path, GLUVMesh)
 end
 
-function visualize!(mechanism::Mechanism, storage::Storage{T,N}, shapes::Vector{<:Shape}) where {T,N}
+function visualize(mechanism::Mechanism, storage::Storage{T,N}, shapes::Vector{<:Shape}) where {T,N}
     vis = Visualizer()
     open(vis, Blink.Window())
 
