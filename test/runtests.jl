@@ -1,6 +1,7 @@
 using Test
 using SafeTestsets
 
+println(ENV)
 
 @safetestset "Dynamics Diff Tests" begin
     include("dyndiff_test.jl")
@@ -15,7 +16,7 @@ end
 end
 
 @safetestset "Initialization Tests" begin
-    include("initialize_test.jl")
+    include("initialization_test.jl")
 end
 
 @safetestset "Example Tests" begin
