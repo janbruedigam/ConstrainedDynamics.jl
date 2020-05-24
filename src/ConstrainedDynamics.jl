@@ -46,8 +46,6 @@ export Box,
     setVelocity!,
     setForce!,
     simulate!,
-    plotθ,
-    plotλ,
     visualize,
 
     disassemble,
@@ -71,6 +69,7 @@ include(joinpath("components", "component.jl"))
 
 include(joinpath("components", "state.jl"))
 include(joinpath("components", "body.jl"))
+include(joinpath("integrator", "forward_rectangle.jl"))
 include(joinpath("joints", "joint.jl"))
 include(joinpath("bounds", "bound.jl"))
 

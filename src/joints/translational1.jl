@@ -51,13 +51,13 @@ end
 
 @inline function g(joint::Translational1, body1::Body, body2::Body, Δt, No)
     vertices = joint.vertices
-    q1 = getq3(body1, Δt)
-    joint.V3 * vrotate(getx3(body2, Δt) + vrotate(vertices[2], getq3(body2, Δt)) - (getx3(body1, Δt) + vrotate(vertices[1], q1)), inv(q1))
+    q1 = getq2(body1, Δt)
+    joint.V3 * vrotate(getx2(body2, Δt) + vrotate(vertices[2], getq2(body2, Δt)) - (getx2(body1, Δt) + vrotate(vertices[1], q1)), inv(q1))
 end
 
 @inline function g(joint::Translational1, body1::Origin, body2::Body, Δt, No)
     vertices = joint.vertices
-    joint.V3 * (getx3(body2, Δt) + vrotate(vertices[2], getq3(body2, Δt)) - vertices[1])
+    joint.V3 * (getx2(body2, Δt) + vrotate(vertices[2], getq2(body2, Δt)) - vertices[1])
 end
 
 
@@ -92,11 +92,13 @@ end
 @inline function ∂g∂vela(joint::Translational1{T}, body1::Body, body2::Body, Δt, No) where T
     if body2.id == joint.cid
         q1 = body1.state.qd[No]
-        ωbar1 = ωbar(body1, Δt)
-        point2 = body2.state.xd[No] + Δt * getvnew(body2) + vrotate(vrotate(joint.vertices[2], ωbar(body2, Δt)), body2.state.qd[No])
+        ω1 = getω2(body1)
+        ω2 = getω2(body2)
+        ωbar1 = ωbar(ω1, Δt)
+        point2 = body2.state.xd[No] + Δt * getv2(body2) + vrotate(vrotate(joint.vertices[2], ωbar(ω2, Δt)), body2.state.qd[No])
 
         V = -Δt * joint.V3 * VLᵀmat(ωbar1)Lᵀmat(q1)Rmat(ωbar1)RVᵀmat(q1)
-        Ω = 2 * joint.V3 * VLᵀmat(ωbar1) * Lᵀmat(q1) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(body1.state.xd[No] + Δt * getvnew(body1)))) * Lmat(q1) * derivωbar(body1, Δt)
+        Ω = 2 * joint.V3 * VLᵀmat(ωbar1) * Lᵀmat(q1) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(body1.state.xd[No] + Δt * getv2(body1)))) * Lmat(q1) * derivωbar(ω1, Δt)
 
         return [V Ω]
     else
@@ -108,10 +110,12 @@ end
     if body2.id == joint.cid
         q1 = body1.state.qd[No]
         q2 = body2.state.qd[No]
-        ωbar1 = ωbar(body1, Δt)
+        ω1 = getω2(body1)
+        ω2 = getω2(body2)
+        ωbar1 = ωbar(ω1, Δt)
 
         V = Δt * joint.V3 * VLᵀmat(ωbar1)Lᵀmat(q1)Rmat(ωbar1)RVᵀmat(q1)
-        Ω = 2 * joint.V3 * VLᵀmat(ωbar1) * Lᵀmat(q1) * Lmat(q2) * Rmat(ωbar1) * Rmat(q1) * Rᵀmat(q2) * Rᵀmat(ωbar(body2, Δt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, Δt)
+        Ω = 2 * joint.V3 * VLᵀmat(ωbar1) * Lᵀmat(q1) * Lmat(q2) * Rmat(ωbar1) * Rmat(q1) * Rᵀmat(q2) * Rᵀmat(ωbar(ω2, Δt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(ω2, Δt)
 
         return [V Ω]
     else
@@ -136,9 +140,10 @@ end
 @inline function ∂g∂velb(joint::Translational1{T}, body1::Origin, body2::Body, Δt, No) where T
     if body2.id == joint.cid
         q2 = body2.state.qd[No]
+        ω2 = getω2(body2)
 
         V = Δt * joint.V3
-        Ω = 2 * joint.V3 * VLmat(q2) * Rᵀmat(q2) * Rᵀmat(ωbar(body2, Δt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, Δt)
+        Ω = 2 * joint.V3 * VLmat(q2) * Rᵀmat(q2) * Rᵀmat(ωbar(ω2, Δt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(ω2, Δt)
 
         return [V Ω]
     else

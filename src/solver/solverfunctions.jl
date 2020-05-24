@@ -211,19 +211,25 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
 end
 
 
-function tos!(body::Body, v, ω)
-    body.s0 = [body.state.vc[1];body.state.ωc[1]]
-    body.s1 = [body.state.vc[2];body.state.ωc[2]]
+@inline function s0tos1!(body::Body)
+    body.state.vc[2] = body.state.vc[1]
+    body.state.ωc[2] = body.state.ωc[1]
     return
 end
 
-@inline function s0tos1!(component::Component)
-    component.s1 = component.s0
+@inline function s0tos1!(eqc::EqualityConstraint)
+    eqc.λ1 = eqc.λ0
     return
 end
 
-@inline function s1tos0!(component::Component)
-    component.s0 = component.s1
+@inline function s1tos0!(body::Body)
+    body.state.vc[1] = body.state.vc[2]
+    body.state.ωc[1] = body.state.ωc[2]
+    return
+end
+
+@inline function s1tos0!(eqc::EqualityConstraint)
+    eqc.λ0 = eqc.λ1
     return
 end
 
@@ -239,8 +245,14 @@ end
     return
 end
 
-@inline function normΔs(component::Component)
-    d = component.s1 - component.s0
+@inline function normΔs(body::Body)
+    d1 = body.state.vc[2] - body.state.vc[1]
+    d2 = body.state.ωc[2] - body.state.ωc[1]
+    return dot(d1, d1) + dot(d2, d2)
+end
+
+@inline function normΔs(eqc::EqualityConstraint)
+    d = eqc.λ1 - eqc.λ0
     return dot(d, d)
 end
 

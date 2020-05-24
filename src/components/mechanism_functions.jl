@@ -145,3 +145,8 @@ end
     mechanism.normΔs += normΔs(component)
     return
 end
+
+@inline function discretizestate!(mechanism::Mechanism)
+    foreach(discretizestate!, mechanism.bodies, mechanism.Δt)
+    return
+end

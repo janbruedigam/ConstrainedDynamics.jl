@@ -21,14 +21,4 @@ mutable struct State{T}
     end
 end
 
-function discretizex(xc, vc)
-    xd1 = xc
-    xd2 = xc
-    return xd1, xd2
-end
 
-function discretizeq(qc, ωc)
-    qd1 = qc
-    qd2 = qc
-    return qd1, qd2
-end

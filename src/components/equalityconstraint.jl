@@ -7,8 +7,8 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     bodyids::SVector{Nc,Int64}
     inds::SVector{Nc,SVector{2,Int64}} # indices for minimal coordinates, assumes joints
 
-    s0::SVector{N,T}
-    s1::SVector{N,T}
+    λ0::SVector{N,T}
+    λ1::SVector{N,T}
 
     function EqualityConstraint(data...; name::String="")
         jointdata = Tuple{Joint,Int64,Int64}[]
@@ -46,10 +46,10 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
         Nc = length(constraints)
         
 
-        s0 = @SVector zeros(T, N)
-        s1 = @SVector zeros(T, N)
+        λ0 = @SVector zeros(T, N)
+        λ1 = @SVector zeros(T, N)
 
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, pid, bodyids, inds, s0, s1)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, pid, bodyids, inds, λ0, λ1)
     end
 end
 
@@ -67,7 +67,7 @@ function setPosition!(mechanism, eqc::EqualityConstraint{T,N,Nc}, xθ) where {T,
         Δq = getPositionDelta(eqc.constraints[i+1], body1, body2, xθ[SUnitRange(eqc.inds[i+1][1],eqc.inds[i+1][2])])
         
         p1, p2 = eqc.constraints[i].vertices
-        setPosition!(mechanism, body1, body2; p1 = p1, p2 = p2, Δx = Δx, Δq = Δq)
+        setPosition!(body1, body2; p1 = p1, p2 = p2, Δx = Δx, Δq = Δq)
     end
 end
 
@@ -83,7 +83,7 @@ function setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T,
         Δω = getVelocityDelta(eqc.constraints[i+1], body1, body2, vω[SUnitRange(eqc.inds[i+1][1],eqc.inds[i+1][2])])
         
         p1, p2 = eqc.constraints[i].vertices
-        setVelocity!(mechanism, body1, body2; p1 = p1, p2 = p2, Δv = Δv, Δω = Δω)
+        setVelocity!(body1, body2; p1 = p1, p2 = p2, Δv = Δv, Δω = Δω)
     end
 end
 
@@ -102,7 +102,7 @@ end
 end
 
 @inline function GtλTof!(mechanism, body::Body, eqc::EqualityConstraint)
-    body.f -= ∂g∂pos(mechanism, eqc, body.id)' * eqc.s1
+    body.f -= ∂g∂pos(mechanism, eqc, body.id)' * eqc.λ1
     return
 end
 

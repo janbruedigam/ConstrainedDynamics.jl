@@ -4,7 +4,7 @@ using Rotations
 using StaticArrays
 using LinearAlgebra
 
-using ConstrainedDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, VLᵀmat, ∂g∂pos, ∂g∂vel, skew
+using ConstrainedDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, VLᵀmat, ∂g∂pos, ∂g∂vel, skew, discretizestate!
 
 function transfunc3pos(vars)
     xa = vars[1:3]
@@ -243,6 +243,7 @@ function rotfunc1vel(vars)
 end
 
 function transtest3()
+    Δt = 0.01
     xa = rand(3)
     qa = Quaternion(rand(RotMatrix{3}))
     xb = rand(3)
@@ -267,10 +268,14 @@ function transtest3()
 
     mech = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(mech, link1, x = xa, q = qa)
-    setPosition!(mech, link2, x = xb, q = qb)
-    link1.s1 = SVector([va;wa]...)
-    link2.s1 = SVector([vb;wb]...)
+    setPosition!(link1, x = xa, q = qa)
+    setPosition!(link2, x = xb, q = qb)
+    discretizestate!(link1, Δt)
+    discretizestate!(link2, Δt)
+    link1.state.vc[2] = va
+    link1.state.ωc[2] = wa
+    link2.state.vc[2] = vb
+    link2.state.ωc[2] = wb
 
     res = ForwardDiff.jacobian(transfunc3pos, [xa;qa;xb;qb;pa;pb])
     X1 = res[1:3,1:3]
@@ -301,6 +306,7 @@ end
 
 
 function transtest2()
+    Δt = 0.01
     xa = rand(3)
     qa = Quaternion(rand(RotMatrix{3}))
     xb = rand(3)
@@ -328,11 +334,14 @@ function transtest2()
 
     mech = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(mech, link1, x = xa, q = qa)
-    setPosition!(mech, link2, x = xb, q = qb)
-    link1.s1 = SVector([va;wa]...)
-    link2.s1 = SVector([vb;wb]...)
-
+    setPosition!(link1, x = xa, q = qa)
+    setPosition!(link2, x = xb, q = qb)
+    discretizestate!(link1, Δt)
+    discretizestate!(link2, Δt)
+    link1.state.vc[2] = va
+    link1.state.ωc[2] = wa
+    link2.state.vc[2] = vb
+    link2.state.ωc[2] = wb
 
     res = ForwardDiff.jacobian(transfunc2pos, [xa;qa;xb;qb;pa;pb;V12[1,:];V12[2,:]])
     X1 = res[1:2,1:3]
@@ -363,6 +372,7 @@ function transtest2()
 end
 
 function transtest1()
+    Δt = 0.01
     xa = rand(3)
     qa = Quaternion(rand(RotMatrix{3}))
     xb = rand(3)
@@ -390,11 +400,14 @@ function transtest1()
 
     mech = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(mech, link1, x = xa, q = qa)
-    setPosition!(mech, link2, x = xb, q = qb)
-    link1.s1 = SVector([va;wa]...)
-    link2.s1 = SVector([vb;wb]...)
-
+    setPosition!(link1, x = xa, q = qa)
+    setPosition!(link2, x = xb, q = qb)
+    discretizestate!(link1, Δt)
+    discretizestate!(link2, Δt)
+    link1.state.vc[2] = va
+    link1.state.ωc[2] = wa
+    link2.state.vc[2] = vb
+    link2.state.ωc[2] = wb
 
     res = ForwardDiff.gradient(transfunc1pos, [xa;qa;xb;qb;pa;pb;v])
     X1 = res[1:3]'
@@ -426,6 +439,7 @@ end
 
 
 function rottest3()
+    Δt = 0.01
     xa = rand(3)
     qa = Quaternion(rand(RotMatrix{3}))
     xb = rand(3)
@@ -449,11 +463,14 @@ function rottest3()
 
     mech = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(mech, link1, x = xa, q = qa)
-    setPosition!(mech, link2, x = xb, q = qb)
-    link1.s1 = SVector([va;wa]...)
-    link2.s1 = SVector([vb;wb]...)
-
+    setPosition!(link1, x = xa, q = qa)
+    setPosition!(link2, x = xb, q = qb)
+    discretizestate!(link1, Δt)
+    discretizestate!(link2, Δt)
+    link1.state.vc[2] = va
+    link1.state.ωc[2] = wa
+    link2.state.vc[2] = vb
+    link2.state.ωc[2] = wb
 
     res = ForwardDiff.jacobian(rotfunc3pos, [xa;qa;xb;qb;offset])
     X1 = res[1:3,1:3]
@@ -484,6 +501,7 @@ function rottest3()
 end
 
 function rottest2()
+    Δt = 0.01
     xa = rand(3)
     qa = Quaternion(rand(RotMatrix{3}))
     xb = rand(3)
@@ -510,11 +528,14 @@ function rottest2()
 
     mech = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(mech, link1, x = xa, q = qa)
-    setPosition!(mech, link2, x = xb, q = qb)
-    link1.s1 = SVector([va;wa]...)
-    link2.s1 = SVector([vb;wb]...)
-
+    setPosition!(link1, x = xa, q = qa)
+    setPosition!(link2, x = xb, q = qb)
+    discretizestate!(link1, Δt)
+    discretizestate!(link2, Δt)
+    link1.state.vc[2] = va
+    link1.state.ωc[2] = wa
+    link2.state.vc[2] = vb
+    link2.state.ωc[2] = wb
 
     res = ForwardDiff.jacobian(rotfunc2pos, [xa;qa;xb;qb;offset;V12[1,:];V12[2,:]])
     X1 = res[1:2,1:3]
@@ -545,6 +566,7 @@ function rottest2()
 end
 
 function rottest1()
+    Δt = 0.01
     xa = rand(3)
     qa = Quaternion(rand(RotMatrix{3}))
     xb = rand(3)
@@ -571,11 +593,14 @@ function rottest1()
 
     mech = Mechanism(origin, [link1;link2], [oc1;oc2;joint1])
 
-    setPosition!(mech, link1, x = xa, q = qa)
-    setPosition!(mech, link2, x = xb, q = qb)
-    link1.s1 = SVector([va;wa]...)
-    link2.s1 = SVector([vb;wb]...)
-
+    setPosition!(link1, x = xa, q = qa)
+    setPosition!(link2, x = xb, q = qb)
+    discretizestate!(link1, Δt)
+    discretizestate!(link2, Δt)
+    link1.state.vc[2] = va
+    link1.state.ωc[2] = wa
+    link2.state.vc[2] = vb
+    link2.state.ωc[2] = wb
 
     res = ForwardDiff.gradient(rotfunc1pos, [xa;qa;xb;qb;offset;V3])
     X1 = res[1:3]'

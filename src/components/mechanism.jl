@@ -51,8 +51,8 @@ mutable struct Mechanism{T,N,Ni}
             body.state.qc = [body.state.qc[1] for i = 1:No]
             body.state.vc = [body.state.vc[1] for i = 1:No]
             body.state.ωc = [body.state.ωc[1] for i = 1:No]
-            body.state.xd = [discretizex(body.state.xc[1], body.state.vc[1])...]
-            body.state.qd = [discretizeq(body.state.qc[1], body.state.ωc[1])...]
+            body.state.xd = [body.state.xd[1] for i = 1:No]
+            body.state.qd = [body.state.qd[1] for i = 1:No]
             body.F = [body.F[1] for i = 1:No]
             body.τ = [body.τ[1] for i = 1:No]
 
@@ -220,8 +220,8 @@ mutable struct Mechanism{T,N,Ni}
                 constraint.constraints[2].qoff = qbody # in parent's (pbody) frame
 
                 # actual body properties
-                setPosition!(mechanism, body) # set everything to zero
-                setPosition!(mechanism, pbody, body, p1 = p1, p2 = p2, Δq = qbody)
+                setPosition!(body) # set everything to zero
+                setPosition!(pbody, body, p1 = p1, p2 = p2, Δq = qbody)
 
                 # shape relative
                 if shape !== nothing

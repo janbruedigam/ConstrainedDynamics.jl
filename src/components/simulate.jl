@@ -1,19 +1,18 @@
 function saveToStorage!(mechanism::Mechanism, storage::Storage, i)
     Δt = mechanism.Δt
-    No = mechanism.No
     for (ind, body) in enumerate(mechanism.bodies)
-        storage.x[ind][i] = body.state.xd[No]
-        storage.q[ind][i] = body.state.qd[No]
-        storage.v[ind][i] = getv1(body,Δt)
-        storage.ω[ind][i] = getω1(body,Δt)
+        storage.x[ind][i] = getx1(body)
+        storage.q[ind][i] = getq1(body)
+        storage.v[ind][i] = getv1(body)
+        storage.ω[ind][i] = getω1(body)
     end
 end
 
 @inline function updatePos!(body::Body, Δt)
     body.state.xd[1] = body.state.xd[2]
-    body.state.xd[2] = getx3(body, Δt)
+    body.state.xd[2] = getx2(body, Δt)
     body.state.qd[1] = body.state.qd[2]
-    body.state.qd[2] = getq3(body, Δt)
+    body.state.qd[2] = getq2(body, Δt)
     return
 end
 
@@ -26,6 +25,7 @@ function verifyConstraints!(mechanism::Mechanism)
 end
 
 function initializeSimulation!(mechanism::Mechanism, debug::Bool)
+    discretizestate!(mechanism)
     debug && verifyConstraints!(mechanism)
     foreach(s0tos1!, mechanism.bodies)
     foreach(s0tos1!, mechanism.eqconstraints)

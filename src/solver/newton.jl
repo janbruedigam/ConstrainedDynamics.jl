@@ -131,13 +131,25 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     return meritf1
 end
 
-@inline function lineStep!(component::Component, diagonal::DiagonalEntry, scale)
-    component.s1 = component.s0 - 1 / (2^scale) * diagonal.Δs
+@inline function lineStep!(body::Body, diagonal::DiagonalEntry, scale)
+    body.state.vc[2] = body.state.vc[1] - 1 / (2^scale) * diagonal.Δs[SVector(1, 2, 3)]
+    body.state.ωc[2] = body.state.ωc[1] - 1 / (2^scale) * diagonal.Δs[SVector(4, 5, 6)]
     return
 end
 
-@inline function lineStep!(node::Component, diagonal, scale, mechanism)
-    node.s1 = node.s0 - 1 / (2^scale) * mechanism.α * diagonal.Δs
+@inline function lineStep!(eqc::EqualityConstraint, diagonal::DiagonalEntry, scale)
+    eqc.λ1 = eqc.λ0 - 1 / (2^scale) * diagonal.Δs
+    return
+end
+
+@inline function lineStep!(body::Body, diagonal, scale, mechanism)
+    body.state.vc[2] = body.state.vc[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SVector(1, 2, 3)]
+    body.state.ωc[2] = body.state.ωc[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SVector(4, 5, 6)]
+    return
+end
+
+@inline function lineStep!(eqc::EqualityConstraint, diagonal, scale, mechanism)
+    eqc.λ1 = eqc.λ0 - 1 / (2^scale) * mechanism.α * diagonal.Δs
     return
 end
 
