@@ -24,10 +24,10 @@ shapes = [box1;box2]
 
 
 mech = Mechanism(origin, links, constraints, g = -5., shapes = shapes)
-setPosition!(mech,link1,x = [0.;1.;0.])
-setPosition!(mech,link2,x = [0.;-1.;0.])
-setVelocity!(mech,link1,v = [-5.;-5;5])
-setVelocity!(mech,link2,v = [-2.5;2.5;5],ω = [2;4;10.])
+setPosition!(link1,x = [0.;1.;0.])
+setPosition!(link2,x = [0.;-1.;0.])
+setVelocity!(link1,v = [-5.;-5;5])
+setVelocity!(link2,v = [-2.5;2.5;5],ω = [2;4;10.])
 
 
 storage = simulate!(mech, 10., record = true)

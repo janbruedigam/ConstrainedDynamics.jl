@@ -32,8 +32,8 @@ constraints = [joint0to12;joint1to2]
 shapes = [b1]
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(mech,origin,link1,p1 = [0;-0.5 * sqrt(2);0],p2 = vert11,Δq = q1)
-setPosition!(mech,origin,link2,p2 = vert11,Δq = q2)
+setPosition!(origin,link1,p1 = [0;-0.5 * sqrt(2);0],p2 = vert11,Δq = q1)
+setPosition!(origin,link2,p2 = vert11,Δq = q2)
 
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)

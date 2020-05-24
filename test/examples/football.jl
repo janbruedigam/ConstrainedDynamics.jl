@@ -38,21 +38,21 @@ shapes = [b1;b2;b3]
 
 
 mech = Mechanism(origin, links, constraints, fr, shapes = shapes)
-setPosition!(mech,link3,x = [0.;-10.0;1.5],q=Quaternion(RotX(pi/2)))
-setPosition!(mech,link3,link2,Δx = -[0.;0.;0.03])
-setPosition!(mech,link2,link1,Δx = -[0.;0.;0.03])
-setPosition!(mech,link3,link4,Δx = [0.;0.;0.03])
-setPosition!(mech,link4,link5,Δx = [0.;0.;0.03])
+setPosition!(link3,x = [0.;-10.0;1.5],q=Quaternion(RotX(pi/2)))
+setPosition!(link3,link2,Δx = -[0.;0.;0.03])
+setPosition!(link2,link1,Δx = -[0.;0.;0.03])
+setPosition!(link3,link4,Δx = [0.;0.;0.03])
+setPosition!(link4,link5,Δx = [0.;0.;0.03])
 
 spin = 0.35
 
 function control!(mechanism, k)
     if k<25
-        setForce!(mechanism, link3, F = SA[0.;25.;25.], τ=spin*SA[0.2;0.2;1.])
+        setForce!(link3, F = SA[0.;25.;25.], τ=spin*SA[0.2;0.2;1.])
     elseif k==40
-        setForce!(mechanism, link3, τ = SA[0.;0.3;0.])
+        setForce!(link3, τ = SA[0.;0.3;0.])
     else
-        setForce!(mechanism, link3)
+        setForce!(link3)
     end
     return
 end

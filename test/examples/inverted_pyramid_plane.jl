@@ -23,5 +23,5 @@ shapes = [box1]
 
 
 mech = Mechanism(origin, links, ineqs, shapes = shapes)
-setVelocity!(mech,link1,v = [1;0.5;5])
+setVelocity!(link1,v = [1;0.5;5])
 

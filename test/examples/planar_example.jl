@@ -34,9 +34,9 @@ constraints = [joint0to123;joint1to23]
 shapes = [b1]
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(mech,origin,link1,p2 = vert11,Δq = q1)
-setPosition!(mech,origin,link2,p2 = vert11,Δq = q2)
-setPosition!(mech,origin,link3,p2 = vert11,Δq = q3)
-setForce!(mech,link1,τ = [0;0;2.])
-setForce!(mech,link2,τ = [0;0;2.])
-setForce!(mech,link3,τ = [0;0;2.])
+setPosition!(origin,link1,p2 = vert11,Δq = q1)
+setPosition!(origin,link2,p2 = vert11,Δq = q2)
+setPosition!(origin,link3,p2 = vert11,Δq = q3)
+setForce!(link1,τ = [0;0;2.])
+setForce!(link2,τ = [0;0;2.])
+setForce!(link3,τ = [0;0;2.])

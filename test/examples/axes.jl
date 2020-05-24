@@ -33,12 +33,12 @@ shapes = [box1;box2;box3]
 
 
 mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
-setPosition!(mech,origin,link1,Δq = Quaternion(RotZ(pi/2)),p2=v1)
-setPosition!(mech,origin,link2,Δq = Quaternion(RotX(0.)),p2=v2)
-setPosition!(mech,origin,link3,Δq = Quaternion(RotX(0.)),p2=v3)
-# setVelocity!(mech,origin,link1,Δω = [0.;1;1],p2=v1)
-# setVelocity!(mech,origin,link2,Δω = [0.;1;1],p2=v2)
-# setVelocity!(mech,origin,link3,Δω = [0.;1;1],p2=v3)
-# setVelocity!(mech,link2,v = [-2.5;2.5;5],ω = [2;4;10.])
-setForce!(mech,link1,τ=[0.1;0;0])
+setPosition!(origin,link1,Δq = Quaternion(RotZ(pi/2)),p2=v1)
+setPosition!(origin,link2,Δq = Quaternion(RotX(0.)),p2=v2)
+setPosition!(origin,link3,Δq = Quaternion(RotX(0.)),p2=v3)
+# setVelocity!(origin,link1,Δω = [0.;1;1],p2=v1)
+# setVelocity!(origin,link2,Δω = [0.;1;1],p2=v2)
+# setVelocity!(origin,link3,Δω = [0.;1;1],p2=v3)
+# setVelocity!(link2,v = [-2.5;2.5;5],ω = [2;4;10.])
+setForce!(link1,τ=[0.1;0;0])
 

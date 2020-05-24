@@ -37,14 +37,14 @@ shapes = [box1;b1]
 
 
 mech = Mechanism(origin, links, eqcs, ineqcs, shapes = shapes)
-setPosition!(mech,link1,x = [0.;-2;1.5])
+setPosition!(link1,x = [0.;-2;1.5])
 for i = 1:8
-    setPosition!(mech, link1, links[i + 1], p1 = corners[i])
+    setPosition!(link1, links[i + 1], p1 = corners[i])
 end
 
 ωtemp = [0.1;0.1;0.1]
-setVelocity!(mech,link1,v = [0;3;7.],ω = ωtemp)
+setVelocity!(link1,v = [0;3;7.],ω = ωtemp)
 for i = 1:8
-    setVelocity!(mech, link1, links[i + 1], p1 = corners[i])
+    setVelocity!(link1, links[i + 1], p1 = corners[i])
 end
 

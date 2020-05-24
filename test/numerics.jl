@@ -40,11 +40,11 @@ shapes = [b1]
 mech = Mechanism(origin, links, constraints;shapes = shapes)
 
 # set initial configuration
-setPosition!(mech,origin,links[1],p2 = vert11,Δq = q1)
+setPosition!(origin,links[1],p2 = vert11,Δq = q1)
 previd = links[1].id
 for body in Iterators.drop(mech.bodies, 1)
     global previd
-    setPosition!(mech, ConstrainedDynamics.getbody(mech, previd), body, p1 = vert12, p2 = vert11)
+    setPosition!(ConstrainedDynamics.getbody(mech, previd), body, p1 = vert12, p2 = vert11)
     previd = body.id
 end
 

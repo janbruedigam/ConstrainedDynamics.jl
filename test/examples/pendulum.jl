@@ -27,4 +27,4 @@ shapes = [box]
 
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
+setPosition!(origin,link1,p2 = p2,Δq = q1)

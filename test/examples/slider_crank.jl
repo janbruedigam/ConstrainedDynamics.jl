@@ -38,10 +38,10 @@ shapes = [box,cyl]
 
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(mech,link1,x = -p0)
-setPosition!(mech,link2,x = p3 + p1)
+setPosition!(link1,x = -p0)
+setPosition!(link2,x = p3 + p1)
 
 a = [0;0;0;0;0.3]
 
 setForce!(mech,joint0to12,a)
-# setForce!(mech,link2,τ=[0;0;0.3])
+# setForce!(link2,τ=[0;0;0.3])
