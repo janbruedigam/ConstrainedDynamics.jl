@@ -69,6 +69,7 @@ include(joinpath("util", "quaternion.jl"))
 include(joinpath("util", "shapes.jl"))
 include(joinpath("components", "component.jl"))
 
+include(joinpath("components", "state.jl"))
 include(joinpath("components", "body.jl"))
 include(joinpath("joints", "joint.jl"))
 include(joinpath("bounds", "bound.jl"))

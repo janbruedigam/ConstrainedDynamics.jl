@@ -61,7 +61,7 @@ for i=1:10
 
     #TODO needs some velocity calculation fix, initial constraint satisfaction is not very good
     @test isapprox(norm(minresult - [angend]), 0.0; atol = 1.5*1e0)
-    @test isapprox(norm(link1.x[2] - (p1 - vrotate(SVector{3,Float64}(p2),qend))), 0.0; atol = 1.5*1e0)
-    @test isapprox(norm((link1.q[2]/qend)[2:4]), 0.0; atol = 1.5*1e0)
+    @test isapprox(norm(link1.state.xd[2] - (p1 - vrotate(SVector{3,Float64}(p2),qend))), 0.0; atol = 1.5*1e0)
+    @test isapprox(norm((link1.state.qd[2]/qend)[2:4]), 0.0; atol = 1.5*1e0)
 end
 

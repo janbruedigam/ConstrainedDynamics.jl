@@ -86,10 +86,10 @@ function dyntestT()
 
     mech = Mechanism(origin, [link1], [oc1])
 
-    link1.x[1] = x1
-    link1.x[2] = x2
-    link1.q[1] = q1
-    link1.q[2] = q2
+    link1.state.xd[1] = x1
+    link1.state.xd[2] = x2
+    link1.state.qd[1] = q1
+    link1.state.qd[2] = q2
     link1.s1 = SVector([v2;ω2]...)
 
     res = ForwardDiff.jacobian(dynTpos, [x3;x2;x1])
@@ -133,10 +133,10 @@ function dyntestR()
 
     mech = Mechanism(origin, [link1], [oc1])
 
-    link1.x[1] = x1
-    link1.x[2] = x2
-    link1.q[1] = q1
-    link1.q[2] = q2
+    link1.state.xd[1] = x1
+    link1.state.xd[2] = x2
+    link1.state.qd[1] = q1
+    link1.state.qd[2] = q2
     link1.s0 = SVector([v1;ω1]...)
     link1.s1 = SVector([v2;ω2]...)
 

@@ -47,14 +47,14 @@ mutable struct Mechanism{T,N,Ni}
 
         bdict = Dict{Int64,Int64}()
         for (ind, body) in enumerate(bodies)
-            body.x = [body.x[1] for i = 1:No]
-            body.q = [body.q[1] for i = 1:No]
+            body.state.xc = [body.state.xc[1] for i = 1:No]
+            body.state.qc = [body.state.qc[1] for i = 1:No]
+            body.state.vc = [body.state.vc[1] for i = 1:No]
+            body.state.ωc = [body.state.ωc[1] for i = 1:No]
+            body.state.xd = [discretizex(body.state.xc[1], body.state.vc[1])...]
+            body.state.qd = [discretizeq(body.state.qc[1], body.state.ωc[1])...]
             body.F = [body.F[1] for i = 1:No]
             body.τ = [body.τ[1] for i = 1:No]
-            # push!(body.x, [body.x[1] for i = 1:No - 1]...)
-            # push!(body.q, [body.q[1] for i = 1:No - 1]...)
-            # push!(body.F, [body.F[1] for i = 1:No - 1]...)
-            # push!(body.τ, [body.τ[1] for i = 1:No - 1]...)
 
             for eqc in eqcs
                 eqc.pid == body.id && (eqc.pid = currentid)
@@ -180,8 +180,8 @@ mutable struct Mechanism{T,N,Ni}
                     pconstraint = geteqconstraint(mechanism, ggpid)
                     @assert length(pconstraint.constraints) == 2
 
-                    xpbody = pbody.x[1]
-                    qpbody = pbody.q[1]
+                    xpbody = pbody.state.xc[1]
+                    qpbody = pbody.state.qc[1]
 
                     xpjointworld = xjointlist[pconstraint.id]
                     qpjointworld = qjointlist[pconstraint.id]
@@ -206,11 +206,11 @@ mutable struct Mechanism{T,N,Ni}
                 qjointlist[constraint.id] = qjointworld
 
                 # difference to parent body (pbody)
-                qbody = qjoint * body.q[1]
+                qbody = qjoint * body.state.qc[1]
 
                 # actual joint properties
                 p1 = xjoint # in parent's (pbody) frame
-                p2 = vrotate(-body.x[1], inv(body.q[1])) # in body frame (body.x and body.q are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
+                p2 = vrotate(-body.state.xc[1], inv(body.state.qc[1])) # in body frame (body.state.xc and body.state.qc are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
                 constraint.constraints[1].vertices = (p1, p2)
 
                 V3 = vrotate(constraint.constraints[2].V3', qjoint) # in parent's (pbody) frame
@@ -225,7 +225,7 @@ mutable struct Mechanism{T,N,Ni}
 
                 # shape relative
                 if shape !== nothing
-                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff, qjointworld) - body.x[1], inv(body.q[1]))
+                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff, qjointworld) - body.state.xc[1], inv(body.state.qc[1]))
                     shape.qoff = qbody \ qjoint * shape.qoff
                 end
             end

@@ -2,18 +2,18 @@ function saveToStorage!(mechanism::Mechanism, storage::Storage, i)
     Δt = mechanism.Δt
     No = mechanism.No
     for (ind, body) in enumerate(mechanism.bodies)
-        storage.x[ind][i] = body.x[No]
-        storage.q[ind][i] = body.q[No]
+        storage.x[ind][i] = body.state.xd[No]
+        storage.q[ind][i] = body.state.qd[No]
         storage.v[ind][i] = getv1(body,Δt)
         storage.ω[ind][i] = getω1(body,Δt)
     end
 end
 
 @inline function updatePos!(body::Body, Δt)
-    body.x[1] = body.x[2]
-    body.x[2] = getx3(body, Δt)
-    body.q[1] = body.q[2]
-    body.q[2] = getq3(body, Δt)
+    body.state.xd[1] = body.state.xd[2]
+    body.state.xd[2] = getx3(body, Δt)
+    body.state.qd[1] = body.state.qd[2]
+    body.state.qd[2] = getq3(body, Δt)
     return
 end
 

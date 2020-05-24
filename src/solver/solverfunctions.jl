@@ -210,6 +210,13 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
     return
 end
 
+
+function tos!(body::Body, v, ω)
+    body.s0 = [body.state.vc[1];body.state.ωc[1]]
+    body.s1 = [body.state.vc[2];body.state.ωc[2]]
+    return
+end
+
 @inline function s0tos1!(component::Component)
     component.s1 = component.s0
     return

@@ -26,7 +26,7 @@ end
 
 @inline function ∂g∂posa(joint::Translational3{T}, body1::Body, body2::Body, No) where T
     if body2.id == joint.cid
-        q1 = body1.q[No]
+        q1 = body1.state.qd[No]
 
         X = SMatrix{3,3,T,9}(-I)
         R = -2 * VRᵀmat(q1) * Rmat(Quaternion(joint.vertices[1])) * LVᵀmat(q1)
@@ -39,7 +39,7 @@ end
 
 @inline function ∂g∂posb(joint::Translational3{T}, body1::AbstractBody, body2::Body, No) where T
     if body2.id == joint.cid
-        q2 = body2.q[No]
+        q2 = body2.state.qd[No]
 
         X = SMatrix{3,3,T,9}(I)
         R = 2 * VRᵀmat(q2) * Rmat(Quaternion(joint.vertices[2])) * LVᵀmat(q2)
@@ -52,7 +52,7 @@ end
 
 @inline function ∂g∂vela(joint::Translational3{T}, body1::Body, body2::Body, Δt, No) where T
     if body2.id == joint.cid
-        q1 = body1.q[No]
+        q1 = body1.state.qd[No]
 
         V = SMatrix{3,3,T,9}(-Δt * I)        
         Ω = -2 * VRᵀmat(q1) * Lmat(q1) * Rᵀmat(ωbar(body1, Δt)) * Rmat(Quaternion(joint.vertices[1])) * derivωbar(body1, Δt)
@@ -65,7 +65,7 @@ end
 
 @inline function ∂g∂velb(joint::Translational3{T}, body1::AbstractBody, body2::Body, Δt, No) where T
     if body2.id == joint.cid
-        q2 = body2.q[No]
+        q2 = body2.state.qd[No]
 
         V = SMatrix{3,3,T,9}(Δt * I)
         Ω = 2 * VRᵀmat(q2) * Lmat(q2) * Rᵀmat(ωbar(body2, Δt)) * Rmat(Quaternion(joint.vertices[2])) * derivωbar(body2, Δt)

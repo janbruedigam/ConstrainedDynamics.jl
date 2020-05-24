@@ -25,7 +25,7 @@ end
 @inline function ∂g∂posa(joint::Rotational3{T}, body1::Body, body2::Body, No) where T
     if body2.id == joint.cid
         X = @SMatrix zeros(T, 3, 3)
-        R = -VLᵀmat(joint.qoff) * Rmat(body2.q[No]) * RᵀVᵀmat(body1.q[No])
+        R = -VLᵀmat(joint.qoff) * Rmat(body2.state.qd[No]) * RᵀVᵀmat(body1.state.qd[No])
 
         return [X R]
     else
@@ -36,7 +36,7 @@ end
 @inline function ∂g∂posb(joint::Rotational3{T}, body1::Body, body2::Body, No) where T
     if body2.id == joint.cid
         X = @SMatrix zeros(T, 3, 3)
-        R = VLᵀmat(joint.qoff) * Lᵀmat(body1.q[No]) * LVᵀmat(body2.q[No])
+        R = VLᵀmat(joint.qoff) * Lᵀmat(body1.state.qd[No]) * LVᵀmat(body2.state.qd[No])
 
         return [X R]
     else
@@ -47,7 +47,7 @@ end
 @inline function ∂g∂vela(joint::Rotational3{T}, body1::Body, body2::Body, Δt, No) where T
     if body2.id == joint.cid
         V = @SMatrix zeros(T, 3, 3)
-        Ω = VLᵀmat(joint.qoff) * Rmat(ωbar(body2, Δt)) * Rmat(body2.q[No]) * Rᵀmat(body1.q[No]) * Tmat(T) * derivωbar(body1, Δt)
+        Ω = VLᵀmat(joint.qoff) * Rmat(ωbar(body2, Δt)) * Rmat(body2.state.qd[No]) * Rᵀmat(body1.state.qd[No]) * Tmat(T) * derivωbar(body1, Δt)
 
         return [V Ω]
     else
@@ -58,7 +58,7 @@ end
 @inline function ∂g∂velb(joint::Rotational3{T}, body1::Body, body2::Body, Δt, No) where T
     if body2.id == joint.cid
         V = @SMatrix zeros(T, 3, 3)
-        Ω = VLᵀmat(joint.qoff) * Lᵀmat(ωbar(body1, Δt)) * Lᵀmat(body1.q[No]) * Lmat(body2.q[No]) * derivωbar(body2, Δt)
+        Ω = VLᵀmat(joint.qoff) * Lᵀmat(ωbar(body1, Δt)) * Lᵀmat(body1.state.qd[No]) * Lmat(body2.state.qd[No]) * derivωbar(body2, Δt)
 
         return [V Ω]
     else
@@ -70,7 +70,7 @@ end
 @inline function ∂g∂posb(joint::Rotational3{T}, body1::Origin, body2::Body, No) where T
     if body2.id == joint.cid
         X = @SMatrix zeros(T, 3, 3)
-        R = VLᵀmat(joint.qoff) * LVᵀmat(body2.q[No])
+        R = VLᵀmat(joint.qoff) * LVᵀmat(body2.state.qd[No])
 
         return [X R]
     else
@@ -81,7 +81,7 @@ end
 @inline function ∂g∂velb(joint::Rotational3{T}, body1::Origin, body2::Body, Δt, No) where T
     if body2.id == joint.cid
         V = @SMatrix zeros(T, 3, 3)
-        Ω = VLᵀmat(joint.qoff) * Lmat(body2.q[No]) * derivωbar(body2, Δt)
+        Ω = VLᵀmat(joint.qoff) * Lmat(body2.state.qd[No]) * derivωbar(body2, Δt)
 
         return [V Ω]
     else
