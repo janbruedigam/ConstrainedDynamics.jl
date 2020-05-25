@@ -134,12 +134,12 @@ end
 end
 
 @generated function ∂g∂vela(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂vela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
+    vec = [:(∂g∂vela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
 @generated function ∂g∂velb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂velb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.Δt, mechanism.No)) for i = 1:Nc]
+    vec = [:(∂g∂velb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.Δt)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 

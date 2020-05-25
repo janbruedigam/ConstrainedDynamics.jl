@@ -60,6 +60,8 @@ export Box,
     RotZ,
     RGBA
 
+intselection = "forward_rectangle"
+# intselection = "symmetric_verlet"
 
 include(joinpath("util", "util.jl"))
 include(joinpath("util", "customdict.jl"))
@@ -69,17 +71,18 @@ include(joinpath("components", "component.jl"))
 
 include(joinpath("components", "state.jl"))
 include(joinpath("components", "body.jl"))
-include(joinpath("integrator", "forward_rectangle.jl"))
-# include(joinpath("integrator", "symmetric_verlet.jl"))
+include(joinpath("integrator", intselection, "integrator.jl"))
+include(joinpath("integrator", intselection, "body.jl"))
 include(joinpath("joints", "joint.jl"))
 include(joinpath("bounds", "bound.jl"))
 
 include(joinpath("joints", "translational.jl"))
+include(joinpath("joints", "rotational.jl"))
+include(joinpath("integrator", intselection, "joint.jl"))
 include(joinpath("joints", "translational0.jl"))
 include(joinpath("joints", "translational1.jl"))
 include(joinpath("joints", "translational2.jl"))
 include(joinpath("joints", "translational3.jl"))
-include(joinpath("joints", "rotational.jl"))
 include(joinpath("joints", "rotational0.jl"))
 include(joinpath("joints", "rotational1.jl"))
 include(joinpath("joints", "rotational2.jl"))
@@ -110,5 +113,7 @@ include(joinpath("util", "urdf.jl"))
 include(joinpath("solver", "newton.jl"))
 
 include(joinpath("util", "visualize.jl"))
+
+include(joinpath("integrator", intselection, "test.jl"))
 
 end
