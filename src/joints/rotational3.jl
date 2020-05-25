@@ -13,19 +13,19 @@ end
 end
 
 
-@inline function g(joint::Rotational3, body1::Body, body2::Body, Δt, No)
+@inline function g(joint::Rotational3, body1::Body, body2::Body, Δt)
     VLᵀmat(joint.qoff) * Lᵀmat(getq2(body1, Δt)) * getq2(body2, Δt)
 end
 
-@inline function g(joint::Rotational3, body1::Origin, body2::Body, Δt, No)
+@inline function g(joint::Rotational3, body1::Origin, body2::Body, Δt)
     VLᵀmat(joint.qoff) * getq2(body2, Δt)
 end
 
 
-@inline function ∂g∂posa(joint::Rotational3{T}, body1::Body, body2::Body, No) where T
+@inline function ∂g∂posa(joint::Rotational3{T}, body1::Body, body2::Body) where T
     if body2.id == joint.cid
         X = @SMatrix zeros(T, 3, 3)
-        R = -VLᵀmat(joint.qoff) * Rmat(body2.state.qd[No]) * RᵀVᵀmat(body1.state.qd[No])
+        R = -VLᵀmat(joint.qoff) * Rmat(body2.state.qd[2]) * RᵀVᵀmat(body1.state.qd[2])
 
         return [X R]
     else
@@ -33,10 +33,10 @@ end
     end
 end
 
-@inline function ∂g∂posb(joint::Rotational3{T}, body1::Body, body2::Body, No) where T
+@inline function ∂g∂posb(joint::Rotational3{T}, body1::Body, body2::Body) where T
     if body2.id == joint.cid
         X = @SMatrix zeros(T, 3, 3)
-        R = VLᵀmat(joint.qoff) * Lᵀmat(body1.state.qd[No]) * LVᵀmat(body2.state.qd[No])
+        R = VLᵀmat(joint.qoff) * Lᵀmat(body1.state.qd[2]) * LVᵀmat(body2.state.qd[2])
 
         return [X R]
     else
@@ -67,10 +67,10 @@ end
 end
 
 
-@inline function ∂g∂posb(joint::Rotational3{T}, body1::Origin, body2::Body, No) where T
+@inline function ∂g∂posb(joint::Rotational3{T}, body1::Origin, body2::Body) where T
     if body2.id == joint.cid
         X = @SMatrix zeros(T, 3, 3)
-        R = VLᵀmat(joint.qoff) * LVᵀmat(body2.state.qd[No])
+        R = VLᵀmat(joint.qoff) * LVᵀmat(body2.state.qd[2])
 
         return [X R]
     else

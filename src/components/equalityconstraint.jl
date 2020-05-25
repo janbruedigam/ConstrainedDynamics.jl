@@ -107,7 +107,7 @@ end
 end
 
 @generated function g(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
-    vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt, mechanism.No)) for i = 1:Nc]
+    vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt)) for i = 1:Nc]
     :(svcat($(vec...)))
 end
 
@@ -124,12 +124,12 @@ end
 end
 
 @generated function ∂g∂posa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂posa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.No)) for i = 1:Nc]
+    vec = [:(∂g∂posa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]))) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
 @generated function ∂g∂posb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂posb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id), mechanism.No)) for i = 1:Nc]
+    vec = [:(∂g∂posb(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, id))) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 

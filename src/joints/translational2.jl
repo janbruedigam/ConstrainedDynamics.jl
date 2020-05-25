@@ -49,25 +49,25 @@ end
 end
 
 
-@inline function g(joint::Translational2, body1::Body, body2::Body, Δt, No)
+@inline function g(joint::Translational2, body1::Body, body2::Body, Δt)
     vertices = joint.vertices
     q1 = getq2(body1, Δt)
     joint.V12 * vrotate(getx2(body2, Δt) + vrotate(vertices[2], getq2(body2, Δt)) - (getx2(body1, Δt) + vrotate(vertices[1], q1)), inv(q1))
 end
 
-@inline function g(joint::Translational2, body1::Origin, body2::Body, Δt, No)
+@inline function g(joint::Translational2, body1::Origin, body2::Body, Δt)
     vertices = joint.vertices
     joint.V12 * (getx2(body2, Δt) + vrotate(vertices[2], getq2(body2, Δt)) - vertices[1])
 end
 
 
-@inline function ∂g∂posa(joint::Translational2{T}, body1::Body, body2::Body, No) where T
+@inline function ∂g∂posa(joint::Translational2{T}, body1::Body, body2::Body) where T
     if body2.id == joint.cid
-        q1 = body1.state.qd[No]
-        point2 = body2.state.xd[No] + vrotate(joint.vertices[2], body2.state.qd[No])
+        q1 = body1.state.qd[2]
+        point2 = body2.state.xd[2] + vrotate(joint.vertices[2], body2.state.qd[2])
 
         X = -joint.V12 * VLᵀmat(q1) * RVᵀmat(q1)
-        R = joint.V12 * 2 * VLᵀmat(q1) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(body1.state.xd[No]))) * LVᵀmat(q1)
+        R = joint.V12 * 2 * VLᵀmat(q1) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(body1.state.xd[2]))) * LVᵀmat(q1)
 
         return [X R]
     else
@@ -75,10 +75,10 @@ end
     end
 end
 
-@inline function ∂g∂posb(joint::Translational2{T}, body1::Body, body2::Body, No) where T
+@inline function ∂g∂posb(joint::Translational2{T}, body1::Body, body2::Body) where T
     if body2.id == joint.cid
-        q1 = body1.state.qd[No]
-        q2 = body2.state.qd[No]
+        q1 = body1.state.qd[2]
+        q2 = body2.state.qd[2]
 
         X = joint.V12 * VLᵀmat(q1)RVᵀmat(q1)
         R = joint.V12 * 2 * VLᵀmat(q1) * Rmat(q1) * Rᵀmat(q2) * Rmat(Quaternion(joint.vertices[2])) * LVᵀmat(q2)
@@ -124,9 +124,9 @@ end
 end
 
 
-@inline function ∂g∂posb(joint::Translational2{T}, body1::Origin, body2::Body, No) where T
+@inline function ∂g∂posb(joint::Translational2{T}, body1::Origin, body2::Body) where T
     if body2.id == joint.cid
-        q2 = body2.state.qd[No]
+        q2 = body2.state.qd[2]
 
         X = joint.V12
         R = joint.V12 * 2 * VRᵀmat(q2) * Rmat(Quaternion(joint.vertices[2])) * LVᵀmat(q2)

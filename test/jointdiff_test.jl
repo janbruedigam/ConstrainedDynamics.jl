@@ -15,7 +15,8 @@ function transfunc3pos(vars)
     pa = vars[15:17]
     pb = vars[18:20]
 
-    (xb + vrotate(SVector{3}(pb...), qb)) - (xa + vrotate(SVector{3}(pa), qa))
+    # (xb + vrotate(SVector{3}(pb...), qb)) - (xa + vrotate(SVector{3}(pa), qa))
+    vrotate(SVector{3}(((xb + vrotate(SVector{3}(pb...), qb)) - (xa + vrotate(SVector{3}(pa...), qa)))...), inv(qa))
 end
 
 function transfunc3vel(vars)
@@ -39,7 +40,8 @@ function transfunc3vel(vars)
     qa = Quaternion(Δt / 2 * (qa * Quaternion(SVector(sqrt((2 / Δt)^2 - wa' * wa), wa...))))
     qb = Quaternion(Δt / 2 * (qb * Quaternion(SVector(sqrt((2 / Δt)^2 - wb' * wb), wb...))))
 
-    (xb + vrotate(SVector{3}(pb...), qb)) - (xa + vrotate(SVector{3}(pa...), qa))
+    # (xb + vrotate(SVector{3}(pb...), qb)) - (xa + vrotate(SVector{3}(pa...), qa))
+    vrotate(SVector{3}(((xb + vrotate(SVector{3}(pb...), qb)) - (xa + vrotate(SVector{3}(pa...), qa)))...), inv(qa))
 end
 
 function transfunc2pos(vars)

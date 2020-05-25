@@ -42,10 +42,10 @@ end
 end
 
 
-@inline g(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt, No) = g(joint)
+@inline g(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt) = g(joint)
 
 
-@inline ∂g∂posa(joint::Translational0, body1::AbstractBody, body2::AbstractBody, No) = ∂g∂posa(joint)
-@inline ∂g∂posb(joint::Translational0, body1::AbstractBody, body2::AbstractBody, No) = ∂g∂posb(joint)
+@inline ∂g∂posa(joint::Translational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂posa(joint)
+@inline ∂g∂posb(joint::Translational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂posb(joint)
 @inline ∂g∂vela(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt, No) = ∂g∂vela(joint)
 @inline ∂g∂velb(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt, No) = ∂g∂velb(joint)
