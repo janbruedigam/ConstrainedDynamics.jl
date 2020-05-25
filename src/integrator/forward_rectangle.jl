@@ -32,17 +32,19 @@ end
 
 @inline function discretizestate!(body::Body, Δt)
     state = body.state
-    xd = state.xc[1]
-    qd = state.qc[1]
+    xc = state.xc[1]
+    qc = state.qc[1]
     vc = state.vc[1]
     ωc = state.ωc[1]
 
-    state.xd[1] = xd - vc*Δt
-    state.xd[2] = xd
-    state.qd[1] = qd / ωbar(ωc,Δt)
-    state.qd[2] = qd
+    state.xd[1] = xc - vc*Δt
+    state.xd[2] = xc
+    state.qd[1] = qc / ωbar(ωc,Δt)
+    state.qd[2] = qc
 
     # just to set to some reasonable value
+    state.xc[2] = xc
+    state.qc[2] = qc
     state.vc[2] = vc
     state.ωc[2] = ωc
 

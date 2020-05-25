@@ -13,6 +13,8 @@ end
     body.state.xd[2] = getx2(body, Δt)
     body.state.qd[1] = body.state.qd[2]
     body.state.qd[2] = getq2(body, Δt)
+    body.state.vc[1] = body.solv
+    body.state.ωc[1] = body.solω
     return
 end
 
@@ -27,9 +29,9 @@ end
 function initializeSimulation!(mechanism::Mechanism, debug::Bool)
     discretizestate!(mechanism)
     debug && verifyConstraints!(mechanism)
-    foreach(s0tos1!, mechanism.bodies)
-    foreach(s0tos1!, mechanism.eqconstraints)
-    foreach(s0tos1!, mechanism.ineqconstraints)
+    foreach(setsol!, mechanism.bodies)
+    # foreach(s0tos1!, mechanism.eqconstraints)
+    # foreach(s0tos1!, mechanism.ineqconstraints)
     return
 end
 

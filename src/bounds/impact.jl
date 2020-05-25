@@ -20,7 +20,7 @@ end
 
 
 @inline function g(impact::Impact, body::Body, Δt, No)
-    impact.Nx[SVector(1, 2, 3)]' * (getx3(body, Δt) - impact.offset[SVector(1, 2, 3)])
+    impact.Nx[SVector(1, 2, 3)]' * (getx2(body, Δt) - impact.offset[SVector(1, 2, 3)])
 end
 
 @inline ∂g∂pos(impact::Impact, No) = impact.Nx
@@ -29,8 +29,8 @@ end
 @inline function schurf(ineqc, impact::Impact, i, body::Body, μ, Δt, No)
     φ = g(impact, body, Δt, No)
 
-    γ1 = ineqc.γ1[i]
-    s1 = ineqc.s1[i]
+    γ1 = ineqc.solγ1[i]
+    s1 = ineqc.sols1[i]
 
     return impact.Nx' * (γ1 / s1 * φ - μ / s1)
 end
@@ -39,8 +39,8 @@ end
     Nx = impact.Nx
     Nv = Δt * Nx
 
-    γ1 = ineqc.γ1[i]
-    s1 = ineqc.s1[i]
+    γ1 = ineqc.solγ1[i]
+    s1 = ineqc.sols1[i]
 
     return Nx' * γ1 / s1 * Nv
 end

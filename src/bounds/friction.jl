@@ -25,7 +25,7 @@ end
 
 
 @inline function g(friction::Friction, body::Body, Δt, No)
-    friction.Nx[SVector(1, 2, 3)]' * (getx3(body, Δt) - friction.offset[SVector(1, 2, 3)])
+    friction.Nx[SVector(1, 2, 3)]' * (getx2(body, Δt) - friction.offset[SVector(1, 2, 3)])
 end
 
 @inline ∂g∂pos(friction::Friction, No) = friction.Nx
@@ -36,8 +36,8 @@ end
 @inline function schurf(ineqc, friction::Friction, i, body::Body, μ, Δt, No)
     φ = g(friction, body, Δt, No)
 
-    γ1 = ineqc.γ1[i]
-    s1 = ineqc.s1[i]
+    γ1 = ineqc.solγ1[i]
+    s1 = ineqc.sols1[i]
 
     return friction.Nx' * (γ1 / s1 * φ - μ / s1)
 end
@@ -46,8 +46,8 @@ end
     Nx = friction.Nx
     Nv = Δt * Nx
 
-    γ1 = ineqc.γ1[i]
-    s1 = ineqc.s1[i]
+    γ1 = ineqc.solγ1[i]
+    s1 = ineqc.sols1[i]
 
     return Nx' * γ1 / s1 * Nv
 end
@@ -56,14 +56,17 @@ end
 @inline function calcFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
     No = mechanism.No
     cf = friction.cf
-    γ1 = ineqc.γ1[i]
+    γ1 = ineqc.solγ1[i]
     D = friction.D
 
     f = body.f
-    v = body.s1
-    body.s1 = @SVector zeros(6)
+    v = getv2(body)
+    ω = getω2(body)
+    body.state.vc[2] = @SVector zeros(3)
+    body.state.ωc[2] = @SVector zeros(3)
     dyn = dynamics(mechanism, body)
-    body.s1 = v
+    body.state.vc[2] = v
+    body.state.ωc[2] = ω
     body.f = f
 
     b0 = D*dyn + friction.b # remove old friction force
@@ -75,36 +78,3 @@ end
     end    
     return
 end
-
-# # Smooth stuff
-# @inline function setFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
-#     Δt = mechanism.Δt
-#     No = mechanism.No
-#     M = getM(body)
-#     v = body.s1
-#     cf = friction.cf
-#     γ1 = ineqc.γ1[i]
-#     D = friction.D
-
-#     B = D'*friction.b
-#     F = body.F[No] - B[SVector(1,2,3)]
-#     τ = body.τ[No] - B[SVector(4,5,6)]
-#     setForce!(body,F,τ,No)
-
-#     ψ = Δt*norm(D*v)
-    
-#     f = body.f
-#     body.s1 = @SVector zeros(6)
-#     dyn = D/M*dynamics(body,mechanism)*Δt^2
-#     body.s1 = v
-#     body.f = f
-    
-#     X = D/M*D' * Δt^2 + I*(ψ/(cf*γ1))
-
-#     friction.b = X\dyn
-#     B = D'*friction.b
-#     F += B[SVector(1,2,3)]
-#     τ += B[SVector(4,5,6)]
-#     setForce!(body,F,τ,No)
-#     return
-# end
