@@ -10,9 +10,9 @@ end
 
 @inline function updatePos!(body::Body, Δt)
     body.state.xd[1] = body.state.xd[2]
-    body.state.xd[2] = getx2(body, Δt)
+    body.state.xd[2] = getxd3(body, Δt)
     body.state.qd[1] = body.state.qd[2]
-    body.state.qd[2] = getq2(body, Δt)
+    body.state.qd[2] = getqd3(body, Δt)
     body.state.vc[1] = body.solv
     body.state.ωc[1] = body.solω
     return

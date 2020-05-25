@@ -34,10 +34,10 @@ Base.:*(x::Number, q::Quaternion) = q * x
 Base.:/(q1::Quaternion, q2::Quaternion) = q1 * inv(q2)
 Base.:\(q1::Quaternion, q2::Quaternion) = inv(q1) * q2
 
-# Base.:-(q::Quaternion) = Quaternion(-q.s,-q.v1,-q.v2,-q.v3)
+Base.:-(q::Quaternion) = Quaternion(-q.s,-q.v1,-q.v2,-q.v3)
 
 angleaxis(q::Quaternion) = angle(q), axis(q)
-angle(q::Quaternion) = 2 * atan(sqrt(q.v1^2 + q.v2^2 + q.v3^2), q.s)
+angle(q::Quaternion) = 2 * atan(sqrt(q.v1^2 + q.v2^2 + q.v3^2), q.s) # This is the rotation angle φ (φ = 2θ)
 function axis(q::Quaternion{T}) where T
     qv = SVector(q.v1, q.v2, q.v3)
     if norm(qv) == 0
@@ -79,3 +79,18 @@ RVᵀmat(q::Quaternion{T}) where T = SMatrix{4,3,T,12}(-q.v1, q.s, -q.v3, q.v2, 
 RᵀVᵀmat(q::Quaternion{T}) where T = SMatrix{4,3,T,12}(q.v1, q.s, q.v3, -q.v2, q.v2, -q.v3, q.s, q.v1, q.v3, q.v2, -q.v1, q.s)
 
 skewplusdiag(v::AbstractVector{T},w::T) where T = SMatrix{3,3,T,9}(w, v[3], -v[2], -v[3], w, v[1], v[2], -v[1], w)
+
+function slerp(q1,q2,h)
+    s = q1'*q2
+    if s < 0
+        s = -s
+        q2 = -q2
+    end
+
+    qdiff = q1\q2
+    φdiff, udiff = angleaxis(qdiff)
+    φint = φdiff*h
+    qint = Quaternion(cos(φint/2),udiff*sin(φint/2))
+    
+    return q1*qint
+end
