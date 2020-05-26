@@ -60,8 +60,8 @@ export Box,
     RotZ,
     RGBA
 
-# intselection = "forward_rectangle"
-intselection = "symmetric_verlet"
+intselection = "forward_rectangle"
+# intselection = "symmetric_verlet"
 
 include(joinpath("util", "util.jl"))
 include(joinpath("util", "customdict.jl"))
