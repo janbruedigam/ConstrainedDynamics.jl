@@ -4,8 +4,7 @@ using Rotations
 using StaticArrays
 using LinearAlgebra
 
-using ConstrainedDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, VLᵀmat, ∂dyn∂pos, ∂dyn∂vel, skew, skewplusdiag, discretizestate!,
-    velTpos, dynTvel, velRpos, dynRvel
+using ConstrainedDynamics: ∂dyn∂vel, discretizestate!, dynTvel, dynRvel, getv1, getω1, getv2, getω2
 
 
 function dyntestT()
@@ -32,19 +31,13 @@ function dyntestT()
     discretizestate!(body1,x1,q1,v1,v2,ω1,ω2,Δt)
 
 
-    res = ForwardDiff.jacobian(dynTvel, [v2;v1])
-    X2 = res[1:3,1:3] * velTpos([x1;v2])
+    res = ForwardDiff.jacobian(dynTvel, [getv1(body1);getv2(body1)])
+    V2 = res[1:3,4:6]
 
-    n1 = norm(X2 - ∂dyn∂pos(body1, Δt)[1:3,1:3])
+    n = norm(V2 - ∂dyn∂vel(body1, Δt)[1:3,1:3])
 
-    res = ForwardDiff.jacobian(dynTvel, [v2;v1])
-    V2 = res[1:3,1:3]
-
-    n2 = norm(V2 - ∂dyn∂vel(body1, Δt)[1:3,1:3])
-
-    # display(n1)
-    # display(n2)
-    return n1 + n2
+    # display(n)
+    return n
 end
 
 function dyntestR()
@@ -70,19 +63,14 @@ function dyntestR()
     mech = Mechanism(origin, [body1], [oc1])
     discretizestate!(body1,x1,q1,v1,v2,ω1,ω2,Δt)
 
-    res = ForwardDiff.jacobian(dynRvel, [ω2;ω1])
-    Q2 = res[1:3,1:3] * velRpos([q1;ω2])
 
-    n1 = norm(Q2 - ∂dyn∂pos(body1, Δt)[4:6,4:6])
+    res = ForwardDiff.jacobian(dynRvel, [getω1(body1);getω2(body1)])
+    W2 = res[1:3,4:6]
 
-    res = ForwardDiff.jacobian(dynRvel, [ω2;ω1])
-    W2 = res[1:3,1:3]
+    n = norm(W2 - ∂dyn∂vel(body1, Δt)[4:6,4:6])
 
-    n2 = norm(W2 - ∂dyn∂vel(body1, Δt)[4:6,4:6])
-
-    # display(n1)
-    # display(n2)
-    return n1 + n2
+    # display(n)
+    return n
 end
 
 for i=1:10

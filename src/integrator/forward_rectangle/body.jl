@@ -24,19 +24,6 @@
     return body.f
 end
 
-@inline function ∂dyn∂pos(body::Body{T}, Δt) where T
-    J = body.J
-    ω2 = getω2(body)
-    sq = sqrt(4 / Δt^2 - ω2' * ω2)
-
-    dynT = SMatrix{3,3,T,9}(body.m / Δt^2 * I)
-    dynR = (skewplusdiag(ω2, sq) * J - J * ω2 * (ω2' / sq) - skew(J * ω2)) * 2/Δt * VLᵀmat(body.state.qd[2])*LVᵀmat(getq2(body,Δt))
-
-    Z = @SMatrix zeros(T, 3, 3)
-
-    return [[dynT; Z] [Z; dynR]]
-end
-
 @inline function ∂dyn∂vel(body::Body{T}, Δt) where T
     J = body.J
     ω2 = getω2(body)
