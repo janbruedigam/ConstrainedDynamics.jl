@@ -6,20 +6,22 @@
 # ωckw = sqrt((2/Δt)^2 - ωckᵀωck) - 2/Δt
 
 # Continuous values
-@inline getx1(body::Body) = body.state.xd[2]
-@inline getq1(body::Body) = body.state.qd[2]
-@inline getx2(body::Body, Δt) = body.state.xd[2] + getv2(body) * Δt
-@inline getq2(body::Body, Δt) = Quaternion(Lmat(body.state.qd[2]) * ωbar(body.state.ωc[2], Δt))
+@inline getx1(body::Body) = body.state.xc[1]
+@inline getq1(body::Body) = body.state.qc[1]
+@inline getx2(body::Body, Δt) = body.state.xc[1] + body.state.vc[2] * Δt
+@inline getq2(body::Body, Δt) = body.state.qc[1] * ωbar(body.state.ωc[2], Δt)
 @inline getv1(body::Body) = body.state.vc[1]
 @inline getω1(body::Body) = body.state.ωc[1]
 @inline getv2(body::Body) = body.state.vc[2]
 @inline getω2(body::Body) = body.state.ωc[2]
 
 # Discrete values
-@inline getxd3(body::Body, Δt) = body.state.xd[2] + getv2(body) * Δt
-@inline getqd3(body::Body, Δt) = Quaternion(Lmat(body.state.qd[2]) * ωbar(body.state.ωc[2], Δt))
+@inline getxd3(body::Body, Δt) = getx2(body, Δt)
+@inline getqd3(body::Body, Δt) = getq2(body, Δt)
 @inline getxd2(body::Body) = body.state.xd[2]
 @inline getqd2(body::Body) = body.state.qd[2]
+@inline getxd1(body::Body) = body.state.xd[1]
+@inline getqd1(body::Body) = body.state.qd[1]
 
 @inline function derivωbar(ω::SVector{3,T}, Δt) where T
     msq = -sqrt(4 / Δt^2 - dot(ω, ω))

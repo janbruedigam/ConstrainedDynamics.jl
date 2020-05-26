@@ -13,8 +13,11 @@ end
     body.state.xd[2] = getxd3(body, Δt)
     body.state.qd[1] = body.state.qd[2]
     body.state.qd[2] = getqd3(body, Δt)
-    body.state.vc[1] = body.solv
-    body.state.ωc[1] = body.solω
+    
+    body.state.xc[1] = getx2(body, Δt)
+    body.state.qc[1] = getq2(body, Δt)
+    body.state.vc[1] = getv2(body)
+    body.state.ωc[1] = getω2(body)
     return
 end
 
