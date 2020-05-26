@@ -14,6 +14,8 @@
 @inline getω1(body::Body) = body.state.ωc[1]
 @inline getv2(body::Body) = body.state.vc[2]
 @inline getω2(body::Body) = body.state.ωc[2]
+@inline getvupdate(body::Body) = body.state.vc[2]
+@inline getωupdate(body::Body) = body.state.ωc[2]
 
 # Discrete values
 @inline getxd3(body::Body, Δt) = getx2(body, Δt)

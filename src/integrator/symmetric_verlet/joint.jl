@@ -35,26 +35,26 @@ end
 end
 
 
-@inline function ∂g∂vela(joint::Translational, xa1, xa2, qa1, qa2, va2, ωa2, xb2, qb2, Δt)
+@inline function ∂g∂vela(joint::Translational, xa1, xa2, qa1, qa2, va, ωa, xb2, qb2, Δt)
     point2 = xb2 + vrotate(joint.vertices[2], qb2)
 
     V = -VLᵀmat(qa2) * RVᵀmat(qa2) * 1/2 * Δt
-    W = 2 * VLᵀmat(qa2) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(xa2))) * 1/2 * Lmat(qa1)*derivωbar(ωa2, Δt)
+    W = 2 * VLᵀmat(qa2) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(xa2))) * 1/2 * Lmat(qa1)*derivωbar(ωa, Δt)
 
     return [V W]
 end
 
-@inline function ∂g∂velb(joint::Translational, xa2, qa2, xb1, xb2, qb1, qb2, vb2, ωb2, Δt)
+@inline function ∂g∂velb(joint::Translational, xa2, qa2, xb1, xb2, qb1, qb2, vb, ωb, Δt)
     V = VLᵀmat(qa2) * RVᵀmat(qa2) * 1/2 * Δt
-    W = 2 * VLᵀmat(qa2) * Rmat(qa2) * Rᵀmat(qb2) * Rmat(Quaternion(joint.vertices[2])) * 1/2 * Lmat(qb1)*derivωbar(ωb2, Δt)
+    W = 2 * VLᵀmat(qa2) * Rmat(qa2) * Rᵀmat(qb2) * Rmat(Quaternion(joint.vertices[2])) * 1/2 * Lmat(qb1)*derivωbar(ωb, Δt)
 
     return [V W]
 end
 
 
-@inline function ∂g∂velb(joint::Translational{T}, xb1, xb2, qb1, qb2, vb2, ωb2, Δt) where T
+@inline function ∂g∂velb(joint::Translational{T}, xb1, xb2, qb1, qb2, vb, ωb, Δt) where T
     V = SMatrix{3,3,T,9}(I) * 1/2 * Δt
-    W = 2 * VRᵀmat(qb2) * Rmat(Quaternion(joint.vertices[2])) * 1/2 * Lmat(qb1)*derivωbar(ωb2, Δt)
+    W = 2 * VRᵀmat(qb2) * Rmat(Quaternion(joint.vertices[2])) * 1/2 * Lmat(qb1)*derivωbar(ωb, Δt)
 
     return [V W]
 end
@@ -95,24 +95,24 @@ end
 end
 
 
-@inline function ∂g∂vela(joint::Rotational{T}, xa1, xa2, qa1, qa2, va2, ωa2, xb2, qb2, Δt) where T
+@inline function ∂g∂vela(joint::Rotational{T}, xa1, xa2, qa1, qa2, va, ωa, xb2, qb2, Δt) where T
     V = (@SMatrix zeros(T, 3, 3)) * 1/2 * Δt
-    W = VLᵀmat(joint.qoff) * Rmat(qb2) * Tmat(T) * 1/2 * Lmat(qa1)*derivωbar(ωa2, Δt)
+    W = VLᵀmat(joint.qoff) * Rmat(qb2) * Tmat(T) * 1/2 * Lmat(qa1)*derivωbar(ωa, Δt)
 
     return [V W]
 end
 
-@inline function ∂g∂velb(joint::Rotational{T}, xa2, qa2, xb1, xb2, qb1, qb2, vb2, ωb2, Δt) where T
+@inline function ∂g∂velb(joint::Rotational{T}, xa2, qa2, xb1, xb2, qb1, qb2, vb, ωb, Δt) where T
     V = (@SMatrix zeros(T, 3, 3)) * 1/2 * Δt
-    W = VLᵀmat(joint.qoff) * Lᵀmat(qa2) * 1/2 * Lmat(qb1)*derivωbar(ωb2, Δt)
+    W = VLᵀmat(joint.qoff) * Lᵀmat(qa2) * 1/2 * Lmat(qb1)*derivωbar(ωb, Δt)
 
     return [V W]
 end
 
 
-@inline function ∂g∂velb(joint::Rotational{T}, xb1, xb2, qb1, qb2, vb2, ωb2, Δt) where T
+@inline function ∂g∂velb(joint::Rotational{T}, xb1, xb2, qb1, qb2, vb, ωb, Δt) where T
     V = (@SMatrix zeros(T, 3, 3)) * 1/2 * Δt
-    W = VLᵀmat(joint.qoff) * 1/2 * Lmat(qb1)*derivωbar(ωb2, Δt)
+    W = VLᵀmat(joint.qoff) * 1/2 * Lmat(qb1)*derivωbar(ωb, Δt)
 
     return [V W]
 end

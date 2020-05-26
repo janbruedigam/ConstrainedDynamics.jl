@@ -4,23 +4,28 @@ using Rotations
 using StaticArrays
 using LinearAlgebra
 
-using ConstrainedDynamics: vrotate, Lmat, Vᵀmat, Lᵀmat, VLᵀmat, ∂g∂pos, ∂g∂vel, skew, discretizestate!, 
+using ConstrainedDynamics: ∂g∂pos, ∂g∂vel, discretizestate!, 
     transfunc1pos, transfunc2pos, transfunc3pos, transfunc1vel, transfunc2vel, transfunc3vel, 
     rotfunc1pos, rotfunc2pos, rotfunc3pos, rotfunc1vel, rotfunc2vel, rotfunc3vel, 
-    getx1, getq1, getx2, getq2, getv1, getω1, getv2, getω2, getxd3, getqd3, getxd2, getqd2
+    getx1, getq1, getv1, getω1, getv2, getω2, getxd2, getqd2, LVᵀmat
 
 
 function transtest3()
     Δt = 0.01
-    xa = rand(3)
-    qa = Quaternion(rand(RotMatrix{3}))
-    xb = rand(3)
-    qb = Quaternion(rand(RotMatrix{3}))
+    xa1 = rand(3)
+    qa1 = Quaternion(rand(RotMatrix{3}))
+    xb1 = rand(3)
+    qb1 = Quaternion(rand(RotMatrix{3}))
 
-    va = rand(3)
-    wa = rand(3)
-    vb = rand(3)
-    wb = rand(3)
+    va1 = rand(3)
+    ωa1 = rand(3)
+    vb1 = rand(3)
+    ωb1 = rand(3)
+
+    va2 = rand(3)
+    ωa2 = rand(3)
+    vb2 = rand(3)
+    ωb2 = rand(3)
 
     pa = rand(3)
     pb = rand(3)
@@ -35,32 +40,25 @@ function transtest3()
     joint1 = EqualityConstraint(ConstrainedDynamics.Translational3{Float64}(body1, body2, p1=pa, p2=pb))
 
     mech = Mechanism(origin, [body1;body2], [oc1;oc2;joint1])
-
-    setPosition!(body1, x = xa, q = qa)
-    setPosition!(body2, x = xb, q = qb)
-    discretizestate!(body1, Δt)
-    discretizestate!(body2, Δt)
-    body1.state.vc[2] = va
-    body1.state.ωc[2] = wa
-    body2.state.vc[2] = vb
-    body2.state.ωc[2] = wb
+    discretizestate!(body1,xa1,qa1,va1,va2,ωa1,ωa2,Δt)
+    discretizestate!(body2,xb1,qb1,vb1,vb2,ωb1,ωb2,Δt)
 
     res = ForwardDiff.jacobian(transfunc3pos, [getxd2(body1);getqd2(body1);getxd2(body2);getqd2(body2);pa;pb])
     X1 = res[1:3,1:3]
-    Q1 = res[1:3,4:7] * Lmat(Quaternion(getqd2(body1))) * Vᵀmat()
+    Q1 = res[1:3,4:7] * LVᵀmat(getqd2(body1))
     X2 = res[1:3,8:10]
-    Q2 = res[1:3,11:14] * Lmat(Quaternion(getqd2(body2))) * Vᵀmat()
+    Q2 = res[1:3,11:14] * LVᵀmat(getqd2(body2))
 
     n11 = norm(X1 - ∂g∂pos(mech, joint1, 1)[1:3,1:3])
     n12 = norm(Q1 - ∂g∂pos(mech, joint1, 1)[1:3,4:6])
     n21 = norm(X2 - ∂g∂pos(mech, joint1, 2)[1:3,1:3])
     n22 = norm(Q2 - ∂g∂pos(mech, joint1, 2)[1:3,4:6])
 
-    res = ForwardDiff.jacobian(transfunc3vel, [getxd2(body1);getqd2(body1);getv2(body1);getω2(body1);getxd2(body2);getqd2(body2);getv2(body2);getω2(body2);pa;pb])
-    V1 = res[1:3,8:10]
-    W1 = res[1:3,11:13]
-    V2 = res[1:3,21:23]
-    W2 = res[1:3,24:26]
+    res = ForwardDiff.jacobian(transfunc3vel, [getx1(body1);getq1(body1);getv1(body1);getω1(body1);getv2(body1);getω2(body1);getx1(body2);getq1(body2);getv1(body2);getω1(body2);getv2(body2);getω2(body2);pa;pb])
+    V1 = res[1:3,14:16]
+    W1 = res[1:3,17:19]
+    V2 = res[1:3,33:35]
+    W2 = res[1:3,36:38]
 
     n31 = norm(V1 - ∂g∂vel(mech, joint1, 1)[1:3,1:3])
     n32 = norm(W1 - ∂g∂vel(mech, joint1, 1)[1:3,4:6])
@@ -113,9 +111,9 @@ function transtest2()
 
     res = ForwardDiff.jacobian(transfunc2pos, [getxd2(body1);getqd2(body1);getxd2(body2);getqd2(body2);pa;pb;V12[1,:];V12[2,:]])
     X1 = res[1:2,1:3]
-    Q1 = res[1:2,4:7] * Lmat(Quaternion(getqd2(body1))) * Vᵀmat()
+    Q1 = res[1:2,4:7] * LVᵀmat(getqd2(body1))
     X2 = res[1:2,8:10]
-    Q2 = res[1:2,11:14] * Lmat(Quaternion(getqd2(body2))) * Vᵀmat()
+    Q2 = res[1:2,11:14] * LVᵀmat(getqd2(body2))
 
     n11 = norm(X1 - ∂g∂pos(mech, joint1, 1)[1:2,1:3])
     n12 = norm(Q1 - ∂g∂pos(mech, joint1, 1)[1:2,4:6])
@@ -123,11 +121,11 @@ function transtest2()
     n22 = norm(Q2 - ∂g∂pos(mech, joint1, 2)[1:2,4:6])
 
 
-    res = ForwardDiff.jacobian(transfunc2vel, [getxd2(body1);getqd2(body1);getv2(body1);getω2(body1);getxd2(body2);getqd2(body2);getv2(body2);getω2(body2);pa;pb;V12[1,:];V12[2,:]])
-    V1 = res[1:2,8:10]
-    W1 = res[1:2,11:13]
-    V2 = res[1:2,21:23]
-    W2 = res[1:2,24:26]
+    res = ForwardDiff.jacobian(transfunc2vel, [getx1(body1);getq1(body1);getv1(body1);getω1(body1);getv2(body1);getω2(body1);getx1(body2);getq1(body2);getv1(body2);getω1(body2);getv2(body2);getω2(body2);pa;pb;V12[1,:];V12[2,:]])
+    V1 = res[1:2,14:16]
+    W1 = res[1:2,17:19]
+    V2 = res[1:2,33:35]
+    W2 = res[1:2,36:38]
 
     n31 = norm(V1 - ∂g∂vel(mech, joint1, 1)[1:2,1:3])
     n32 = norm(W1 - ∂g∂vel(mech, joint1, 1)[1:2,4:6])
@@ -179,9 +177,9 @@ function transtest1()
 
     res = ForwardDiff.gradient(transfunc1pos, [getxd2(body1);getqd2(body1);getxd2(body2);getqd2(body2);pa;pb;v])
     X1 = res[1:3]'
-    Q1 = res[4:7]' * Lmat(Quaternion(getqd2(body1))) * Vᵀmat()
+    Q1 = res[4:7]' * LVᵀmat(getqd2(body1))
     X2 = res[8:10]'
-    Q2 = res[11:14]' * Lmat(Quaternion(getqd2(body2))) * Vᵀmat()
+    Q2 = res[11:14]' * LVᵀmat(getqd2(body2))
 
     n11 = norm(X1 - ∂g∂pos(mech, joint1, 1)[1:3]')
     n12 = norm(Q1 - ∂g∂pos(mech, joint1, 1)[4:6]')
@@ -189,11 +187,11 @@ function transtest1()
     n22 = norm(Q2 - ∂g∂pos(mech, joint1, 2)[4:6]')
 
 
-    res = ForwardDiff.gradient(transfunc1vel, [getxd2(body1);getqd2(body1);getv2(body1);getω2(body1);getxd2(body2);getqd2(body2);getv2(body2);getω2(body2);pa;pb;v])
-    V1 = res[8:10]'
-    W1 = res[11:13]'
-    V2 = res[21:23]'
-    W2 = res[24:26]'
+    res = ForwardDiff.gradient(transfunc1vel, [getx1(body1);getq1(body1);getv1(body1);getω1(body1);getv2(body1);getω2(body1);getx1(body2);getq1(body2);getv1(body2);getω1(body2);getv2(body2);getω2(body2);pa;pb;v])
+    V1 = res[14:16]'
+    W1 = res[17:19]'
+    V2 = res[33:35]'
+    W2 = res[36:38]'
 
     n31 = norm(V1 - ∂g∂vel(mech, joint1, 1)[1:3]')
     n32 = norm(W1 - ∂g∂vel(mech, joint1, 1)[4:6]')
@@ -242,9 +240,9 @@ function rottest3()
 
     res = ForwardDiff.jacobian(rotfunc3pos, [getxd2(body1);getqd2(body1);getxd2(body2);getqd2(body2);offset])
     X1 = res[1:3,1:3]
-    Q1 = res[1:3,4:7] * Lmat(Quaternion(qa)) * Vᵀmat()
+    Q1 = res[1:3,4:7] * LVᵀmat(getqd2(body1))
     X2 = res[1:3,8:10]
-    Q2 = res[1:3,11:14] * Lmat(Quaternion(qb)) * Vᵀmat()
+    Q2 = res[1:3,11:14] * LVᵀmat(getqd2(body2))
 
     n11 = norm(X1 - ∂g∂pos(mech, joint1, 1)[1:3,1:3])
     n12 = norm(Q1 - ∂g∂pos(mech, joint1, 1)[1:3,4:6])
@@ -252,11 +250,11 @@ function rottest3()
     n22 = norm(Q2 - ∂g∂pos(mech, joint1, 2)[1:3,4:6])
 
 
-    res = ForwardDiff.jacobian(rotfunc3vel, [getxd2(body1);getqd2(body1);getv2(body1);getω2(body1);getxd2(body2);getqd2(body2);getv2(body2);getω2(body2);offset])
-    V1 = res[1:3,8:10]
-    W1 = res[1:3,11:13]
-    V2 = res[1:3,21:23]
-    W2 = res[1:3,24:26]
+    res = ForwardDiff.jacobian(rotfunc3vel, [getx1(body1);getq1(body1);getv1(body1);getω1(body1);getv2(body1);getω2(body1);getx1(body2);getq1(body2);getv1(body2);getω1(body2);getv2(body2);getω2(body2);offset])
+    V1 = res[1:3,14:16]
+    W1 = res[1:3,17:19]
+    V2 = res[1:3,33:35]
+    W2 = res[1:3,36:38]
 
     n31 = norm(V1 - ∂g∂vel(mech, joint1, 1)[1:3,1:3])
     n32 = norm(W1 - ∂g∂vel(mech, joint1, 1)[1:3,4:6])
@@ -307,9 +305,9 @@ function rottest2()
 
     res = ForwardDiff.jacobian(rotfunc2pos, [getxd2(body1);getqd2(body1);getxd2(body2);getqd2(body2);offset;V12[1,:];V12[2,:]])
     X1 = res[1:2,1:3]
-    Q1 = res[1:2,4:7] * Lmat(Quaternion(qa)) * Vᵀmat()
+    Q1 = res[1:2,4:7] * LVᵀmat(getqd2(body1))
     X2 = res[1:2,8:10]
-    Q2 = res[1:2,11:14] * Lmat(Quaternion(qb)) * Vᵀmat()
+    Q2 = res[1:2,11:14] * LVᵀmat(getqd2(body2))
 
     n11 = norm(X1 - ∂g∂pos(mech, joint1, 1)[1:2,1:3])
     n12 = norm(Q1 - ∂g∂pos(mech, joint1, 1)[1:2,4:6])
@@ -317,11 +315,11 @@ function rottest2()
     n22 = norm(Q2 - ∂g∂pos(mech, joint1, 2)[1:2,4:6])
 
 
-    res = ForwardDiff.jacobian(rotfunc2vel, [getxd2(body1);getqd2(body1);getv2(body1);getω2(body1);getxd2(body2);getqd2(body2);getv2(body2);getω2(body2);offset;V12[1,:];V12[2,:]])
-    V1 = res[1:2,8:10]
-    W1 = res[1:2,11:13]
-    V2 = res[1:2,21:23]
-    W2 = res[1:2,24:26]
+    res = ForwardDiff.jacobian(rotfunc2vel, [getx1(body1);getq1(body1);getv1(body1);getω1(body1);getv2(body1);getω2(body1);getx1(body2);getq1(body2);getv1(body2);getω1(body2);getv2(body2);getω2(body2);offset;V12[1,:];V12[2,:]])
+    V1 = res[1:2,14:16]
+    W1 = res[1:2,17:19]
+    V2 = res[1:2,33:35]
+    W2 = res[1:2,36:38]
 
     n31 = norm(V1 - ∂g∂vel(mech, joint1, 1)[1:2,1:3])
     n32 = norm(W1 - ∂g∂vel(mech, joint1, 1)[1:2,4:6])
@@ -372,9 +370,9 @@ function rottest1()
 
     res = ForwardDiff.gradient(rotfunc1pos, [getxd2(body1);getqd2(body1);getxd2(body2);getqd2(body2);offset;V3])
     X1 = res[1:3]'
-    Q1 = res[4:7]' * Lmat(Quaternion(qa)) * Vᵀmat()
+    Q1 = res[4:7]' * LVᵀmat(getqd2(body1))
     X2 = res[8:10]'
-    Q2 = res[11:14]' * Lmat(Quaternion(qb)) * Vᵀmat()
+    Q2 = res[11:14]' * LVᵀmat(getqd2(body2))
 
     n11 = norm(X1 - ∂g∂pos(mech, joint1, 1)[1:3]')
     n12 = norm(Q1 - ∂g∂pos(mech, joint1, 1)[4:6]')
@@ -382,11 +380,11 @@ function rottest1()
     n22 = norm(Q2 - ∂g∂pos(mech, joint1, 2)[4:6]')
 
 
-    res = ForwardDiff.gradient(rotfunc1vel, [getxd2(body1);getqd2(body1);getv2(body1);getω2(body1);getxd2(body2);getqd2(body2);getv2(body2);getω2(body2);offset;V3])
-    V1 = res[8:10]'
-    W1 = res[11:13]'
-    V2 = res[21:23]'
-    W2 = res[24:26]'
+    res = ForwardDiff.gradient(rotfunc1vel, [getx1(body1);getq1(body1);getv1(body1);getω1(body1);getv2(body1);getω2(body1);getx1(body2);getq1(body2);getv1(body2);getω1(body2);getv2(body2);getω2(body2);offset;V3])
+    V1 = res[14:16]'
+    W1 = res[17:19]'
+    V2 = res[33:35]'
+    W2 = res[36:38]'
 
     n31 = norm(V1 - ∂g∂vel(mech, joint1, 1)[1:3]')
     n32 = norm(W1 - ∂g∂vel(mech, joint1, 1)[4:6]')

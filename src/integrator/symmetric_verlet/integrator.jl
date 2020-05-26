@@ -15,6 +15,8 @@
 @inline getω1(body::Body) = body.state.ωc[1]
 @inline getv2(body::Body) = body.state.vc[2]
 @inline getω2(body::Body) = body.state.ωc[2]
+@inline getvupdate(body::Body) = 1/2*(body.state.vc[1] + body.state.vc[2])
+@inline getωupdate(body::Body) = 1/2 * (body.state.ωc[1] + body.state.ωc[2])
 
 # Discrete values
 #TODO d3 from d2 ?
