@@ -24,7 +24,7 @@ end
 function verifyConstraints!(mechanism::Mechanism)
     for eqc in mechanism.eqconstraints
         if norm(g(mechanism, eqc)) > 1e-3
-            @info string("Probably disconnected bodies at constraint: ", eqc.id)
+            @info string("Bad constraint satisfaction at constraint: ", eqc.id, ", |g| = ", norm(g(mechanism, eqc)))
         end
     end
 end
