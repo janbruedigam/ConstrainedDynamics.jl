@@ -6,21 +6,21 @@ end
 
 @inline function getVelocityDelta(joint::Rotational2, body1::Body, body2::Body{T}, ω::SVector{1,T}) where T
     ω = joint.V3' * ω
-    Δω = vrotate(ω, inv(body2.state.qd[2])*body1.state.qd[2]*joint.qoff) # in body2 frame
+    Δω = vrotate(ω, inv(body2.state.qk[2])*body1.state.qk[2]*joint.qoff) # in body2 frame
     return Δω
 end
 
 @inline function getVelocityDelta(joint::Rotational2, body1::Origin, body2::Body{T}, ω::SVector{1,T}) where T
     ω = joint.V3' * ω
-    Δω = vrotate(ω, inv(body2.state.qd[2])*joint.qoff) # in body2 frame
+    Δω = vrotate(ω, inv(body2.state.qk[2])*joint.qoff) # in body2 frame
     return Δω
 end
 
 @inline function setForce!(joint::Rotational2, body1::Body, body2::Body{T}, τ::SVector{1,T}, No) where T
     clearForce!(joint, body1, body2, No)
 
-    q1 = body1.state.qd[No]
-    q2 = body2.state.qd[No]
+    q1 = body1.state.qk[No]
+    q2 = body2.state.qk[No]
 
     τ1 = vrotate(joint.V3' * -τ, q1*joint.qoff) # in world coordinates
     τ2 = -τ1 # in world coordinates
@@ -38,7 +38,7 @@ end
 @inline function setForce!(joint::Rotational2, body1::Origin, body2::Body{T}, τ::SVector{1,T}, No) where T
     clearForce!(joint, body2, No)
 
-    q2 = body2.state.qd[No]
+    q2 = body2.state.qk[No]
 
     τ1 = vrotate(joint.V3' * -τ, joint.qoff) # in world coordinates
     τ2 = -τ1 # in world coordinates
@@ -53,12 +53,12 @@ end
 
 
 @inline function minimalCoordinates(joint::Rotational2, body1::Origin, body2::Body, No)
-    q2 = joint.qoff \ body2.state.qd[No]
+    q2 = joint.qoff \ body2.state.qk[No]
     joint.V3 * axis(q2) * angle(q2) 
 end
 
 @inline function minimalCoordinates(joint::Rotational2, body1::Body, body2::Body, No)
-    q2 = joint.qoff \ (body1.state.qd[No] \ body2.state.qd[No])
+    q2 = joint.qoff \ (body1.state.qk[No] \ body2.state.qk[No])
     joint.V3 * axis(q2) * angle(q2)
 end
 

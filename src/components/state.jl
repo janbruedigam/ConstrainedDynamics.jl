@@ -1,4 +1,6 @@
 mutable struct State{T}
+    order::Integer
+
     # Continuous states
     xc::SVector{3,T}
     qc::Quaternion{T}
@@ -6,8 +8,8 @@ mutable struct State{T}
     ωc::SVector{3,T}
 
     # Knot points
-    xd::Vector{SVector{3,T}}
-    qd::Vector{Quaternion{T}}
+    xk::Vector{SVector{3,T}}
+    qk::Vector{Quaternion{T}}
 
     # Current solution estimate [before step;after step] (xsol and qsol are not set in code since they are trivially x2 and q2)
     xsol::Vector{SVector{3,T}}
@@ -21,15 +23,13 @@ mutable struct State{T}
         vc = zeros(T, 3)
         ωc = zeros(T, 3)
 
-        xd = [zeros(T, 3)]
-        qd = [Quaternion{T}()]
+        xk = [zeros(T, 3)]
+        qk = [Quaternion{T}()]
 
         xsol = [zeros(T, 3) for i=1:2]
         qsol = [Quaternion{T}() for i=1:2]
         vsol = [zeros(T, 3) for i=1:2]
         ωsol = [zeros(T, 3) for i=1:2]
-        new{T}(xc, qc, vc, ωc, xd, qd, xsol, qsol, vsol, ωsol)
+        new{T}(0, xc, qc, vc, ωc, xk, qk, xsol, qsol, vsol, ωsol)
     end
 end
-
-

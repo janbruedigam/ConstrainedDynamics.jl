@@ -11,8 +11,8 @@ end
 @inline function setForce!(joint::Translational1, body1::Body, body2::Body{T}, F::SVector{2,T}, No) where T
     clearForce!(joint, body1, body2, No)
 
-    q1 = body1.state.qd[No]
-    q2 = body2.state.qd[No]
+    q1 = body1.state.qk[No]
+    q2 = body2.state.qk[No]
 
     F1 = vrotate(joint.V12' * -F, q1)
     F2 = -F1
@@ -27,7 +27,7 @@ end
 @inline function setForce!(joint::Translational1, body1::Origin, body2::Body{T}, F::SVector{2,T}, No) where T
     clearForce!(joint, body2, No)
 
-    q2 = body2.state.qd[No]
+    q2 = body2.state.qk[No]
 
     F2 = joint.V12' * F
     τ2 = vrotate(torqueFromForce(F2, vrotate(joint.vertices[2], q2)),inv(q2)) # in local coordinates
@@ -39,13 +39,13 @@ end
 
 @inline function minimalCoordinates(joint::Translational1, body1::Body, body2::Body, No)
     vertices = joint.vertices
-    q1 = body1.state.qd[No]
-    joint.V12 * vrotate(body2.state.xd[No] + vrotate(vertices[2], body2.state.qd[No]) - (body1.state.xd[No] + vrotate(vertices[1], q1)), inv(q1))
+    q1 = body1.state.qk[No]
+    joint.V12 * vrotate(body2.state.xk[No] + vrotate(vertices[2], body2.state.qk[No]) - (body1.state.xk[No] + vrotate(vertices[1], q1)), inv(q1))
 end
 
 @inline function minimalCoordinates(joint::Translational1, body1::Origin, body2::Body, No)
     vertices = joint.vertices
-    joint.V12 * (body2.state.xd[No] + vrotate(vertices[2], body2.state.qd[No]) - vertices[1])
+    joint.V12 * (body2.state.xk[No] + vrotate(vertices[2], body2.state.qk[No]) - vertices[1])
 end
 
 

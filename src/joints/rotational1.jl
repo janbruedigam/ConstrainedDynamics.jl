@@ -12,8 +12,8 @@ end
 @inline function setForce!(joint::Rotational1, body1::Body, body2::Body{T}, τ::SVector{2,T}, No) where T
     clearForce!(joint, body1, body2, No)
 
-    q1 = body1.state.qd[No]
-    q2 = body2.state.qd[No]
+    q1 = body1.state.qk[No]
+    q2 = body2.state.qk[No]
 
     τ1 = vrotate(joint.V12' * -τ, q1*joint.qoff) # in world coordinates
     τ2 = -τ1 # in world coordinates
@@ -31,7 +31,7 @@ end
 @inline function setForce!(joint::Rotational1, body1::Origin, body2::Body{T}, τ::SVector{2,T}, No) where T
     clearForce!(joint, body2, No)
 
-    q2 = body2.state.qd[No]
+    q2 = body2.state.qk[No]
 
     τ1 = vrotate(joint.V12' * -τ, joint.qoff) # in world coordinates
     τ2 = -τ  # in world coordinates
@@ -46,11 +46,11 @@ end
 
 
 @inline function minimalCoordinates(joint::Rotational1, body1::Body, body2::Body, No)
-    joint.V12 * (VLᵀmat(joint.qoff) * Lᵀmat(body1.state.qd[No]) * body2.state.qd[No])
+    joint.V12 * (VLᵀmat(joint.qoff) * Lᵀmat(body1.state.qk[No]) * body2.state.qk[No])
 end
 
 @inline function minimalCoordinates(joint::Rotational1, body1::Origin, body2::Body, No)
-    joint.V12 * (VLᵀmat(joint.qoff) * body2.state.qd[No])
+    joint.V12 * (VLᵀmat(joint.qoff) * body2.state.qk[No])
 end
 
 

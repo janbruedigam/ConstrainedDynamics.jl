@@ -64,7 +64,7 @@ function setVelocity!(body1::Origin{T}, body2::Body{T};
 end
 
 function setForce!(body::Body{T};F::AbstractVector{T} = SVector{3,T}(0, 0, 0),τ::AbstractVector{T} = SVector{3,T}(0, 0, 0),p::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
-    τ += vrotate(torqueFromForce(F, p),inv(body.state.qd)) # in local coordinates
+    τ += vrotate(torqueFromForce(F, p),inv(body.state.qc)) # in local coordinates
     setForce!(body, F, τ)
 end
 

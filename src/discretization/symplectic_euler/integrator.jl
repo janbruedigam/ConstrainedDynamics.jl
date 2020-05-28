@@ -3,8 +3,8 @@
 # ωckw = sqrt((2/Δt)^2 - ωckᵀωck) - 2/Δt
 
 # Convenience functions
-@inline getx3(state::State, Δt) = state.xd[2] + state.vsol[2]*Δt
-@inline getq3(state::State, Δt) = state.qd[2] * ωbar(state.ωsol[2],Δt)
+@inline getx3(state::State, Δt) = state.xk[1] + state.vsol[2]*Δt
+@inline getq3(state::State, Δt) = state.qk[1] * ωbar(state.ωsol[2],Δt)
 
 @inline function derivωbar(ω::SVector{3,T}, Δt) where T
     msq = -sqrt(4 / Δt^2 - dot(ω, ω))
@@ -16,8 +16,8 @@ end
 end
 
 @inline function setForce!(body::Body, F, τ)
-    body.F[2] = F
-    body.τ[2] = τ
+    body.F[1] = F
+    body.τ[1] = τ
 end
 
 
@@ -28,10 +28,8 @@ end
     vc = state.vc
     ωc = state.ωc
 
-    state.xd[1] = xc
-    state.xd[2] = xc + vc*Δt
-    state.qd[1] = qc
-    state.qd[2] = qc * ωbar(ωc,Δt)
+    state.xk[1] = xc + vc*Δt
+    state.qk[1] = qc * ωbar(ωc,Δt)
 
     return
 end
@@ -44,22 +42,18 @@ end
     state.vc = state.vsol[2]
     state.ωc = state.ωsol[2]
 
-    state.xd[1] = state.xd[2]
-    state.xd[2] = state.xd[2] + state.vsol[2]*Δt
-    state.qd[1] = state.qd[2]
-    state.qd[2] = state.qd[2] * ωbar(state.ωsol[2],Δt)
+    state.xk[1] = state.xk[1] + state.vsol[2]*Δt
+    state.qk[1] = state.qk[1] * ωbar(state.ωsol[2],Δt)
 
-    state.xsol[2] = state.xd[2]
-    state.qsol[2] = state.qd[2]
+    state.xsol[2] = state.xk[1]
+    state.qsol[2] = state.qk[1]
     return
 end
 
 @inline function setsolution!(body::Body)
     state = body.state
-    state.xsol[1] = state.xc
-    state.xsol[2] = state.xd[2]
-    state.qsol[1] = state.qc
-    state.qsol[2] = state.qd[2]
+    state.xsol[2] = state.xk[1]
+    state.qsol[2] = state.qk[1]
     state.vsol[1] = state.vc
     state.vsol[2] = state.vc
     state.ωsol[1] = state.ωc
