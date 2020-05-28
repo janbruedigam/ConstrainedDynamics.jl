@@ -211,15 +211,9 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
 end
 
 
-@inline function setsol!(body::Body)
-    body.solv = body.state.vc[1]
-    body.solω = body.state.ωc[1]
-    return
-end
-
 @inline function s1tos0!(body::Body)
-    body.solv = body.state.vc[2]
-    body.solω = body.state.ωc[2]
+    body.state.vsol[1] = body.state.vsol[2]
+    body.state.ωsol[1] = body.state.ωsol[2]
     return
 end
 
@@ -235,8 +229,8 @@ end
 end
 
 @inline function normΔs(body::Body)
-    d1 = body.state.vc[2] - body.solv
-    d2 = body.state.ωc[2] - body.solω
+    d1 = body.state.vsol[2] - body.state.vsol[1]
+    d2 = body.state.ωsol[2] - body.state.ωsol[1]
     return dot(d1, d1) + dot(d2, d2)
 end
 

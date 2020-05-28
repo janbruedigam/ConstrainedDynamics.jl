@@ -12,8 +12,6 @@ mutable struct Body{T} <: AbstractBody{T}
 
     # Solver variables
     f::SVector{6,T}
-    solv::SVector{3,T}
-    solω::SVector{3,T}
 
 
     function Body(m::T, J::AbstractArray{T,2}; name::String="") where T
@@ -23,10 +21,8 @@ mutable struct Body{T} <: AbstractBody{T}
         τ = [zeros(T, 3)]
 
         f = zeros(T, 6)
-        solv = zeros(T, 3)
-        solω = zeros(T, 3)
 
-        new{T}(getGlobalID(), name, m, J, state, F, τ, f, solv, solω)
+        new{T}(getGlobalID(), name, m, J, state, F, τ, f)
     end
 
     function Body(shape::Shape; name::String="")

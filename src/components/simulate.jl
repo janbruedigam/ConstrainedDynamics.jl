@@ -1,24 +1,12 @@
 function saveToStorage!(mechanism::Mechanism, storage::Storage, i)
     Δt = mechanism.Δt
     for (ind, body) in enumerate(mechanism.bodies)
-        storage.x[ind][i] = getx1(body)
-        storage.q[ind][i] = getq1(body)
-        storage.v[ind][i] = getv1(body)
-        storage.ω[ind][i] = getω1(body)
+        state = body.state
+        storage.x[ind][i] = state.xc
+        storage.q[ind][i] = state.qc
+        storage.v[ind][i] = state.vc
+        storage.ω[ind][i] = state.ωc
     end
-end
-
-@inline function updatePos!(body::Body, Δt)
-    body.state.xd[1] = body.state.xd[2]
-    body.state.xd[2] = getxd3(body, Δt)
-    body.state.qd[1] = body.state.qd[2]
-    body.state.qd[2] = getqd3(body, Δt)
-    
-    body.state.xc[1] = getx2(body, Δt)
-    body.state.qc[1] = getq2(body, Δt)
-    body.state.vc[1] = getv2(body)
-    body.state.ωc[1] = getω2(body)
-    return
 end
 
 function verifyConstraints!(mechanism::Mechanism)
@@ -32,7 +20,7 @@ end
 function initializeSimulation!(mechanism::Mechanism, debug::Bool)
     discretizestate!(mechanism)
     debug && verifyConstraints!(mechanism)
-    foreach(setsol!, mechanism.bodies)
+    foreach(setsolution!, mechanism.bodies)
     # foreach(s0tos1!, mechanism.eqconstraints)
     # foreach(s0tos1!, mechanism.ineqconstraints)
     return
@@ -48,7 +36,7 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, k)
         newton!(mechanism, warning = debug)
-        foreach(updatePos!, bodies, Δt)
+        foreach(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
@@ -65,7 +53,7 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, controller, k)
         newton!(mechanism, warning = debug)
-        foreach(updatePos!, bodies, Δt)
+        foreach(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
@@ -79,7 +67,7 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
     for k = steps
         newton!(mechanism, warning = debug)
         record && saveToStorage!(mechanism, storage, k)
-        foreach(updatePos!, bodies, Δt)
+        foreach(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end

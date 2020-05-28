@@ -47,10 +47,6 @@ mutable struct Mechanism{T,N,Ni}
 
         bdict = Dict{Int64,Int64}()
         for (ind, body) in enumerate(bodies)
-            body.state.xc = [body.state.xc[1] for i = 1:No]
-            body.state.qc = [body.state.qc[1] for i = 1:No]
-            body.state.vc = [body.state.vc[1] for i = 1:No]
-            body.state.ωc = [body.state.ωc[1] for i = 1:No]
             body.state.xd = [body.state.xd[1] for i = 1:No]
             body.state.qd = [body.state.qd[1] for i = 1:No]
             body.F = [body.F[1] for i = 1:No]

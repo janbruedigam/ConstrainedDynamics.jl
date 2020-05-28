@@ -49,18 +49,13 @@ end
 end
 
 
-@inline function g(joint::Translational1, body1::Body, body2::Body, Δt)
-    joint.V3 * g(joint, getx2(body1, Δt), getq2(body1, Δt), getx2(body2, Δt), getq2(body2, Δt))
-end
-
-@inline function g(joint::Translational1, body1::Origin, body2::Body, Δt)
-    joint.V3 * g(joint, getx2(body2, Δt), getq2(body2, Δt))
-end
+@inline g(joint::Translational1, body1::Body, body2::Body, Δt) = joint.V3 * g(joint, body1.state, body2.state, Δt)
+@inline g(joint::Translational1, body1::Origin, body2::Body, Δt) = joint.V3 * g(joint, body2.state, Δt)
 
 
 @inline function ∂g∂posa(joint::Translational1, body1::Body, body2::Body)
     if body2.id == joint.cid
-        return joint.V3 * ∂g∂posa(joint, getxd2(body1), getqd2(body1), getxd2(body2), getqd2(body2))
+        return joint.V3 * ∂g∂posa(joint, body1.state, body2.state)
     else
         return ∂g∂posa(joint)
     end
@@ -68,7 +63,7 @@ end
 
 @inline function ∂g∂posb(joint::Translational1, body1::Body, body2::Body)
     if body2.id == joint.cid
-        return joint.V3 * ∂g∂posb(joint, getxd2(body1), getqd2(body1), getxd2(body2), getqd2(body2))
+        return joint.V3 * ∂g∂posb(joint, body1.state, body2.state)
     else
         return ∂g∂posb(joint)
     end
@@ -76,7 +71,7 @@ end
 
 @inline function ∂g∂posb(joint::Translational1, body1::Origin, body2::Body)
     if body2.id == joint.cid
-        return joint.V3 * ∂g∂posb(joint, getxd2(body2), getqd2(body2))
+        return joint.V3 * ∂g∂posb(joint, body2.state)
     else
         return ∂g∂posb(joint)
     end
@@ -85,7 +80,7 @@ end
 
 @inline function ∂g∂vela(joint::Translational1, body1::Body, body2::Body, Δt)
     if body2.id == joint.cid
-        return joint.V3 * ∂g∂vela(joint, getx1(body1), getx2(body1, Δt), getq1(body1), getq2(body1, Δt), getvupdate(body1), getωupdate(body1), getx2(body2, Δt), getq2(body2, Δt), Δt)
+        return joint.V3 * ∂g∂vela(joint, body1.state, body2.state, Δt)
     else
         return ∂g∂vela(joint)
     end
@@ -93,7 +88,7 @@ end
 
 @inline function ∂g∂velb(joint::Translational1, body1::Body, body2::Body, Δt)
     if body2.id == joint.cid
-        return joint.V3 * ∂g∂velb(joint, getx2(body1, Δt), getq2(body1, Δt), getx1(body2), getx2(body2, Δt), getq1(body2), getq2(body2, Δt), getvupdate(body2), getωupdate(body2), Δt)
+        return joint.V3 * ∂g∂velb(joint, body1.state, body2.state, Δt)
     else
         return ∂g∂velb(joint)
     end
@@ -101,7 +96,7 @@ end
 
 @inline function ∂g∂velb(joint::Translational1, body1::Origin, body2::Body, Δt)
     if body2.id == joint.cid
-        return joint.V3 * ∂g∂velb(joint, getx1(body2), getx2(body2, Δt), getq1(body2), getq2(body2, Δt), getvupdate(body2), getωupdate(body2), Δt)
+        return joint.V3 * ∂g∂velb(joint, body2.state, Δt)
     else
         return ∂g∂velb(joint)
     end
