@@ -139,8 +139,8 @@ function parse_link(xlink, T)
         link = Body(shape, name=name)
     end
 
-    link.state.xc[1] = x 
-    link.state.qc[1] = q
+    link.state.xc = x 
+    link.state.qc = q
     
 
     return link, shape

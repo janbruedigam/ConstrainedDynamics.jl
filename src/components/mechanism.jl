@@ -178,8 +178,8 @@ mutable struct Mechanism{T,N,Ni}
                     pconstraint = geteqconstraint(mechanism, ggpid)
                     @assert length(pconstraint.constraints) == 2
 
-                    xpbody = pbody.state.xc[1]
-                    qpbody = pbody.state.qc[1]
+                    xpbody = pbody.state.xc
+                    qpbody = pbody.state.qc
 
                     xpjointworld = xjointlist[pconstraint.id]
                     qpjointworld = qjointlist[pconstraint.id]
@@ -204,11 +204,11 @@ mutable struct Mechanism{T,N,Ni}
                 qjointlist[constraint.id] = qjointworld
 
                 # difference to parent body (pbody)
-                qbody = qjoint * body.state.qc[1]
+                qbody = qjoint * body.state.qc
 
                 # actual joint properties
                 p1 = xjoint # in parent's (pbody) frame
-                p2 = vrotate(-body.state.xc[1], inv(body.state.qc[1])) # in body frame (body.state.xc and body.state.qc are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
+                p2 = vrotate(-body.state.xc, inv(body.state.qc)) # in body frame (body.state.xc and body.state.qc are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
                 constraint.constraints[1].vertices = (p1, p2)
 
                 V3 = vrotate(constraint.constraints[2].V3', qjoint) # in parent's (pbody) frame
@@ -223,7 +223,7 @@ mutable struct Mechanism{T,N,Ni}
 
                 # shape relative
                 if shape !== nothing
-                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff, qjointworld) - body.state.xc[1], inv(body.state.qc[1]))
+                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff, qjointworld) - body.state.xc, inv(body.state.qc))
                     shape.qoff = qbody \ qjoint * shape.qoff
                 end
             end

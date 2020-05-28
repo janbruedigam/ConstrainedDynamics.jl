@@ -4,7 +4,7 @@ using Rotations
 using StaticArrays
 using LinearAlgebra
 
-using ConstrainedDynamics: ∂dyn∂vel, discretizestate!, dynTvel, dynRvel, getv1, getω1, getv2, getω2
+using ConstrainedDynamics: ∂dyn∂vel, discretizestate!, dynTvel, dynRvel
 
 
 function dyntestT()
@@ -31,7 +31,7 @@ function dyntestT()
     discretizestate!(body1,x1,q1,v1,v2,ω1,ω2,Δt)
 
 
-    res = ForwardDiff.jacobian(dynTvel, [getv1(body1);getv2(body1)])
+    res = ForwardDiff.jacobian(dynTvel, [body1.state.vc;body1.state.vsol[2]])
     V2 = res[1:3,4:6]
 
     n = norm(V2 - ∂dyn∂vel(body1, Δt)[1:3,1:3])
@@ -64,7 +64,7 @@ function dyntestR()
     discretizestate!(body1,x1,q1,v1,v2,ω1,ω2,Δt)
 
 
-    res = ForwardDiff.jacobian(dynRvel, [getω1(body1);getω2(body1)])
+    res = ForwardDiff.jacobian(dynRvel, [body1.state.ωc;body1.state.ωsol[2]])
     W2 = res[1:3,4:6]
 
     n = norm(W2 - ∂dyn∂vel(body1, Δt)[4:6,4:6])

@@ -1,21 +1,23 @@
 @inline function discretizestate!(body,x1,q1,v1,v2,ω1,ω2,Δt)
     state = body.state
 
-    state.xc[1] = x1
-    state.qc[1] = q1
-    state.vc[1] = v1
-    state.ωc[1] = ω1
-    state.vc[2] = v2
-    state.ωc[2] = ω2
+    state.xc = x1
+    state.qc = q1
+    state.vc = v1
+    state.ωc = ω1
+    state.vsol[2] = v2
+    state.ωsol[2] = ω2
 
-    state.xd[1] = x1 - v1*Δt
-    state.xd[2] = x1
-    state.qd[1] = q1 / ωbar(ω1,Δt)
-    state.qd[2] = q1
+    state.xk[1] = x1 + v1*Δt
+    state.qk[1] = q1 * ωbar(ω1,Δt)
 
     return
 end
 
+@inline getxqkvector(state) = [state.xk[1];state.qk[1]]
+@inline getxk(state) = state.xk[1]
+@inline getqk(state) = state.qk[1]
+@inline getstateandvestimate(state) = [getxqkvector(state);state.vc;state.ωc;state.vsol[2];state.ωsol[2]]
 
 
 # Dyn diff test
