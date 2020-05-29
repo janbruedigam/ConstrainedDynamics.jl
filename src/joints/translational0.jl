@@ -36,11 +36,15 @@ end
     return
 end
 
-
-@inline function minimalCoordinates(joint::Translational0, body1::AbstractBody, body2::AbstractBody, No)
-    body2.state.xk[No]
+@inline function minimalCoordinates(joint::Translational0, body1::Body, body2::Body)
+    statea = body1.state
+    stateb = body2.state
+    g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
 end
-
+@inline function minimalCoordinates(joint::Translational0, body1::Origin, body2::Body)
+    stateb = body2.state
+    g(joint, stateb.xc, stateb.qc)
+end
 
 @inline g(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt) = g(joint)
 

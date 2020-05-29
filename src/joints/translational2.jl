@@ -36,18 +36,15 @@ end
     return
 end
 
-
-@inline function minimalCoordinates(joint::Translational2, body1::Body, body2::Body, No)
-    vertices = joint.vertices
-    q1 = body1.state.qk[No]
-    joint.V3 * vrotate(body2.state.xk[No] + vrotate(vertices[2], body2.state.qk[No]) - (body1.state.xk[No] + vrotate(vertices[1], q1)), inv(q1))
+@inline function minimalCoordinates(joint::Translational2, body1::Body, body2::Body)
+    statea = body1.state
+    stateb = body2.state
+    joint.V3 * g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
 end
-
-@inline function minimalCoordinates(joint::Translational2, body1::Origin, body2::Body, No)
-    vertices = joint.vertices
-    joint.V3 * (body2.state.xk[No] + vrotate(vertices[2], body2.state.qk[No]) - vertices[1])
+@inline function minimalCoordinates(joint::Translational2, body1::Origin, body2::Body)
+    stateb = body2.state
+    joint.V3 * g(joint, stateb.xc, stateb.qc)
 end
-
 
 @inline g(joint::Translational2, body1::Body, body2::Body, Δt) = joint.V12 * g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Translational2, body1::Origin, body2::Body, Δt) = joint.V12 * g(joint, body2.state, Δt)

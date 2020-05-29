@@ -96,8 +96,8 @@ function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ::AbstractVect
     return
 end
 
-@generated function minimalCoordinates(mechanism, eqc::EqualityConstraint{T,N,Nc}; K = mechanism.No) where {T,N,Nc}
-    vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), K)) for i = 1:Nc]
+@generated function minimalCoordinates(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
+    vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]))) for i = 1:Nc]
     :(svcat($(vec...)))
 end
 

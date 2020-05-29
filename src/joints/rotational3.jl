@@ -8,10 +8,7 @@ end
     return Δω
 end
 
-@inline function minimalCoordinates(joint::Rotational3, body1::AbstractBody{T}, body2::Body, No) where T
-    SVector{0,T}()
-end
-
+@inline minimalCoordinates(joint::Rotational3, body1::AbstractBody{T}, body2::Body) where T = SVector{0,T}()
 
 @inline g(joint::Rotational3, body1::Body, body2::Body, Δt) = g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Rotational3, body1::Origin, body2::Body, Δt) = g(joint, body2.state, Δt)

@@ -44,8 +44,16 @@ end
 end
 
 
-@inline function minimalCoordinates(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, No)
-    body2.state.qk[No]
+@inline function minimalCoordinates(joint::Rotational0, body1::Body, body2::Body)
+    statea = body1.state
+    stateb = body2.state
+    q = g(joint, statea.qc, stateb.qc)
+    axis(q) * angle(q) 
+end
+@inline function minimalCoordinates(joint::Rotational0, body1::Origin, body2::Body)
+    stateb = body2.state
+    q = g(joint, stateb.qc)
+    axis(q) * angle(q)
 end
 
 
