@@ -2,6 +2,9 @@
 # L(qck,ωck) -> Δt Ld(qdk+1,2 V qdk† (qdk+1-qdk)/Δt)
 # ωckw = sqrt((2/Δt)^2 - ωckᵀωck) - 2/Δt
 
+METHODORDER = 1
+getGlobalOrder() = (global METHODORDER; return METHODORDER)
+
 # Convenience functions
 @inline getx3(state::State, Δt) = state.xk[1] + state.vsol[2]*Δt
 @inline getq3(state::State, Δt) = state.qk[1] * ωbar(state.ωsol[2],Δt)

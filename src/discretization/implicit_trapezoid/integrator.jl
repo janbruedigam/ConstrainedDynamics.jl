@@ -3,6 +3,9 @@
 # ωckw = sqrt((2/Δt)^2 - ωckᵀωck) - 2/Δt
 # Ends up being the same as symplectic Euler except for forcing?
 
+METHODORDER = 2
+getGlobalOrder() = (global METHODORDER; return METHODORDER)
+
 # Convenience functions
 @inline getx3(state::State, Δt) = state.xk[2] + state.vsol[2]*Δt
 @inline getq3(state::State, Δt) = state.qk[2] * ωbar(state.ωsol[2],Δt)

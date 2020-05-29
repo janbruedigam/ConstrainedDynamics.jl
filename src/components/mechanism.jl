@@ -26,10 +26,10 @@ mutable struct Mechanism{T,N,Ni}
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
         eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, order = 1, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
-
+        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         resetGlobalID()
+        order = getGlobalOrder()
 
         for body in bodies
             if norm(body.m)==0 || norm(body.J)==0
@@ -119,14 +119,14 @@ mutable struct Mechanism{T,N,Ni}
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, order = 1, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         ineqcs = InequalityConstraint{T}[]
         Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, order = order, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, order = 1, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
@@ -136,19 +136,19 @@ mutable struct Mechanism{T,N,Ni}
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
-        Δt::T = .01, g::T = -9.81, order = 1, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, Δt = Δt, g = g, order = order, shapes = shapes)
+        Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
     end
 
-    function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, Δt::T = .01, g::T = -9.81, order::Integer = 1) where T
+    function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, Δt::T = .01, g::T = -9.81) where T
         origin, links, joints, shapes = parse_urdf(filename, T, floating)
 
-        mechanism = Mechanism(origin, links, joints, shapes = shapes, Δt = Δt, g = g, order = order)
+        mechanism = Mechanism(origin, links, joints, shapes = shapes, Δt = Δt, g = g)
 
         graph = mechanism.graph
         xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
