@@ -38,6 +38,6 @@ for i=1:10
     storage = simulate!(mech, 10., record = true)
 
     @test isapprox(norm(minimalCoordinates(mech, joint1) - SVector{0,Float64}()), 0.0; atol = 1e-8)
-    @test isapprox(norm(link1.state.xd[2] - (p1 - vrotate(SVector{3,Float64}(p2),qoff))), 0.0; atol = 1e-8)
-    @test isapprox(norm(link1.state.qd[2] - qoff), 0.0; atol = 1e-8)
+    @test isapprox(norm(link1.state.xk[end] - (p1 - vrotate(SVector{3,Float64}(p2),qoff))), 0.0; atol = 1e-8)
+    @test isapprox(norm(link1.state.qk[end] - qoff), 0.0; atol = 1e-8)
 end
