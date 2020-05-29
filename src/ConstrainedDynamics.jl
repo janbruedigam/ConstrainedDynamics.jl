@@ -60,8 +60,8 @@ export Box,
     RotZ,
     RGBA
 
-scheme = "symplectic_euler"
-# scheme = "symmetric_verlet"
+# scheme = "symplectic_euler"
+scheme = "implicit_trapezoid"
 
 include(joinpath("util", "util.jl"))
 include(joinpath("util", "customdict.jl"))

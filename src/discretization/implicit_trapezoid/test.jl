@@ -1,21 +1,25 @@
 @inline function discretizestate!(body,x1,q1,v1,v2,ω1,ω2,Δt)
     state = body.state
 
-    state.xc[1] = x1
-    state.qc[1] = q1
-    state.vc[1] = v1
-    state.ωc[1] = ω1
-    state.vc[2] = v2
-    state.ωc[2] = ω2
+    state.xc = x1
+    state.qc = q1
+    state.vc = v1
+    state.ωc = ω1
+    state.vsol[2] = v2
+    state.ωsol[2] = ω2
 
-    state.xd[1] = x1 - 1/2*v1*Δt
-    state.xd[2] = x1 + 1/2*v1*Δt
-    state.qd[1] = q1 / ωbar(ω1/2,Δt)
-    state.qd[2] = q1 * ωbar(ω1/2,Δt)
+    state.xk[1] = x1
+    state.xk[2] = x1 + v1*Δt
+    state.qk[1] = q1
+    state.qk[2] = q1 * ωbar(ω1,Δt)
 
     return
 end
 
+@inline getxqkvector(state) = [state.xk[2];state.qk[2]]
+@inline getxk(state) = state.xk[2]
+@inline getqk(state) = state.qk[2]
+@inline getstateandvestimate(state) = [getxqkvector(state);state.vc;state.ωc;state.vsol[2];state.ωsol[2]]
 
 
 # Dyn diff test
@@ -106,11 +110,11 @@ function transfunc3vel(vars)
     vb2 = vars[33:35]
     ωb2 = vars[36:38]
 
-    xa2 = xa1 + 1/2 * (va1 + va2) * Δt
-    qa2 = qa1 * ωbar(1/2 * (ωa1 + ωa2), Δt)
+    xa2 = xa1 + va2 * Δt
+    qa2 = qa1 * ωbar(ωa2, Δt)
 
-    xb2 = xb1 + 1/2 * (vb1 + vb2) * Δt
-    qb2 = qb1 * ωbar(1/2 * (ωb1 + ωb2), Δt)
+    xb2 = xb1 + vb2 * Δt
+    qb2 = qb1 * ωbar(ωb2, Δt)
 
     pa = vars[39:41]
     pb = vars[42:44]
@@ -135,11 +139,11 @@ function transfunc2vel(vars)
     vb2 = vars[33:35]
     ωb2 = vars[36:38]
 
-    xa2 = xa1 + 1/2 * (va1 + va2) * Δt
-    qa2 = qa1 * ωbar(1/2 * (ωa1 + ωa2), Δt)
+    xa2 = xa1 + va2 * Δt
+    qa2 = qa1 * ωbar(ωa2, Δt)
 
-    xb2 = xb1 + 1/2 * (vb1 + vb2) * Δt
-    qb2 = qb1 * ωbar(1/2 * (ωb1 + ωb2), Δt)
+    xb2 = xb1 + vb2 * Δt
+    qb2 = qb1 * ωbar(ωb2, Δt)
 
     pa = vars[39:41]
     pb = vars[42:44]
@@ -168,11 +172,11 @@ function transfunc1vel(vars)
     vb2 = vars[33:35]
     ωb2 = vars[36:38]
 
-    xa2 = xa1 + 1/2 * (va1 + va2) * Δt
-    qa2 = qa1 * ωbar(1/2 * (ωa1 + ωa2), Δt)
+    xa2 = xa1 + va2 * Δt
+    qa2 = qa1 * ωbar(ωa2, Δt)
 
-    xb2 = xb1 + 1/2 * (vb1 + vb2) * Δt
-    qb2 = qb1 * ωbar(1/2 * (ωb1 + ωb2), Δt)
+    xb2 = xb1 + vb2 * Δt
+    qb2 = qb1 * ωbar(ωb2, Δt)
 
     pa = vars[39:41]
     pb = vars[42:44]
@@ -241,11 +245,11 @@ function rotfunc3vel(vars)
     vb2 = vars[33:35]
     ωb2 = vars[36:38]
 
-    xa2 = xa1 + 1/2 * (va1 + va2) * Δt
-    qa2 = qa1 * ωbar(1/2 * (ωa1 + ωa2), Δt)
+    xa2 = xa1 + va2 * Δt
+    qa2 = qa1 * ωbar(ωa2, Δt)
 
-    xb2 = xb1 + 1/2 * (vb1 + vb2) * Δt
-    qb2 = qb1 * ωbar(1/2 * (ωb1 + ωb2), Δt)
+    xb2 = xb1 + vb2 * Δt
+    qb2 = qb1 * ωbar(ωb2, Δt)
 
     offset = Quaternion(SVector(vars[39:42]...))
 
@@ -269,11 +273,11 @@ function rotfunc2vel(vars)
     vb2 = vars[33:35]
     ωb2 = vars[36:38]
 
-    xa2 = xa1 + 1/2 * (va1 + va2) * Δt
-    qa2 = qa1 * ωbar(1/2 * (ωa1 + ωa2), Δt)
+    xa2 = xa1 + va2 * Δt
+    qa2 = qa1 * ωbar(ωa2, Δt)
 
-    xb2 = xb1 + 1/2 * (vb1 + vb2) * Δt
-    qb2 = qb1 * ωbar(1/2 * (ωb1 + ωb2), Δt)
+    xb2 = xb1 + vb2 * Δt
+    qb2 = qb1 * ωbar(ωb2, Δt)
 
     offset = Quaternion(SVector(vars[39:42]...))
 
@@ -301,11 +305,11 @@ function rotfunc1vel(vars)
     vb2 = vars[33:35]
     ωb2 = vars[36:38]
 
-    xa2 = xa1 + 1/2 * (va1 + va2) * Δt
-    qa2 = qa1 * ωbar(1/2 * (ωa1 + ωa2), Δt)
+    xa2 = xa1 + va2 * Δt
+    qa2 = qa1 * ωbar(ωa2, Δt)
 
-    xb2 = xb1 + 1/2 * (vb1 + vb2) * Δt
-    qb2 = qb1 * ωbar(1/2 * (ωb1 + ωb2), Δt)
+    xb2 = xb1 + vb2 * Δt
+    qb2 = qb1 * ωbar(ωb2, Δt)
 
     offset = Quaternion(SVector(vars[39:42]...))
 
