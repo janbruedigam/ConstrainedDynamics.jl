@@ -122,7 +122,7 @@ mutable struct Mechanism{T,N,Ni}
         Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         ineqcs = InequalityConstraint{T}[]
-        Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, order = order, shapes = shapes)
+        Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
@@ -132,7 +132,7 @@ mutable struct Mechanism{T,N,Ni}
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, order = order, shapes = shapes)
+        Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
