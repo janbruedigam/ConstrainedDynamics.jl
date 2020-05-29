@@ -1,4 +1,4 @@
-mutable struct Friction{T} <: Bound{T}
+mutable struct Friction{T} <: Contact{T}
     Nx::Adjoint{T,SVector{6,T}}
     D::SMatrix{2,6,T,12}
     cf::T
@@ -24,57 +24,7 @@ mutable struct Friction{T} <: Bound{T}
 end
 
 
-@inline function g(friction::Friction, body::Body, Δt, No)
-    friction.Nx[SVector(1, 2, 3)]' * (getx2(body, Δt) - friction.offset[SVector(1, 2, 3)])
-end
-
-@inline ∂g∂pos(friction::Friction, No) = friction.Nx
-@inline ∂g∂vel(friction::Friction, Δt, No) = friction.Nx * Δt
-
 @inline additionalforce(friction::Friction) = friction.D'*friction.b
-
-@inline function schurf(ineqc, friction::Friction, i, body::Body, μ, Δt, No)
-    φ = g(friction, body, Δt, No)
-
-    γ1 = ineqc.solγ1[i]
-    s1 = ineqc.sols1[i]
-
-    return friction.Nx' * (γ1 / s1 * φ - μ / s1)
-end
-
-@inline function schurD(ineqc, friction::Friction, i, body::Body, Δt)
-    Nx = friction.Nx
-    Nv = Δt * Nx
-
-    γ1 = ineqc.solγ1[i]
-    s1 = ineqc.sols1[i]
-
-    return Nx' * γ1 / s1 * Nv
-end
-
-# Direct stuff
 @inline function calcFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
-    No = mechanism.No
-    cf = friction.cf
-    γ1 = ineqc.solγ1[i]
-    D = friction.D
-
-    f = body.f
-    v = getv2(body)
-    ω = getω2(body)
-    body.state.vc[2] = @SVector zeros(3)
-    body.state.ωc[2] = @SVector zeros(3)
-    dyn = dynamics(mechanism, body)
-    body.state.vc[2] = v
-    body.state.ωc[2] = ω
-    body.f = f
-
-    b0 = D*dyn + friction.b # remove old friction force
-
-    if norm(b0) > cf*γ1
-        friction.b = b0/norm(b0)*cf*γ1
-    else
-        friction.b = b0
-    end    
-    return
+    calcFrictionForce!(mechanism, friction, body, ineqc.solγ1[i])
 end

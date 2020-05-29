@@ -89,6 +89,8 @@ include(joinpath("joints", "rotational2.jl"))
 include(joinpath("joints", "rotational3.jl"))
 include(joinpath("joints", "prototypes.jl"))
 
+include(joinpath("bounds", "contact.jl"))
+include(joinpath("discretization", scheme, "bound.jl"))
 include(joinpath("bounds", "impact.jl"))
 include(joinpath("bounds", "friction.jl"))
 

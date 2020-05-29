@@ -68,20 +68,20 @@ end
 end
 
 function g(mechanism, ineqc::InequalityConstraint{T,1}) where {T}
-    g(ineqc.constraints[1], getbody(mechanism, ineqc.pid), mechanism.Δt, mechanism.No)
+    g(ineqc.constraints[1], getbody(mechanism, ineqc.pid), mechanism.Δt)
 end
 
 @generated function g(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
-    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.pid), mechanism.Δt, mechanism.No)) for i = 1:N]
+    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.pid), mechanism.Δt)) for i = 1:N]
     :(SVector{N,T}($(vec...)))
 end
 
 function gs(mechanism, ineqc::InequalityConstraint{T,1}) where {T}
-    g(ineqc.constraints[1], getbody(mechanism, ineqc.pid), mechanism.Δt, mechanism.No) - ineqc.sols1[1]
+    g(ineqc.constraints[1], getbody(mechanism, ineqc.pid), mechanism.Δt) - ineqc.sols1[1]
 end
 
 @generated function gs(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
-    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.pid), mechanism.Δt, mechanism.No) - ineqc.sols1[$i]) for i = 1:N]
+    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.pid), mechanism.Δt) - ineqc.sols1[$i]) for i = 1:N]
     :(SVector{N,T}($(vec...)))
 end
 
@@ -97,7 +97,7 @@ end
 function schurf(mechanism, ineqc::InequalityConstraint{T,N}, body) where {T,N}
     val = @SVector zeros(T, 6)
     for i = 1:N
-        val += schurf(ineqc, ineqc.constraints[i], i, body, mechanism.μ, mechanism.Δt, mechanism.No)
+        val += schurf(ineqc, ineqc.constraints[i], i, body, mechanism.μ, mechanism.Δt)
     end
     return val
 end
@@ -111,12 +111,12 @@ function schurD(ineqc::InequalityConstraint{T,N}, body, Δt) where {T,N}
 end
 
 @generated function ∂g∂pos(mechanism, ineqc::InequalityConstraint{T,N}, body) where {T,N}
-    vec = [:(∂g∂pos(ineqc.constraints[$i], mechanism.No)) for i = 1:N]
+    vec = [:(∂g∂pos(ineqc.constraints[$i])) for i = 1:N]
     :(vcat($(vec...)))
 end
 
 @generated function ∂g∂vel(mechanism, ineqc::InequalityConstraint{T,N}, body) where {T,N}
-    vec = [:(∂g∂vel(ineqc.constraints[$i], mechanism.Δt, mechanism.No)) for i = 1:N]
+    vec = [:(∂g∂vel(ineqc.constraints[$i], mechanism.Δt)) for i = 1:N]
     :(vcat($(vec...)))
 end
 
