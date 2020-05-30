@@ -18,7 +18,7 @@ origin = Origin{Float64}()
 link1 = Body(rod)
 
 # Constraints
-joint_between_origin_and_link1 = EqualityConstraint(Revolute(origin, link1, zeros(3), p2, joint_axis))
+joint_between_origin_and_link1 = EqualityConstraint(Revolute(origin, link1, joint_axis; p2=p2))
 
 links = [link1]
 constraints = [joint_between_origin_and_link1]

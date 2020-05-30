@@ -27,8 +27,8 @@ link1 = Body(b1)
 link2 = Body(b2)
 
 # Constraints
-socket0to1 = EqualityConstraint(Spherical(origin, link1, zeros(3), vert11))
-joint1to5 = EqualityConstraint(Revolute(link1, link2, vert12, zeros(3), ex))
+socket0to1 = EqualityConstraint(Spherical(origin, link1; p2=vert11))
+joint1to5 = EqualityConstraint(Revolute(link1, link2, ex; p1=vert12))
 
 links = [link1;link2]
 constraints = [socket0to1;joint1to5]

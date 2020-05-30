@@ -29,8 +29,8 @@ link2 = Body(cyl)
 link3 = Body(box2)
 
 # Constraints
-joint0to23 = EqualityConstraint(Revolute(origin, link2, p3 + p1, zeros(3), ez), Revolute(origin, link3, p2, zeros(3), ex))
-joint1to23 = EqualityConstraint(Spherical(link1, link2, p1, p3), Spherical(link1, link3, p0, p3))
+joint0to23 = EqualityConstraint(Revolute(origin, link2, ez; p1=p3 + p1, p2=zeros(3)), Revolute(origin, link3, ex; p1=p2, p2=zeros(3)))
+joint1to23 = EqualityConstraint(Spherical(link1, link2; p1=p1, p2=p3), Spherical(link1, link3; p1=p0, p2=p3))
 
 
 links = [link1;link2;link3]
@@ -38,12 +38,12 @@ constraints = [joint0to23;joint1to23]
 shapes = [box,cyl,box2]
 
 mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
-setPosition!(link1,x = p1)
+setPosition!(link1,x = -p0)
 setPosition!(link2,x = p3 + p1)
-setPosition!(link3,x = p2)
-setVelocity!(link2,ω = [0;0;0.5])
-setVelocity!(link3,ω = [0.5;0;0])
-setForce!(link2,τ = [0;0;0.])
+setPosition!(link3,x = -p2)
+setVelocity!(link2,ω = [0;0;1.])
+setVelocity!(link3,ω = [1.;0;0])
+setForce!(link2,τ = [0;0;1.])
 
 
 storage = simulate!(mech, 10., record = true, debug = true)

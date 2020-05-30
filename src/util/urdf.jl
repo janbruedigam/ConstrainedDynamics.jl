@@ -170,13 +170,13 @@ function parse_joint(xjoint, origin, plink, clink, T)
     
     # TODO limits for revolute joint?
     if joint_type == "revolute" || joint_type == "continuous"
-        joint = EqualityConstraint(Revolute(plink, clink, p1, p2, axis, offset = q), name=name)
+        joint = EqualityConstraint(Revolute(plink, clink, axis; p1=p1, p2=p2, qoffset = q), name=name)
     elseif joint_type == "prismatic"
-        joint = EqualityConstraint(Prismatic(plink, clink, p1, p2, axis, offset = q), name=name)
+        joint = EqualityConstraint(Prismatic(plink, clink, axis; p1=p1, p2=p2, qoffset = q), name=name)
     elseif joint_type == "planar"
-        joint = EqualityConstraint(Planar(plink, clink, p1, p2, axis), name=name)
+        joint = EqualityConstraint(Planar(plink, clink, axis; p1=p1, p2=p2), name=name)
     elseif joint_type == "fixed"
-        joint = EqualityConstraint(Fixed(plink, clink, p1, p2, offset = q), name=name)
+        joint = EqualityConstraint(Fixed(plink, clink; p1=p1, p2=p2, qoffset = q), name=name)
     elseif joint_type == "floating" # Floating relative to non-origin link not supported
         @assert origin == plink
         joint = EqualityConstraint(OriginConnection(origin, clink), name=name)

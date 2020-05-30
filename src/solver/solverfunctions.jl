@@ -193,7 +193,6 @@ end
 function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
     Δt = mechanism.Δt
     μ = mechanism.μ
-    No = 2
 
     φ = g(mechanism, ineqc)
 

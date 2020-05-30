@@ -22,12 +22,12 @@ q1 = Quaternion(RotX(phi1))
 # Links
 origin = Origin{Float64}()
 link1 = Body(b1)
-socket0to1 = EqualityConstraint(Spherical(origin, link1, zeros(3), vert11))
+socket0to1 = EqualityConstraint(Spherical(origin, link1; p2=vert11))
 link2 = Body(b2)
 
 # Constraints
 
-socket1to2 = EqualityConstraint(Spherical(link1, link2, vert12, vert21))
+socket1to2 = EqualityConstraint(Spherical(link1, link2; p1=vert12, p2=vert21))
 
 links = [link1;link2]
 constraints = [socket0to1;socket1to2]

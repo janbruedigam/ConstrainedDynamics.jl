@@ -23,8 +23,8 @@ link1 = Body(b1)
 link2 = deepcopy(link1, b1)
 
 # Constraints
-joint0to123 = EqualityConstraint(Planar(origin, link1, zeros(3), vert12, ez), Planar(origin, link2, zeros(3), vert12, ez))
-joint1to23 = EqualityConstraint(Spherical(link1, link2, vert11, vert11))
+joint0to123 = EqualityConstraint(Planar(origin, link1, ez; p2=vert12), Planar(origin, link2, ez; p2=vert12))
+joint1to23 = EqualityConstraint(Spherical(link1, link2; p1=vert11, p2=vert11))
 
 
 

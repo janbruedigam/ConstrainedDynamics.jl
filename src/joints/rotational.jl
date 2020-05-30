@@ -8,8 +8,8 @@ mutable struct Rotational{T,N} <: Joint{T,N}
 
     cid::Int64
 
-    function Rotational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T}; axis::AbstractVector{T} = zeros(3), offset::Quaternion{T} = Quaternion{T}()) where {T,N}
-        axis = vrotate(SVector(axis...), inv(offset))
+    function Rotational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T}; axis::AbstractVector{T} = zeros(3), qoffset::Quaternion{T} = Quaternion{T}()) where {T,N}
+        axis = vrotate(SVector(axis...), inv(qoffset))
         if norm(axis) != 0
             axis = axis / norm(axis)
         end
@@ -22,7 +22,7 @@ mutable struct Rotational{T,N} <: Joint{T,N}
 
         cid = body2.id
 
-        new{T,N}(V12, V3, offset, F, τ, cid), body1.id, body2.id
+        new{T,N}(V12, V3, qoffset, F, τ, cid), body1.id, body2.id
     end
 end
 

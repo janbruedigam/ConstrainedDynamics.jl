@@ -23,8 +23,8 @@ link1 = Body(b1)
 link2 = Body(b1)
 
 # Constraints
-joint0to12 = EqualityConstraint(CylindricalFree(origin, link1, zeros(3), vert11, ey), Spherical(origin, link2, zeros(3), vert11))
-joint1to2 = EqualityConstraint(CylindricalFree(link1, link2, zeros(3), zeros(3), ex))
+joint0to12 = EqualityConstraint(CylindricalFree(origin, link1, ey; p1=zeros(3), p2=vert11), Spherical(origin, link2; p1=zeros(3), p2=vert11))
+joint1to2 = EqualityConstraint(CylindricalFree(link1, link2, ex; p1=zeros(3), p2=zeros(3)))
 
 
 links = [link1; link2]

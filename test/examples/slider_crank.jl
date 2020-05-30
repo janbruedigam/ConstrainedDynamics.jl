@@ -28,8 +28,8 @@ link1 = Body(box)
 link2 = Body(cyl)
 
 # Constraints
-joint0to12 = EqualityConstraint(CylindricalFree(origin, link1, zeros(3), p0, ey), Revolute(origin, link2, p3 + p1, zeros(3), ez))
-joint1to2 = EqualityConstraint(Cylindrical(link1, link2, p1, p3, ez))
+joint0to12 = EqualityConstraint(CylindricalFree(origin, link1, ey; p2=p0), Revolute(origin, link2, ez; p1=p3 + p1))
+joint1to2 = EqualityConstraint(Cylindrical(link1, link2, ez; p1=p1, p2=p3))
 
 
 links = [link1; link2]

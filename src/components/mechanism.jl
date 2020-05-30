@@ -16,7 +16,6 @@ mutable struct Mechanism{T,N,Ni}
 
     Δt::T
     g::T
-    No::Int64 # order of integrator
 
     α::T
     μ::T
@@ -110,7 +109,7 @@ mutable struct Mechanism{T,N,Ni}
         α = 1
         μ = 1
 
-        new{T,N,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, order, α, μ)
+        new{T,N,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, α, μ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};

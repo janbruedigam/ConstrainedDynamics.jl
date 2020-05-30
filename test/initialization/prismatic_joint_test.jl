@@ -25,7 +25,7 @@ for i=1:10
 
 
     # Constraints
-    joint1 = EqualityConstraint(Prismatic(origin, link1, p1, p2, axis, offset = qoff))
+    joint1 = EqualityConstraint(Prismatic(origin, link1, p1, p2, axis, qoffset = qoff))
 
     links = [link1]
     constraints = [joint1]

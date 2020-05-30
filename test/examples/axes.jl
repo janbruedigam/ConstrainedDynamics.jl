@@ -20,12 +20,12 @@ link2 = Body(box2)
 link3 = Body(box3)
 
 # Constraints
-# joint1 = EqualityConstraint(Spherical(origin, link1,zeros(3),v1))
-# joint2 = EqualityConstraint(Spherical(origin, link2,zeros(3),v2))
-# joint3 = EqualityConstraint(Spherical(origin, link3,zeros(3),v3))
-joint1 = EqualityConstraint(Revolute(origin, link1,zeros(3),v1,joint_axis))
-joint2 = EqualityConstraint(Revolute(origin, link2,zeros(3),v2,joint_axis))
-joint3 = EqualityConstraint(Revolute(origin, link3,zeros(3),v3,joint_axis))
+# joint1 = EqualityConstraint(Spherical(origin, link1; p2=v1))
+# joint2 = EqualityConstraint(Spherical(origin, link2; p2=v2))
+# joint3 = EqualityConstraint(Spherical(origin, link3; p2=v3))
+joint1 = EqualityConstraint(Revolute(origin, link1, joint_axis; p2=v1))
+joint2 = EqualityConstraint(Revolute(origin, link2, joint_axis; p2=v2))
+joint3 = EqualityConstraint(Revolute(origin, link3, joint_axis; p2=v3))
 
 links = [link1;link2;link3]
 constraints = [joint1;joint2;joint3]
