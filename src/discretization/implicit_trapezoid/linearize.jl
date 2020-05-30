@@ -49,7 +49,7 @@ end
 
     J = body.J
     ω1 = state.ωc
-    ω2 = state.ωsol
+    ω2 = state.ωsol[2]
     sq1 = sqrt(4 / Δt^2 - ω1' * ω1)
     sq2 = sqrt(4 / Δt^2 - ω2' * ω2)
 
