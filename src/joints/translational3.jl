@@ -2,7 +2,6 @@
     Δx = @SVector zeros(T,3)
     return Δx
 end
-
 @inline function getVelocityDelta(joint::Translational3, body1::AbstractBody, body2::Body{T}, v::SVector{0,T}) where T
     Δv = @SVector zeros(T,3)
     return Δv

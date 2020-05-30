@@ -2,7 +2,6 @@
     Δq = joint.qoff
     return Δq
 end
-
 @inline function getVelocityDelta(joint::Rotational3, body1::AbstractBody, body2::Body{T}, ω::SVector{0,T}) where T
     Δω = @SVector zeros(T,3)
     return Δω

@@ -9,9 +9,12 @@
     Δq = joint.qoff * q # in body1 frame
     return Δq
 end
-
-@inline function getVelocityDelta(joint::Rotational0, body1::AbstractBody, body2::Body{T}, ω::SVector{3,T}) where T
-    Δω = vrotate(ω, inv(body2.state.qk[2])*body1.state.qk[2]*joint.qoff) # in body2 frame
+@inline function getVelocityDelta(joint::Rotational0, body1::Body, body2::Body{T}, ω::SVector{3,T}) where T
+    Δω = vrotate(ω, inv(body2.state.qc)*body1.state.qc*joint.qoff) # in body2 frame
+    return Δω
+end
+@inline function getVelocityDelta(joint::Rotational0, body1::Origin, body2::Body{T}, ω::SVector{3,T}) where T
+    Δω = vrotate(ω, inv(body2.state.qc)*joint.qoff) # in body2 frame
     return Δω
 end
 

@@ -3,7 +3,6 @@
     #TODO define this function
     @error("not defined for rot2")
 end
-
 @inline function getVelocityDelta(joint::Rotational1, body1::AbstractBody, body2::Body{T}, ω) where T
     #TODO define this function
     @error("not defined for rot2")
