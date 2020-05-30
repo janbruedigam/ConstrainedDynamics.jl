@@ -1,5 +1,5 @@
 using ConstrainedDynamics
-using ConstrainedDynamics: vrotate
+using ConstrainedDynamics: vrotate, Vmat
 using Rotations
 using StaticArrays
 using LinearAlgebra
@@ -17,15 +17,13 @@ for i=1:10
     link1.m = 1.0
     link1.J = diagm(ones(3))
 
-    p1 = rand(3)
-    p2 = rand(3)
     axis = rand(3)
     axis = axis/norm(axis)
     qoff = Quaternion{Float64}() # Quaternion(rand(RotMatrix{3}))
 
 
     # Constraints
-    joint1 = EqualityConstraint(Revolute(origin, link1, p1, p2, axis, qoffset = qoff))
+    joint1 = EqualityConstraint(Revolute(origin, link1, axis; qoffset = qoff))
 
     links = [link1]
     constraints = [joint1]
@@ -39,29 +37,16 @@ for i=1:10
 
     setPosition!(mech,joint1,SVector{1,Float64}(xθ))
     setVelocity!(mech,joint1,SVector{1,Float64}(vω))
+    setForce!(mech,joint1,SVector{1,Float64}(Fτ))
 
-    function control!(mechanism, k)
-        if k==1
-            setForce!(mech,joint1,SVector{1,Float64}(Fτ))
-        else
-            setForce!(mech,joint1,SVector{1,Float64}(Fτ)*0)
-        end
-        return
-    end
-
-
-    storage = simulate!(mech, 10., control!, record = true)
+    storage = simulate!(mech, 10., record = true)
 
     angend = mod((xθ + (vω + Fτ*Δt)*10.0)[1],2pi)
     qend = qoff*Quaternion(cos(angend/2),(axis*sin(angend/2))...)
-    minresult = minimalCoordinates(mech, joint1)
-    if minresult[1] < 0
-        minresult = minresult .+ 2pi
-    end
+    minresult = mod(minimalCoordinates(mech, joint1)[1],2pi)
 
-    #TODO needs some velocity calculation fix, initial constraint satisfaction is not very good
-    @test isapprox(norm(minresult - [angend]), 0.0; atol = 1.5*1e0)
-    @test isapprox(norm(link1.state.xk[end] - (p1 - vrotate(SVector{3,Float64}(p2),qend))), 0.0; atol = 1.5*1e0)
-    @test isapprox(norm((link1.state.qk[end]/qend)[2:4]), 0.0; atol = 1.5*1e0)
+    @test isapprox(norm(minresult - angend), 0.0; atol = 1e-3)
+    @test isapprox(norm(link1.state.xc), 0.0; atol = 1e-3) 
+    @test isapprox(norm(Vmat(link1.state.qc/qend)), 0.0; atol = 1e-3)
 end
 

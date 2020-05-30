@@ -25,7 +25,7 @@ for i=1:10
 
 
     # Constraints
-    joint1 = EqualityConstraint(Prismatic(origin, link1, p1, p2, axis, qoffset = qoff))
+    joint1 = EqualityConstraint(Prismatic(origin, link1, axis; p1=p1, p2=p2, qoffset = qoff))
 
     links = [link1]
     constraints = [joint1]
@@ -39,20 +39,11 @@ for i=1:10
 
     setPosition!(mech,joint1,SVector{1,Float64}(xθ))
     setVelocity!(mech,joint1,SVector{1,Float64}(vω))
+    setForce!(mech,joint1,SVector{1,Float64}(Fτ))    
 
-    function control!(mechanism, k)
-        if k==1
-            setForce!(mech,joint1,SVector{1,Float64}(Fτ))
-        else
-            setForce!(mech,joint1,SVector{1,Float64}(Fτ)*0)
-        end
-        return
-    end
-    
+    storage = simulate!(mech, 10., record = true)
 
-    storage = simulate!(mech, 10., control!, record = true)
-
-    @test isapprox(norm(minimalCoordinates(mech, joint1) - (xθ + (vω + Fτ*Δt)*10.0)), 0.0; atol = 1e-8)
-    @test isapprox(norm(link1.state.xk[end] - (p1 - vrotate(SVector{3,Float64}(p2),qoff) + axis*(xθ + (vω + Fτ*Δt)*10.0)[1])), 0.0; atol = 1e-8)
-    @test isapprox(norm(link1.state.qk[end] - qoff), 0.0; atol = 1e-8)
+    @test isapprox(norm(minimalCoordinates(mech, joint1) - (xθ + (vω + Fτ*Δt)*10.0)), 0.0; atol = 1e-3)
+    @test isapprox(norm(link1.state.xc - (p1 - vrotate(p2,qoff) + axis*(xθ + (vω + Fτ*Δt)*10.0)[1])), 0.0; atol = 1e-3)
+    @test isapprox(norm(link1.state.qc - qoff), 0.0; atol = 1e-3)
 end

@@ -18,9 +18,9 @@ end
     include("nutation_test.jl")
 end
 
-# @safetestset "Initialization Tests" begin
-#     include("initialization_test.jl")
-# end
+@safetestset "Initialization Tests" begin
+    include("initialization_test.jl")
+end
 
 @safetestset "Example Tests" begin
     include("example_test.jl")

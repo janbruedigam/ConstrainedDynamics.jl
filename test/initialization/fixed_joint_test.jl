@@ -23,7 +23,7 @@ for i=1:10
 
 
     # Constraints
-    joint1 = EqualityConstraint(Fixed(origin, link1, p1, p2, qoffset = qoff))
+    joint1 = EqualityConstraint(Fixed(origin, link1; p1=p1, p2=p2, qoffset = qoff))
 
     links = [link1]
     constraints = [joint1]
@@ -37,7 +37,12 @@ for i=1:10
 
     storage = simulate!(mech, 10., record = true)
 
+    truex = [(p1 - vrotate(SVector{3,Float64}(p2),qoff)) for i=0:999]
+    trueq = [qoff for i=0:999]
+
     @test isapprox(norm(minimalCoordinates(mech, joint1) - SVector{0,Float64}()), 0.0; atol = 1e-8)
-    @test isapprox(norm(link1.state.xk[end] - (p1 - vrotate(SVector{3,Float64}(p2),qoff))), 0.0; atol = 1e-8)
-    @test isapprox(norm(link1.state.qk[end] - qoff), 0.0; atol = 1e-8)
+    @test isapprox(sum(norm.(storage.x[1].-truex))/1000, 0.0; atol = 1e-8)
+    @test isapprox(sum(norm.(storage.q[1].-trueq))/1000, 0.0; atol = 1e-8)
+    # @test isapprox(norm(link1.state.xk[end] - (p1 - vrotate(SVector{3,Float64}(p2),qoff))), 0.0; atol = 1e-8)
+    # @test isapprox(norm(link1.state.qk[end] - qoff), 0.0; atol = 1e-8)
 end
