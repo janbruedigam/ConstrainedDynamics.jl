@@ -112,8 +112,8 @@ include(joinpath("solver", "newton.jl"))
 include(joinpath("util", "visualize.jl"))
 
 
-# include(joinpath("discretization", "SymplecticEuler.jl"))
-include(joinpath("discretization", "ImplicitTrapezoid.jl"))
+include(joinpath("discretization", "SymplecticEuler.jl"))
+# include(joinpath("discretization", "ImplicitTrapezoid.jl"))
 
 
 end
