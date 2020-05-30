@@ -10,6 +10,8 @@ mutable struct State{T}
     # Knot points
     xk::Vector{SVector{3,T}}
     qk::Vector{Quaternion{T}}
+    Fk::Vector{SVector{3,T}}
+    τk::Vector{SVector{3,T}}
 
     # Current solution estimate [before step;after step] (xsol and qsol are not set in code since they are trivially x2 and q2)
     xsol::Vector{SVector{3,T}}
@@ -25,11 +27,24 @@ mutable struct State{T}
 
         xk = [zeros(T, 3)]
         qk = [Quaternion{T}()]
+        Fk = [zeros(T, 3)]
+        τk = [zeros(T, 3)]
 
         xsol = [zeros(T, 3) for i=1:2]
         qsol = [Quaternion{T}() for i=1:2]
         vsol = [zeros(T, 3) for i=1:2]
         ωsol = [zeros(T, 3) for i=1:2]
-        new{T}(0, xc, qc, vc, ωc, xk, qk, xsol, qsol, vsol, ωsol)
+        new{T}(0, xc, qc, vc, ωc, xk, qk, Fk, τk, xsol, qsol, vsol, ωsol)
     end
+end
+
+function initknotpoints!(state::State, order)
+    state.order = order
+
+    state.xk = [state.xk[1] for i = 1:order]
+    state.qk = [state.qk[1] for i = 1:order]
+    state.Fk = [state.Fk[1] for i = 1:order]
+    state.τk = [state.τk[1] for i = 1:order]
+
+    return
 end

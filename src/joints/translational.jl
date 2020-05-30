@@ -3,8 +3,8 @@ mutable struct Translational{T,N} <: Joint{T,N}
     V12::SMatrix{2,3,T,6}
     V3::Adjoint{T,SVector{3,T}}
 
-    F::Vector{SVector{3,T}}
-    τ::Vector{SVector{3,T}}
+    F::SVector{3,T}
+    τ::SVector{3,T}
 
     cid::Int64
 
@@ -19,8 +19,8 @@ mutable struct Translational{T,N} <: Joint{T,N}
         V12 = A[1:2,:]
         V3 = axis' # instead of A[3,:] for correct sign: abs(axis) = abs(A[3,:])
 
-        F = [zeros(T,3) for i=1:2]
-        τ = [zeros(T,3) for i=1:2]
+        F = zeros(T,3)
+        τ = zeros(T,3)
 
         cid = body2.id
 

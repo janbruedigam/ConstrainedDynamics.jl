@@ -88,10 +88,10 @@ function setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T,
 end
 
 # TODO make zero alloc
-function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ::AbstractVector{T}; K = mechanism.No) where {T,N,Nc}
+function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ::AbstractVector{T}) where {T,N,Nc}
     @assert length(Fτ)==3*Nc-N
     for i = 1:Nc
-        setForce!(eqc.constraints[i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[i]),  Fτ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])], K)
+        setForce!(eqc.constraints[i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[i]),  Fτ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])])
     end
     return
 end

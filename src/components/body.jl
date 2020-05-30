@@ -7,9 +7,6 @@ mutable struct Body{T} <: AbstractBody{T}
 
     state::State{T}
 
-    F::Vector{SVector{3,T}}
-    τ::Vector{SVector{3,T}}
-
     # Solver variables
     f::SVector{6,T}
 
@@ -17,12 +14,9 @@ mutable struct Body{T} <: AbstractBody{T}
     function Body(m::T, J::AbstractArray{T,2}; name::String="") where T
         state = State{T}()
 
-        F = [zeros(T, 3)]
-        τ = [zeros(T, 3)]
-
         f = zeros(T, 6)
 
-        new{T}(getGlobalID(), name, m, J, state, F, τ, f)
+        new{T}(getGlobalID(), name, m, J, state, f)
     end
 
     function Body(shape::Shape; name::String="")

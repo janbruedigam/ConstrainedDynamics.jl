@@ -47,12 +47,7 @@ mutable struct Mechanism{T,N,Ni}
 
         bdict = Dict{Int64,Int64}()
         for (ind, body) in enumerate(bodies)
-            state = body.state
-            state.order = order
-            state.xk = [state.xk[1] for i = 1:order]
-            state.qk = [state.qk[1] for i = 1:order]
-            body.F = [body.F[1] for i = 1:order]
-            body.τ = [body.τ[1] for i = 1:order]
+            initknotpoints!(body.state, order)
 
             for eqc in eqcs
                 eqc.pid == body.id && (eqc.pid = currentid)

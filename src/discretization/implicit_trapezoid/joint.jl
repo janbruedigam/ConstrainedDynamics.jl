@@ -84,17 +84,17 @@ end
 # Rotational
 
 @inline function g(joint::Rotational, qa, qb)
-    VLᵀmat(joint.qoff) * Lᵀmat(qa) * qb
+    joint.qoff \ (qa \ qb)
 end
 @inline function g(joint::Rotational, qb)
-    VLᵀmat(joint.qoff) * qb
+    joint.qoff \ qb
 end
 
 @inline function g(joint::Rotational, statea::State, stateb::State, Δt)
-    g(joint, getq3(statea,Δt), getq3(stateb,Δt))
+    Vmat(g(joint, getq3(statea,Δt), getq3(stateb,Δt)))
 end
 @inline function g(joint::Rotational, stateb::State, Δt)
-    g(joint, getq3(stateb,Δt))
+    Vmat(g(joint, getq3(stateb,Δt)))
 end
 
 
@@ -156,4 +156,62 @@ end
 end
 @inline function ∂g∂velb(joint::Rotational, stateb::State, Δt)
     ∂g∂velb(joint, stateb.qk[2], stateb.ωsol[2], Δt)
+end
+
+
+# Forcing
+
+@inline function setForce!(joint::Translational, statea::State, stateb::State, F)
+    vertices = joint.vertices
+    qa = statea.qk[2]
+    qb = stateb.qk[2]
+
+    Fa = vrotate(-F, qa)
+    Fb = -Fa
+
+    τa = vrotate(torqueFromForce(Fa, vrotate(vertices[1], qa)),inv(qa)) # in local coordinates
+    τb = vrotate(torqueFromForce(Fb, vrotate(vertices[2], qb)),inv(qb)) # in local coordinates
+
+    statea.Fk[2] += Fa
+    statea.τk[2] += τa
+    stateb.Fk[2] += Fb
+    stateb.τk[2] += τb
+    return
+end
+@inline function setForce!(joint::Translational, stateb::State, F)
+    vertices = joint.vertices
+    qb = stateb.qk[2]
+
+    Fb = F
+    τb = vrotate(torqueFromForce(Fb, vrotate(vertices[2], qb)),inv(qb)) # in local coordinates
+
+    stateb.Fk[2] += Fb
+    stateb.τk[2] += τb
+    return
+end
+
+@inline function setForce!(joint::Rotational, statea::State, stateb::State, τ)
+    qa = statea.qk[2]
+    qb = stateb.qk[2]    
+
+    τa = vrotate(-τ, qa*joint.qoff) # in world coordinates
+    τb = -τa # in world coordinates
+
+    τa = vrotate(τa,inv(qa)) # in local coordinates
+    τb = vrotate(τb,inv(qb)) # in local coordinates
+
+    statea.τk[2] += τa
+    stateb.τk[2] += τb
+    return
+end
+@inline function setForce!(joint::Rotational, stateb::State, τ)
+    qb = stateb.qk[2]
+
+    τa = vrotate(-τ, joint.qoff) # in world coordinates
+    τb = -τa # in world coordinates
+
+    τb = vrotate(τb,inv(qb)) # in local coordinates
+
+    stateb.τk[2] += τb
+    return
 end

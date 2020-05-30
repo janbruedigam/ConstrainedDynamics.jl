@@ -65,7 +65,7 @@ end
 
 function setForce!(body::Body{T};F::AbstractVector{T} = SVector{3,T}(0, 0, 0),τ::AbstractVector{T} = SVector{3,T}(0, 0, 0),p::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
     τ += vrotate(torqueFromForce(F, p),inv(body.state.qc)) # in local coordinates
-    setForce!(body, F, τ)
+    setForce!(body.state, F, τ)
 end
 
 @inline torqueFromForce(F::AbstractVector{T}, p::AbstractVector{T}) where T = cross(p, F)

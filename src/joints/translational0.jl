@@ -8,31 +8,12 @@ end
     return Δv
 end
 
-@inline function setForce!(joint::Translational0, body1::Body, body2::Body{T}, F::SVector{3,T}, No) where T
-    clearForce!(joint, body1, body2, No)
-
-    q1 = body1.state.qk[No]
-    q2 = body2.state.qk[No]
-
-    F1 = vrotate(-F, q1)
-    F2 = -F1
-
-    τ1 = vrotate(torqueFromForce(F1, vrotate(joint.vertices[1], q1)),inv(q1)) # in local coordinates
-    τ2 = vrotate(torqueFromForce(F2, vrotate(joint.vertices[2], q2)),inv(q2)) # in local coordinates
-
-    updateForce!(joint, body1, body2, F1, τ1, F2, τ2, No)
+@inline function setForce!(joint::Translational2, body1::Body, body2::Body{T}, F::SVector{3,T}) where T
+    setForce!(joint, body1.state, body2.state, F)
     return
 end
-
-@inline function setForce!(joint::Translational0, body1::Origin, body2::Body{T}, F::SVector{3,T}, No) where T
-    clearForce!(joint, body2, No)
-
-    q2 = body2.state.qk[No]
-
-    F2 = F
-    τ2 = vrotate(torqueFromForce(F2, vrotate(joint.vertices[2], q2)),inv(q2)) # in local coordinates
-
-    updateForce!(joint, body2, F2, τ2, No)
+@inline function setForce!(joint::Translational2, body1::Origin, body2::Body{T}, F::SVector{3,T}) where T
+    setForce!(joint, body2.state, F)
     return
 end
 
@@ -47,7 +28,6 @@ end
 end
 
 @inline g(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt) = g(joint)
-
 
 @inline ∂g∂posa(joint::Translational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂posa(joint)
 @inline ∂g∂posb(joint::Translational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂posb(joint)

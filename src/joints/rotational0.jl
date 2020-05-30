@@ -8,41 +8,14 @@ end
     return Δω
 end
 
-@inline function setForce!(joint::Rotational0, body1::Body, body2::Body{T}, τ::SVector{3,T}, No) where T
-    clearForce!(joint, body1, body2, No)
-
-    q1 = body1.state.qk[No]
-    q2 = body2.state.qk[No]    
-
-    τ1 = vrotate(-τ, q1*joint.qoff) # in world coordinates
-    τ2 = -τ1 # in world coordinates
-
-    τ1 = vrotate(τ1,inv(q1)) # in local coordinates
-    τ2 = vrotate(τ2,inv(q2)) # in local coordinates
-    
-    F1 =  @SVector zeros(T,3)
-    F2 =  @SVector zeros(T,3)
-
-    updateForce!(joint, body1, body2, F1, τ1, F2, τ2, No)
+@inline function setForce!(joint::Rotational0, body1::Body, body2::Body{T}, τ::SVector{3,T}) where T
+    setForce!(joint, body1.state, body2.state, τ)
     return
 end
-
-@inline function setForce!(joint::Rotational0, body1::Origin, body2::Body{T}, τ::SVector{3,T}, No) where T
-    clearForce!(joint, body2, No)
-
-    q2 = body2.state.qk[No]
-
-    τ1 = vrotate(-τ, joint.qoff) # in world coordinates
-    τ2 = -τ1 # in world coordinates
-
-    τ2 = vrotate(τ2,inv(q2)) # in local coordinates
-
-    F2 =  @SVector zeros(T,3)
-
-    updateForce!(joint, body2, F2, τ2, No)
+@inline function setForce!(joint::Rotational0, body1::Origin, body2::Body{T}, τ::SVector{3,T}) where T
+    setForce!(joint, body2.state, τ)
     return
 end
-
 
 @inline function minimalCoordinates(joint::Rotational0, body1::Body, body2::Body)
     statea = body1.state
@@ -56,9 +29,7 @@ end
     axis(q) * angle(q)
 end
 
-
 @inline g(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, Δt) = g(joint)
-
 
 @inline ∂g∂posa(joint::Rotational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂posa(joint)
 @inline ∂g∂posb(joint::Rotational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂posb(joint)

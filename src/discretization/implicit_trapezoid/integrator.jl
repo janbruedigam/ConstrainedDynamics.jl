@@ -19,11 +19,10 @@ end
     Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ω, ω)), ω)
 end
 
-@inline function setForce!(body::Body, F, τ)
-    body.F[1] = F
-    body.F[2] = F
-    body.τ[1] = τ
-    body.τ[2] = τ
+@inline function setForce!(state::State, F, τ)
+    state.Fk[2] = F
+    state.τk[2] = τ
+    return
 end
 
 
@@ -42,7 +41,7 @@ end
     return
 end
 
-@inline function updatestate!(body::Body, Δt)
+@inline function updatestate!(body::Body{T}, Δt) where T
     state = body.state
 
     state.xc = state.xsol[2]
@@ -57,6 +56,11 @@ end
 
     state.xsol[2] = state.xk[2]
     state.qsol[2] = state.qk[2]
+
+    state.Fk[1] = state.Fk[2]
+    state.Fk[2] = @SVector zeros(T,3)
+    state.τk[1] = state.τk[2]
+    state.τk[2] = @SVector zeros(T,3)
     return
 end
 
