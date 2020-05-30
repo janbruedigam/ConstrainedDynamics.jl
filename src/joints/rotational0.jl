@@ -1,6 +1,13 @@
 @inline function getPositionDelta(joint::Rotational0, body1::AbstractBody, body2::Body{T}, θ::SVector{3,T}) where T
-    #TODO define this function (choose 3d parameters)
-    @error("not defined for rot0")
+    # axis angle representation
+    if norm(θ) == 0
+        q = Quaternion{T}()
+    else
+        q = Quaternion(cos(norm(θ)/2),(θ/norm(θ)*sin(norm(θ)/2))...)
+    end
+    
+    Δq = joint.qoff * q # in body1 frame
+    return Δq
 end
 
 @inline function getVelocityDelta(joint::Rotational0, body1::AbstractBody, body2::Body{T}, ω::SVector{3,T}) where T
