@@ -23,8 +23,6 @@ link2.J = diagm(ones(3))
 # Constraints
 joint1 = EqualityConstraint(OriginConnection(origin, link1))
 joint2 = EqualityConstraint(OriginConnection(origin, link2))
-# joint1 = EqualityConstraint(Spherical(origin, link1,zeros(3),zeros(3)))
-# joint2 = EqualityConstraint(Spherical(link1, link2, [0;0;2.],zeros(3)))
 
 links = [link1;link2]
 constraints = [joint1;joint2]
@@ -32,6 +30,7 @@ shapes = [box1;box2]
 
 
 mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
+
 
 for i=1:3
     axis1 = zeros(3)
@@ -50,11 +49,11 @@ for i=1:3
         v1 = rand(3)
         Δv = rand(3)
 
-        setPosition!(mech,link1, x = po1 - vrotate(SVector{3,Float64}(p1o),q1), q = q1)
-        setPosition!(mech,link1, link2, Δx = Δx, Δq = Δq, p1 = p12, p2 = p21)
+        setPosition!(link1, x = po1 - vrotate(SVector{3,Float64}(p1o),q1), q = q1)
+        setPosition!(link1, link2, Δx = Δx, Δq = Δq, p1 = p12, p2 = p21)
         
-        setVelocity!(mech,link1,v = v1, ω = axis1)
-        setVelocity!(mech,link1,link2, Δv = Δv, Δω = axis2, p1 = p12, p2 = p21)
+        setVelocity!(link1,v = v1, ω = axis1)
+        setVelocity!(link1,link2, Δv = Δv, Δω = axis2, p1 = p12, p2 = p21)
 
         storage = simulate!(mech, 10., record = true)
 
@@ -109,15 +108,15 @@ for i=1:3
 
     function control!(mechanism, k)
         if k==1
-            setForce!(mechanism, mechanism.bodies[1], F = F, τ = τ, r = p)
+            setForce!(mechanism.bodies[1], F = F, τ = τ, p = p)
         else
-            setForce!(mechanism, mechanism.bodies[1])
+            setForce!(mechanism.bodies[1])
         end
         return
     end
 
-    setPosition!(mech,link1, q = q1)
-    setVelocity!(mech,link1)
+    setPosition!(link1, q = q1)
+    setVelocity!(link1)
 
     storage = simulate!(mech, 10., control!, record = true)
 

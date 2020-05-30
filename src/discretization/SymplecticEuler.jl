@@ -1,0 +1,6 @@
+include(joinpath("symplectic_euler", "integrator.jl"))
+include(joinpath("symplectic_euler", "body.jl"))
+include(joinpath("symplectic_euler", "joint.jl"))
+include(joinpath("symplectic_euler", "bound.jl"))
+include(joinpath("symplectic_euler", "linearize.jl"))
+include(joinpath("symplectic_euler", "test.jl"))

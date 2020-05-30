@@ -90,8 +90,8 @@ function feasibilityStepLength!(mechanism::Mechanism)
 end
 
 function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, ineqentry::InequalityEntry, τ) where {T,N}
-    s1 = ineqc.s1
-    γ1 = ineqc.γ1
+    s1 = ineqc.sols1
+    γ1 = ineqc.solγ1
     Δs = ineqentry.Δs
     Δγ = ineqentry.Δγ
 
@@ -193,15 +193,14 @@ end
 function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
     Δt = mechanism.Δt
     μ = mechanism.μ
-    No = 2
 
     φ = g(mechanism, ineqc)
 
     Nx = ∂g∂pos(mechanism, ineqc, body)
     Nv = ∂g∂vel(mechanism, ineqc, body)
 
-    γ1 = ineqc.γ1
-    s1 = ineqc.s1
+    γ1 = ineqc.solγ1
+    s1 = ineqc.sols1
 
     Δv = diagonal.Δs
     ineqentry.Δγ = γ1 ./ s1 .* φ - μ ./ s1 - γ1 ./ s1 .* (Nv * Δv)
@@ -210,36 +209,38 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
     return
 end
 
-@inline function s0tos1!(component::Component)
-    component.s1 = component.s0
+
+@inline function s1tos0!(body::Body)
+    body.state.vsol[1] = body.state.vsol[2]
+    body.state.ωsol[1] = body.state.ωsol[2]
     return
 end
 
-@inline function s1tos0!(component::Component)
-    component.s0 = component.s1
-    return
-end
-
-@inline function s0tos1!(ineqc::InequalityConstraint)
-    ineqc.s1 = ineqc.s0
-    ineqc.γ1 = ineqc.γ0
+@inline function s1tos0!(eqc::EqualityConstraint)
+    eqc.solλ0 = eqc.solλ1
     return
 end
 
 @inline function s1tos0!(ineqc::InequalityConstraint)
-    ineqc.s0 = ineqc.s1
-    ineqc.γ0 = ineqc.γ1
+    ineqc.sols0 = ineqc.sols1
+    ineqc.solγ0 = ineqc.solγ1
     return
 end
 
-@inline function normΔs(component::Component)
-    d = component.s1 - component.s0
+@inline function normΔs(body::Body)
+    d1 = body.state.vsol[2] - body.state.vsol[1]
+    d2 = body.state.ωsol[2] - body.state.ωsol[1]
+    return dot(d1, d1) + dot(d2, d2)
+end
+
+@inline function normΔs(eqc::EqualityConstraint)
+    d = eqc.solλ1 - eqc.solλ0
     return dot(d, d)
 end
 
 @inline function normΔs(ineqc::InequalityConstraint)
-    d1 = ineqc.s1 - ineqc.s0
-    d2 = ineqc.γ1 - ineqc.γ0
+    d1 = ineqc.sols1 - ineqc.sols0
+    d2 = ineqc.solγ1 - ineqc.solγ0
     return dot(d1, d1) + dot(d2, d2)
 end
 

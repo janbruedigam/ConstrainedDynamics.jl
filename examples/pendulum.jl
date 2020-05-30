@@ -19,7 +19,7 @@ origin = Origin{Float64}()
 link1 = Body(box)
 
 # Constraints
-joint_between_origin_and_link1 = EqualityConstraint(Revolute(origin, link1, zeros(3), p2, joint_axis))
+joint_between_origin_and_link1 = EqualityConstraint(Revolute(origin, link1, joint_axis; p2=p2))
 
 links = [link1]
 constraints = [joint_between_origin_and_link1]
@@ -27,7 +27,7 @@ shapes = [box]
 
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
+setPosition!(origin,link1,p2 = p2,Δq = q1)
 
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)

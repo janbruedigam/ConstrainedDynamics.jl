@@ -25,9 +25,9 @@ link2 = Body(b2)
 
 # Constraints
 # joint0to1 = EqualityConstraint(OriginConnection(origin,link1))
-# joint0to1 = EqualityConstraint(Fixed(origin,link1,zeros(3),zeros(3)))
-joint0to1 = EqualityConstraint(Revolute(origin, link1, zeros(3), zeros(3), ex))
-joint1to2 = EqualityConstraint(Cylindrical(link1, link2, vert12, vert21, -ey))
+# joint0to1 = EqualityConstraint(Fixed(origin,link1))
+joint0to1 = EqualityConstraint(Revolute(origin, link1, ex))
+joint1to2 = EqualityConstraint(Cylindrical(link1, link2, -ey; p1=vert12, p2=vert21))
 
 
 links = [link1; link2]
@@ -41,9 +41,9 @@ function control!(mechanism, k)
 end
 
 mech = Mechanism(origin, links, constraints, shapes = shapes, g = 0.)
-setPosition!(mech,link1,q = Quaternion(RotX(pi / 2)))
-setPosition!(mech,link1,link2,p1 = vert12,p2 = vert21)
-# setVelocity!(mech,link1,ω=[2.;0;0])
-# setVelocity!(mech,link1,link2,p1=vert12,p2=vert21)
+setPosition!(link1,q = Quaternion(RotX(pi / 2)))
+setPosition!(link1,link2,p1 = vert12,p2 = vert21)
+# setVelocity!(link1,ω=[2.;0;0])
+# setVelocity!(link1,link2,p1=vert12,p2=vert21)
 
 # setForce!([[0.1];nothing],joint1to2,mech)

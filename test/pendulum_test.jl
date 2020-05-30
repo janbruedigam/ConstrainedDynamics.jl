@@ -18,7 +18,7 @@ origin = Origin{Float64}()
 link1 = Body(rod)
 
 # Constraints
-joint_between_origin_and_link1 = EqualityConstraint(Revolute(origin, link1, zeros(3), p2, joint_axis))
+joint_between_origin_and_link1 = EqualityConstraint(Revolute(origin, link1, joint_axis; p2=p2))
 
 links = [link1]
 constraints = [joint_between_origin_and_link1]
@@ -31,7 +31,8 @@ T0 = 2*pi*sqrt((m*l^2/3)/(-g*l/2))
 t0 = 1
 
 q1 = Quaternion(RotX(π / 2))
-setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
+setPosition!(origin,link1,p2 = p2,Δq = q1)
+setVelocity!(link1)
 storage = simulate!(mech,10.,record = true)
 T = T0*1.18
 Δ = Int(round(T/Δt))
@@ -40,7 +41,8 @@ diff = traj[1:Δ]-traj[Δ+1:2*Δ]
 @test maximum(diff)<0.1
 
 q1 = Quaternion(RotX(π / 3))
-setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
+setPosition!(origin,link1,p2 = p2,Δq = q1)
+setVelocity!(link1)
 storage = simulate!(mech,10.,record = true)
 T = T0*1.073
 Δ = Int(round(T/Δt))
@@ -49,7 +51,8 @@ diff = traj[1:Δ]-traj[Δ+1:2*Δ]
 @test maximum(diff)<0.1
 
 q1 = Quaternion(RotX(π / 6))
-setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
+setPosition!(origin,link1,p2 = p2,Δq = q1)
+setVelocity!(link1)
 storage = simulate!(mech,10.,record = true)
 T = T0*1.017
 Δ = Int(round(T/Δt))
@@ -59,7 +62,8 @@ diff = traj[1:Δ]-traj[Δ+1:2*Δ]
 
 
 q1 = Quaternion(RotX(π / 2))
-setPosition!(mech,origin,link1,p2 = p2,Δq = q1)
+setPosition!(origin,link1,p2 = p2,Δq = q1)
+setVelocity!(link1)
 storage = simulate!(mech,10.,record = true)
 if haskey(ENV,"TRAVIS_OS_NAME")
     if occursin("linux", lowercase(ENV["TRAVIS_OS_NAME"]))
@@ -71,6 +75,3 @@ if haskey(ENV,"TRAVIS_OS_NAME")
     end
 end
 @test true
-
-
-

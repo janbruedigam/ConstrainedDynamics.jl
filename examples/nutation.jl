@@ -23,13 +23,13 @@ mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
 
 axis = [0;0;1.]
 speed = 20pi #*0
-setVelocity!(mech,link1, ω = speed*axis)
+setVelocity!(link1, ω = speed*axis)
 
 function controller!(mechanism, k)
     if k==1
-        setForce!(mechanism, mechanism.bodies[1], F = [0;0;2.], r=[0;1.;0])
+        setForce!(mechanism.bodies[1], F = [0;0;2.], p=[0;1.;0])
     else
-        setForce!(mechanism, mechanism.bodies[1], F = [0;0;0.], r=[0;0.0;0])
+        setForce!(mechanism.bodies[1], F = [0;0;0.], p=[0;0.0;0])
     end
     return
 end

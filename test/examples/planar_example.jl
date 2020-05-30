@@ -21,22 +21,17 @@ q1, q2, q3 = Quaternion(RotZ(phi1)), Quaternion(RotZ(phi2)), Quaternion(RotZ(phi
 origin = Origin{Float64}()
 link1 = Body(b1)
 link2 = deepcopy(link1, b1)
-link3 = deepcopy(link1, b1)
 
 # Constraints
-joint0to123 = EqualityConstraint(Planar(origin, link1, zeros(3), vert12, ez), Planar(origin, link2, zeros(3), vert12, ez), Planar(origin, link3, zeros(3), vert12, ez))
-joint1to23 = EqualityConstraint(Spherical(link1, link2, vert11, vert11), Spherical(link1, link3, vert11, vert11))
+joint0to123 = EqualityConstraint(Planar(origin, link1, ez; p2=vert12), Planar(origin, link2, ez; p2=vert12))
+joint1to23 = EqualityConstraint(Spherical(link1, link2; p1=vert11, p2=vert11))
 
 
 
-links = [link1; link2; link3]
+links = [link1; link2]
 constraints = [joint0to123;joint1to23]
 shapes = [b1]
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(mech,origin,link1,p2 = vert11,Δq = q1)
-setPosition!(mech,origin,link2,p2 = vert11,Δq = q2)
-setPosition!(mech,origin,link3,p2 = vert11,Δq = q3)
-setForce!(mech,link1,τ = [0;0;2.])
-setForce!(mech,link2,τ = [0;0;2.])
-setForce!(mech,link3,τ = [0;0;2.])
+setPosition!(origin,link1,p2 = vert11,Δq = q1)
+setPosition!(origin,link2,p2 = vert11,Δq = q2)

@@ -44,19 +44,19 @@ link8 = Body(b4)
 
 # Constraints
 function fourbar(links, vertices, axis)
-    j1 = EqualityConstraint(Revolute(links[1], links[2], zeros(3), vertices[1], axis))
-    j2 = EqualityConstraint(Revolute(links[2], links[3], vertices[2], vertices[3], axis), Cylindrical(links[2], links[4], vertices[1], vertices[1], axis))
-    j3 = EqualityConstraint(Revolute(links[4], links[5], vertices[2], vertices[3], axis))
-    j4 = EqualityConstraint(Revolute(links[3], links[5], vertices[4], vertices[4], axis))
+    j1 = EqualityConstraint(Revolute(links[1], links[2], axis; p2=vertices[1]))
+    j2 = EqualityConstraint(Revolute(links[2], links[3], axis; p1=vertices[2], p2=vertices[3]), Cylindrical(links[2], links[4], axis; p1=vertices[1], p2=vertices[1]))
+    j3 = EqualityConstraint(Revolute(links[4], links[5], axis; p1=vertices[2], p2=vertices[3]))
+    j4 = EqualityConstraint(Revolute(links[3], links[5], axis; p1=vertices[4], p2=vertices[4]))
 
     return j1, j2, j3, j4
 end
 
 function initfourbar!(mechanism, links, vertices, Δq1, Δq2)
-    setPosition!(mechanism, links[1], links[2], p2 = vertices[1], Δq = Δq1)
-    setPosition!(mechanism, links[2], links[3], p1 = vertices[2], p2 = vertices[3], Δq = inv(Δq2))
-    setPosition!(mechanism, links[2], links[4], p1 = vertices[1], p2 = vertices[1], Δq = inv(Δq2))
-    setPosition!(mechanism, links[4], links[5], p1 = vertices[2], p2 = vertices[3], Δq = Δq2)
+    setPosition!(links[1], links[2], p2 = vertices[1], Δq = Δq1)
+    setPosition!(links[2], links[3], p1 = vertices[2], p2 = vertices[3], Δq = inv(Δq2))
+    setPosition!(links[2], links[4], p1 = vertices[1], p2 = vertices[1], Δq = inv(Δq2))
+    setPosition!(links[4], links[5], p1 = vertices[2], p2 = vertices[3], Δq = Δq2)
 end
 
 links = [link1; link2; link3; link4; link5; link6; link7; link8]

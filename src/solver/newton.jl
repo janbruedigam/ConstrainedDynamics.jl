@@ -131,18 +131,30 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     return meritf1
 end
 
-@inline function lineStep!(component::Component, diagonal::DiagonalEntry, scale)
-    component.s1 = component.s0 - 1 / (2^scale) * diagonal.Δs
+@inline function lineStep!(body::Body, diagonal::DiagonalEntry, scale)
+    body.state.vsol[2] = body.state.vsol[1] - 1 / (2^scale) * diagonal.Δs[SVector(1, 2, 3)]
+    body.state.ωsol[2] = body.state.ωsol[1] - 1 / (2^scale) * diagonal.Δs[SVector(4, 5, 6)]
     return
 end
 
-@inline function lineStep!(node::Component, diagonal, scale, mechanism)
-    node.s1 = node.s0 - 1 / (2^scale) * mechanism.α * diagonal.Δs
+@inline function lineStep!(eqc::EqualityConstraint, diagonal::DiagonalEntry, scale)
+    eqc.solλ1 = eqc.solλ0 - 1 / (2^scale) * diagonal.Δs
+    return
+end
+
+@inline function lineStep!(body::Body, diagonal, scale, mechanism)
+    body.state.vsol[2] = body.state.vsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SVector(1, 2, 3)]
+    body.state.ωsol[2] = body.state.ωsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SVector(4, 5, 6)]
+    return
+end
+
+@inline function lineStep!(eqc::EqualityConstraint, diagonal, scale, mechanism)
+    eqc.solλ1 = eqc.solλ0 - 1 / (2^scale) * mechanism.α * diagonal.Δs
     return
 end
 
 @inline function lineStep!(ineqc::InequalityConstraint, entry, scale, mechanism)
-    ineqc.s1 = ineqc.s0 - 1 / (2^scale) * mechanism.α * entry.Δs
-    ineqc.γ1 = ineqc.γ0 - 1 / (2^scale) * mechanism.α * entry.Δγ
+    ineqc.sols1 = ineqc.sols0 - 1 / (2^scale) * mechanism.α * entry.Δs
+    ineqc.solγ1 = ineqc.solγ0 - 1 / (2^scale) * mechanism.α * entry.Δγ
     return
 end

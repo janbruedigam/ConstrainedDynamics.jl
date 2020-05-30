@@ -16,7 +16,6 @@ mutable struct Mechanism{T,N,Ni}
 
     Δt::T
     g::T
-    No::Int64 # order of integrator, currently only No=2 (1st order) implemented
 
     α::T
     μ::T
@@ -26,10 +25,10 @@ mutable struct Mechanism{T,N,Ni}
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
         eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
-
+        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         resetGlobalID()
+        order = getGlobalOrder()
 
         for body in bodies
             if norm(body.m)==0 || norm(body.J)==0
@@ -47,14 +46,7 @@ mutable struct Mechanism{T,N,Ni}
 
         bdict = Dict{Int64,Int64}()
         for (ind, body) in enumerate(bodies)
-            body.x = [body.x[1] for i = 1:No]
-            body.q = [body.q[1] for i = 1:No]
-            body.F = [body.F[1] for i = 1:No]
-            body.τ = [body.τ[1] for i = 1:No]
-            # push!(body.x, [body.x[1] for i = 1:No - 1]...)
-            # push!(body.q, [body.q[1] for i = 1:No - 1]...)
-            # push!(body.F, [body.F[1] for i = 1:No - 1]...)
-            # push!(body.τ, [body.τ[1] for i = 1:No - 1]...)
+            initknotpoints!(body.state, order)
 
             for eqc in eqcs
                 eqc.pid == body.id && (eqc.pid = currentid)
@@ -117,40 +109,40 @@ mutable struct Mechanism{T,N,Ni}
         α = 1
         μ = 1
 
-        new{T,N,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, No, α, μ)
+        new{T,N,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, α, μ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         ineqcs = InequalityConstraint{T}[]
-        Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, No = No, shapes = shapes)
+        Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, No = No, shapes = shapes)
+        Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
-        Δt::T = .01, g::T = -9.81, No = 2, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, Δt = Δt, g = g, No = No, shapes = shapes)
+        Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
     end
 
-    function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, Δt::T = .01, g::T = -9.81, No::Integer = 2) where T
+    function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, Δt::T = .01, g::T = -9.81) where T
         origin, links, joints, shapes = parse_urdf(filename, T, floating)
 
-        mechanism = Mechanism(origin, links, joints, shapes = shapes, Δt = Δt, g = g, No = No)
+        mechanism = Mechanism(origin, links, joints, shapes = shapes, Δt = Δt, g = g)
 
         graph = mechanism.graph
         xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
@@ -180,8 +172,8 @@ mutable struct Mechanism{T,N,Ni}
                     pconstraint = geteqconstraint(mechanism, ggpid)
                     @assert length(pconstraint.constraints) == 2
 
-                    xpbody = pbody.x[1]
-                    qpbody = pbody.q[1]
+                    xpbody = pbody.state.xc
+                    qpbody = pbody.state.qc
 
                     xpjointworld = xjointlist[pconstraint.id]
                     qpjointworld = qjointlist[pconstraint.id]
@@ -206,11 +198,11 @@ mutable struct Mechanism{T,N,Ni}
                 qjointlist[constraint.id] = qjointworld
 
                 # difference to parent body (pbody)
-                qbody = qjoint * body.q[1]
+                qbody = qjoint * body.state.qc
 
                 # actual joint properties
                 p1 = xjoint # in parent's (pbody) frame
-                p2 = vrotate(-body.x[1], inv(body.q[1])) # in body frame (body.x and body.q are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
+                p2 = vrotate(-body.state.xc, inv(body.state.qc)) # in body frame (body.state.xc and body.state.qc are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
                 constraint.constraints[1].vertices = (p1, p2)
 
                 V3 = vrotate(constraint.constraints[2].V3', qjoint) # in parent's (pbody) frame
@@ -220,12 +212,12 @@ mutable struct Mechanism{T,N,Ni}
                 constraint.constraints[2].qoff = qbody # in parent's (pbody) frame
 
                 # actual body properties
-                setPosition!(mechanism, body) # set everything to zero
-                setPosition!(mechanism, pbody, body, p1 = p1, p2 = p2, Δq = qbody)
+                setPosition!(body) # set everything to zero
+                setPosition!(pbody, body, p1 = p1, p2 = p2, Δq = qbody)
 
                 # shape relative
                 if shape !== nothing
-                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff, qjointworld) - body.x[1], inv(body.q[1]))
+                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff, qjointworld) - body.state.xc, inv(body.state.qc))
                     shape.qoff = qbody \ qjoint * shape.qoff
                 end
             end
