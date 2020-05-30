@@ -1,6 +1,6 @@
 @inline function settempvars!(body::Body{T}, x, v, F, q, ω, τ, f) where T
     state = body.state
-    stateold = state
+    stateold = deepcopy(state)
     fold = body.f
 
     state.xc = x
