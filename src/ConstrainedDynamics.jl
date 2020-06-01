@@ -55,6 +55,9 @@ export Box,
     getineqconstraint,
     minimalCoordinates,
 
+    linearizeSystem,
+    linearizeConstraints,
+
     RotX,
     RotY,
     RotZ,
