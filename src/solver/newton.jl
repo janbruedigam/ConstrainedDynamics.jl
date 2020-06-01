@@ -1,5 +1,5 @@
 # Newton with line search 
-function newton!(mechanism::Mechanism{T,Nl,0}; ε = 1e-10, newtonIter = 100, lineIter = 10, warning::Bool = false) where {T,Nl}
+function newton!(mechanism::Mechanism{T,N,Nb,Ne,0}; ε = 1e-10, newtonIter = 100, lineIter = 10, warning::Bool = false) where {T,N,Nb,Ne}
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     graph = mechanism.graph
@@ -31,7 +31,7 @@ function newton!(mechanism::Mechanism{T,Nl,0}; ε = 1e-10, newtonIter = 100, lin
 end
 
 # Newton on interior point with line search
-function newton!(mechanism::Mechanism{T,Nl}; ε = 1e-10, σ = 0.1, μ = 1.0, newtonIter = 100, lineIter = 10, warning::Bool = false) where {T,Nl}
+function newton!(mechanism::Mechanism{T,N,Nb,Ne,Ni}; ε = 1e-10, σ = 0.1, μ = 1.0, newtonIter = 100, lineIter = 10, warning::Bool = false) where {T,N,Nb,Ne,Ni}
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints

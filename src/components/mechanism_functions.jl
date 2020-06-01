@@ -150,3 +150,8 @@ end
     foreach(discretizestate!, mechanism.bodies, mechanism.Δt)
     return
 end
+
+@inline function currentasknot!(mechanism::Mechanism)
+    foreach(currentasknot!, mechanism.bodies)
+    return
+end

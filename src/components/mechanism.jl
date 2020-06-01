@@ -1,4 +1,4 @@
-mutable struct Mechanism{T,N,Ni}
+mutable struct Mechanism{T,N,Nb,Ne,Ni}
     # tend::T
     # steps::Base.OneTo{Int64}
     origin::Origin{T}
@@ -50,9 +50,9 @@ mutable struct Mechanism{T,N,Ni}
 
             for eqc in eqcs
                 eqc.pid == body.id && (eqc.pid = currentid)
-                for (ind, bodyid) in enumerate(eqc.bodyids)
+                for (ind, bodyid) in enumerate(eqc.childids)
                     if bodyid == body.id
-                        eqc.bodyids = setindex(eqc.bodyids, currentid, ind)
+                        eqc.childids = setindex(eqc.childids, currentid, ind)
                         eqc.constraints[ind].cid = currentid
                     end
                 end
@@ -109,7 +109,7 @@ mutable struct Mechanism{T,N,Ni}
         α = 1
         μ = 1
 
-        new{T,N,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, α, μ)
+        new{T,N,Nb,Ne,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, α, μ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
@@ -242,14 +242,14 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape{T}} = Shape
         if eqc.pid !== nothing
             eqc.pid *= -1
         end
-        eqc.bodyids *= -1
+        eqc.childids *= -1
     end
     for ineqc in ineqconstraints
         ineqc.id *= -1
         if ineqc.pid !== nothing
             ineqc.pid *= -1
         end
-        ineqc.bodyids *= -1
+        ineqc.childids *= -1
     end
     for shape in shapes
         for (i,bodyid) in enumerate(shape.bodyids)
@@ -301,10 +301,10 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape{T}} = Shape
     return origin, bodies, eqconstraints, ineqconstraints, shapes
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,0}) where {T,N}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,Nb,Ne,0}) where {T,N,Nb,Ne}
     summary(io, M); println(io, " with ", length(M.bodies), " bodies and ", length(M.eqconstraints), " constraints")
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,Ni}) where {T,N,Ni}
-    summary(io, M); println(io, " with ", length(M.bodies), " bodies, ", length(M.eqconstraints), " equality constraints, and ", Ni, " inequality constraints")
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,Nb,Ne,Ni}) where {T,N,Nb,Ne,Ni}
+    summary(io, M); println(io, " with ", Nb, " bodies, ", Ne, " equality constraints, and ", Ni, " inequality constraints")
 end

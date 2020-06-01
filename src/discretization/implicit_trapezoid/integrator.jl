@@ -41,6 +41,15 @@ end
     return
 end
 
+@inline function currentasknot!(body::Body)
+    state = body.state
+
+    state.xk[2] = state.xc
+    state.qk[2] = state.qc
+
+    return
+end
+
 @inline function updatestate!(body::Body{T}, Δt) where T
     state = body.state
 

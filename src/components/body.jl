@@ -68,3 +68,17 @@ end
 Base.length(::Body) = 6
 
 @inline getM(body::Body{T}) where T = [[SMatrix{3,3,T,9}(I*body.m);@SMatrix zeros(T,3,3)] [@SMatrix zeros(T,3,3);body.J]]
+
+@inline function ∂zp1∂z(mechanism, body::Body{T}, xc, vc, Fk, qc, ωc, τk, Δt) where T
+    stateold, fold = settempvars!(body, xc, vc, Fk, qc, ωc, τk, zeros(T,6))
+
+    discretizestate!(mechanism)
+    foreach(setsolution!, mechanism.bodies)
+    newton!(mechanism)
+
+    A, B = ∂zp1∂z(mechanism, body::Body{T}, Δt)
+    
+    resettempvars!(body, stateold, fold)
+
+    return A, B
+end

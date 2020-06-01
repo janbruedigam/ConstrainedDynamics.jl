@@ -4,7 +4,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
 
     constraints::Cs
     pid::Union{Int64,Nothing}
-    bodyids::SVector{Nc,Int64}
+    childids::SVector{Nc,Int64}
     inds::SVector{Nc,SVector{2,Int64}} # indices for minimal coordinates, assumes joints
 
     solλ0::SVector{N,T}
@@ -25,14 +25,14 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
         T = getT(jointdata[1][1])# .T
 
         pid = jointdata[1][2]
-        bodyids = Int64[]
+        childids = Int64[]
         constraints = Joint{T}[]
         inds = Vector{Int64}[]
         N = 0
         for set in jointdata
             push!(constraints, set[1])
             @assert set[2] == pid
-            push!(bodyids, set[3])
+            push!(childids, set[3])
 
             Nset = getN(set[1])
             if isempty(inds)
@@ -49,7 +49,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
         solλ0 = @SVector zeros(T, N)
         solλ1 = @SVector zeros(T, N)
 
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, pid, bodyids, inds, solλ0, solλ1)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, pid, childids, inds, solλ0, solλ1)
     end
 end
 
@@ -62,7 +62,7 @@ function setPosition!(mechanism, eqc::EqualityConstraint{T,N,Nc}, xθ) where {T,
     n = Int64(Nc/2)
     body1 = getbody(mechanism, eqc.pid)
     for i = 1:n
-        body2 = getbody(mechanism, eqc.bodyids[i])
+        body2 = getbody(mechanism, eqc.childids[i])
         Δx = getPositionDelta(eqc.constraints[i], body1, body2, xθ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])]) 
         Δq = getPositionDelta(eqc.constraints[i+1], body1, body2, xθ[SUnitRange(eqc.inds[i+1][1],eqc.inds[i+1][2])])
         
@@ -78,7 +78,7 @@ function setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T,
     n = Int64(Nc/2)
     body1 = getbody(mechanism, eqc.pid)
     for i = 1:n
-        body2 = getbody(mechanism, eqc.bodyids[i])
+        body2 = getbody(mechanism, eqc.childids[i])
         Δv = getVelocityDelta(eqc.constraints[i], body1, body2, vω[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])])
         Δω = getVelocityDelta(eqc.constraints[i+1], body1, body2, vω[SUnitRange(eqc.inds[i+1][1],eqc.inds[i+1][2])])
         
@@ -91,13 +91,13 @@ end
 function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ::AbstractVector{T}) where {T,N,Nc}
     @assert length(Fτ)==3*Nc-N
     for i = 1:Nc
-        setForce!(eqc.constraints[i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[i]),  Fτ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])])
+        setForce!(eqc.constraints[i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.childids[i]),  Fτ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])])
     end
     return
 end
 
 @generated function minimalCoordinates(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
-    vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]))) for i = 1:Nc]
+    vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
     :(svcat($(vec...)))
 end
 
@@ -107,7 +107,7 @@ end
 end
 
 @generated function g(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
-    vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt)) for i = 1:Nc]
+    vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.pid), getbody(mechanism, eqc.childids[$i]), mechanism.Δt)) for i = 1:Nc]
     :(svcat($(vec...)))
 end
 
@@ -124,7 +124,7 @@ end
 end
 
 @generated function ∂g∂posa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂posa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]))) for i = 1:Nc]
+    vec = [:(∂g∂posa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
@@ -134,7 +134,7 @@ end
 end
 
 @generated function ∂g∂vela(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂vela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.bodyids[$i]), mechanism.Δt)) for i = 1:Nc]
+    vec = [:(∂g∂vela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]), mechanism.Δt)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 

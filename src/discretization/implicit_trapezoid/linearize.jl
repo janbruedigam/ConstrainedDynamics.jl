@@ -21,26 +21,19 @@ end
     return
 end
 
-@inline function ∂zp1∂z(mechanism, body::Body{T}, xc, vc, Fk, qc, ωc, τk, Δt) where T
-    stateold, fold = settempvars!(body, xc, vc, Fk, qc, ωc, τk, zeros(T,6))
-
-
+@inline function ∂zp1∂z(mechanism, body::Body{T}, Δt) where T
     state = body.state
     Z = @SMatrix zeros(T,3,3)
     Z2 = [Z Z]
     Z2t = Z2'
     E = SMatrix{3,3,T,9}(I)
 
-    discretizestate!(mechanism)
-    foreach(setsolution!, mechanism.bodies)
-    newton!(mechanism)
-
     # Position
     AposT = [E E*Δt]
     BposT = Z
 
         # This calculates the ϵ for q⊗Δq = q⊗(1 ϵᵀ)ᵀ
-    AposR = VLmat(state.qk[1]) * [Rmat(ωbar(state.ωc, Δt))*LVᵀmat(state.qc) Lmat(state.qc)*derivωbar(state.ωc, Δt)]
+    AposR = VLmat(state.qk[2]) * [Rmat(ωbar(state.ωc, Δt))*LVᵀmat(state.qc) Lmat(state.qc)*derivωbar(state.ωc, Δt)]
     BposR = Z
 
     # Velocity
@@ -64,6 +57,5 @@ end
     BT = [[BposT;BvelT] Z2t]
     BR = [Z2t [BposR;BvelR]]
 
-    resettempvars!(body, stateold, fold)
     return [AT;AR], [BT;BR]
 end

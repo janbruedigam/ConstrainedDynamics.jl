@@ -4,7 +4,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
 
     constraints::Cs
     pid::Int64
-    # bodyid::Int64
+    # childid::Int64
 
     sols0::SVector{N,T}
     sols1::SVector{N,T}
@@ -27,7 +27,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
         T = getT(bounddata[1][1])
 
         pid = bounddata[1][2]
-        bodyids = Int64[]
+        childids = Int64[]
         constraints = Bound{T}[]
         N = 0
         for set in bounddata

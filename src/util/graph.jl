@@ -69,7 +69,7 @@ function adjacencyMatrix(eqconstraints::Vector{<:EqualityConstraint}, bodies::Ve
         cid = constraint.id
         A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
         dict[cid] = n += 1
-        for bodyid in unique([constraint.pid;constraint.bodyids])
+        for bodyid in unique([constraint.pid;constraint.childids])
             if !haskey(dict, bodyid)
                 A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
                 dict[bodyid] = n += 1
