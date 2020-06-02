@@ -37,8 +37,8 @@ for i=1:length(files)-1
         SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $pendulum_forced_control!) samples=1
     elseif files[i]=="football"
         SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $football_control!) samples=1
-    elseif files[i]=="nutation"
-        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $nutation_control!) samples=1
+    # elseif files[i]=="nutation"
+    #     SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $nutation_control!) samples=1
     # elseif files[i]=="chain_in_chain"
     #     #
     else
