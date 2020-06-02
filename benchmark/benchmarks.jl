@@ -28,12 +28,15 @@ files = [
     "wheel"
 ]
 
+funcdict = Dict{Int64,Function}()
+
 for i=1:length(files)-1
     include("../test/examples/"*files[i]*".jl")
     steps = Base.OneTo(100)
     storage = Storage{Float64}(steps,length(mech.bodies))
     if files[i]=="joint_force" || files[i]=="pendulum_forced" || files[i]=="football" || files[i]=="nutation"
-        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $(eval(Meta.parse(files[i]*"_control!")))) samples=1
+        funcdict[i] = eval(Meta.parse(files[i]*"_control!"))
+        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $funcdict[i]) samples=1
     elseif files[i]=="chain_in_chain"
         #
     else
