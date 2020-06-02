@@ -46,7 +46,7 @@ setPosition!(link4,link5,Δx = [0.;0.;0.03])
 
 spin = 0.35
 
-function control!(mechanism, k)
+function fottball_control!(mechanism, k)
     if k<25
         setForce!(link3, F = SA[0.;25.;25.], τ=spin*SA[0.2;0.2;1.])
     elseif k==40
