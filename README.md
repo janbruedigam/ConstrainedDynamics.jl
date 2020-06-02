@@ -1,6 +1,5 @@
 # ConstrainedDynamics
-[![Build Status](https://travis-ci.org/janbruedigam/ConstrainedDynamics.jl.svg?branch=master)](https://travis-ci.org/janbruedigam/ConstrainedDynamics.jl)
-[![Coverage Status](https://coveralls.io/repos/github/janbruedigam/ConstrainedDynamics.jl/badge.svg?branch=master)](https://coveralls.io/github/janbruedigam/ConstrainedDynamics.jl?branch=master)
+[![Build Status](https://github.com/janbruedigam/ConstrainedDynamics.jl/workflows/CI/badge.svg)](https://github.com/janbruedigam/ConstrainedDynamics.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/janbruedigam/ConstrainedDynamics.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/janbruedigam/ConstrainedDynamics.jl)
 
 

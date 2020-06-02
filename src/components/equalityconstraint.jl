@@ -102,7 +102,7 @@ end
 end
 
 @inline function GtλTof!(mechanism, body::Body, eqc::EqualityConstraint)
-    body.f -= ∂g∂pos(mechanism, eqc, body.id)' * eqc.solλ1
+    body.f -= zerodimstaticadjoint(∂g∂pos(mechanism, eqc, body.id)) * eqc.solλ1
     return
 end
 
