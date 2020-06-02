@@ -34,8 +34,8 @@ for i=1:length(files)-1
     storage = Storage{Float64}(steps,length(mech.bodies))
     if files[i]=="joint_force" || files[i]=="pendulum_forced" || files[i]=="football" || files[i]=="nutation"
         # SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $control!) samples=1
-    # elseif files[i]=="chain_in_chain"
-    #     #
+    elseif files[i]=="chain_in_chain"
+        #
     else
         SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage) samples=1 evals=1
     end
