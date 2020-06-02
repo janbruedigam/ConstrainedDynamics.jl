@@ -27,7 +27,7 @@ files = [
 ]
 
 for file in files
-    println(file)
+    # println(file)
     include("examples/"*file*".jl")
     if file=="joint_force" || file=="pendulum_forced" || file=="nutation" || file=="football"
         storage = simulate!(mech, 10., control!, record = true)
