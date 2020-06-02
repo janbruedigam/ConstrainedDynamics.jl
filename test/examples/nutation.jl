@@ -23,12 +23,12 @@ shapes = [b1]
 mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
 
 axis = [0;0;1.]
-speed = 20pi #*0
+speed = 2pi #*0
 setVelocity!(link1, ω = speed*axis)
 
-function control!(mechanism, k)
+function nutation_control!(mechanism, k)
     if k==1
-        setForce!(mechanism.bodies[1], F = SA[0;0;2.], p=SA[0;1.;0])
+        setForce!(mechanism.bodies[1], F = SA[0;0;0.2], p=SA[0;1.;0])
     else
         setForce!(mechanism.bodies[1], F = SA[0;0;0.], p=SA[0;0.0;0])
     end

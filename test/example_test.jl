@@ -27,10 +27,10 @@ files = [
 ]
 
 for file in files
-    println(file)
+    # println(file)
     include("examples/"*file*".jl")
     if file=="joint_force" || file=="pendulum_forced" || file=="nutation" || file=="football"
-        storage = simulate!(mech, 10., control!, record = true)
+        storage = simulate!(mech, 10., eval(Meta.parse(file*"_control!")), record = true)
     else
         storage = simulate!(mech, 10., record = true)
     end
