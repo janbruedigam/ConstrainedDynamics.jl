@@ -65,6 +65,8 @@ q1 = Quaternion(RotX(π / 2))
 setPosition!(origin,link1,p2 = p2,Δq = q1)
 setVelocity!(link1)
 storage = simulate!(mech,10.,record = true)
+
+display(ENV)
 if haskey(ENV,"TRAVIS_OS_NAME")
     if occursin("linux", lowercase(ENV["TRAVIS_OS_NAME"]))
         # visualize(mech, storage, shapes)
