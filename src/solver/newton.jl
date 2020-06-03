@@ -154,7 +154,7 @@ end
 end
 
 @inline function lineStep!(ineqc::InequalityConstraint, entry, scale, mechanism)
-    ineqc.sols1 = ineqc.sols0 - 1 / (2^scale) * mechanism.α * entry.Δs
-    ineqc.solγ1 = ineqc.solγ0 - 1 / (2^scale) * mechanism.α * entry.Δγ
+    ineqc.ssol[2] = ineqc.ssol[1] - 1 / (2^scale) * mechanism.α * entry.Δs
+    ineqc.γsol[2] = ineqc.γsol[1] - 1 / (2^scale) * mechanism.α * entry.Δγ
     return
 end

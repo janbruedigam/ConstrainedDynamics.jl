@@ -6,10 +6,8 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
     pid::Int64
     # childid::Int64
 
-    sols0::SVector{N,T}
-    sols1::SVector{N,T}
-    solγ0::SVector{N,T}
-    solγ1::SVector{N,T}
+    ssol::Vector{SVector{N,T}}
+    γsol::Vector{SVector{N,T}}
     
 
     function InequalityConstraint(data...; name::String="")
@@ -38,12 +36,10 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
         constraints = Tuple(constraints)
         # Nc = length(constraints)
 
-        sols0 = ones(T, N)
-        sols1 = ones(T, N)
-        solγ0 = ones(T, N)
-        solγ1 = ones(T, N)
+        ssol = [ones(T, N) for i=1:2]
+        γsol = [ones(T, N) for i=1:2]
 
-        new{T,N,typeof(constraints)}(getGlobalID(), name, constraints, pid, sols0, sols1, solγ0, solγ1)
+        new{T,N,typeof(constraints)}(getGlobalID(), name, constraints, pid, ssol, γsol)
     end
 end
 
@@ -51,16 +47,16 @@ end
 Base.length(::InequalityConstraint{T,N}) where {T,N} = N
 
 function resetVars!(ineqc::InequalityConstraint{T,N}) where {T,N}
-    ineqc.sols0 = @SVector ones(T, N)
-    ineqc.sols1 = @SVector ones(T, N)
-    ineqc.solγ0 = @SVector ones(T, N)
-    ineqc.solγ1 = @SVector ones(T, N)
+    ineqc.ssol[1] = @SVector ones(T, N)
+    ineqc.ssol[2] = @SVector ones(T, N)
+    ineqc.γsol[1] = @SVector ones(T, N)
+    ineqc.γsol[2] = @SVector ones(T, N)
 
     return 
 end
 
 @inline function NtγTof!(mechanism, body::Body, ineqc::InequalityConstraint{T,N}) where {T,N}
-    body.f -= ∂g∂pos(mechanism, ineqc, body)' * ineqc.solγ1
+    body.f -= ∂g∂pos(mechanism, ineqc, body)' * ineqc.γsol[2]
     for i=1:N
         body.f -= additionalforce(ineqc.constraints[i])
     end
@@ -77,20 +73,20 @@ end
 end
 
 function gs(mechanism, ineqc::InequalityConstraint{T,1}) where {T}
-    g(ineqc.constraints[1], getbody(mechanism, ineqc.pid), mechanism.Δt) - ineqc.sols1[1]
+    g(ineqc.constraints[1], getbody(mechanism, ineqc.pid), mechanism.Δt) - ineqc.ssol[2][1]
 end
 
 @generated function gs(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
-    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.pid), mechanism.Δt) - ineqc.sols1[$i]) for i = 1:N]
+    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.pid), mechanism.Δt) - ineqc.ssol[2][$i]) for i = 1:N]
     :(SVector{N,T}($(vec...)))
 end
 
 function h(ineqc::InequalityConstraint)
-    ineqc.sols1 .* ineqc.solγ1
+    ineqc.ssol[2] .* ineqc.γsol[2]
 end
 
 function hμ(ineqc::InequalityConstraint{T}, μ) where T
-    ineqc.sols1 .* ineqc.solγ1 .- μ
+    ineqc.ssol[2] .* ineqc.γsol[2] .- μ
 end
 
 

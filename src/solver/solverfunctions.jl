@@ -90,8 +90,8 @@ function feasibilityStepLength!(mechanism::Mechanism)
 end
 
 function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, ineqentry::InequalityEntry, τ) where {T,N}
-    s1 = ineqc.sols1
-    γ1 = ineqc.solγ1
+    s1 = ineqc.ssol[2]
+    γ1 = ineqc.γsol[2]
     Δs = ineqentry.Δs
     Δγ = ineqentry.Δγ
 
@@ -199,8 +199,8 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
     Nx = ∂g∂pos(mechanism, ineqc, body)
     Nv = ∂g∂vel(mechanism, ineqc, body)
 
-    γ1 = ineqc.solγ1
-    s1 = ineqc.sols1
+    γ1 = ineqc.γsol[2]
+    s1 = ineqc.ssol[2]
 
     Δv = diagonal.Δs
     ineqentry.Δγ = γ1 ./ s1 .* φ - μ ./ s1 - γ1 ./ s1 .* (Nv * Δv)
@@ -222,8 +222,8 @@ end
 end
 
 @inline function s1tos0!(ineqc::InequalityConstraint)
-    ineqc.sols0 = ineqc.sols1
-    ineqc.solγ0 = ineqc.solγ1
+    ineqc.ssol[1] = ineqc.ssol[2]
+    ineqc.γsol[1] = ineqc.γsol[2]
     return
 end
 
@@ -239,8 +239,8 @@ end
 end
 
 @inline function normΔs(ineqc::InequalityConstraint)
-    d1 = ineqc.sols1 - ineqc.sols0
-    d2 = ineqc.solγ1 - ineqc.solγ0
+    d1 = ineqc.ssol[2] - ineqc.ssol[1]
+    d2 = ineqc.γsol[2] - ineqc.γsol[1]
     return dot(d1, d1) + dot(d2, d2)
 end
 
