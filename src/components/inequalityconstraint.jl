@@ -3,7 +3,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
     name::String
 
     constraints::Cs
-    pid::Int64
+    parentid::Int64
     # childid::Int64
 
     ssol::Vector{SVector{N,T}}
@@ -24,13 +24,13 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
 
         T = getT(bounddata[1][1])
 
-        pid = bounddata[1][2]
+        parentid = bounddata[1][2]
         childids = Int64[]
         constraints = Bound{T}[]
         N = 0
         for set in bounddata
             push!(constraints, set[1])
-            @assert set[2] == pid
+            @assert set[2] == parentid
             N += 1 # getN(set[1])
         end
         constraints = Tuple(constraints)
@@ -39,7 +39,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
         ssol = [ones(T, N) for i=1:2]
         γsol = [ones(T, N) for i=1:2]
 
-        new{T,N,typeof(constraints)}(getGlobalID(), name, constraints, pid, ssol, γsol)
+        new{T,N,typeof(constraints)}(getGlobalID(), name, constraints, parentid, ssol, γsol)
     end
 end
 
@@ -64,20 +64,20 @@ end
 end
 
 function g(mechanism, ineqc::InequalityConstraint{T,1}) where {T}
-    g(ineqc.constraints[1], getbody(mechanism, ineqc.pid), mechanism.Δt)
+    g(ineqc.constraints[1], getbody(mechanism, ineqc.parentid), mechanism.Δt)
 end
 
 @generated function g(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
-    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.pid), mechanism.Δt)) for i = 1:N]
+    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.parentid), mechanism.Δt)) for i = 1:N]
     :(SVector{N,T}($(vec...)))
 end
 
 function gs(mechanism, ineqc::InequalityConstraint{T,1}) where {T}
-    g(ineqc.constraints[1], getbody(mechanism, ineqc.pid), mechanism.Δt) - ineqc.ssol[2][1]
+    g(ineqc.constraints[1], getbody(mechanism, ineqc.parentid), mechanism.Δt) - ineqc.ssol[2][1]
 end
 
 @generated function gs(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
-    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.pid), mechanism.Δt) - ineqc.ssol[2][$i]) for i = 1:N]
+    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.parentid), mechanism.Δt) - ineqc.ssol[2][$i]) for i = 1:N]
     :(SVector{N,T}($(vec...)))
 end
 
@@ -120,7 +120,7 @@ function calcFrictionForce!(mechanism, ineqc::InequalityConstraint{T,N}) where {
     for i = 1:N
         constraint = ineqc.constraints[i]
         if typeof(constraint) <: Friction
-            calcFrictionForce!(mechanism, ineqc, constraint, i, getbody(mechanism, ineqc.pid))
+            calcFrictionForce!(mechanism, ineqc, constraint, i, getbody(mechanism, ineqc.parentid))
         end
     end
 end

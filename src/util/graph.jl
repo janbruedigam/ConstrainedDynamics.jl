@@ -35,7 +35,7 @@ struct Graph{N}
         rdict = Dict(ind => id for (id, ind) in dict)
 
         for constraint in eqconstraints
-            constraint.pid == oid && (constraint.pid = nothing)
+            constraint.parentid == oid && (constraint.parentid = nothing)
         end
 
         N = length(dict)
@@ -69,7 +69,7 @@ function adjacencyMatrix(eqconstraints::Vector{<:EqualityConstraint}, bodies::Ve
         cid = constraint.id
         A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
         dict[cid] = n += 1
-        for bodyid in unique([constraint.pid;constraint.childids])
+        for bodyid in unique([constraint.parentid;constraint.childids])
             if !haskey(dict, bodyid)
                 A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
                 dict[bodyid] = n += 1
@@ -205,8 +205,8 @@ function ineqchildren(dfslist, bodies, ineqconstraints, dict::Dict)
     N = length(dfslist)
     ineqs = [Int64[] for i = 1:N]
     for body in bodies
-        for c in ineqconstraints
-            c.pid == body.id && push!(ineqs[dict[body.id]], c.id)
+        for ineqc in ineqconstraints
+            ineqc.parentid == body.id && push!(ineqs[dict[body.id]], ineqc.id)
         end
     end
 

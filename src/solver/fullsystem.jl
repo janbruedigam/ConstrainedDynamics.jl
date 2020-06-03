@@ -182,7 +182,7 @@ function linearizeConstraints(mechanism::Mechanism{T,N,Nb}, xc, vc, Fk, qc, ωc,
     for (i,eqc) in enumerate(mechanism.eqconstraints)
         ind2 += length(eqc)
 
-        pid = eqc.pid
+        pid = eqc.parentid
         if pid !== nothing
             colpa = (pid-1)*6+1:pid*6
             colpb = pid*6+1:(pid+1)*6

@@ -49,7 +49,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
             initknotpoints!(body.state, order)
 
             for eqc in eqcs
-                eqc.pid == body.id && (eqc.pid = currentid)
+                eqc.parentid == body.id && (eqc.parentid = currentid)
                 for (ind, bodyid) in enumerate(eqc.childids)
                     if bodyid == body.id
                         eqc.childids = setindex(eqc.childids, currentid, ind)
@@ -59,7 +59,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
             end
 
             for ineqc in ineqcs
-                ineqc.pid == body.id && (ineqc.pid = currentid)
+                ineqc.parentid == body.id && (ineqc.parentid = currentid)
             end
 
             for shape in shapes
@@ -239,15 +239,15 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape{T}} = Shape
     end
     for eqc in eqconstraints
         eqc.id *= -1
-        if eqc.pid !== nothing
-            eqc.pid *= -1
+        if eqc.parentid !== nothing
+            eqc.parentid *= -1
         end
         eqc.childids *= -1
     end
     for ineqc in ineqconstraints
         ineqc.id *= -1
-        if ineqc.pid !== nothing
-            ineqc.pid *= -1
+        if ineqc.parentid !== nothing
+            ineqc.parentid *= -1
         end
         ineqc.childids *= -1
     end
@@ -281,13 +281,13 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape{T}} = Shape
     oldoid = origin.id
     origin.id = getGlobalID()
     for eqc in eqconstraints
-        if eqc.pid === nothing
-            eqc.pid = origin.id
+        if eqc.parentid === nothing
+            eqc.parentid = origin.id
         end
     end
     for ineqc in ineqconstraints
-        if ineqc.pid == nothing
-            ineqc.pid = origin.id
+        if ineqc.parentid == nothing
+            ineqc.parentid = origin.id
         end
     end
     for shape in shapes
