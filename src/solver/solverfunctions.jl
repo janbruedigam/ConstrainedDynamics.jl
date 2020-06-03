@@ -217,7 +217,7 @@ end
 end
 
 @inline function s1tos0!(eqc::EqualityConstraint)
-    eqc.solλ0 = eqc.solλ1
+    eqc.λsol[1] = eqc.λsol[2]
     return
 end
 
@@ -234,7 +234,7 @@ end
 end
 
 @inline function normΔs(eqc::EqualityConstraint)
-    d = eqc.solλ1 - eqc.solλ0
+    d = eqc.λsol[2] - eqc.λsol[1]
     return dot(d, d)
 end
 

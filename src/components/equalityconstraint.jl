@@ -7,8 +7,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     childids::SVector{Nc,Int64}
     inds::SVector{Nc,SVector{2,Int64}} # indices for minimal coordinates, assumes joints
 
-    solλ0::SVector{N,T}
-    solλ1::SVector{N,T}
+    λsol::Vector{SVector{N,T}}
 
     function EqualityConstraint(data...; name::String="")
         jointdata = Tuple{Joint,Int64,Int64}[]
@@ -46,10 +45,9 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
         Nc = length(constraints)
         
 
-        solλ0 = @SVector zeros(T, N)
-        solλ1 = @SVector zeros(T, N)
+        λsol = [zeros(T, N) for i=1:2]
 
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, pid, childids, inds, solλ0, solλ1)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, pid, childids, inds, λsol)
     end
 end
 
@@ -102,7 +100,7 @@ end
 end
 
 @inline function GtλTof!(mechanism, body::Body, eqc::EqualityConstraint)
-    body.f -= zerodimstaticadjoint(∂g∂pos(mechanism, eqc, body.id)) * eqc.solλ1
+    body.f -= zerodimstaticadjoint(∂g∂pos(mechanism, eqc, body.id)) * eqc.λsol[2]
     return
 end
 

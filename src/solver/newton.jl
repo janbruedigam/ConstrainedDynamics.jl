@@ -138,7 +138,7 @@ end
 end
 
 @inline function lineStep!(eqc::EqualityConstraint, diagonal::DiagonalEntry, scale)
-    eqc.solλ1 = eqc.solλ0 - 1 / (2^scale) * diagonal.Δs
+    eqc.λsol[2] = eqc.λsol[1] - 1 / (2^scale) * diagonal.Δs
     return
 end
 
@@ -149,7 +149,7 @@ end
 end
 
 @inline function lineStep!(eqc::EqualityConstraint, diagonal, scale, mechanism)
-    eqc.solλ1 = eqc.solλ0 - 1 / (2^scale) * mechanism.α * diagonal.Δs
+    eqc.λsol[2] = eqc.λsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs
     return
 end
 
