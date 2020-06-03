@@ -32,7 +32,7 @@ setPosition!(links[1], links[2], p1 = vert12, p2 = vert11)
 
 function control!(mechanism,k)
     if k==75
-        ConstrainedDynamics.deactivate!(mechanism,constraints[2].id)
+        deactivate!(mechanism,constraints[2].id)
     end
 end
 

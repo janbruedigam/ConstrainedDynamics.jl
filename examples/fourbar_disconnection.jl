@@ -54,7 +54,7 @@ initfourbar!(mech, [origin;links[1:4]], [[zeros(3)];verts], q1 * qoff2, q1)
 
 function control!(mechanism,k)
     if k==75
-        ConstrainedDynamics.deactivate!(mechanism,constraints[3].id)
+        deactivate!(mechanism,constraints[3].id)
     end
 end
 

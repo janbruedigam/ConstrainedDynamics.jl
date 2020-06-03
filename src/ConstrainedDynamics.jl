@@ -54,6 +54,8 @@ export Box,
     geteqconstraint,
     getineqconstraint,
     minimalCoordinates,
+    activate!,
+    deactivate!,
 
     linearizeSystem,
     linearizeConstraints,

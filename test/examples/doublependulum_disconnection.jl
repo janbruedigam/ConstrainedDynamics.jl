@@ -30,8 +30,11 @@ mech = Mechanism(origin, links, constraints;Δt = 0.01, shapes = shapes)
 setPosition!(origin, links[1], p2 = vert11,Δq = q1)
 setPosition!(links[1], links[2], p1 = vert12, p2 = vert11)
 
+deactivate!(mech,4)
+activate!(mech,4)
+
 function doublependulum_disconnection_control!(mechanism,k)
     if k==75
-        ConstrainedDynamics.deactivate!(mechanism,constraints[2].id)
+        deactivate!(mechanism,4)
     end
 end
