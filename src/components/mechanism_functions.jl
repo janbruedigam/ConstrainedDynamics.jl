@@ -10,7 +10,7 @@ function getbody(mechanism::Mechanism, name::String)
             end
         end
     end
-    return nothing
+    return
 end
 @inline geteqconstraint(mechanism::Mechanism, id::Integer) = mechanism.eqconstraints[id]
 function geteqconstraint(mechanism::Mechanism, name::String)
@@ -19,7 +19,7 @@ function geteqconstraint(mechanism::Mechanism, name::String)
             return eqc
         end
     end
-    return nothing
+    return
 end
 @inline getineqconstraint(mechanism::Mechanism, id::Integer) = mechanism.ineqconstraints[id]
 function getineqconstraint(mechanism::Mechanism, name::String)
@@ -28,7 +28,7 @@ function getineqconstraint(mechanism::Mechanism, name::String)
             return ineqc
         end
     end
-    return nothing
+    return
 end
 
 getcomponent(mechanism::Mechanism, id::Nothing) = mechanism.origin
@@ -40,7 +40,7 @@ function getcomponent(mechanism::Mechanism, id::Integer)
     elseif haskey(mechanism.ineqconstraints, id)
         return getineqconstraint(mechanism, id)
     else
-        return nothing
+        return
     end
 end
 

@@ -32,7 +32,7 @@ function dynTvel(vars)
     vc1 = vars[1:3]
     vc2 = vars[4:6]
 
-    m * ((vc2 - vc1) / Δt + ezg)
+    return m * ((vc2 - vc1) / Δt + ezg)
 end
 
 function dynRvel(vars)
@@ -44,7 +44,7 @@ function dynRvel(vars)
     sq2 = sqrt(4 / Δt^2 - ωc2' * ωc2)
     sq1 = sqrt(4 / Δt^2 - ωc1' * ωc1)
     
-    skewplusdiag(ωc2, sq2) * (J * ωc2) - skewplusdiag(ωc1, sq1) * (J * ωc1)
+    return skewplusdiag(ωc2, sq2) * (J * ωc2) - skewplusdiag(ωc1, sq1) * (J * ωc1)
 end
 
 
@@ -59,7 +59,7 @@ function transfunc3pos(vars)
     pa = vars[15:17]
     pb = vars[18:20]
 
-    vrotate(xb + vrotate(pb, qb) - (xa + vrotate(pa, qa)), inv(qa))
+    return vrotate(xb + vrotate(pb, qb) - (xa + vrotate(pa, qa)), inv(qa))
 end
 
 function transfunc2pos(vars)
@@ -75,7 +75,7 @@ function transfunc2pos(vars)
     V2 = vars[24:26]
     V12 = [V1';V2']
 
-    V12 * vrotate(xb + vrotate(pb, qb) - (xa + vrotate(pa, qa)), inv(qa))
+    return V12 * vrotate(xb + vrotate(pb, qb) - (xa + vrotate(pa, qa)), inv(qa))
 end
 
 function transfunc1pos(vars)
@@ -89,7 +89,7 @@ function transfunc1pos(vars)
 
     V3 = vars[21:23]
 
-    V3' * vrotate(xb + vrotate(pb, qb) - (xa + vrotate(pa, qa)), inv(qa))
+    return V3' * vrotate(xb + vrotate(pb, qb) - (xa + vrotate(pa, qa)), inv(qa))
 end
 
 
@@ -119,7 +119,7 @@ function transfunc3vel(vars)
     pa = vars[39:41]
     pb = vars[42:44]
 
-    vrotate(xb2 + vrotate(pb, qb2) - (xa2 + vrotate(pa, qa2)), inv(qa2))
+    return vrotate(xb2 + vrotate(pb, qb2) - (xa2 + vrotate(pa, qa2)), inv(qa2))
 end
 
 function transfunc2vel(vars)
@@ -152,7 +152,7 @@ function transfunc2vel(vars)
     V2 = vars[48:50]
     V12 = [V1';V2']
 
-    V12 * vrotate(xb2 + vrotate(pb, qb2) - (xa2 + vrotate(pa, qa2)), inv(qa2))
+    return V12 * vrotate(xb2 + vrotate(pb, qb2) - (xa2 + vrotate(pa, qa2)), inv(qa2))
 end
 
 function transfunc1vel(vars)
@@ -183,7 +183,7 @@ function transfunc1vel(vars)
 
     V3 = vars[45:47]
 
-    V3' * vrotate(xb2 + vrotate(pb, qb2) - (xa2 + vrotate(pa, qa2)), inv(qa2))
+    return V3' * vrotate(xb2 + vrotate(pb, qb2) - (xa2 + vrotate(pa, qa2)), inv(qa2))
 end
 
 
@@ -196,7 +196,7 @@ function rotfunc3pos(vars)
 
     offset = Quaternion(SVector(vars[15:18]...))
 
-    VLᵀmat(offset) * Lᵀmat(qa) * qb
+    return VLᵀmat(offset) * Lᵀmat(qa) * qb
 end
 
 function rotfunc2pos(vars)
@@ -211,7 +211,7 @@ function rotfunc2pos(vars)
     V2 = vars[22:24]
     V12 = [V1';V2']
 
-    V12 * VLᵀmat(offset) * Lᵀmat(qa) * qb
+    return V12 * VLᵀmat(offset) * Lᵀmat(qa) * qb
 end
 
 function rotfunc1pos(vars)
@@ -224,7 +224,7 @@ function rotfunc1pos(vars)
 
     V3 = vars[19:21]
 
-    V3' * VLᵀmat(offset) * Lᵀmat(qa) * qb
+    return V3' * VLᵀmat(offset) * Lᵀmat(qa) * qb
 end
 
 
@@ -253,7 +253,7 @@ function rotfunc3vel(vars)
 
     offset = Quaternion(SVector(vars[39:42]...))
 
-    VLᵀmat(offset) * Lᵀmat(qa2) * qb2
+    return VLᵀmat(offset) * Lᵀmat(qa2) * qb2
 end
 
 function rotfunc2vel(vars)
@@ -285,7 +285,7 @@ function rotfunc2vel(vars)
     V2 = vars[46:48]
     V12 = [V1';V2']    
 
-    V12 * VLᵀmat(offset) * Lᵀmat(qa2) * qb2
+    return V12 * VLᵀmat(offset) * Lᵀmat(qa2) * qb2
 end
 
 function rotfunc1vel(vars)
@@ -315,5 +315,5 @@ function rotfunc1vel(vars)
 
     V3 = vars[43:45]
 
-    V3' * VLᵀmat(offset) * Lᵀmat(qa2) * qb2
+    return V3' * VLᵀmat(offset) * Lᵀmat(qa2) * qb2
 end

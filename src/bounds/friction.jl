@@ -27,4 +27,5 @@ end
 @inline additionalforce(friction::Friction) = friction.D'*friction.b
 @inline function calcFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
     calcFrictionForce!(mechanism, friction, body, ineqc.γsol[2][i])
+    return
 end

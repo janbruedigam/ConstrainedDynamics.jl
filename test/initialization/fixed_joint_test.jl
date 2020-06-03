@@ -43,6 +43,4 @@ for i=1:10
     @test isapprox(norm(minimalCoordinates(mech, joint1) - SVector{0,Float64}()), 0.0; atol = 1e-8)
     @test isapprox(sum(norm.(storage.x[1].-truex))/1000, 0.0; atol = 1e-8)
     @test isapprox(sum(norm.(storage.q[1].-trueq))/1000, 0.0; atol = 1e-8)
-    # @test isapprox(norm(link1.state.xk[end] - (p1 - vrotate(SVector{3,Float64}(p2),qoff))), 0.0; atol = 1e-8)
-    # @test isapprox(norm(link1.state.qk[end] - qoff), 0.0; atol = 1e-8)
 end

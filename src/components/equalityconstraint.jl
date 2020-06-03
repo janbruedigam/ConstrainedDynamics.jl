@@ -67,6 +67,7 @@ function setPosition!(mechanism, eqc::EqualityConstraint{T,N,Nc}, xθ) where {T,
         p1, p2 = eqc.constraints[i].vertices
         setPosition!(body1, body2; p1 = p1, p2 = p2, Δx = Δx, Δq = Δq)
     end
+    return
 end
 
 # TODO make zero alloc
@@ -83,6 +84,7 @@ function setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T,
         p1, p2 = eqc.constraints[i].vertices
         setVelocity!(body1, body2; p1 = p1, p2 = p2, Δv = Δv, Δω = Δω)
     end
+    return
 end
 
 # TODO make zero alloc
@@ -96,7 +98,7 @@ end
 
 @generated function minimalCoordinates(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
     vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
-    :(svcat($(vec...)))
+    return :(svcat($(vec...)))
 end
 
 @inline function GtλTof!(mechanism, body::Body, eqc::EqualityConstraint)
@@ -106,19 +108,19 @@ end
 
 @generated function g(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
     vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[$i]), mechanism.Δt)) for i = 1:Nc]
-    :(svcat($(vec...)))
+    return :(svcat($(vec...)))
 end
 
 @inline function ∂g∂pos(mechanism, eqc::EqualityConstraint, id::Integer)
-    id == eqc.parentid ? ∂g∂posa(mechanism, eqc, id) : ∂g∂posb(mechanism, eqc, id)
+    id == eqc.parentid ? (return ∂g∂posa(mechanism, eqc, id)) : (return ∂g∂posb(mechanism, eqc, id))
 end
 
 @inline function ∂g∂vel(mechanism, eqc::EqualityConstraint, id::Integer)
-    id == eqc.parentid ? ∂g∂vela(mechanism, eqc, id) : ∂g∂velb(mechanism, eqc, id)
+    id == eqc.parentid ? (return ∂g∂vela(mechanism, eqc, id)) : (return ∂g∂velb(mechanism, eqc, id))
 end
 
 @inline function ∂g∂con(mechanism, eqc::EqualityConstraint, id::Integer)
-    ∂g∂con(mechanism, eqc)
+    return ∂g∂con(mechanism, eqc)
 end
 
 @generated function ∂g∂posa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}

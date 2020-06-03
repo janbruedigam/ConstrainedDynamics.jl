@@ -7,6 +7,7 @@ function saveToStorage!(mechanism::Mechanism, storage::Storage, i)
         storage.v[ind][i] = state.vc
         storage.ω[ind][i] = state.ωc
     end
+    return
 end
 
 function verifyConstraints!(mechanism::Mechanism)
@@ -15,6 +16,7 @@ function verifyConstraints!(mechanism::Mechanism)
             @info string("Bad constraint satisfaction at constraint: ", eqc.id, ", |g| = ", norm(g(mechanism, eqc)))
         end
     end
+    return
 end
 
 function initializeSimulation!(mechanism::Mechanism, debug::Bool)

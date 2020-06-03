@@ -12,11 +12,11 @@ getGlobalOrder() = (global METHODORDER; return METHODORDER)
 
 @inline function derivωbar(ω::SVector{3,T}, Δt) where T
     msq = -sqrt(4 / Δt^2 - dot(ω, ω))
-    Δt / 2 * [ω' / msq; SMatrix{3,3,T,9}(I)]
+    return Δt / 2 * [ω' / msq; SMatrix{3,3,T,9}(I)]
 end
 
 @inline function ωbar(ω, Δt)
-    Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ω, ω)), ω)
+    return Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ω, ω)), ω)
 end
 
 @inline function setForce!(state::State, F, τ)

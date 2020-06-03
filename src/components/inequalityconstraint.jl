@@ -63,29 +63,29 @@ end
 end
 
 function g(mechanism, ineqc::InequalityConstraint{T,1}) where {T}
-    g(ineqc.constraints[1], getbody(mechanism, ineqc.parentid), mechanism.Δt)
+    return g(ineqc.constraints[1], getbody(mechanism, ineqc.parentid), mechanism.Δt)
 end
 
 @generated function g(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
     vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.parentid), mechanism.Δt)) for i = 1:N]
-    :(SVector{N,T}($(vec...)))
+    return :(SVector{N,T}($(vec...)))
 end
 
 function gs(mechanism, ineqc::InequalityConstraint{T,1}) where {T}
-    g(ineqc.constraints[1], getbody(mechanism, ineqc.parentid), mechanism.Δt) - ineqc.ssol[2][1]
+    return g(ineqc.constraints[1], getbody(mechanism, ineqc.parentid), mechanism.Δt) - ineqc.ssol[2][1]
 end
 
 @generated function gs(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
     vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.parentid), mechanism.Δt) - ineqc.ssol[2][$i]) for i = 1:N]
-    :(SVector{N,T}($(vec...)))
+    return :(SVector{N,T}($(vec...)))
 end
 
 function h(ineqc::InequalityConstraint)
-    ineqc.ssol[2] .* ineqc.γsol[2]
+    return ineqc.ssol[2] .* ineqc.γsol[2]
 end
 
 function hμ(ineqc::InequalityConstraint{T}, μ) where T
-    ineqc.ssol[2] .* ineqc.γsol[2] .- μ
+    return ineqc.ssol[2] .* ineqc.γsol[2] .- μ
 end
 
 
@@ -107,12 +107,12 @@ end
 
 @generated function ∂g∂pos(mechanism, ineqc::InequalityConstraint{T,N}, body) where {T,N}
     vec = [:(∂g∂pos(ineqc.constraints[$i])) for i = 1:N]
-    :(vcat($(vec...)))
+    return :(vcat($(vec...)))
 end
 
 @generated function ∂g∂vel(mechanism, ineqc::InequalityConstraint{T,N}, body) where {T,N}
     vec = [:(∂g∂vel(ineqc.constraints[$i], mechanism.Δt)) for i = 1:N]
-    :(vcat($(vec...)))
+    return :(vcat($(vec...)))
 end
 
 function calcFrictionForce!(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
@@ -122,4 +122,5 @@ function calcFrictionForce!(mechanism, ineqc::InequalityConstraint{T,N}) where {
             calcFrictionForce!(mechanism, ineqc, constraint, i, getbody(mechanism, ineqc.parentid))
         end
     end
+    return
 end

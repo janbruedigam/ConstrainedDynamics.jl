@@ -57,6 +57,8 @@ function initfourbar!(mechanism, links, vertices, Δq1, Δq2)
     setPosition!(links[2], links[3], p1 = vertices[2], p2 = vertices[3], Δq = inv(Δq2))
     setPosition!(links[2], links[4], p1 = vertices[1], p2 = vertices[1], Δq = inv(Δq2))
     setPosition!(links[4], links[5], p1 = vertices[2], p2 = vertices[3], Δq = Δq2)
+
+    return 
 end
 
 links = [link1; link2; link3; link4; link5; link6; link7; link8]

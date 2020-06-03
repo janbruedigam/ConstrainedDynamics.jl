@@ -34,4 +34,5 @@ jointid = constraints[1].id
 function pendulum_forced_control!(mechanism, k)
     τ = SVector{1,Float64}(cos(0.5 * k*0.01 * 2pi))
     setForce!(mechanism, geteqconstraint(mechanism,jointid), τ)
+    return 
 end

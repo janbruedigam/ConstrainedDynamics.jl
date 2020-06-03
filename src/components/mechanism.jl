@@ -1,6 +1,4 @@
 mutable struct Mechanism{T,N,Nb,Ne,Ni}
-    # tend::T
-    # steps::Base.OneTo{Int64}
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
     eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
@@ -8,7 +6,6 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
 
     graph::Graph{N}
     ldu::SparseLDU{T}
-    # storage::Storage{T}
 
     # TODO remove once EqualityConstraint is homogenous
     normf::T
@@ -19,8 +16,6 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
 
     α::T
     μ::T
-
-    # shapes::Vector{<:Shape{T}}
 
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
@@ -116,7 +111,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         ineqcs = InequalityConstraint{T}[]
-        Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, shapes = shapes)
+        return Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
@@ -126,7 +121,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, shapes = shapes)
+        return Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
@@ -136,7 +131,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
+        return Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, Δt::T = .01, g::T = -9.81) where T

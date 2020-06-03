@@ -88,7 +88,7 @@ function adjacencyMatrix(eqconstraints::Vector{<:EqualityConstraint}, bodies::Ve
     end
 
     A = A .| A'
-    convert(Matrix{Bool}, A), dict
+    return convert(Matrix{Bool}, A), dict
 end
 
 function dfs(adjacency::Matrix, dict::Dict, originid::Integer)

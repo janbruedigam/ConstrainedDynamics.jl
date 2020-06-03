@@ -137,6 +137,8 @@ function setentries!(mechanism::Mechanism)
         diagonal = getentry(ldu, id)
         setDandΔs!(mechanism, diagonal, eqc)
     end
+
+    return 
 end
 
 function factor!(graph::Graph, ldu::SparseLDU)
@@ -160,6 +162,8 @@ function factor!(graph::Graph, ldu::SparseLDU)
         end
         invertD!(diagonal)
     end
+
+    return 
 end
 
 function solve!(mechanism)
@@ -188,6 +192,8 @@ function solve!(mechanism)
             eliminatedsolve!(mechanism, getineqentry(ldu, childid), diagonal, getbody(mechanism, id), getineqconstraint(mechanism, childid))
         end
     end
+
+    return 
 end
 
 function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
