@@ -68,11 +68,11 @@ storage = simulate!(mech,10.,record = true)
 
 @test haskey(ENV,"RUNNER_OS")
 if haskey(ENV,"RUNNER_OS")
-    if occursin("linux", lowercase(ENV["TRAVIS_OS_NAME"]))
+    if occursin("linux", lowercase(ENV["RUNNER_OS"]))
         # visualize(mech, storage, shapes)
-    elseif occursin("macos", lowercase(ENV["TRAVIS_OS_NAME"]))
+    elseif occursin("macos", lowercase(ENV["RUNNER_OS"]))
         visualize(mech, storage, shapes)
-    elseif occursin("windows", lowercase(ENV["TRAVIS_OS_NAME"]))
+    elseif occursin("windows", lowercase(ENV["RUNNER_OS"]))
         # visualize(mech, storage, shapes)
     end
 end
