@@ -59,6 +59,7 @@ export Box,
 
     linearizeSystem,
     linearizeConstraints,
+    linearizeMechanism,
 
     RotX,
     RotY,

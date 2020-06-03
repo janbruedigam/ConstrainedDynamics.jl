@@ -110,6 +110,14 @@ function formΔsVector(mechanism::Mechanism{T}) where T
     return Δs
 end
 
+function linearizeMechanism(mechanism::Mechanism{T,N,Nb}, xc, vc, Fk, qc, ωc, τk) where {T,N,Nb}
+    foreach(deactivate!,mechanism.eqconstraints)
+    A, B = linearizeSystem(mechanism, xc, vc, Fk, qc, ωc, τk)
+    foreach(activate!,mechanism.eqconstraints)
+    G = linearizeConstraints(mechanism, xc, vc, Fk, qc, ωc, τk)
+
+    return A, B, G
+end
 
 function linearizeSystem(mechanism::Mechanism{T,N,Nb}, xc, vc, Fk, qc, ωc, τk) where {T,N,Nb}
     Δt = mechanism.Δt

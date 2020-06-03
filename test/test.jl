@@ -1,50 +1,33 @@
 using ConstrainedDynamics
+using LinearAlgebra
+using Rotations
 
-
-# Parameters
-ex = [1.;0.;0.]
-
-h = 1.
-r = .05
-b1 = Cylinder(r, h, h, color = RGBA(1., 0., 0.))
-
-vert11 = [0.;0.;h / 2]
-vert12 = -vert11
-
-# Initial orientation
-phi = pi / 4
-q1 = Quaternion(RotX(phi))
+length1 = 1.0
+width, depth = 1.0, 1.0
+box = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
+box2 = Box(width*2, depth*2, length1*2, length1*2, color = RGBA(1., 1., 0.))
 
 # Links
-N = 2
-
 origin = Origin{Float64}()
-links = [Body(b1) for i = 1:N]
+link1 = Body(box)
+link2 = Body(box2)
 
 # Constraints
-jointb1 = EqualityConstraint(Revolute(origin, links[1], ex; p2=vert11))
-if N>1
-    constraints = [jointb1;[EqualityConstraint(Revolute(links[i - 1], links[i], ex; p1=vert12, p2=vert11)) for i = 2:N]]
-else
-    constraints = [jointb1]
-end
+joint1 = EqualityConstraint(Spherical(origin, link1))
+joint2 = EqualityConstraint(Revolute(origin, link2, [1.;0;0]))
 
-shapes = [b1]
+links = [link1;link2]
+constraints = [joint1;joint2]
 
-mech = Mechanism(origin, links, constraints;Δt = 0.01, shapes = shapes)
-setPosition!(origin,links[1],p2 = vert11,Δq = q1)
-previd = links[1].id
-for body in Iterators.drop(mech.bodies, 1)
-    global previd
-    setPosition!(ConstrainedDynamics.getbody(mech, previd), body, p1 = vert12, p2 = vert11)
-    previd = body.id
-end
+mech = Mechanism(origin, links, constraints)
 
-function control!(mechanism,k)
-    if k==75
-        ConstrainedDynamics.deactivate!(mechanism,constraints[2].id)
-    end
-end
+xd=zeros(6)
+vd=zeros(6)
+Fd=zeros(6)
+qd=Quaternion{Float64}()
+qd=[qd;qd]
+ωd=zeros(6)
+ωd[1] = 1.
+τd=zeros(6)
 
-storage = simulate!(mech, 10., control!,record = true)
-visualize(mech, storage, shapes)
+A, B, G = linearizeMechanism(mech, xd, vd, Fd, qd, ωd, τd)
