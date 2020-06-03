@@ -210,18 +210,18 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
 end
 
 
-@inline function s1tos0!(body::Body)
+@inline function updatesolution!(body::Body)
     body.state.vsol[1] = body.state.vsol[2]
     body.state.ωsol[1] = body.state.ωsol[2]
     return
 end
 
-@inline function s1tos0!(eqc::EqualityConstraint)
+@inline function updatesolution!(eqc::EqualityConstraint)
     eqc.λsol[1] = eqc.λsol[2]
     return
 end
 
-@inline function s1tos0!(ineqc::InequalityConstraint)
+@inline function updatesolution!(ineqc::InequalityConstraint)
     ineqc.ssol[1] = ineqc.ssol[2]
     ineqc.γsol[1] = ineqc.γsol[2]
     return
