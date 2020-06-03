@@ -286,7 +286,7 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape{T}} = Shape
         end
     end
     for ineqc in ineqconstraints
-        if ineqc.parentid == nothing
+        if ineqc.parentid === nothing
             ineqc.parentid = origin.id
         end
     end

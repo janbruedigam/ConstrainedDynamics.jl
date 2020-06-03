@@ -11,6 +11,7 @@ struct Graph{N}
 
     dict::UnitDict{Base.OneTo{Int64},Int64}
     rdict::UnitDict{Base.OneTo{Int64},Int64}
+    activedict::UnitDict{Base.OneTo{Int64},Bool}
 
     function Graph(origin::Origin,bodies::Vector{<:Body},
         eqconstraints::Vector{<:EqualityConstraint},ineqconstraints::Vector{<:InequalityConstraint})
@@ -33,9 +34,11 @@ struct Graph{N}
         end
         pop!(dict, oid)
         rdict = Dict(ind => id for (id, ind) in dict)
+        activedict = Dict(id => true for (id, ind) in dict)
 
         for constraint in eqconstraints
             constraint.parentid == oid && (constraint.parentid = nothing)
+            activedict[constraint.id] = constraint.active
         end
 
         N = length(dict)
@@ -239,12 +242,14 @@ function connections(dfslist, adjacency, dict::Dict)
     return cons
 end
 
+
 @inline directchildren(graph, id::Integer) = graph.directchildren[graph.dict[id]]
 @inline loopchildren(graph, id::Integer) = graph.loopchildren[graph.dict[id]]
 @inline ineqchildren(graph, id::Integer) = graph.ineqchildren[graph.dict[id]]
 @inline successors(graph, id::Integer) = graph.successors[graph.dict[id]]
 @inline predecessors(graph, id::Integer) = graph.predecessors[graph.dict[id]]
 @inline connections(graph, id::Integer) = graph.connections[graph.dict[id]]
+@inline isactive(graph, id::Integer) = graph.activedict[id]
 
 @inline function hassuccessor(graph::Graph{N}, id, cid) where N
     for val in graph.successors[graph.dict[id]]
@@ -254,7 +259,7 @@ end
 end
 
 @inline function haspredecessor(graph::Graph{N}, id, pid) where N
-    for val in graph.predecessor[graph.dict[id]]
+    for val in graph.predecessors[graph.dict[id]]
         val == pid && (return true)
     end
     return false
@@ -265,4 +270,14 @@ end
         val == cid && (return true)
     end
     return false
+end
+
+@inline function activate!(graph::Graph{N}, id::Integer) where N
+    graph.activedict[id] = true
+    return
+end
+
+@inline function deactivate!(graph::Graph{N}, id::Integer) where N
+    graph.activedict[id] = false
+    return
 end

@@ -123,11 +123,11 @@ function setentries!(mechanism::Mechanism)
         end
     end
 
-    for node in mechanism.eqconstraints
-        id = node.id
+    for eqc in mechanism.eqconstraints
+        id = eqc.id
 
         for cid in directchildren(graph, id)
-            setLU!(mechanism, getentry(ldu, (id, cid)), node, cid)
+            setLU!(mechanism, getentry(ldu, (id, cid)), eqc, cid)
         end
 
         for cid in loopchildren(graph, id)
@@ -135,7 +135,7 @@ function setentries!(mechanism::Mechanism)
         end
 
         diagonal = getentry(ldu, id)
-        setDandΔs!(mechanism, diagonal, node)
+        setDandΔs!(mechanism, diagonal, eqc)
     end
 end
 

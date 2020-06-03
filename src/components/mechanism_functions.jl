@@ -155,3 +155,18 @@ end
     foreach(currentasknot!, mechanism.bodies)
     return
 end
+
+# Currently only for eqcs
+@inline function activate!(mechanism::Mechanism, id::Integer)
+    eqc = geteqconstraint(mechanism, id)
+    activate!(eqc)
+    activate!(mechanism.graph,id)
+    return
+end
+
+@inline function deactivate!(mechanism::Mechanism, id::Integer)
+    eqc = geteqconstraint(mechanism, id)
+    deactivate!(eqc)
+    deactivate!(mechanism.graph,id)
+    return
+end

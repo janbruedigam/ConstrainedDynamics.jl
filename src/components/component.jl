@@ -10,3 +10,7 @@ resetGlobalID() = (global CURRENTID = -1; return)
 Base.show(io::IO, component::Component) = summary(io, component)
 
 @inline Base.foreach(f, itr::Vector{<:Component}, arg...) = (for x in itr; f(x, arg...); end; return)
+
+Base.length(::AbstractConstraint{T,N}) where {T,N} = N
+activate!(constraint::AbstractConstraint) = (constraint.active = true; return)
+deactivate!(constraint::AbstractConstraint) = (constraint.active = false; return)

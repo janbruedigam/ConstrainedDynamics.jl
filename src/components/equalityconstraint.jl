@@ -1,6 +1,7 @@
 mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     id::Int64
     name::String
+    active::Bool
 
     constraints::Cs
     parentid::Union{Int64,Nothing}
@@ -47,11 +48,10 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
 
         λsol = [zeros(T, N) for i=1:2]
 
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, parentid, childids, inds, λsol)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, true, constraints, parentid, childids, inds, λsol)
     end
 end
 
-Base.length(::EqualityConstraint{T,N}) where {T,N} = N
 
 # TODO make zero alloc
 # TODO currently assumed constraints are in order and only joints which is the case unless very low level constraint setting
