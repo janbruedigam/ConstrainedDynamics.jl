@@ -1,6 +1,7 @@
 mutable struct Body{T} <: AbstractBody{T}
     id::Int64
     name::String
+    active::Bool
 
     m::T
     J::SMatrix{3,3,T,9}
@@ -16,7 +17,7 @@ mutable struct Body{T} <: AbstractBody{T}
 
         f = zeros(T, 6)
 
-        new{T}(getGlobalID(), name, m, J, state, f)
+        new{T}(getGlobalID(), name, true, m, J, state, f)
     end
 
     function Body(shape::Shape; name::String="")
@@ -49,7 +50,7 @@ function Base.deepcopy(b::Body{T}) where T
         push!(contents, deepcopy(getfield(b, i)))
     end
 
-    Body(T, contents...)
+    return Body(T, contents...)
 end
 
 function Base.deepcopy(b::Body{T}, shape::Shape) where T

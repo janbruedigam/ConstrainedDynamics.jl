@@ -11,6 +11,7 @@ function setPosition!(body1::Body{T}, body2::Body{T};
     q2 = body1.state.qc * Δq
     x2 = body1.state.xc + vrotate(p1 + Δx, q1) - vrotate(p2, q2)
     setPosition!(body2;x = x2,q = q2)
+    return
 end
 
 function setPosition!(body1::Origin{T}, body2::Body{T};
@@ -19,6 +20,7 @@ function setPosition!(body1::Origin{T}, body2::Body{T};
     q2 = Δq
     x2 = p1 + Δx - vrotate(p2, q2)
     setPosition!(body2;x = x2,q = q2)
+    return
 end
 
 
@@ -47,6 +49,7 @@ function setVelocity!(body1::Body{T}, body2::Body{T};
     ω2 = vrotate(ωp2,inv(q2)) # in local coordinates
 
     setVelocity!(body2;v = v2,ω = ω2)
+    return
 end
 
 function setVelocity!(body1::Origin{T}, body2::Body{T};
@@ -61,11 +64,13 @@ function setVelocity!(body1::Origin{T}, body2::Body{T};
     ω2 = vrotate(ωp2,inv(q2)) # in local coordinates
 
     setVelocity!(body2;v = v2,ω = ω2)
+    return 
 end
 
 function setForce!(body::Body{T};F::AbstractVector{T} = SVector{3,T}(0, 0, 0),τ::AbstractVector{T} = SVector{3,T}(0, 0, 0),p::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
     τ += vrotate(torqueFromForce(F, p),inv(body.state.qc)) # in local coordinates
     setForce!(body.state, F, τ)
+    return 
 end
 
 @inline torqueFromForce(F::AbstractVector{T}, p::AbstractVector{T}) where T = cross(p, F)

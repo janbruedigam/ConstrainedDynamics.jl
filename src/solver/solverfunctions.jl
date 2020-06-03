@@ -90,8 +90,8 @@ function feasibilityStepLength!(mechanism::Mechanism)
 end
 
 function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, ineqentry::InequalityEntry, τ) where {T,N}
-    s1 = ineqc.sols1
-    γ1 = ineqc.solγ1
+    s1 = ineqc.ssol[2]
+    γ1 = ineqc.γsol[2]
     Δs = ineqentry.Δs
     Δγ = ineqentry.Δγ
 
@@ -110,6 +110,8 @@ function setentries!(mechanism::Mechanism)
     ldu = mechanism.ldu
 
     for (id, body) in pairs(mechanism.bodies)
+        isinactive(graph, id) && continue
+        
         for cid in directchildren(graph, id)
             setLU!(mechanism, getentry(ldu, (id, cid)), id, geteqconstraint(mechanism, cid))
         end
@@ -123,11 +125,12 @@ function setentries!(mechanism::Mechanism)
         end
     end
 
-    for node in mechanism.eqconstraints
-        id = node.id
-
+    for eqc in mechanism.eqconstraints
+        id = eqc.id
+        isinactive(graph, id) && continue
+        
         for cid in directchildren(graph, id)
-            setLU!(mechanism, getentry(ldu, (id, cid)), node, cid)
+            setLU!(mechanism, getentry(ldu, (id, cid)), eqc, cid)
         end
 
         for cid in loopchildren(graph, id)
@@ -135,17 +138,25 @@ function setentries!(mechanism::Mechanism)
         end
 
         diagonal = getentry(ldu, id)
-        setDandΔs!(mechanism, diagonal, node)
+        setDandΔs!(mechanism, diagonal, eqc)
     end
+
+    return 
 end
 
 function factor!(graph::Graph, ldu::SparseLDU)
     for id in graph.dfslist
+        isinactive(graph, id) && continue
+
         sucs = successors(graph, id)
         for childid in sucs
+            isinactive(graph, childid) && continue
+            
             offdiagonal = getentry(ldu, (id, childid))
             for grandchildid in sucs
                 grandchildid == childid && break
+                isinactive(graph, grandchildid) && continue
+
                 if hasdirectchild(graph, childid, grandchildid)
                     updateLU1!(offdiagonal, getentry(ldu, grandchildid), getentry(ldu, (id, grandchildid)), getentry(ldu, (childid, grandchildid)))
                 end
@@ -156,10 +167,13 @@ function factor!(graph::Graph, ldu::SparseLDU)
         diagonal = getentry(ldu, id)
 
         for childid in successors(graph, id)
+            isinactive(graph, childid) && continue
             updateD!(diagonal, getentry(ldu, childid), getentry(ldu, (id, childid)))
         end
         invertD!(diagonal)
     end
+
+    return 
 end
 
 function solve!(mechanism)
@@ -168,26 +182,34 @@ function solve!(mechanism)
     dfslist = graph.dfslist
 
     for id in dfslist
+        isinactive(graph, id) && continue
+
         diagonal = getentry(ldu, id)
 
         for childid in successors(graph, id)
+            isinactive(graph, childid) && continue
             LSol!(diagonal, getentry(ldu, childid), getentry(ldu, (id, childid)))
         end
     end
 
     for id in graph.rdfslist
-        diagonal = getentry(ldu, id)
+        isinactive(graph, id) && continue
 
+        diagonal = getentry(ldu, id)
         DSol!(diagonal)
 
         for parentid in predecessors(graph, id)
+            isinactive(graph, parentid) && continue
             USol!(diagonal, getentry(ldu, parentid), getentry(ldu, (parentid, id)))
         end
 
         for childid in ineqchildren(graph, id)
+            isinactive(graph, childid) && continue
             eliminatedsolve!(mechanism, getineqentry(ldu, childid), diagonal, getbody(mechanism, id), getineqconstraint(mechanism, childid))
         end
     end
+
+    return 
 end
 
 function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
@@ -199,8 +221,8 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
     Nx = ∂g∂pos(mechanism, ineqc, body)
     Nv = ∂g∂vel(mechanism, ineqc, body)
 
-    γ1 = ineqc.solγ1
-    s1 = ineqc.sols1
+    γ1 = ineqc.γsol[2]
+    s1 = ineqc.ssol[2]
 
     Δv = diagonal.Δs
     ineqentry.Δγ = γ1 ./ s1 .* φ - μ ./ s1 - γ1 ./ s1 .* (Nv * Δv)
@@ -210,20 +232,20 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
 end
 
 
-@inline function s1tos0!(body::Body)
+@inline function updatesolution!(body::Body)
     body.state.vsol[1] = body.state.vsol[2]
     body.state.ωsol[1] = body.state.ωsol[2]
     return
 end
 
-@inline function s1tos0!(eqc::EqualityConstraint)
-    eqc.solλ0 = eqc.solλ1
+@inline function updatesolution!(eqc::EqualityConstraint)
+    eqc.λsol[1] = eqc.λsol[2]
     return
 end
 
-@inline function s1tos0!(ineqc::InequalityConstraint)
-    ineqc.sols0 = ineqc.sols1
-    ineqc.solγ0 = ineqc.solγ1
+@inline function updatesolution!(ineqc::InequalityConstraint)
+    ineqc.ssol[1] = ineqc.ssol[2]
+    ineqc.γsol[1] = ineqc.γsol[2]
     return
 end
 
@@ -234,13 +256,13 @@ end
 end
 
 @inline function normΔs(eqc::EqualityConstraint)
-    d = eqc.solλ1 - eqc.solλ0
+    d = eqc.λsol[2] - eqc.λsol[1]
     return dot(d, d)
 end
 
 @inline function normΔs(ineqc::InequalityConstraint)
-    d1 = ineqc.sols1 - ineqc.sols0
-    d2 = ineqc.solγ1 - ineqc.solγ0
+    d1 = ineqc.ssol[2] - ineqc.ssol[1]
+    d2 = ineqc.γsol[2] - ineqc.γsol[1]
     return dot(d1, d1) + dot(d2, d2)
 end
 

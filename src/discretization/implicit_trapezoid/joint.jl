@@ -2,18 +2,18 @@
 
 @inline function g(joint::Translational, xa, qa, xb, qb)
     vertices = joint.vertices
-    vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa))
+    return vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa))
 end
 @inline function g(joint::Translational, xb, qb)
     vertices = joint.vertices
-    xb + vrotate(vertices[2], qb) - vertices[1]
+    return xb + vrotate(vertices[2], qb) - vertices[1]
 end
 
 @inline function g(joint::Translational, statea::State, stateb::State, Δt)
-    g(joint, getx3(statea, Δt), getq3(statea, Δt), getx3(stateb, Δt), getq3(stateb, Δt))
+    return g(joint, getx3(statea, Δt), getq3(statea, Δt), getx3(stateb, Δt), getq3(stateb, Δt))
 end
 @inline function g(joint::Translational, stateb::State, Δt)
-    g(joint, getx3(stateb, Δt), getq3(stateb, Δt))
+    return g(joint, getx3(stateb, Δt), getq3(stateb, Δt))
 end
 
 
@@ -39,13 +39,13 @@ end
 end
 
 @inline function ∂g∂posa(joint::Translational, statea::State, stateb::State)
-    ∂g∂posa(joint, statea.xk[2], statea.qk[2], stateb.xk[2], stateb.qk[2])
+    return ∂g∂posa(joint, statea.xk[2], statea.qk[2], stateb.xk[2], stateb.qk[2])
 end
 @inline function ∂g∂posb(joint::Translational, statea::State, stateb::State)
-    ∂g∂posb(joint, statea.qk[2], stateb.qk[2])
+    return ∂g∂posb(joint, statea.qk[2], stateb.qk[2])
 end
 @inline function ∂g∂posb(joint::Translational, stateb::State)
-    ∂g∂posb(joint, stateb.qk[2])
+    return ∂g∂posb(joint, stateb.qk[2])
 end
 
 
@@ -71,30 +71,30 @@ end
 end
 
 @inline function ∂g∂vela(joint::Translational, statea::State, stateb::State, Δt)
-    ∂g∂vela(joint, getx3(statea,Δt), statea.qk[2], getq3(statea,Δt), statea.ωsol[2], getx3(stateb,Δt), getq3(stateb,Δt), Δt)
+    return ∂g∂vela(joint, getx3(statea,Δt), statea.qk[2], getq3(statea,Δt), statea.ωsol[2], getx3(stateb,Δt), getq3(stateb,Δt), Δt)
 end
 @inline function ∂g∂velb(joint::Translational, statea::State, stateb::State, Δt)
-    ∂g∂velb(joint, getq3(statea,Δt), stateb.qk[2], getq3(stateb,Δt), stateb.ωsol[2], Δt)
+    return ∂g∂velb(joint, getq3(statea,Δt), stateb.qk[2], getq3(stateb,Δt), stateb.ωsol[2], Δt)
 end
 @inline function ∂g∂velb(joint::Translational, stateb::State, Δt)
-    ∂g∂velb(joint, stateb.qk[2], getq3(stateb,Δt), stateb.ωsol[2], Δt)
+    return ∂g∂velb(joint, stateb.qk[2], getq3(stateb,Δt), stateb.ωsol[2], Δt)
 end
 
 
 # Rotational
 
 @inline function g(joint::Rotational, qa, qb)
-    joint.qoff \ (qa \ qb)
+    return joint.qoff \ (qa \ qb)
 end
 @inline function g(joint::Rotational, qb)
-    joint.qoff \ qb
+    return joint.qoff \ qb
 end
 
 @inline function g(joint::Rotational, statea::State, stateb::State, Δt)
-    Vmat(g(joint, getq3(statea,Δt), getq3(stateb,Δt)))
+    return Vmat(g(joint, getq3(statea,Δt), getq3(stateb,Δt)))
 end
 @inline function g(joint::Rotational, stateb::State, Δt)
-    Vmat(g(joint, getq3(stateb,Δt)))
+    return Vmat(g(joint, getq3(stateb,Δt)))
 end
 
 
@@ -119,13 +119,13 @@ end
 end
 
 @inline function ∂g∂posa(joint::Rotational, statea::State, stateb::State)
-    ∂g∂posa(joint, statea.qk[2], stateb.qk[2])
+    return ∂g∂posa(joint, statea.qk[2], stateb.qk[2])
 end
 @inline function ∂g∂posb(joint::Rotational, statea::State, stateb::State)
-    ∂g∂posb(joint, statea.qk[2], stateb.qk[2])
+    return ∂g∂posb(joint, statea.qk[2], stateb.qk[2])
 end
 @inline function ∂g∂posb(joint::Rotational, stateb::State)
-    ∂g∂posb(joint,  stateb.qk[2])
+    return ∂g∂posb(joint,  stateb.qk[2])
 end
 
 
@@ -149,13 +149,13 @@ end
 end
 
 @inline function ∂g∂vela(joint::Rotational, statea::State, stateb::State, Δt)
-    ∂g∂vela(joint, statea.qk[2], statea.ωsol[2], getq3(stateb,Δt), Δt)
+    return ∂g∂vela(joint, statea.qk[2], statea.ωsol[2], getq3(stateb,Δt), Δt)
 end
 @inline function ∂g∂velb(joint::Rotational, statea::State, stateb::State, Δt)
-    ∂g∂velb(joint, getq3(statea,Δt), stateb.qk[2], stateb.ωsol[2], Δt)
+    return ∂g∂velb(joint, getq3(statea,Δt), stateb.qk[2], stateb.ωsol[2], Δt)
 end
 @inline function ∂g∂velb(joint::Rotational, stateb::State, Δt)
-    ∂g∂velb(joint, stateb.qk[2], stateb.ωsol[2], Δt)
+    return ∂g∂velb(joint, stateb.qk[2], stateb.ωsol[2], Δt)
 end
 
 

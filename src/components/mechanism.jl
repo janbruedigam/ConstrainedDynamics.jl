@@ -1,6 +1,4 @@
 mutable struct Mechanism{T,N,Nb,Ne,Ni}
-    # tend::T
-    # steps::Base.OneTo{Int64}
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
     eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
@@ -8,7 +6,6 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
 
     graph::Graph{N}
     ldu::SparseLDU{T}
-    # storage::Storage{T}
 
     # TODO remove once EqualityConstraint is homogenous
     normf::T
@@ -19,8 +16,6 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
 
     α::T
     μ::T
-
-    # shapes::Vector{<:Shape{T}}
 
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
@@ -49,7 +44,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
             initknotpoints!(body.state, order)
 
             for eqc in eqcs
-                eqc.pid == body.id && (eqc.pid = currentid)
+                eqc.parentid == body.id && (eqc.parentid = currentid)
                 for (ind, bodyid) in enumerate(eqc.childids)
                     if bodyid == body.id
                         eqc.childids = setindex(eqc.childids, currentid, ind)
@@ -59,7 +54,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
             end
 
             for ineqc in ineqcs
-                ineqc.pid == body.id && (ineqc.pid = currentid)
+                ineqc.parentid == body.id && (ineqc.parentid = currentid)
             end
 
             for shape in shapes
@@ -116,7 +111,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
 
         ineqcs = InequalityConstraint{T}[]
-        Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, shapes = shapes)
+        return Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
@@ -126,7 +121,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, shapes = shapes)
+        return Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
@@ -136,7 +131,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         for body in bodies
             push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
         end
-        Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
+        return Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, Δt::T = .01, g::T = -9.81) where T
@@ -239,15 +234,15 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape{T}} = Shape
     end
     for eqc in eqconstraints
         eqc.id *= -1
-        if eqc.pid !== nothing
-            eqc.pid *= -1
+        if eqc.parentid !== nothing
+            eqc.parentid *= -1
         end
         eqc.childids *= -1
     end
     for ineqc in ineqconstraints
         ineqc.id *= -1
-        if ineqc.pid !== nothing
-            ineqc.pid *= -1
+        if ineqc.parentid !== nothing
+            ineqc.parentid *= -1
         end
         ineqc.childids *= -1
     end
@@ -281,13 +276,13 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape{T}} = Shape
     oldoid = origin.id
     origin.id = getGlobalID()
     for eqc in eqconstraints
-        if eqc.pid === nothing
-            eqc.pid = origin.id
+        if eqc.parentid === nothing
+            eqc.parentid = origin.id
         end
     end
     for ineqc in ineqconstraints
-        if ineqc.pid == nothing
-            ineqc.pid = origin.id
+        if ineqc.parentid === nothing
+            ineqc.parentid = origin.id
         end
     end
     for shape in shapes

@@ -1,50 +1,50 @@
 using ConstrainedDynamics
-using LinearAlgebra
-using Rotations
 
-length1 = 1.0
-width, depth = 1.0, 1.0
-box = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
-box2 = Box(width*2, depth*2, length1*2, length1*2, color = RGBA(1., 1., 0.))
+
+# Parameters
+ex = [1.;0.;0.]
+
+h = 1.
+r = .05
+b1 = Cylinder(r, h, h, color = RGBA(1., 0., 0.))
+
+vert11 = [0.;0.;h / 2]
+vert12 = -vert11
+
+# Initial orientation
+phi = pi / 4
+q1 = Quaternion(RotX(phi))
 
 # Links
-origina = Origin{Float64}()
-originb = Origin{Float64}()
-link1a = Body(box)
-link2a = Body(box2)
-link1b = Body(box)
-link2b = Body(box2)
+N = 2
+
+origin = Origin{Float64}()
+links = [Body(b1) for i = 1:N]
 
 # Constraints
-joint1 = EqualityConstraint(Spherical(originb, link1b))
-joint2 = EqualityConstraint(Revolute(originb, link2b, [1.;0;0]))
+jointb1 = EqualityConstraint(Revolute(origin, links[1], ex; p2=vert11))
+if N>1
+    constraints = [jointb1;[EqualityConstraint(Revolute(links[i - 1], links[i], ex; p1=vert12, p2=vert11)) for i = 2:N]]
+else
+    constraints = [jointb1]
+end
 
-linksa = [link1a;link2a]
-linksb = [link1b;link2b]
-constraints = [joint1;joint2]
-shapes = [box]
+shapes = [b1]
 
+mech = Mechanism(origin, links, constraints;Δt = 0.01, shapes = shapes)
+setPosition!(origin,links[1],p2 = vert11,Δq = q1)
+previd = links[1].id
+for body in Iterators.drop(mech.bodies, 1)
+    global previd
+    setPosition!(ConstrainedDynamics.getbody(mech, previd), body, p1 = vert12, p2 = vert11)
+    previd = body.id
+end
 
-mecha = Mechanism(origina, linksa, shapes = shapes)
+function control!(mechanism,k)
+    if k==75
+        ConstrainedDynamics.deactivate!(mechanism,constraints[2].id)
+    end
+end
 
-mechb = Mechanism(originb, linksb, constraints, shapes = shapes)
-
-# Q = diagm(ones(12))
-# Q[2,2] = 2
-# Q[3,3] = 0.1
-# Q[7,7] = 2
-# R = diagm(ones(6))
-# R[1] = 100
-
-
-xd=zeros(6)
-vd=zeros(6)
-Fd=zeros(6)
-qd=Quaternion{Float64}()
-qd=[qd;qd]
-ωd=zeros(6)
-ωd[1] = 1.
-τd=zeros(6)
-    
-A, B = ConstrainedDynamics.linearizeSystem(mecha, xd, vd, Fd, qd, ωd, τd)
-G = ConstrainedDynamics.linearizeConstraints(mechb, xd, vd, Fd, qd, ωd, τd)
+storage = simulate!(mech, 10., control!,record = true)
+visualize(mech, storage, shapes)

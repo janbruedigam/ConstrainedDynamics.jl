@@ -4,7 +4,7 @@ using LinearAlgebra
 
 @generated function submatrix(A::SMatrix{N1,N2,T,N1N2}, r, c) where {N1,N2,T,N1N2}
     inds = [:(($i < r ? $i : $i + 1) + (($j < c ? $j : $j + 1) - 1) * N1) for j in 1:(N2 - 1) for i in 1:(N1 - 1)]
-    :(SMatrix{N1 - 1,N2 - 1,T,(N1 - 1) * (N2 - 1)}(A[SVector($(inds...))]))
+    return :(SMatrix{N1 - 1,N2 - 1,T,(N1 - 1) * (N2 - 1)}(A[SVector($(inds...))]))
 end
 
 @inline function StaticArrays._det(::Size{(3, 3)}, A::StaticMatrix{N,N,T}) where {N,T}

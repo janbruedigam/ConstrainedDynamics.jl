@@ -10,7 +10,7 @@ function getbody(mechanism::Mechanism, name::String)
             end
         end
     end
-    return nothing
+    return
 end
 @inline geteqconstraint(mechanism::Mechanism, id::Integer) = mechanism.eqconstraints[id]
 function geteqconstraint(mechanism::Mechanism, name::String)
@@ -19,7 +19,7 @@ function geteqconstraint(mechanism::Mechanism, name::String)
             return eqc
         end
     end
-    return nothing
+    return
 end
 @inline getineqconstraint(mechanism::Mechanism, id::Integer) = mechanism.ineqconstraints[id]
 function getineqconstraint(mechanism::Mechanism, name::String)
@@ -28,7 +28,7 @@ function getineqconstraint(mechanism::Mechanism, name::String)
             return ineqc
         end
     end
-    return nothing
+    return
 end
 
 getcomponent(mechanism::Mechanism, id::Nothing) = mechanism.origin
@@ -40,7 +40,7 @@ function getcomponent(mechanism::Mechanism, id::Integer)
     elseif haskey(mechanism.ineqconstraints, id)
         return getineqconstraint(mechanism, id)
     else
-        return nothing
+        return
     end
 end
 
@@ -90,54 +90,45 @@ end
 end
 
 @inline function normf(mechanism::Mechanism)
+    graph = mechanism.graph
     mechanism.normf = 0
-
-    # Allocates otherwise
-    for body in mechanism.bodies
-        mechanism.normf += normf(mechanism, body)
-    end
-    foreach(addNormf!, mechanism.eqconstraints, mechanism)
-    foreach(addNormf!, mechanism.ineqconstraints, mechanism)
+    
+    foreachactive(addNormf!, graph, mechanism.bodies, mechanism)
+    foreachactive(addNormf!, graph, mechanism.eqconstraints, mechanism)
+    foreachactive(addNormf!, graph, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normf)
 end
 
 @inline function meritf(mechanism::Mechanism)
+    graph = mechanism.graph
     mechanism.normf = 0
 
-    # Allocates otherwise
-    for body in mechanism.bodies
-        mechanism.normf += normf(mechanism, body)
-    end
-    foreach(addNormf!, mechanism.eqconstraints, mechanism)
-    foreach(addNormfμ!, mechanism.ineqconstraints, mechanism)
+    foreachactive(addNormf!, graph, mechanism.bodies, mechanism)
+    foreachactive(addNormf!, graph, mechanism.eqconstraints, mechanism)
+    foreachactive(addNormfμ!, graph, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normf)
 end
 
 @inline function normΔs(mechanism::Mechanism)
+    graph = mechanism.graph
     mechanism.normΔs = 0
 
-    # Allocates otherwise
-    mechanism.normΔs += mapreduce(normΔs, +, mechanism.bodies)
-    foreach(addNormΔs!, mechanism.eqconstraints, mechanism)
-    foreach(addNormΔs!, mechanism.ineqconstraints, mechanism)
+    foreachactive(addNormΔs!, graph, mechanism.bodies, mechanism)
+    foreachactive(addNormΔs!, graph, mechanism.eqconstraints, mechanism)
+    foreachactive(addNormΔs!, graph, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normΔs)
 end
 
-@inline function addNormf!(ineqc::InequalityConstraint, mechanism::Mechanism)
-    mechanism.normf += normf(mechanism, ineqc)
+@inline function addNormf!(component::Component, mechanism::Mechanism)
+    mechanism.normf += normf(mechanism, component)
     return
 end
 
 @inline function addNormfμ!(ineqc::InequalityConstraint, mechanism::Mechanism)
     mechanism.normf += normfμ(mechanism, ineqc)
-    return
-end
-
-@inline function addNormf!(eqc::EqualityConstraint, mechanism::Mechanism)
-    mechanism.normf += normf(mechanism, eqc)
     return
 end
 
@@ -153,5 +144,19 @@ end
 
 @inline function currentasknot!(mechanism::Mechanism)
     foreach(currentasknot!, mechanism.bodies)
+    return
+end
+
+@inline function activate!(mechanism::Mechanism, id::Integer)
+    component = getcomponent(mechanism, id)
+    activate!(component)
+    activate!(mechanism.graph,id)
+    return
+end
+
+@inline function deactivate!(mechanism::Mechanism, id::Integer)
+    component = getcomponent(mechanism, id)
+    deactivate!(component)
+    deactivate!(mechanism.graph,id)
     return
 end

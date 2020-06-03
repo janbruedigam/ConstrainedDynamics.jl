@@ -10,7 +10,7 @@
 @inline schurf(contact::Contact, φ, γ, s, μ) = ∂g∂pos(contact)' * (γ / s * φ - μ / s)
 @inline function schurf(contact::Contact, state::State, γ, s, μ, Δt)
     φ = g(contact, getx3(state, Δt))
-    schurf(contact, φ, γ, s, μ)
+    return schurf(contact, φ, γ, s, μ)
 end
 
 @inline function schurD(contact::Contact, γ, s, Δt)

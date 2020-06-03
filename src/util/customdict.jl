@@ -22,14 +22,25 @@ struct UnitDict{R,T}
     end
 end
 
+
+@inline Base.length(dict::UnitDict) = length(dict.values)
+
 @inline Base.getindex(dict::UnitDict{Base.OneTo{K},T}, key::K) where {T,K} = dict.values[key]
 @inline Base.getindex(dict::UnitDict{UnitRange{K},T}, key::K) where {T,K} = dict.values[key - first(dict.keys) + 1]
-@inline Base.length(dict::UnitDict) = length(dict.values)
+@inline Base.setindex!(dict::UnitDict{Base.OneTo{K},T}, value::T, key::K) where {T,K} = setindex!(dict.values, value, key)
+@inline Base.setindex!(dict::UnitDict{UnitRange{K},T}, value::T, key::K) where {T,K} = setindex!(dict.values, value, key - first(dict.keys) + 1)
 
 @inline Base.iterate(d::UnitDict, i = 1) = i > length(d) ? nothing : (d.values[i], i + 1)
 @inline Base.pairs(d::UnitDict, i = 1) = Base.Generator(=>, d.keys, d.values)
 
 @inline Base.foreach(f, itr::UnitDict, arg...) = (for x in itr; f(x, arg...); end; return)
+@inline function foreachactive(f, graph, itr::UnitDict, arg...)
+    for x in itr
+        isinactive(graph, x.id) && continue
+        f(x, arg...)
+    end
+    return
+end
 
 @inline Base.haskey(d::UnitDict, key) = Base.ht_keyindex(d, key)
 

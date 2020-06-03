@@ -9,7 +9,7 @@ function Base.convert(T::Type{Vector{SVector{N2,T1}}}, M::Matrix{T2}) where {N2,
 end
 
 function deleteat(M::Array{T,2}, i1::Integer, i2::Integer) where T
-    [M[1:i1 - 1,1:i2 - 1] M[1:i1 - 1,i2 + 1:end];M[i1 + 1:end,1:i2 - 1] M[i1 + 1:end,i2 + 1:end]]
+    return [M[1:i1 - 1,1:i2 - 1] M[1:i1 - 1,i2 + 1:end];M[i1 + 1:end,1:i2 - 1] M[i1 + 1:end,i2 + 1:end]]
 end
 
 deleteat(M::Array{T,2},i::Integer) where T = deleteat(M, i, i)

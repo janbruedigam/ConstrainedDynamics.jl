@@ -19,11 +19,11 @@ end
 @inline function minimalCoordinates(joint::Translational2, body1::Body, body2::Body)
     statea = body1.state
     stateb = body2.state
-    joint.V3 * g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
+    return joint.V3 * g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
 end
 @inline function minimalCoordinates(joint::Translational2, body1::Origin, body2::Body)
     stateb = body2.state
-    joint.V3 * g(joint, stateb.xc, stateb.qc)
+    return joint.V3 * g(joint, stateb.xc, stateb.qc)
 end
 
 @inline g(joint::Translational2, body1::Body, body2::Body, Δt) = joint.V12 * g(joint, body1.state, body2.state, Δt)
