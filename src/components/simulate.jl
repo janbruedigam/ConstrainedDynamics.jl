@@ -23,8 +23,6 @@ function initializeSimulation!(mechanism::Mechanism, debug::Bool)
     discretizestate!(mechanism)
     debug && verifyConstraints!(mechanism)
     foreach(setsolution!, mechanism.bodies)
-    # foreach(s0tos1!, mechanism.eqconstraints)
-    # foreach(s0tos1!, mechanism.ineqconstraints)
     return
 end
 
@@ -32,13 +30,14 @@ end
 function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T}, control!::Function;record::Bool = false,debug::Bool = false) where T
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
+    graph = mechanism.graph
     bodies = mechanism.bodies
 
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, k)
         newton!(mechanism, warning = debug)
-        foreach(updatestate!, bodies, Δt)
+        foreachactive(updatestate!, graph, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
@@ -47,6 +46,7 @@ end
 function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T}, controller::Controller;record::Bool = false,debug::Bool = false) where T
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
+    graph = mechanism.graph
     bodies = mechanism.bodies
 
     control! = controller.control!
@@ -55,7 +55,7 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, controller, k)
         newton!(mechanism, warning = debug)
-        foreach(updatestate!, bodies, Δt)
+        foreachactive(updatestate!, graph, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
@@ -64,12 +64,13 @@ end
 function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T}; record::Bool = false,debug::Bool = false) where T
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
+    graph = mechanism.graph
     bodies = mechanism.bodies
    
     for k = steps
         newton!(mechanism, warning = debug)
         record && saveToStorage!(mechanism, storage, k)
-        foreach(updatestate!, bodies, Δt)
+        foreachactive(updatestate!, graph, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end

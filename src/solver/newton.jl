@@ -15,8 +15,8 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,0}; ε = 1e-10, newtonIter = 100
         normf1 = lineSearch!(mechanism, normf0;iter = lineIter, warning = warning)
         normΔs1 = normΔs(mechanism)
 
-        foreach(updatesolution!, bodies)
-        foreach(updatesolution!, eqcs)
+        foreachactive(updatesolution!, graph, bodies)
+        foreachactive(updatesolution!, graph, eqcs)
 
         if normf1 < ε && normΔs1 < ε
             # warning && (@info string("Newton iterations: ",n))
@@ -39,7 +39,7 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,Ni}; ε = 1e-10, σ = 0.1, μ = 
     ldu = mechanism.ldu
     Δt = mechanism.Δt
 
-    foreach(resetVars!, ineqcs)
+    foreachactive(resetVars!, graph, ineqcs)
     mechanism.μ = μ
 
     meritf0 = meritf(mechanism)
@@ -50,9 +50,9 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,Ni}; ε = 1e-10, σ = 0.1, μ = 
 
         meritf1 = lineSearch!(mechanism, meritf0;iter = lineIter, warning = warning)
 
-        foreach(updatesolution!, bodies)
-        foreach(updatesolution!, eqcs)
-        foreach(updatesolution!, ineqcs)
+        foreachactive(updatesolution!, graph, bodies)
+        foreachactive(updatesolution!, graph, eqcs)
+        foreachactive(updatesolution!, graph, ineqcs)
 
         if normf(mechanism) < ε
             warning && (@info string("Newton iterations: ", n))
@@ -79,9 +79,11 @@ function lineSearch!(mechanism::Mechanism{T,N,0}, normf0;iter = 10, warning::Boo
 
     for n = Base.OneTo(iter + 1)
         for body in bodies
+            !body.active && continue
             lineStep!(body, getentry(ldu, body.id), scale)
         end
         for eqc in eqcs
+            !eqc.active && continue
             lineStep!(eqc, getentry(ldu, eqc.id), scale)
         end
 
@@ -110,12 +112,15 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
 
     for n = Base.OneTo(iter)
         for body in bodies
+            !body.active && continue
             lineStep!(body, getentry(ldu, body.id), scale, mechanism)
         end
         for eqc in eqcs
+            !eqc.active && continue
             lineStep!(eqc, getentry(ldu, eqc.id), scale, mechanism)
         end
         for ineqc in ineqcs
+            !ineqc.active && continue
             lineStep!(ineqc, getineqentry(ldu, ineqc.id), scale, mechanism)
         end
 

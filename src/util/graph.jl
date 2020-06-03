@@ -36,9 +36,17 @@ struct Graph{N}
         rdict = Dict(ind => id for (id, ind) in dict)
         activedict = Dict(id => true for (id, ind) in dict)
 
-        for constraint in eqconstraints
-            constraint.parentid == oid && (constraint.parentid = nothing)
-            activedict[constraint.id] = constraint.active
+        for eqc in eqconstraints
+            eqc.parentid == oid && (eqc.parentid = nothing)
+            activedict[eqc.id] = eqc.active
+        end
+
+        for body in bodies
+            activedict[body.id] = body.active
+        end
+
+        for ineqc in ineqconstraints
+            activedict[ineqc.id] = ineqc.active
         end
 
         N = length(dict)
@@ -58,8 +66,9 @@ struct Graph{N}
 
         dict = UnitDict(dict)
         rdict = UnitDict(rdict)
+        activedict = UnitDict(activedict)
 
-        new{N}(dirs, loos, ineqs, sucs, preds, cons, dfslist, reverse(dfslist), dict, rdict)
+        new{N}(dirs, loos, ineqs, sucs, preds, cons, dfslist, reverse(dfslist), dict, rdict, activedict)
     end
 end
 
@@ -250,6 +259,7 @@ end
 @inline predecessors(graph, id::Integer) = graph.predecessors[graph.dict[id]]
 @inline connections(graph, id::Integer) = graph.connections[graph.dict[id]]
 @inline isactive(graph, id::Integer) = graph.activedict[id]
+@inline isinactive(graph, id::Integer) = !isactive(graph, id)
 
 @inline function hassuccessor(graph::Graph{N}, id, cid) where N
     for val in graph.successors[graph.dict[id]]

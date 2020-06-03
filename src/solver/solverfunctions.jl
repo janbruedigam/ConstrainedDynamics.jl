@@ -110,6 +110,8 @@ function setentries!(mechanism::Mechanism)
     ldu = mechanism.ldu
 
     for (id, body) in pairs(mechanism.bodies)
+        isinactive(graph, id) && continue
+        
         for cid in directchildren(graph, id)
             setLU!(mechanism, getentry(ldu, (id, cid)), id, geteqconstraint(mechanism, cid))
         end
@@ -125,7 +127,8 @@ function setentries!(mechanism::Mechanism)
 
     for eqc in mechanism.eqconstraints
         id = eqc.id
-
+        isinactive(graph, id) && continue
+        
         for cid in directchildren(graph, id)
             setLU!(mechanism, getentry(ldu, (id, cid)), eqc, cid)
         end
@@ -143,11 +146,17 @@ end
 
 function factor!(graph::Graph, ldu::SparseLDU)
     for id in graph.dfslist
+        isinactive(graph, id) && continue
+
         sucs = successors(graph, id)
         for childid in sucs
+            isinactive(graph, childid) && continue
+            
             offdiagonal = getentry(ldu, (id, childid))
             for grandchildid in sucs
                 grandchildid == childid && break
+                isinactive(graph, grandchildid) && continue
+
                 if hasdirectchild(graph, childid, grandchildid)
                     updateLU1!(offdiagonal, getentry(ldu, grandchildid), getentry(ldu, (id, grandchildid)), getentry(ldu, (childid, grandchildid)))
                 end
@@ -158,6 +167,7 @@ function factor!(graph::Graph, ldu::SparseLDU)
         diagonal = getentry(ldu, id)
 
         for childid in successors(graph, id)
+            isinactive(graph, childid) && continue
             updateD!(diagonal, getentry(ldu, childid), getentry(ldu, (id, childid)))
         end
         invertD!(diagonal)
@@ -172,23 +182,29 @@ function solve!(mechanism)
     dfslist = graph.dfslist
 
     for id in dfslist
+        isinactive(graph, id) && continue
+
         diagonal = getentry(ldu, id)
 
         for childid in successors(graph, id)
+            isinactive(graph, childid) && continue
             LSol!(diagonal, getentry(ldu, childid), getentry(ldu, (id, childid)))
         end
     end
 
     for id in graph.rdfslist
-        diagonal = getentry(ldu, id)
+        isinactive(graph, id) && continue
 
+        diagonal = getentry(ldu, id)
         DSol!(diagonal)
 
         for parentid in predecessors(graph, id)
+            isinactive(graph, parentid) && continue
             USol!(diagonal, getentry(ldu, parentid), getentry(ldu, (parentid, id)))
         end
 
         for childid in ineqchildren(graph, id)
+            isinactive(graph, childid) && continue
             eliminatedsolve!(mechanism, getineqentry(ldu, childid), diagonal, getbody(mechanism, id), getineqconstraint(mechanism, childid))
         end
     end
