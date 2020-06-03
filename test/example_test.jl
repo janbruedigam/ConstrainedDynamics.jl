@@ -9,8 +9,10 @@ files = [
     "dice"
     "disconnected_bodies"
     "doublependulum_3d"
+    "doublependulum_disconnection"
     "doublependulum_urdf"
     "football"
+    "fourbar_disconnection"
     "inverted_pyramid_plane"
     "joint_force"
     "joint_torque"
@@ -26,10 +28,19 @@ files = [
     "wheel"
 ]
 
+controlled = [
+    "doublependulum_disconnection"
+    "joint_force"
+    "pendulum_forced"
+    "nutation"
+    "football"
+    "fourbar_disconnection"
+]
+
 for file in files
-    println(file)
+    # println(file)
     include("examples/"*file*".jl")
-    if file=="joint_force" || file=="pendulum_forced" || file=="nutation" || file=="football"
+    if file in controlled
         storage = simulate!(mech, 10., eval(Meta.parse(file*"_control!")), record = true)
     else
         storage = simulate!(mech, 10., record = true)

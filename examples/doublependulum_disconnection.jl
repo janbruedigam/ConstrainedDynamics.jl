@@ -16,29 +16,19 @@ phi = pi / 4
 q1 = Quaternion(RotX(phi))
 
 # Links
-N = 2
-
 origin = Origin{Float64}()
-links = [Body(b1) for i = 1:N]
+links = [Body(b1) for i = 1:2]
 
 # Constraints
 jointb1 = EqualityConstraint(Revolute(origin, links[1], ex; p2=vert11))
-if N>1
-    constraints = [jointb1;[EqualityConstraint(Revolute(links[i - 1], links[i], ex; p1=vert12, p2=vert11)) for i = 2:N]]
-else
-    constraints = [jointb1]
-end
+joint12 = EqualityConstraint(Revolute(links[1], links[2], ex; p1=vert12, p2=vert11))
+constraints = [jointb1;joint12]
 
 shapes = [b1]
 
 mech = Mechanism(origin, links, constraints;Δt = 0.01, shapes = shapes)
-setPosition!(origin,links[1],p2 = vert11,Δq = q1)
-previd = links[1].id
-for body in Iterators.drop(mech.bodies, 1)
-    global previd
-    setPosition!(ConstrainedDynamics.getbody(mech, previd), body, p1 = vert12, p2 = vert11)
-    previd = body.id
-end
+setPosition!(origin, links[1], p2 = vert11,Δq = q1)
+setPosition!(links[1], links[2], p1 = vert12, p2 = vert11)
 
 function control!(mechanism,k)
     if k==75

@@ -1,6 +1,7 @@
 @inline function dynamics(mechanism, body::Body{T}) where T
     state = body.state
     Δt = mechanism.Δt
+    graph = mechanism.graph
 
     ezg = SVector{3,T}(0, 0, -mechanism.g)
     dynT = body.m * ((state.vsol[2] - state.vc) / Δt + ezg) - 1/2 * (state.Fk[1] + state.Fk[2])
@@ -15,10 +16,12 @@
     body.f = [dynT;dynR]
 
     for cid in connections(mechanism.graph, body.id)
+        isinactive(graph, cid) && continue
         GtλTof!(mechanism, body, geteqconstraint(mechanism, cid))
     end
 
     for cid in ineqchildren(mechanism.graph, body.id)
+        isinactive(graph, cid) && continue
         NtγTof!(mechanism, body, getineqconstraint(mechanism, cid))
     end
 
