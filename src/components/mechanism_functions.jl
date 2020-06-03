@@ -90,54 +90,45 @@ end
 end
 
 @inline function normf(mechanism::Mechanism)
+    graph = mechanism.graph
     mechanism.normf = 0
-
-    # Allocates otherwise
-    for body in mechanism.bodies
-        mechanism.normf += normf(mechanism, body)
-    end
-    foreach(addNormf!, mechanism.eqconstraints, mechanism)
-    foreach(addNormf!, mechanism.ineqconstraints, mechanism)
+    
+    foreachactive(addNormf!, graph, mechanism.bodies, mechanism)
+    foreachactive(addNormf!, graph, mechanism.eqconstraints, mechanism)
+    foreachactive(addNormf!, graph, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normf)
 end
 
 @inline function meritf(mechanism::Mechanism)
+    graph = mechanism.graph
     mechanism.normf = 0
 
-    # Allocates otherwise
-    for body in mechanism.bodies
-        mechanism.normf += normf(mechanism, body)
-    end
-    foreach(addNormf!, mechanism.eqconstraints, mechanism)
-    foreach(addNormfμ!, mechanism.ineqconstraints, mechanism)
+    foreachactive(addNormf!, graph, mechanism.bodies, mechanism)
+    foreachactive(addNormf!, graph, mechanism.eqconstraints, mechanism)
+    foreachactive(addNormfμ!, graph, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normf)
 end
 
 @inline function normΔs(mechanism::Mechanism)
+    graph = mechanism.graph
     mechanism.normΔs = 0
 
-    # Allocates otherwise
-    mechanism.normΔs += mapreduce(normΔs, +, mechanism.bodies)
-    foreach(addNormΔs!, mechanism.eqconstraints, mechanism)
-    foreach(addNormΔs!, mechanism.ineqconstraints, mechanism)
+    foreachactive(addNormΔs!, graph, mechanism.bodies, mechanism)
+    foreachactive(addNormΔs!, graph, mechanism.eqconstraints, mechanism)
+    foreachactive(addNormΔs!, graph, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normΔs)
 end
 
-@inline function addNormf!(ineqc::InequalityConstraint, mechanism::Mechanism)
-    mechanism.normf += normf(mechanism, ineqc)
+@inline function addNormf!(component::Component, mechanism::Mechanism)
+    mechanism.normf += normf(mechanism, component)
     return
 end
 
 @inline function addNormfμ!(ineqc::InequalityConstraint, mechanism::Mechanism)
     mechanism.normf += normfμ(mechanism, ineqc)
-    return
-end
-
-@inline function addNormf!(eqc::EqualityConstraint, mechanism::Mechanism)
-    mechanism.normf += normf(mechanism, eqc)
     return
 end
 

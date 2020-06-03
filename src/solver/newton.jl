@@ -70,7 +70,7 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,Ni}; ε = 1e-10, σ = 0.1, μ = 
     return
 end
 
-function lineSearch!(mechanism::Mechanism{T,N,0}, normf0;iter = 10, warning::Bool = false) where {T,N}
+function lineSearch!(mechanism::Mechanism{T,N,Nb,Ne,0}, normf0;iter = 10, warning::Bool = false) where {T,N,Nb,Ne}
     normf1 = normf0
     scale = 0
     ldu = mechanism.ldu
