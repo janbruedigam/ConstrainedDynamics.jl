@@ -3,3 +3,4 @@
 /dev/
 /.benchmarkci
 /benchmark/*.json
+/notes
