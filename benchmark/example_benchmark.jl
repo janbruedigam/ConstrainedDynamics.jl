@@ -35,7 +35,7 @@ controlled = [
     "fourbar_disconnection"
 ]
 
-for i=1:length(files)-1
+for i=1:length(files)
     include("../test/examples/"*files[i]*".jl")
     mech.g = 0.0
 
@@ -43,18 +43,18 @@ for i=1:length(files)-1
     storage = Storage{Float64}(steps,length(mech.bodies))
 
     if files[i]=="doublependulum_disconnection"
-        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $doublependulum_disconnection_control!) samples=1
+        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $doublependulum_disconnection_control!)
     elseif files[i]=="joint_force" 
-        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $joint_force_control!) samples=1
+        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $joint_force_control!)
     elseif files[i]=="pendulum_forced"
-        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $pendulum_forced_control!) samples=1
+        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $pendulum_forced_control!)
     # elseif files[i]=="nutation"
-    #     SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $nutation_control!) samples=1
+    #     SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $nutation_control!)
     elseif files[i]=="football"
-        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $football_control!) samples=1
+        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $football_control!)
     elseif files[i]=="fourbars_disconnection"
-        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $fourbars_disconnection_control!) samples=1
+        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage, $fourbars_disconnection_control!)
     else
-        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage) samples=1
+        SUITE[files[i]] = @benchmarkable simulate!($mech, $steps, $storage)
     end
 end
