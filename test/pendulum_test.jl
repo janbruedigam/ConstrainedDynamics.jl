@@ -66,7 +66,6 @@ setPosition!(origin,link1,p2 = p2,Δq = q1)
 setVelocity!(link1)
 storage = simulate!(mech,10.,record = true)
 
-@test haskey(ENV,"RUNNER_OS")
 if haskey(ENV,"RUNNER_OS")
     if occursin("linux", lowercase(ENV["RUNNER_OS"]))
         # visualize(mech, storage, shapes)
