@@ -48,9 +48,9 @@ spin = 0.35
 
 function football_control!(mechanism, k)
     if k<25
-        setForce!(link3, F = SA[0.;25.;25.], τ=spin*SA[0.2;0.2;1.])
+        setForce!(link3, F = SA[0.;25.;25.] * 0, τ=spin*SA[0.2;0.2;1.] * 0)
     elseif k==40
-        setForce!(link3, τ = SA[0.;0.3;0.])
+        setForce!(link3, τ = SA[0.;0.3;0.] * 0)
     else
         setForce!(link3)
     end
