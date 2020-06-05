@@ -3,4 +3,4 @@
 [![codecov](https://codecov.io/gh/janbruedigam/ConstrainedDynamics.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/janbruedigam/ConstrainedDynamics.jl)
 
 
-Related paper: https://arxiv.org/abs/2002.11245
+Related paper: https://arxiv.org/abs/2002.11245 

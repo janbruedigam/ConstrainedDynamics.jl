@@ -36,7 +36,7 @@ shapes = [b1;b2]
 
 function joint_force_control!(mechanism, k)
     F = SVector{2,Float64}(0.1,0.)
-    setForce!(mechanism, joint1to2, F * 0)
+    setForce!(mechanism, joint1to2, F)
     return
 end
 

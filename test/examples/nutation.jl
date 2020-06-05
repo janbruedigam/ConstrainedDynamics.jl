@@ -28,9 +28,9 @@ setVelocity!(link1, ω = speed*axis)
 
 function nutation_control!(mechanism, k)
     if k==1
-        setForce!(mechanism.bodies[1], F = SA[0;0;0.2] * 0, p=SA[0;1.;0])
+        setForce!(mechanism.bodies[1], F = SA[0;0;0.2], p=SA[0;1.;0])
     else
-        setForce!(mechanism.bodies[1], F = SA[0;0;0.] * 0, p=SA[0;0.0;0])
+        setForce!(mechanism.bodies[1], F = SA[0;0;0.], p=SA[0;0.0;0])
     end
     return
 end
