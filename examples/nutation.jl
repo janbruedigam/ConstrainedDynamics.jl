@@ -1,4 +1,5 @@
 using ConstrainedDynamics
+using ConstrainedDynamicsVis
 using LinearAlgebra
 
 
