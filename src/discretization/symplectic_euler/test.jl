@@ -14,7 +14,7 @@
     return
 end
 
-@inline getxqkvector(state) = [state.xk[1];state.qk[1]]
+@inline getxqkvector(state) = [state.xk[1];params(state.qk[1])]
 @inline getxk(state) = state.xk[1]
 @inline getqk(state) = state.qk[1]
 @inline getstateandvestimate(state) = [getxqkvector(state);state.vc;state.ωc;state.vsol[2];state.ωsol[2]]
