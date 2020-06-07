@@ -52,11 +52,11 @@ function visualize(mechanism::Mechanism, storage::Storage{T,N}, shapes::Vector{<
     for k = steps
         MeshCat.atframe(anim, k) do
             for (id,body) in pairs(bodies)
-                settransform!(vis["bundle/visshape"*string(id)], compose(Translation((storage.x[id][k])...),LinearMap(Quat((storage.q[id][k])...))))
+                settransform!(vis["bundle/visshape"*string(id)], compose(Translation((storage.x[id][k])...),LinearMap(UnitQuaternion((storage.q[id][k])...))))
             end
             if oshapeind > 0
                 shape = shapes[oshapeind]
-                settransform!(vis["bundle/visshape"*string(oid)], compose(Translation((shape.xoff)...),LinearMap(Quat((shape.qoff)...))))
+                settransform!(vis["bundle/visshape"*string(oid)], compose(Translation((shape.xoff)...),LinearMap(UnitQuaternion((shape.qoff)...))))
             end
         end
     end

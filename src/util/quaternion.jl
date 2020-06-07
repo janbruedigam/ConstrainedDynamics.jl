@@ -12,7 +12,7 @@ Quaternion(v::Vector) = (@assert length(v)==3; Quaternion(0, v[1], v[2], v[3]))
 Quaternion(s::T,v::Vector{T}) where T = (@assert length(v)==3; Quaternion(s, v[1], v[2], v[3]))
 Quaternion(v::SVector{3,T}) where T = Quaternion(0, v[1], v[2], v[3])
 Quaternion(s::T,v::SVector{3,T}) where T = Quaternion(s, v[1], v[2], v[3])
-Quaternion(R::Rotation) = Quaternion(Quat(R).w, Quat(R).x, Quat(R).y, Quat(R).z)
+Quaternion(R::Rotation) = (q = UnitQuaternion(R); Quaternion(q.w, q.x, q.y, q.z))
 Quaternion{T}() where T = Quaternion{T}(1, 0, 0, 0)
 
 # Basic quaternion operations
