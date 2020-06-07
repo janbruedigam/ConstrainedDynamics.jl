@@ -36,6 +36,8 @@ function getfieldnumber(obj)
     return i-1
 end
 
+sisnan(a::StaticArray) = any(isnan.(a))
+
 # To fix StaticArray bug
 zerodimstaticadjoint(A) = A'
 zerodimstaticadjoint(::SMatrix{0,N,T,0}) where {T,N} = SMatrix{N,0,T,0}()
