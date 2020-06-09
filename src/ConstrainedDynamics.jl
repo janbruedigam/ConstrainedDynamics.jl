@@ -5,15 +5,8 @@ using StaticArrays
 using StaticArrays: SUnitRange
 using Rotations
 
-using CoordinateTransformations
-using GeometryTypes: GeometryTypes, Vec, Point, GLUVMesh
-using Blink
 using Colors: RGBA, RGB
-using FileIO, MeshIO
-using MeshCat
 using LightXML
-
-using Plots
 
 export Box,
     Cylinder,
@@ -46,7 +39,6 @@ export Box,
     setVelocity!,
     setForce!,
     simulate!,
-    visualize,
 
     disassemble,
     getcomponent,
@@ -114,8 +106,6 @@ include(joinpath("solver", "fullsystem.jl"))
 include(joinpath("util", "urdf.jl"))
 
 include(joinpath("solver", "newton.jl"))
-
-include(joinpath("util", "visualize.jl"))
 
 
 include(joinpath("discretization", "SymplecticEuler.jl"))

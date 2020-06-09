@@ -65,14 +65,3 @@ q1 = Quaternion(RotX(π / 2))
 setPosition!(origin,link1,p2 = p2,Δq = q1)
 setVelocity!(link1)
 storage = simulate!(mech,10.,record = true)
-
-if haskey(ENV,"RUNNER_OS")
-    if occursin("linux", lowercase(ENV["RUNNER_OS"]))
-        # visualize(mech, storage, shapes)
-    elseif occursin("macos", lowercase(ENV["RUNNER_OS"]))
-        visualize(mech, storage, shapes)
-    elseif occursin("windows", lowercase(ENV["RUNNER_OS"]))
-        # visualize(mech, storage, shapes)
-    end
-end
-@test true

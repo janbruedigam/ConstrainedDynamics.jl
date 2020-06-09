@@ -1,4 +1,5 @@
 using ConstrainedDynamics
+using ConstrainedDynamicsVis
 
 
 path = "examples/examples_files/atlas_simple.urdf"

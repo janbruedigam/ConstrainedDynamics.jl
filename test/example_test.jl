@@ -47,9 +47,9 @@ for file in files
     end
     n = length(storage.x)
     for i=1:n
-        @test !any(isnan.(storage.x[i]))
-        @test !any(isnan.(storage.q[i]))
-        @test !any(isnan.(storage.v[i]))
-        @test !any(isnan.(storage.ω[i]))
+        @test !any(ConstrainedDynamics.sisnan.(storage.x[i]))
+        @test !any(ConstrainedDynamics.sisnan.(storage.q[i]))
+        @test !any(ConstrainedDynamics.sisnan.(storage.v[i]))
+        @test !any(ConstrainedDynamics.sisnan.(storage.ω[i]))
     end
 end

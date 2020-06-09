@@ -22,6 +22,10 @@ end
     include("initialization_test.jl")
 end
 
+@safetestset "Shape Tests" begin
+    include("shape_test.jl")
+end
+
 @safetestset "Example Tests" begin
     include("example_test.jl")
 end
