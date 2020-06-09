@@ -31,12 +31,12 @@ end
     statea = body1.state
     stateb = body2.state
     q = g(joint, statea.qc, stateb.qc)
-    axis(q) * angle(q) 
+    return rotation_vector(q)
 end
 @inline function minimalCoordinates(joint::Rotational0, body1::Origin, body2::Body)
     stateb = body2.state
     q = g(joint, stateb.qc)
-    return axis(q) * angle(q)
+    return rotation_vector(q)
 end
 
 @inline g(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, Δt) = g(joint)

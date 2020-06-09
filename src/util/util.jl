@@ -14,7 +14,6 @@ end
 
 deleteat(M::Array{T,2},i::Integer) where T = deleteat(M, i, i)
 
-skew(v::AbstractVector{T}) where T = SMatrix{3,3,T,9}(0, v[3], -v[2], -v[3], 0, v[1], v[2], -v[1], 0)
 skewplusdiag(v::AbstractVector{T},w::T) where T = SMatrix{3,3,T,9}(w, v[3], -v[2], -v[3], w, v[1], v[2], -v[1], w)
 
 Base.:*(u::LinearAlgebra.AdjointAbsVec, v::SVector{1,T}) where T = u * v[1]

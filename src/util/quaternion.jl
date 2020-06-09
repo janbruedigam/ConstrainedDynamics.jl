@@ -6,35 +6,132 @@ Rotations.UnitQuaternion(v::Vector) = (@assert length(v)==3; pure_quaternion(v))
 @inline imag(q::UnitQuaternion) = Rotations.vector(q)
 
 qrotate(q1::UnitQuaternion,q2::UnitQuaternion) = q2 * q1 / q2
-vrotate(v::AbstractVector,q::UnitQuaternion) = imag(qrotate(pure_quaternion(v), q))
+vrotate(v::Vector,q::UnitQuaternion) = imag(qrotate(pure_quaternion(v), q))
+vrotate(v::StaticVector,q::UnitQuaternion) = q*v
 
-Vmat(::Type{T}) where T = SMatrix{3,4,T,12}(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
-Vmat() = Vmat(Float64)
-Vmat(q::SVector) = q[SUnitRange(2, 4)]
-Vmat(A::SMatrix) = A[SUnitRange(2, 4),:]
+rotation_vector(q::UnitQuaternion) = rotation_angle(q) * rotation_axis(q)
+
+Lmat(q) = lmult(q)
+Lᵀmat(q) = lmult(q)'
+Rmat(q) = rmult(q)
+Rᵀmat(q) = rmult(q)'
+
+Tmat(::Type{T}=Float64) where T = tmat(T)
+Tᵀmat(::Type{T}=Float64) where T = tmat(T)
+Vmat(::Type{T}=Float64) where T = vmat(T)
+Vᵀmat(::Type{T}=Float64) where T = hmat(T)
 Vmat(q::UnitQuaternion) = imag(q)
-Vᵀmat(::Type{T}) where T = SMatrix{4,3,T,12}(0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-Vᵀmat() = Vᵀmat(Float64)
-Tmat(::Type{T}) where T = SMatrix{4,4,T,16}(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1)
-Tmat() = Tmat(Float64)
 
-Lmat(q::UnitQuaternion{T}) where T = SMatrix{4,4,T,16}(q.w, q.x, q.y, q.z, -q.x, q.w, q.z, -q.y, -q.y, -q.z, q.w, q.x, -q.z, q.y, -q.x, q.w)
-Lᵀmat(q) = Lmat(q)'
-Rmat(q::UnitQuaternion{T})  where T = SMatrix{4,4,T,16}(q.w, q.x, q.y, q.z, -q.x, q.w, -q.z, q.y, -q.y, q.z, q.w, -q.x, -q.z, -q.y, q.x, q.w)
-Rᵀmat(q) = Rmat(q)'
+function VLmat(q::UnitQuaternion)
+    SA[
+        q.x  q.w -q.z  q.y;
+        q.y  q.z  q.w -q.x;
+        q.z -q.y  q.x  q.w;
+    ]
+end
+function VLᵀmat(q::UnitQuaternion)
+    SA[
+        -q.x  q.w  q.z -q.y;
+        -q.y -q.z  q.w  q.x;
+        -q.z  q.y -q.x  q.w;
+    ]
+end
+function VRmat(q::UnitQuaternion)
+    SA[
+        q.x  q.w  q.z -q.y;
+        q.y -q.z  q.w  q.x;
+        q.z  q.y -q.x  q.w;
+    ]
+end
+function VRᵀmat(q::UnitQuaternion)
+    SA[
+        -q.x  q.w -q.z  q.y;
+        -q.y  q.z  q.w -q.x;
+        -q.z -q.y  q.x  q.w;
+    ]
+end
 
-VLmat(q::UnitQuaternion{T}) where T = SMatrix{3,4,T,12}(q.x, q.y, q.z, q.w, q.z, -q.y, -q.z, q.w, q.x, q.y, -q.x, q.w)
-VLᵀmat(q::UnitQuaternion{T}) where T = SMatrix{3,4,T,12}(-q.x, -q.y, -q.z, q.w, -q.z, q.y, q.z, q.w, -q.x, -q.y, q.x, q.w)
-VRmat(q::UnitQuaternion{T})  where T = SMatrix{3,4,T,12}(q.x, q.y, q.z, q.w, -q.z, q.y, q.z, q.w, -q.x, -q.y, q.x, q.w)
-VRᵀmat(q::UnitQuaternion{T})  where T = SMatrix{3,4,T,12}(-q.x, -q.y, -q.z, q.w, q.z, -q.y, -q.z, q.w, q.x, q.y, -q.x, q.w)
+function LVᵀmat(q::UnitQuaternion)
+    SA[
+        -q.x -q.y -q.z;
+         q.w -q.z  q.y;
+         q.z  q.w -q.x;
+        -q.y  q.x  q.w;
+    ]
+end
+function LᵀVᵀmat(q::UnitQuaternion)
+    SA[
+         q.x  q.y  q.z;
+         q.w  q.z -q.y;
+        -q.z  q.w  q.x;
+         q.y -q.x  q.w;
+    ]
+end
+function RVᵀmat(q::UnitQuaternion)
+    SA[
+        -q.x -q.y -q.z;
+         q.w  q.z -q.y;
+        -q.z  q.w  q.x;
+         q.y -q.x  q.w;
+    ]
+end
+function RᵀVᵀmat(q::UnitQuaternion)
+    SA[
+         q.x  q.y  q.z;
+         q.w -q.z  q.y;
+         q.z  q.w -q.x;
+        -q.y  q.x  q.w;
+    ]
+end
 
-LVᵀmat(q::UnitQuaternion{T}) where T = SMatrix{4,3,T,12}(-q.x, q.w, q.z, -q.y, -q.y, -q.z, q.w, q.x, -q.z, q.y, -q.x, q.w)
-LᵀVᵀmat(q::UnitQuaternion{T}) where T = SMatrix{4,3,T,12}(q.x, q.w, -q.z, q.y, q.y, q.z, q.w, -q.x, q.z, -q.y, q.x, q.w)
-RVᵀmat(q::UnitQuaternion{T}) where T = SMatrix{4,3,T,12}(-q.x, q.w, -q.z, q.y, -q.y, q.z, q.w, -q.x, -q.z, -q.y, q.x, q.w)
-RᵀVᵀmat(q::UnitQuaternion{T}) where T = SMatrix{4,3,T,12}(q.x, q.w, q.z, -q.y, q.y, -q.z, q.w, q.x, q.z, q.y, -q.x, q.w)
+# Vmat(q::SVector) = q[SUnitRange(2, 4)]
+# Vmat(A::SMatrix) = A[SUnitRange(2, 4),:]
 
-angle(q) = rotation_angle(AngleAxis(q))
-axis(q) = rotation_axis(AngleAxis(q))
+function slerp(q1,q2,h)
+    s = q1'*q2
+    if s < 0
+        s = -s
+        q2 = -q2
+    end
+
+    qdiff = q1\q2
+    φdiff, udiff = angleaxis(qdiff)
+    φint = φdiff*h
+    qint = UnitQuaternion(cos(φint/2),udiff*sin(φint/2))
+    
+    return q1*qint
+end
+
+
+
+
+
+# Vmat(::Type{T}) where T = SMatrix{3,4,T,12}(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+# Vmat() = Vmat(Float64)
+# Vmat(q::SVector) = q[SUnitRange(2, 4)]
+# Vmat(A::SMatrix) = A[SUnitRange(2, 4),:]
+# Vmat(q::UnitQuaternion) = imag(q)
+# Vᵀmat(::Type{T}) where T = SMatrix{4,3,T,12}(0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
+# Vᵀmat() = Vᵀmat(Float64)
+# Tmat(::Type{T}) where T = SMatrix{4,4,T,16}(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1)
+# Tmat() = Tmat(Float64)
+
+# Lmat(q::UnitQuaternion{T}) where T = SMatrix{4,4,T,16}(q.w, q.x, q.y, q.z, -q.x, q.w, q.z, -q.y, -q.y, -q.z, q.w, q.x, -q.z, q.y, -q.x, q.w)
+# Lᵀmat(q) = Lmat(q)'
+# Rmat(q::UnitQuaternion{T})  where T = SMatrix{4,4,T,16}(q.w, q.x, q.y, q.z, -q.x, q.w, -q.z, q.y, -q.y, q.z, q.w, -q.x, -q.z, -q.y, q.x, q.w)
+# Rᵀmat(q) = Rmat(q)'
+
+# VLmat(q::UnitQuaternion{T}) where T = SMatrix{3,4,T,12}(q.x, q.y, q.z, q.w, q.z, -q.y, -q.z, q.w, q.x, q.y, -q.x, q.w)
+# VLᵀmat(q::UnitQuaternion{T}) where T = SMatrix{3,4,T,12}(-q.x, -q.y, -q.z, q.w, -q.z, q.y, q.z, q.w, -q.x, -q.y, q.x, q.w)
+# VRmat(q::UnitQuaternion{T})  where T = SMatrix{3,4,T,12}(q.x, q.y, q.z, q.w, -q.z, q.y, q.z, q.w, -q.x, -q.y, q.x, q.w)
+# VRᵀmat(q::UnitQuaternion{T})  where T = SMatrix{3,4,T,12}(-q.x, -q.y, -q.z, q.w, q.z, -q.y, -q.z, q.w, q.x, q.y, -q.x, q.w)
+
+# LVᵀmat(q::UnitQuaternion{T}) where T = SMatrix{4,3,T,12}(-q.x, q.w, q.z, -q.y, -q.y, -q.z, q.w, q.x, -q.z, q.y, -q.x, q.w)
+# LᵀVᵀmat(q::UnitQuaternion{T}) where T = SMatrix{4,3,T,12}(q.x, q.w, -q.z, q.y, q.y, q.z, q.w, -q.x, q.z, -q.y, q.x, q.w)
+# RVᵀmat(q::UnitQuaternion{T}) where T = SMatrix{4,3,T,12}(-q.x, q.w, -q.z, q.y, -q.y, q.z, q.w, -q.x, -q.z, -q.y, q.x, q.w)
+# RᵀVᵀmat(q::UnitQuaternion{T}) where T = SMatrix{4,3,T,12}(q.x, q.w, q.z, -q.y, q.y, -q.z, q.w, q.x, q.z, q.y, -q.x, q.w)
+
+
 
 # Rotations.:*(A::AbstractMatrix,q::UnitQuaternion) = A*params(q)
 # Rotations.:*(A::Adjoint{T,<:AbstractArray{T,1}}, q::UnitQuaternion{T}) where T = A*params(q)
@@ -123,17 +220,3 @@ axis(q) = rotation_axis(AngleAxis(q))
 
 # skewplusdiag(v::AbstractVector{T},w::T) where T = SMatrix{3,3,T,9}(w, v[3], -v[2], -v[3], w, v[1], v[2], -v[1], w)
 
-# function slerp(q1,q2,h)
-#     s = q1'*q2
-#     if s < 0
-#         s = -s
-#         q2 = -q2
-#     end
-
-#     qdiff = q1\q2
-#     φdiff, udiff = angleaxis(qdiff)
-#     φint = φdiff*h
-#     qint = UnitQuaternion(cos(φint/2),udiff*sin(φint/2))
-    
-#     return q1*qint
-# end

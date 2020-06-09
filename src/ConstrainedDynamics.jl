@@ -4,7 +4,7 @@ using LinearAlgebra
 using StaticArrays
 using StaticArrays: SUnitRange
 using Rotations
-using Rotations: pure_quaternion, params
+using Rotations: pure_quaternion, params, lmult, rmult, tmat, vmat, hmat, skew
 
 using Colors: RGBA, RGB
 using LightXML
