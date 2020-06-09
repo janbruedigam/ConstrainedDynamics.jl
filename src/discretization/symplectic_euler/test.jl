@@ -188,41 +188,41 @@ end
 
 function rotfunc3pos(vars)
     xa = vars[1:3]
-    qa = Quaternion(SVector(vars[4:7]...))
+    qa = Quaternion(SVector(vars[4:7]...), false)
     xb = vars[8:10]
-    qb = Quaternion(SVector(vars[11:14]...))
+    qb = Quaternion(SVector(vars[11:14]...), false)
 
-    offset = Quaternion(SVector(vars[15:18]...))
+    offset = Quaternion(SVector(vars[15:18]...), false)
 
-    return VLᵀmat(offset) * Lᵀmat(qa) * qb
+    return VLᵀmat(offset) * Lᵀmat(qa) * params(qb)
 end
 
 function rotfunc2pos(vars)
     xa = vars[1:3]
-    qa = Quaternion(SVector(vars[4:7]...))
+    qa = Quaternion(SVector(vars[4:7]...), false)
     xb = vars[8:10]
-    qb = Quaternion(SVector(vars[11:14]...))
+    qb = Quaternion(SVector(vars[11:14]...), false)
 
-    offset = Quaternion(SVector(vars[15:18]...))
+    offset = Quaternion(SVector(vars[15:18]...), false)
 
     V1 = vars[19:21]
     V2 = vars[22:24]
     V12 = [V1';V2']
 
-    return V12 * VLᵀmat(offset) * Lᵀmat(qa) * qb
+    return V12 * VLᵀmat(offset) * Lᵀmat(qa) * params(qb)
 end
 
 function rotfunc1pos(vars)
     xa = vars[1:3]
-    qa = Quaternion(SVector(vars[4:7]...))
+    qa = Quaternion(SVector(vars[4:7]...), false)
     xb = vars[8:10]
-    qb = Quaternion(SVector(vars[11:14]...))
+    qb = Quaternion(SVector(vars[11:14]...), false)
 
-    offset = Quaternion(SVector(vars[15:18]...))
+    offset = Quaternion(SVector(vars[15:18]...), false)
 
     V3 = vars[19:21]
 
-    return V3' * VLᵀmat(offset) * Lᵀmat(qa) * qb
+    return V3' * VLᵀmat(offset) * Lᵀmat(qa) * params(qb)
 end
 
 
@@ -230,14 +230,14 @@ function rotfunc3vel(vars)
     Δt = 0.01
 
     xa1 = vars[1:3]
-    qa1 = Quaternion(SVector(vars[4:7]...))
+    qa1 = Quaternion(SVector(vars[4:7]...), false)
     va1 = vars[8:10]
     ωa1 = vars[11:13]
     va2 = vars[14:16]
     ωa2 = vars[17:19]
 
     xb1 = vars[20:22]
-    qb1 = Quaternion(SVector(vars[23:26]...))
+    qb1 = Quaternion(SVector(vars[23:26]...), false)
     vb1 = vars[27:29]
     ωb1 = vars[30:32]
     vb2 = vars[33:35]
@@ -249,23 +249,23 @@ function rotfunc3vel(vars)
     xb2 = xb1 + vb2 * Δt
     qb2 = qb1 * ωbar(ωb2, Δt)
 
-    offset = Quaternion(SVector(vars[39:42]...))
+    offset = Quaternion(SVector(vars[39:42]...), false)
 
-    return VLᵀmat(offset) * Lᵀmat(qa2) * qb2
+    return VLᵀmat(offset) * Lᵀmat(qa2) * params(qb2)
 end
 
 function rotfunc2vel(vars)
     Δt = 0.01
 
     xa1 = vars[1:3]
-    qa1 = Quaternion(SVector(vars[4:7]...))
+    qa1 = Quaternion(SVector(vars[4:7]...), false)
     va1 = vars[8:10]
     ωa1 = vars[11:13]
     va2 = vars[14:16]
     ωa2 = vars[17:19]
 
     xb1 = vars[20:22]
-    qb1 = Quaternion(SVector(vars[23:26]...))
+    qb1 = Quaternion(SVector(vars[23:26]...), false)
     vb1 = vars[27:29]
     ωb1 = vars[30:32]
     vb2 = vars[33:35]
@@ -277,27 +277,27 @@ function rotfunc2vel(vars)
     xb2 = xb1 + vb2 * Δt
     qb2 = qb1 * ωbar(ωb2, Δt)
 
-    offset = Quaternion(SVector(vars[39:42]...))
+    offset = Quaternion(SVector(vars[39:42]...), false)
 
     V1 = vars[43:45]
     V2 = vars[46:48]
     V12 = [V1';V2']    
 
-    return V12 * VLᵀmat(offset) * Lᵀmat(qa2) * qb2
+    return V12 * VLᵀmat(offset) * Lᵀmat(qa2) * params(qb2)
 end
 
 function rotfunc1vel(vars)
     Δt = 0.01
 
     xa1 = vars[1:3]
-    qa1 = Quaternion(SVector(vars[4:7]...))
+    qa1 = Quaternion(SVector(vars[4:7]...), false)
     va1 = vars[8:10]
     ωa1 = vars[11:13]
     va2 = vars[14:16]
     ωa2 = vars[17:19]
 
     xb1 = vars[20:22]
-    qb1 = Quaternion(SVector(vars[23:26]...))
+    qb1 = Quaternion(SVector(vars[23:26]...), false)
     vb1 = vars[27:29]
     ωb1 = vars[30:32]
     vb2 = vars[33:35]
@@ -309,9 +309,9 @@ function rotfunc1vel(vars)
     xb2 = xb1 + vb2 * Δt
     qb2 = qb1 * ωbar(ωb2, Δt)
 
-    offset = Quaternion(SVector(vars[39:42]...))
+    offset = Quaternion(SVector(vars[39:42]...), false)
 
     V3 = vars[43:45]
 
-    return V3' * VLᵀmat(offset) * Lᵀmat(qa2) * qb2
+    return V3' * VLᵀmat(offset) * Lᵀmat(qa2) * params(qb2)
 end

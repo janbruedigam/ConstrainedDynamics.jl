@@ -1,8 +1,8 @@
 Quaternion{T} = UnitQuaternion{T} where T
 
 Quaternion{T}() where T = one(UnitQuaternion{T})
-Quaternion(w::T,v::StaticVector{3,T}) where T = UnitQuaternion(w, v[1], v[2], v[3])
-Quaternion(w::T,v::Vector{T}) where T = (@assert length(v)==3; UnitQuaternion(w, v[1], v[2], v[3]))
+Quaternion(w::T,v::StaticVector{3,T}) where T = UnitQuaternion(w, v[1], v[2], v[3], false)
+Quaternion(w::T,v::Vector{T}) where T = (@assert length(v)==3; UnitQuaternion(w, v[1], v[2], v[3], false))
 Quaternion(v::StaticVector{3,T}) where T = pure_quaternion(v)
 Quaternion(v::Vector) = (@assert length(v)==3; pure_quaternion(v))
 
@@ -10,9 +10,9 @@ imag(q::Quaternion) = Rotations.vector(q)
 
 qrotate(x::Quaternion,q::Quaternion) = q * x / q
 vrotate(x::AbstractVector,q::Quaternion) = imag(qrotate(Quaternion(x), q))
-vrotate(x::AbstractVector{T},q::SVector{4,T}) where T = vrotate(x,Quaternion(q))
+vrotate(x::AbstractVector{T},q::SVector{4,T}) where T = vrotate(x,Quaternion(q, false))
 
-Rotations.inv(q::SVector{4,T}) where T = inv(Quaternion(q))
+# Rotations.inv(q::SVector{4,T}) where T = inv(Quaternion(q))
 
 Vmat(::Type{T}) where T = SMatrix{3,4,T,12}(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1)
 Vmat() = Vmat(Float64)
@@ -25,32 +25,37 @@ Tmat(::Type{T}) where T = SMatrix{4,4,T,16}(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0
 Tmat() = Tmat(Float64)
 
 Lmat(q::Quaternion{T}) where T = SMatrix{4,4,T,16}(q.w, q.x, q.y, q.z, -q.x, q.w, q.z, -q.y, -q.y, -q.z, q.w, q.x, -q.z, q.y, -q.x, q.w)
-Lmat(q::SVector{4,T}) where T = Lmat(Quaternion(q))
+# Lmat(q::SVector{4,T}) where T = Lmat(Quaternion(q))
 Lᵀmat(q) = Lmat(q)'
 Rmat(q::Quaternion{T})  where T = SMatrix{4,4,T,16}(q.w, q.x, q.y, q.z, -q.x, q.w, -q.z, q.y, -q.y, q.z, q.w, -q.x, -q.z, -q.y, q.x, q.w)
-Rmat(q::SVector{4,T}) where T = Rmat(Quaternion(q))
+# Rmat(q::SVector{4,T}) where T = Rmat(Quaternion(q))
 Rᵀmat(q) = Rmat(q)'
 
 VLmat(q::Quaternion{T}) where T = SMatrix{3,4,T,12}(q.x, q.y, q.z, q.w, q.z, -q.y, -q.z, q.w, q.x, q.y, -q.x, q.w)
-VLmat(q::SVector{4,T}) where T = VLmat(Quaternion(q))
+# VLmat(q::SVector{4,T}) where T = VLmat(Quaternion(q))
 VLᵀmat(q::Quaternion{T}) where T = SMatrix{3,4,T,12}(-q.x, -q.y, -q.z, q.w, -q.z, q.y, q.z, q.w, -q.x, -q.y, q.x, q.w)
-VLᵀmat(q::SVector{4,T}) where T = VLᵀmat(Quaternion(q))
+# VLᵀmat(q::SVector{4,T}) where T = VLᵀmat(Quaternion(q))
 VRmat(q::Quaternion{T})  where T = SMatrix{3,4,T,12}(q.x, q.y, q.z, q.w, -q.z, q.y, q.z, q.w, -q.x, -q.y, q.x, q.w)
-VRmat(q::SVector{4,T}) where T = VRmat(Quaternion(q))
+# VRmat(q::SVector{4,T}) where T = VRmat(Quaternion(q))
 VRᵀmat(q::Quaternion{T})  where T = SMatrix{3,4,T,12}(-q.x, -q.y, -q.z, q.w, q.z, -q.y, -q.z, q.w, q.x, q.y, -q.x, q.w)
-VRᵀmat(q::SVector{4,T}) where T = VRᵀmat(Quaternion(q))
+# VRᵀmat(q::SVector{4,T}) where T = VRᵀmat(Quaternion(q))
 
 LVᵀmat(q::Quaternion{T}) where T = SMatrix{4,3,T,12}(-q.x, q.w, q.z, -q.y, -q.y, -q.z, q.w, q.x, -q.z, q.y, -q.x, q.w)
-LVᵀmat(q::SVector{4,T}) where T = LVᵀmat(Quaternion(q))
+# LVᵀmat(q::SVector{4,T}) where T = LVᵀmat(Quaternion(q))
 LᵀVᵀmat(q::Quaternion{T}) where T = SMatrix{4,3,T,12}(q.x, q.w, -q.z, q.y, q.y, q.z, q.w, -q.x, q.z, -q.y, q.x, q.w)
-LᵀVᵀmat(q::SVector{4,T}) where T = LᵀVᵀmat(Quaternion(q))
+# LᵀVᵀmat(q::SVector{4,T}) where T = LᵀVᵀmat(Quaternion(q))
 RVᵀmat(q::Quaternion{T}) where T = SMatrix{4,3,T,12}(-q.x, q.w, -q.z, q.y, -q.y, q.z, q.w, -q.x, -q.z, -q.y, q.x, q.w)
-RVᵀmat(q::SVector{4,T}) where T = RVᵀmat(Quaternion(q))
+# RVᵀmat(q::SVector{4,T}) where T = RVᵀmat(Quaternion(q))
 RᵀVᵀmat(q::Quaternion{T}) where T = SMatrix{4,3,T,12}(q.x, q.w, q.z, -q.y, q.y, -q.z, q.w, q.x, q.z, q.y, -q.x, q.w)
-RᵀVᵀmat(q::SVector{4,T}) where T = RᵀVᵀmat(Quaternion(q))
+# RᵀVᵀmat(q::SVector{4,T}) where T = RᵀVᵀmat(Quaternion(q))
 
-Rotations.:*(A::StaticMatrix,q::UnitQuaternion) = A*params(q)
-Rotations.:*(A::Adjoint{T,<:AbstractArray{T,1}}, q::UnitQuaternion{T}) where T = A*params(q)
+angle(q) = rotation_angle(AngleAxis(q))
+axis(q) = rotation_axis(AngleAxis(q))
+
+# Rotations.:*(A::AbstractMatrix,q::UnitQuaternion) = A*params(q)
+# Rotations.:*(A::Adjoint{T,<:AbstractArray{T,1}}, q::UnitQuaternion{T}) where T = A*params(q)
+
+
 
 # struct Quaternion{T <: Real} <: FieldVector{4,T}
 #     s::T
