@@ -1,11 +1,11 @@
-function setPosition!(body::Body{T};x::AbstractVector{T} = SVector{3,T}(0, 0, 0),q::Quaternion{T} = Quaternion{T}()) where T
+function setPosition!(body::Body{T};x::AbstractVector{T} = SVector{3,T}(0, 0, 0),q::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
     body.state.xc = x
     body.state.qc = q
     return
 end
 
 function setPosition!(body1::Body{T}, body2::Body{T};
-    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::Quaternion{T} = Quaternion{T}()) where T
+    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
 
     q1 = body1.state.qc
     q2 = body1.state.qc * Δq
@@ -15,7 +15,7 @@ function setPosition!(body1::Body{T}, body2::Body{T};
 end
 
 function setPosition!(body1::Origin{T}, body2::Body{T};
-    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::Quaternion{T} = Quaternion{T}()) where T
+    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
 
     q2 = Δq
     x2 = p1 + Δx - vrotate(p2, q2)

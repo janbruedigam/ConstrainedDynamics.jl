@@ -36,11 +36,11 @@ end
 
 function parse_pose(xpose, T)
     if xpose == nothing
-        x, q = zeros(T, 3), Quaternion{T}()
+        x, q = zeros(T, 3), one(UnitQuaternion{T})
     else
         x = parse_vector(xpose, "xyz", T, default = "0 0 0")
         rpy = parse_vector(xpose, "rpy", T, default = "0 0 0")
-        q = Quaternion(RotZYX(rpy[3], rpy[2], rpy[1]))
+        q = UnitQuaternion(RotZYX(rpy[3], rpy[2], rpy[1]))
     end
 
     return x, q
@@ -49,7 +49,7 @@ end
 function parse_inertia(xinertial, T)
     if xinertial == nothing
         x = zeros(T, 3)
-        q = Quaternion{T}()
+        q = one(UnitQuaternion{T})
         m = zero(T)
         J = zeros(T, 3, 3)
     else

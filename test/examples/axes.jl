@@ -33,9 +33,9 @@ shapes = [box1;box2;box3]
 
 
 mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
-setPosition!(origin,link1,Δq = Quaternion(RotZ(0.)),p2=v1)
-setPosition!(origin,link2,Δq = Quaternion(RotX(0.)),p2=v2)
-setPosition!(origin,link3,Δq = Quaternion(RotX(0.)),p2=v3)
+setPosition!(origin,link1,Δq = UnitQuaternion(RotZ(0.)),p2=v1)
+setPosition!(origin,link2,Δq = UnitQuaternion(RotX(0.)),p2=v2)
+setPosition!(origin,link3,Δq = UnitQuaternion(RotX(0.)),p2=v3)
 # setVelocity!(origin,link1,Δω = [0.;1;1],p2=v1)
 # setVelocity!(origin,link2,Δω = [0.;1;1],p2=v2)
 # setVelocity!(origin,link3,Δω = [0.;1;1],p2=v3)

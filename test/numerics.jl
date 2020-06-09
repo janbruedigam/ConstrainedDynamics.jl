@@ -17,7 +17,7 @@ vert12 = -vert11
 
 # Initial orientation
 phi = pi / 4
-q1 = Quaternion(RotX(phi))
+q1 = UnitQuaternion(RotX(phi))
 
 # Links
 N = 100 # Number of links (and joints)

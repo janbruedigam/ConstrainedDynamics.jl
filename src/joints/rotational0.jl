@@ -1,9 +1,9 @@
 @inline function getPositionDelta(joint::Rotational0, body1::AbstractBody, body2::Body{T}, θ::SVector{3,T}) where T
     # axis angle representation
     if norm(θ) == 0
-        q = Quaternion{T}()
+        q = one(UnitQuaternion{T})
     else
-        q = Quaternion(cos(norm(θ)/2),(θ/norm(θ)*sin(norm(θ)/2))...)
+        q = UnitQuaternion(cos(norm(θ)/2),(θ/norm(θ)*sin(norm(θ)/2))..., false)
     end
     
     Δq = joint.qoff * q # in body1 frame

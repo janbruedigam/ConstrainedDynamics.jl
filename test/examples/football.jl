@@ -38,7 +38,7 @@ shapes = [b1;b2;b3]
 
 
 mech = Mechanism(origin, links, constraints, fr, shapes = shapes)
-setPosition!(link3,x = [0.;-10.0;1.5],q=Quaternion(RotX(pi/2)))
+setPosition!(link3,x = [0.;-10.0;1.5],q=UnitQuaternion(RotX(pi/2)))
 setPosition!(link3,link2,Δx = -[0.;0.;0.03])
 setPosition!(link2,link1,Δx = -[0.;0.;0.03])
 setPosition!(link3,link4,Δx = [0.;0.;0.03])

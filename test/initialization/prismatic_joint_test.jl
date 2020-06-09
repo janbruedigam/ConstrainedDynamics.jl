@@ -21,7 +21,7 @@ for i=1:10
     p2 = rand(3)
     axis = rand(3)
     axis = axis/norm(axis)
-    qoff = Quaternion(rand(RotMatrix{3}))
+    qoff = UnitQuaternion(rand(RotMatrix{3}))
 
 
     # Constraints

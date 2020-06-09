@@ -16,7 +16,7 @@ getGlobalOrder() = (global METHODORDER; return METHODORDER)
 end
 
 @inline function ωbar(ω, Δt)
-    return Δt / 2 * Quaternion(sqrt(4 / Δt^2 - dot(ω, ω)), ω)
+    return Δt / 2 * UnitQuaternion(sqrt(4 / Δt^2 - dot(ω, ω)), ω, false)
 end
 
 @inline function setForce!(state::State, F, τ)

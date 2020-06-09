@@ -14,7 +14,7 @@ export Box,
     Sphere,
     Mesh,
 
-    Quaternion,
+    UnitQuaternion,
     Origin,
     Body,
     EqualityConstraint,
