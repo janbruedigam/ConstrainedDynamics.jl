@@ -19,14 +19,14 @@ end
 end
 
 @inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, bodyid::Integer, eqc::EqualityConstraint)
-    offdiagonal.L = -∂g∂pos(mechanism, eqc, bodyid)'
+    offdiagonal.L = ∂g∂pos(mechanism, eqc, bodyid)'
     offdiagonal.U = ∂g∂vel(mechanism, eqc, bodyid)
     return
 end
 
 @inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, bodyid::Integer)
     offdiagonal.L = ∂g∂vel(mechanism, eqc, bodyid)
-    offdiagonal.U = -∂g∂pos(mechanism, eqc, bodyid)'
+    offdiagonal.U = ∂g∂pos(mechanism, eqc, bodyid)'
     return
 end
 
@@ -225,8 +225,8 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
     s1 = ineqc.ssol[2]
 
     Δv = diagonal.Δs
-    ineqentry.Δγ = γ1 ./ s1 .* φ - μ ./ s1 - γ1 ./ s1 .* (Nv * Δv)
-    ineqentry.Δs = s1 .- μ ./ γ1 - s1 ./ γ1 .* ineqentry.Δγ
+    ineqentry.Δγ = -γ1 ./ s1 .* φ + μ ./ s1 + γ1 ./ s1 .* (Nv * Δv)
+    ineqentry.Δs = s1 .- μ ./ γ1 + s1 ./ γ1 .* ineqentry.Δγ
 
     return
 end

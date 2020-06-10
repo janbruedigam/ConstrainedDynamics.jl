@@ -143,7 +143,7 @@ end
 end
 
 @inline function lineStep!(eqc::EqualityConstraint, diagonal::DiagonalEntry, scale)
-    eqc.λsol[2] = eqc.λsol[1] - 1 / (2^scale) * diagonal.Δs
+    eqc.λsol[2] = eqc.λsol[1] - 1 / (2^scale) * -diagonal.Δs
     return
 end
 
@@ -154,12 +154,12 @@ end
 end
 
 @inline function lineStep!(eqc::EqualityConstraint, diagonal, scale, mechanism)
-    eqc.λsol[2] = eqc.λsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs
+    eqc.λsol[2] = eqc.λsol[1] - 1 / (2^scale) * mechanism.α * -diagonal.Δs
     return
 end
 
 @inline function lineStep!(ineqc::InequalityConstraint, entry, scale, mechanism)
     ineqc.ssol[2] = ineqc.ssol[1] - 1 / (2^scale) * mechanism.α * entry.Δs
-    ineqc.γsol[2] = ineqc.γsol[1] - 1 / (2^scale) * mechanism.α * entry.Δγ
+    ineqc.γsol[2] = ineqc.γsol[1] - 1 / (2^scale) * mechanism.α * -entry.Δγ
     return
 end
