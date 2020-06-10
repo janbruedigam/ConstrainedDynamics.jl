@@ -21,19 +21,19 @@ end
     point2 = xb + vrotate(joint.vertices[2], qb)
 
     X = -VLᵀmat(qa) * RVᵀmat(qa)
-    Q = 2 * VLᵀmat(qa) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(xa))) * LVᵀmat(qa)
+    Q = 2 * VLᵀmat(qa) * (Lmat(UnitQuaternion(point2)) - Lmat(UnitQuaternion(xa))) * LVᵀmat(qa)
 
     return [X Q]
 end
 @inline function ∂g∂posb(joint::Translational, qa, qb)
     X = VLᵀmat(qa) * RVᵀmat(qa)
-    Q = 2 * VLᵀmat(qa) * Rmat(qa) * Rᵀmat(qb) * Rmat(Quaternion(joint.vertices[2])) * LVᵀmat(qb)
+    Q = 2 * VLᵀmat(qa) * Rmat(qa) * Rᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2])) * LVᵀmat(qb)
 
     return [X Q]
 end
 @inline function ∂g∂posb(joint::Translational{T}, qb) where T
     X = SMatrix{3,3,T,9}(I)
-    Q = 2 * VRᵀmat(qb) * Rmat(Quaternion(joint.vertices[2])) * LVᵀmat(qb)
+    Q = 2 * VRᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2])) * LVᵀmat(qb)
 
     return [X Q]
 end
@@ -53,19 +53,19 @@ end
     point2 = xb2 + vrotate(joint.vertices[2], qb2)
 
     V = -VLᵀmat(qa2) * RVᵀmat(qa2) * Δt
-    W = 2 * VLᵀmat(qa2) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(xa2))) * Lmat(qa1)*derivωbar(ωa, Δt)
+    W = 2 * VLᵀmat(qa2) * (Lmat(UnitQuaternion(point2)) - Lmat(UnitQuaternion(xa2))) * Lmat(qa1)*derivωbar(ωa, Δt)
 
     return [V W]
 end
 @inline function ∂g∂velb(joint::Translational, qa2, qb1, qb2, ωb, Δt)
     V = VLᵀmat(qa2) * RVᵀmat(qa2) * Δt
-    W = 2 * VLᵀmat(qa2) * Rmat(qa2) * Rᵀmat(qb2) * Rmat(Quaternion(joint.vertices[2])) * Lmat(qb1)*derivωbar(ωb, Δt)
+    W = 2 * VLᵀmat(qa2) * Rmat(qa2) * Rᵀmat(qb2) * Rmat(UnitQuaternion(joint.vertices[2])) * Lmat(qb1)*derivωbar(ωb, Δt)
 
     return [V W]
 end
 @inline function ∂g∂velb(joint::Translational{T}, qb1, qb2, ωb, Δt) where T
     V = SMatrix{3,3,T,9}(I) * Δt
-    W = 2 * VRᵀmat(qb2) * Rmat(Quaternion(joint.vertices[2])) * Lmat(qb1)*derivωbar(ωb, Δt)
+    W = 2 * VRᵀmat(qb2) * Rmat(UnitQuaternion(joint.vertices[2])) * Lmat(qb1)*derivωbar(ωb, Δt)
 
     return [V W]
 end

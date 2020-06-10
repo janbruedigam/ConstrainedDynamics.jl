@@ -18,7 +18,7 @@ vert21 = [0.;0.;l2 / 2]
 
 # Initial orientation
 phi1 = pi / 4
-q1 = Quaternion(RotX(phi1))
+q1 = UnitQuaternion(RotX(phi1))
 
 # Links
 origin = Origin{Float64}()

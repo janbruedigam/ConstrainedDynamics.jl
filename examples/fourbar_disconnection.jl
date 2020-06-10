@@ -17,9 +17,9 @@ verts = [[vert11];[vert12]]
 offset1 = pi / 8
 offset2 = pi / 4
 phi1 = pi / 8
-q1 = Quaternion(RotX(phi1))
-qoff1 = Quaternion(RotX(offset1))
-qoff2 = Quaternion(RotX(offset2))
+q1 = UnitQuaternion(RotX(phi1))
+qoff1 = UnitQuaternion(RotX(offset1))
+qoff2 = UnitQuaternion(RotX(offset2))
 
 # Links
 origin = Origin{Float64}()

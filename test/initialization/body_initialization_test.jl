@@ -44,8 +44,8 @@ for i=1:3
         p12 = rand(3)
         p21 = rand(3)
         Δx = rand(3)
-        q1 = Quaternion(rand(RotMatrix{3}))
-        Δq = Quaternion(rand(RotMatrix{3}))
+        q1 = UnitQuaternion(rand(RotMatrix{3}))
+        Δq = UnitQuaternion(rand(RotMatrix{3}))
         v1 = rand(3)
         Δv = rand(3)
 
@@ -81,9 +81,9 @@ for i=1:3
         end
 
         truex1 = [truex10 + truev1*Δt*i for i=0:999]
-        trueq1 = [Quaternion(cos(i*an1*Δt/2),(ax1*sin(i*an1*Δt/2))...)*trueq10 for i=0:999]
+        trueq1 = [UnitQuaternion(cos(i*an1*Δt/2), (ax1*sin(i*an1*Δt/2))..., false)*trueq10 for i=0:999]
         truex2 = [truex20 + truev2*Δt*i for i=0:999]
-        trueq2 = [Quaternion(cos(i*an2*Δt/2),(ax2*sin(i*an2*Δt/2))...)*trueq20 for i=0:999]
+        trueq2 = [UnitQuaternion(cos(i*an2*Δt/2), (ax2*sin(i*an2*Δt/2))..., false)*trueq20 for i=0:999]
 
         @test isapprox(sum(norm.(storage.x[1].-truex1))/1000, 0.0; atol = 1e-3)
         @test isapprox(sum(norm.(storage.q[1].-trueq1))/1000, 0.0; atol = 1e-3)
@@ -101,7 +101,7 @@ for i=1:3
     axis1 = zeros(3)
     axis1[i] = 1
 
-    q1 = Quaternion{Float64}()#Quaternion(rand(RotMatrix{3}))
+    q1 = one(UnitQuaternion)#UnitQuaternion(rand(RotMatrix{3}))
     p = rand(3)
     F = rand(3)
     τ = rand(3)
@@ -137,7 +137,7 @@ for i=1:3
     end
 
     truex1 = [truex10 + truev1*Δt*i for i=0:999]
-    trueq1 = [Quaternion(cos(i*an1*Δt/2),(ax1*sin(i*an1*Δt/2))...)*trueq10 for i=0:999]
+    trueq1 = [UnitQuaternion(cos(i*an1*Δt/2), (ax1*sin(i*an1*Δt/2))..., false)*trueq10 for i=0:999]
 
     @test isapprox(sum(norm.(storage.x[1].-truex1))/1000, 0.0; atol = 1e-3)
     @test isapprox(sum(norm.(storage.q[1].-trueq1))/1000, 0.0; atol = 1e-3)  

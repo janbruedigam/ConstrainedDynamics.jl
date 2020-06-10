@@ -13,7 +13,7 @@ p2 = [0.0;0.0;length1 / 2] # joint connection point
 
 # Initial orientation
 ϕ1 = π / 2
-q1 = Quaternion(RotX(ϕ1))
+q1 = UnitQuaternion(RotX(ϕ1))
 
 # Links
 origin = Origin{Float64}()

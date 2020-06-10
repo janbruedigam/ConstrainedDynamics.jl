@@ -1,6 +1,7 @@
 using ConstrainedDynamics
 using ForwardDiff
 using Rotations
+using Rotations: params
 using StaticArrays
 using LinearAlgebra
 
@@ -13,9 +14,9 @@ using ConstrainedDynamics: ∂g∂pos, ∂g∂vel, discretizestate!,
 function transtest3()
     Δt = 0.01
     xa1 = rand(3)
-    qa1 = Quaternion(rand(RotMatrix{3}))
+    qa1 = UnitQuaternion(rand(RotMatrix{3}))
     xb1 = rand(3)
-    qb1 = Quaternion(rand(RotMatrix{3}))
+    qb1 = UnitQuaternion(rand(RotMatrix{3}))
 
     va1 = rand(3)
     ωa1 = rand(3)
@@ -74,9 +75,9 @@ end
 function transtest2()
     Δt = 0.01
     xa = rand(3)
-    qa = Quaternion(rand(RotMatrix{3}))
+    qa = UnitQuaternion(rand(RotMatrix{3}))
     xb = rand(3)
-    qb = Quaternion(rand(RotMatrix{3}))
+    qb = UnitQuaternion(rand(RotMatrix{3}))
 
     va = rand(3)
     wa = rand(3)
@@ -136,9 +137,9 @@ end
 function transtest1()
     Δt = 0.01
     xa = rand(3)
-    qa = Quaternion(rand(RotMatrix{3}))
+    qa = UnitQuaternion(rand(RotMatrix{3}))
     xb = rand(3)
-    qb = Quaternion(rand(RotMatrix{3}))
+    qb = UnitQuaternion(rand(RotMatrix{3}))
 
     va = rand(3)
     wa = rand(3)
@@ -199,16 +200,16 @@ end
 function rottest3()
     Δt = 0.01
     xa = rand(3)
-    qa = Quaternion(rand(RotMatrix{3}))
+    qa = UnitQuaternion(rand(RotMatrix{3}))
     xb = rand(3)
-    qb = Quaternion(rand(RotMatrix{3}))
+    qb = UnitQuaternion(rand(RotMatrix{3}))
 
     va = rand(3)
     wa = rand(3)
     vb = rand(3)
     wb = rand(3)
 
-    qoffset = Quaternion(rand(RotMatrix{3}))
+    qoffset = UnitQuaternion(rand(RotMatrix{3}))
 
 
     origin = Origin{Float64}()
@@ -226,7 +227,7 @@ function rottest3()
     discretizestate!(body1, Δt)
     discretizestate!(body2, Δt)
 
-    res = ForwardDiff.jacobian(rotfunc3pos, [getxqkvector(body1.state);getxqkvector(body2.state);qoffset])
+    res = ForwardDiff.jacobian(rotfunc3pos, [getxqkvector(body1.state);getxqkvector(body2.state);params(qoffset)])
     X1 = res[1:3,1:3]
     Q1 = res[1:3,4:7] * LVᵀmat(getqk(body1.state))
     X2 = res[1:3,8:10]
@@ -238,7 +239,7 @@ function rottest3()
     n22 = norm(Q2 - ∂g∂pos(mech, joint1, 2)[1:3,4:6])
 
 
-    res = ForwardDiff.jacobian(rotfunc3vel, [getstateandvestimate(body1.state);getstateandvestimate(body2.state);qoffset])
+    res = ForwardDiff.jacobian(rotfunc3vel, [getstateandvestimate(body1.state);getstateandvestimate(body2.state);params(qoffset)])
     V1 = res[1:3,14:16]
     W1 = res[1:3,17:19]
     V2 = res[1:3,33:35]
@@ -257,16 +258,16 @@ end
 function rottest2()
     Δt = 0.01
     xa = rand(3)
-    qa = Quaternion(rand(RotMatrix{3}))
+    qa = UnitQuaternion(rand(RotMatrix{3}))
     xb = rand(3)
-    qb = Quaternion(rand(RotMatrix{3}))
+    qb = UnitQuaternion(rand(RotMatrix{3}))
 
     va = rand(3)
     wa = rand(3)
     vb = rand(3)
     wb = rand(3)
 
-    qoffset = Quaternion(rand(RotMatrix{3}))
+    qoffset = UnitQuaternion(rand(RotMatrix{3}))
 
     v = rand(3)
 
@@ -287,7 +288,7 @@ function rottest2()
     discretizestate!(body1, Δt)
     discretizestate!(body2, Δt)
 
-    res = ForwardDiff.jacobian(rotfunc2pos, [getxqkvector(body1.state);getxqkvector(body2.state);qoffset;V12[1,:];V12[2,:]])
+    res = ForwardDiff.jacobian(rotfunc2pos, [getxqkvector(body1.state);getxqkvector(body2.state);params(qoffset);V12[1,:];V12[2,:]])
     X1 = res[1:2,1:3]
     Q1 = res[1:2,4:7] * LVᵀmat(getqk(body1.state))
     X2 = res[1:2,8:10]
@@ -299,7 +300,7 @@ function rottest2()
     n22 = norm(Q2 - ∂g∂pos(mech, joint1, 2)[1:2,4:6])
 
 
-    res = ForwardDiff.jacobian(rotfunc2vel, [getstateandvestimate(body1.state);getstateandvestimate(body2.state);qoffset;V12[1,:];V12[2,:]])
+    res = ForwardDiff.jacobian(rotfunc2vel, [getstateandvestimate(body1.state);getstateandvestimate(body2.state);params(qoffset);V12[1,:];V12[2,:]])
     V1 = res[1:2,14:16]
     W1 = res[1:2,17:19]
     V2 = res[1:2,33:35]
@@ -318,16 +319,16 @@ end
 function rottest1()
     Δt = 0.01
     xa = rand(3)
-    qa = Quaternion(rand(RotMatrix{3}))
+    qa = UnitQuaternion(rand(RotMatrix{3}))
     xb = rand(3)
-    qb = Quaternion(rand(RotMatrix{3}))
+    qb = UnitQuaternion(rand(RotMatrix{3}))
 
     va = rand(3)
     wa = rand(3)
     vb = rand(3)
     wb = rand(3)
 
-    qoffset = Quaternion(rand(RotMatrix{3}))
+    qoffset = UnitQuaternion(rand(RotMatrix{3}))
 
     v = rand(3)
 
@@ -348,7 +349,7 @@ function rottest1()
     discretizestate!(body1, Δt)
     discretizestate!(body2, Δt)
 
-    res = ForwardDiff.gradient(rotfunc1pos, [getxqkvector(body1.state);getxqkvector(body2.state);qoffset;V3])
+    res = ForwardDiff.gradient(rotfunc1pos, [getxqkvector(body1.state);getxqkvector(body2.state);params(qoffset);V3])
     X1 = res[1:3]'
     Q1 = res[4:7]' * LVᵀmat(getqk(body1.state))
     X2 = res[8:10]'
@@ -360,7 +361,7 @@ function rottest1()
     n22 = norm(Q2 - ∂g∂pos(mech, joint1, 2)[4:6]')
 
 
-    res = ForwardDiff.gradient(rotfunc1vel, [getstateandvestimate(body1.state);getstateandvestimate(body2.state);qoffset;V3])
+    res = ForwardDiff.gradient(rotfunc1vel, [getstateandvestimate(body1.state);getstateandvestimate(body2.state);params(qoffset);V3])
     V1 = res[14:16]'
     W1 = res[17:19]'
     V2 = res[33:35]'

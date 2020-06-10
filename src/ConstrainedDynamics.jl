@@ -4,6 +4,7 @@ using LinearAlgebra
 using StaticArrays
 using StaticArrays: SUnitRange
 using Rotations
+using Rotations: pure_quaternion, params, lmult, rmult, tmat, vmat, hmat, skew
 
 using Colors: RGBA, RGB
 using LightXML
@@ -13,7 +14,7 @@ export Box,
     Sphere,
     Mesh,
 
-    Quaternion,
+    UnitQuaternion,
     Origin,
     Body,
     EqualityConstraint,
@@ -93,7 +94,7 @@ include(joinpath("components", "inequalityconstraint.jl"))
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "storage.jl"))
 
-include(joinpath("control", "controller.jl"))
+include(joinpath("components", "controller.jl"))
 
 include(joinpath("solver", "sparseldu.jl"))
 include(joinpath("components", "mechanism.jl"))

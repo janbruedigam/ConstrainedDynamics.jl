@@ -141,7 +141,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
 
         graph = mechanism.graph
         xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
-        qjointlist = Dict{Int64,Quaternion{T}}() # stores id, q in world frame
+        qjointlist = Dict{Int64,UnitQuaternion{T}}() # stores id, q in world frame
 
         for id in graph.rdfslist
             component = getcomponent(mechanism, id)
@@ -176,10 +176,10 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
                     pbody = origin
 
                     xpbody = SVector{3,T}(0, 0, 0)
-                    qpbody = Quaternion{T}()
+                    qpbody = one(UnitQuaternion{T})
 
                     xpjointworld = SVector{3,T}(0, 0, 0)
-                    qpjointworld = Quaternion{T}()
+                    qpjointworld = one(UnitQuaternion{T})
                 end
 
                 # urdf joint's x and q in parent's (pbody) frame

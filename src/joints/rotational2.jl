@@ -1,5 +1,5 @@
 @inline function getPositionDelta(joint::Rotational2, body1::AbstractBody, body2::Body{T}, θ::SVector{1,T}) where T
-    q = Quaternion(cos(θ[1]/2),(joint.V3*sin(θ[1]/2))...)
+    q = UnitQuaternion(cos(θ[1]/2), (joint.V3*sin(θ[1]/2))..., false)
     Δq = joint.qoff * q # in body1 frame
     return Δq
 end
@@ -27,12 +27,12 @@ end
     statea = body1.state
     stateb = body2.state
     q = g(joint, statea.qc, stateb.qc)
-    return joint.V3 * axis(q) * angle(q) 
+    return joint.V3 * rotation_vector(q)
 end
 @inline function minimalCoordinates(joint::Rotational2, body1::Origin, body2::Body)
     stateb = body2.state
     q = g(joint, stateb.qc)
-    return joint.V3 * axis(q) * angle(q)
+    return joint.V3 * rotation_vector(q)
 end
 
 @inline g(joint::Rotational2, body1::Body, body2::Body, Δt) = joint.V12 * g(joint, body1.state, body2.state, Δt)
