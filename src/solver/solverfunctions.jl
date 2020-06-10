@@ -98,7 +98,7 @@ function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, ine
     for i = 1:N
         αmax = τ * s1[i] / Δs[i]
         (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
-        αmax = τ * γ1[i] / Δγ[i]
+        αmax = τ * γ1[i] / -Δγ[i]
         (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
     end
     return
