@@ -1,5 +1,5 @@
-function parse_scalar(xel, name::String, T; default::String)
-    if xel == nothing
+function parse_scalar(xel, name::String, T; default::String="0")
+    if xel === nothing
         scalar = parse(T, default)
     else
         scalar = parse(T, attribute(xel, name))
@@ -8,8 +8,8 @@ function parse_scalar(xel, name::String, T; default::String)
     return scalar
 end
 
-function parse_vector(xel, name::String, T; default::String)
-    if xel == nothing || attribute(xel, name) == nothing
+function parse_vector(xel, name::String, T; default::String="0")
+    if xel === nothing || attribute(xel, name) === nothing
         vec = [parse(T, str) for str in split(default)]
     else
         vec = [parse(T, str) for str in split(attribute(xel, name))]
@@ -19,7 +19,7 @@ function parse_vector(xel, name::String, T; default::String)
 end
 
 function parse_inertia_matrix(xinertia, T)
-    if xinertia == nothing
+    if xinertia === nothing
         J = zeros(T, 3, 3)
     else
         ixx = parse_scalar(xinertia, "ixx", T, default = "0")
@@ -35,7 +35,7 @@ function parse_inertia_matrix(xinertia, T)
 end
 
 function parse_pose(xpose, T)
-    if xpose == nothing
+    if xpose === nothing
         x, q = zeros(T, 3), one(UnitQuaternion{T})
     else
         x = parse_vector(xpose, "xyz", T, default = "0 0 0")
@@ -47,7 +47,7 @@ function parse_pose(xpose, T)
 end
 
 function parse_inertia(xinertial, T)
-    if xinertial == nothing
+    if xinertial === nothing
         x = zeros(T, 3)
         q = one(UnitQuaternion{T})
         m = zero(T)
@@ -62,7 +62,7 @@ function parse_inertia(xinertial, T)
 end
 
 function parse_xmaterial(xmaterial, T)
-    if xmaterial == nothing
+    if xmaterial === nothing
         color = RGBA(0.75, 0.75, 0.75)
     else
         colornode = find_element(xmaterial, "color")
@@ -74,11 +74,11 @@ function parse_xmaterial(xmaterial, T)
 end
 
 function parse_shape(xvisual, T)
-    if xvisual == nothing
+    if xvisual === nothing
         shape = nothing
     else
         xgeometry = find_element(xvisual, "geometry")
-        @assert xgeometry != nothing
+        @assert xgeometry !== nothing
 
         color = parse_xmaterial(find_element(xvisual, "material"), T)
         x, q = parse_pose(find_element(xvisual, "origin"), T)
@@ -123,7 +123,6 @@ function parse_shape(xvisual, T)
     return shape
 end
 
-# TODO clean up relative shape to body frame
 function parse_link(xlink, T)
     xvisual = find_element(xlink, "visual")
 
@@ -131,7 +130,7 @@ function parse_link(xlink, T)
     shape = parse_shape(find_element(xlink, "visual"), T)
     name = attribute(xlink, "name")
 
-    if shape == nothing
+    if shape === nothing
         link = Body(m, J, name=name)
     else
         shape.m = m
@@ -153,7 +152,7 @@ function parse_links(xlinks, T)
     for xlink in xlinks
         link, shape = parse_link(xlink, T)
         ldict[link.name] = link
-        shape != nothing && push!(shapes, shape)
+        shape !== nothing && push!(shapes, shape)
     end
 
     return ldict, shapes

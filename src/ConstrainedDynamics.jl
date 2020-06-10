@@ -94,7 +94,7 @@ include(joinpath("components", "inequalityconstraint.jl"))
 include(joinpath("util", "graph.jl"))
 include(joinpath("util", "storage.jl"))
 
-include(joinpath("control", "controller.jl"))
+include(joinpath("components", "controller.jl"))
 
 include(joinpath("solver", "sparseldu.jl"))
 include(joinpath("components", "mechanism.jl"))
