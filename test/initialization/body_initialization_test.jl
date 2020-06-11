@@ -101,7 +101,7 @@ for i=1:3
     axis1 = zeros(3)
     axis1[i] = 1
 
-    q1 = one(UnitQuaternion)#rand(UnitQuaternion)
+    q1 = rand(UnitQuaternion)
     p = rand(3)
     F = rand(3)
     τ = rand(3)
