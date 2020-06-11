@@ -44,8 +44,8 @@ for i=1:3
         p12 = rand(3)
         p21 = rand(3)
         Δx = rand(3)
-        q1 = UnitQuaternion(rand(RotMatrix{3}))
-        Δq = UnitQuaternion(rand(RotMatrix{3}))
+        q1 = rand(UnitQuaternion)
+        Δq = rand(UnitQuaternion)
         v1 = rand(3)
         Δv = rand(3)
 
@@ -101,7 +101,7 @@ for i=1:3
     axis1 = zeros(3)
     axis1[i] = 1
 
-    q1 = one(UnitQuaternion)#UnitQuaternion(rand(RotMatrix{3}))
+    q1 = rand(UnitQuaternion)
     p = rand(3)
     F = rand(3)
     τ = rand(3)

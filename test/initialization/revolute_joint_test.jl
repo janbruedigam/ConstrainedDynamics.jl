@@ -19,7 +19,7 @@ for i=1:10
 
     axis = rand(3)
     axis = axis/norm(axis)
-    qoff = one(UnitQuaternion) # UnitQuaternion(rand(RotMatrix{3}))
+    qoff = one(UnitQuaternion) # rand(UnitQuaternion)
 
 
     # Constraints

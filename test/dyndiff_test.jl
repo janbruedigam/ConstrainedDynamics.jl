@@ -14,7 +14,7 @@ function dyntestT()
     v1 = rand(3)
     v2 = rand(3)
 
-    q1 = UnitQuaternion(rand(RotMatrix{3}))
+    q1 = rand(UnitQuaternion)
     ω1 = @SVector rand(3)
     ω2 = @SVector rand(3)
 
@@ -47,7 +47,7 @@ function dyntestR()
     v1 = rand(3)
     v2 = rand(3)
 
-    q1 = UnitQuaternion(rand(RotMatrix{3}))
+    q1 = rand(UnitQuaternion)
     ω1 = @SVector rand(3)
     ω2 = @SVector rand(3)
 
