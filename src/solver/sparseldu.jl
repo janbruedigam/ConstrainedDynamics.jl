@@ -44,8 +44,9 @@ struct SparseLDU{T}
     offdiagonals::Dict{Tuple{Int64,Int64},OffDiagonalEntry{T}}
     inequalities::UnitDict{UnitRange{Int64},InequalityEntry{T}}
 
-    function SparseLDU(graph::Graph{N},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}},
-        ineqcs::Vector{<:InequalityConstraint{T}},bdict::Dict,eqdict::Dict,ineqdict::Dict) where {T,N}
+    function SparseLDU(graph::Graph{N}, bodies::Vector{Body{T}}, eqcs::Vector{<:EqualityConstraint{T}},
+            ineqcs::Vector{<:InequalityConstraint{T}}, bdict::Dict, eqdict::Dict,ineqdict::Dict
+        ) where {T,N}
 
         diagonals = DiagonalEntry{T}[]
         for body in bodies

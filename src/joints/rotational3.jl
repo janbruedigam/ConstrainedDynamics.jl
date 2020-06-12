@@ -1,8 +1,8 @@
-@inline function getPositionDelta(joint::Rotational3, body1::AbstractBody, body2::Body{T}, θ::SVector{0,T}) where T
+@inline function getPositionDelta(joint::Rotational3, body1::AbstractBody, body2::Body, θ::SVector{0,T}) where T
     Δq = joint.qoff
     return Δq
 end
-@inline function getVelocityDelta(joint::Rotational3, body1::AbstractBody, body2::Body{T}, ω::SVector{0,T}) where T
+@inline function getVelocityDelta(joint::Rotational3, body1::AbstractBody, body2::Body, ω::SVector{0,T}) where T
     Δω = @SVector zeros(T,3)
     return Δω
 end
@@ -14,7 +14,7 @@ end
     return @SMatrix zeros(T, 6, 0)
 end
 
-@inline minimalCoordinates(joint::Rotational3, body1::AbstractBody{T}, body2::Body) where T = SVector{0,T}()
+@inline minimalCoordinates(joint::Rotational3{T}, body1::AbstractBody, body2::Body) where T = SVector{0,T}()
 
 @inline g(joint::Rotational3, body1::Body, body2::Body, Δt) = g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Rotational3, body1::Origin, body2::Body, Δt) = g(joint, body2.state, Δt)

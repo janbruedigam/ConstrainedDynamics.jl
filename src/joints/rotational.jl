@@ -8,7 +8,10 @@ mutable struct Rotational{T,N} <: Joint{T,N}
 
     childid::Int64
 
-    function Rotational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T}; axis::AbstractVector{T} = zeros(3), qoffset::UnitQuaternion{T} = one(UnitQuaternion{T})) where {T,N}
+    function Rotational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T}; 
+            axis::AbstractVector{T} = zeros(3), qoffset::UnitQuaternion{T} = one(UnitQuaternion{T})
+        ) where {T,N}
+        
         axis = vrotate(SVector(axis...), inv(qoffset))
         if norm(axis) != 0
             axis = axis / norm(axis)

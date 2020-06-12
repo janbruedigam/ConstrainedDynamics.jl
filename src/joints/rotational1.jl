@@ -1,18 +1,18 @@
 # No idea what kind of joint this actually is...
-@inline function getPositionDelta(joint::Rotational1, body1::AbstractBody, body2::Body{T}, θ) where T
+@inline function getPositionDelta(joint::Rotational1, body1::AbstractBody, body2::Body, θ::SVector{2,T}) where T
     #TODO define this function
     @error("not defined for rot2")
 end
-@inline function getVelocityDelta(joint::Rotational1, body1::AbstractBody, body2::Body{T}, ω) where T
+@inline function getVelocityDelta(joint::Rotational1, body1::AbstractBody, body2::Body, ω::SVector{2,T}) where T
     #TODO define this function
     @error("not defined for rot2")
 end
 
-@inline function setForce!(joint::Rotational1, body1::Body, body2::Body{T}, τ::SVector{2,T}) where T
+@inline function setForce!(joint::Rotational1, body1::Body, body2::Body, τ::SVector{2,T}) where T
     setForce!(joint, body1.state, body2.state, joint.V12' * τ)
     return
 end
-@inline function setForce!(joint::Rotational1, body1::Origin, body2::Body{T}, τ::SVector{2,T}) where T
+@inline function setForce!(joint::Rotational1, body1::Origin, body2::Body, τ::SVector{2,T}) where T
     setForce!(joint, body2.state, joint.V12' * τ)
     return
 end

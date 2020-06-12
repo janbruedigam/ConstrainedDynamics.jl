@@ -19,8 +19,9 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
 
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
-        eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+            eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
+            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+        ) where T
 
         resetGlobalID()
         order = getGlobalOrder()
@@ -108,14 +109,16 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+        ) where T
 
         ineqcs = InequalityConstraint{T}[]
         return Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+        ) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
@@ -125,7 +128,8 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
-        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+        ) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies

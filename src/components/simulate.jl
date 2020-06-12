@@ -27,7 +27,10 @@ function initializeSimulation!(mechanism::Mechanism, debug::Bool)
 end
 
 # with control function 
-function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T}, control!::Function;record::Bool = false,debug::Bool = false) where T
+function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T}, control!::Function;
+        record::Bool = false,debug::Bool = false
+    ) where T
+
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
     graph = mechanism.graph
@@ -43,7 +46,10 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
 end
 
 # with controller
-function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T}, controller::Controller;record::Bool = false,debug::Bool = false) where T
+function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T}, controller::Controller;
+        record::Bool = false,debug::Bool = false
+    ) where T
+
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
     graph = mechanism.graph
@@ -61,7 +67,10 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
 end
 
 # without control
-function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T}; record::Bool = false,debug::Bool = false) where T
+function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T};
+        record::Bool = false,debug::Bool = false
+    ) where T
+
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
     graph = mechanism.graph
@@ -75,14 +84,20 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
     record ? (return storage) : (return) 
 end
 
-function simulate!(mechanism::Mechanism{T}, tend::T, args...; record::Bool = false,debug::Bool = false) where T
+function simulate!(mechanism::Mechanism{T}, tend::T, args...;
+        record::Bool = false,debug::Bool = false
+    ) where T
+
     steps = Base.OneTo(Int64(ceil(tend / mechanism.Δt)))
     record ? storage = Storage{T}(steps,length(mechanism.bodies)) : storage = Storage{T}()        
     storage = simulate!(mechanism, steps, storage, args...;record=record,debug=debug)
     return storage # can be "nothing"
 end
 
-function simulate!(mechanism::Mechanism{T}, storage::Storage{T,N}, args...; record::Bool = true,debug::Bool = false) where {T,N}
+function simulate!(mechanism::Mechanism{T}, storage::Storage{T,N}, args...;
+        record::Bool = true,debug::Bool = false
+    ) where {T,N}
+    
     steps = Base.OneTo(N)
     storage = simulate!(mechanism, steps, storage, args...;record=record,debug=debug)
     return storage

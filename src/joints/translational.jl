@@ -9,7 +9,8 @@ mutable struct Translational{T,N} <: Joint{T,N}
     childid::Int64
 
     function Translational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T};
-        p1::AbstractVector{T} = zeros(3), p2::AbstractVector{T} = zeros(3), axis::AbstractVector{T} = zeros(3)) where {T,N}
+            p1::AbstractVector{T} = zeros(3), p2::AbstractVector{T} = zeros(3), axis::AbstractVector{T} = zeros(3)
+        ) where {T,N}
         
         vertices = (p1, p2)
         if norm(axis) != 0

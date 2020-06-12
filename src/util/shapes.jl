@@ -11,7 +11,10 @@ mutable struct Mesh{T} <: Shape{T}
     path::String
     color::RGBA
 
-    function Mesh(path::String, m::T, J::AbstractMatrix{T};color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
+    function Mesh(path::String, m::T, J::AbstractMatrix{T};
+            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})
+        ) where T
+
         bodyids = Int64[]
         new{T}(bodyids, m, J, xoff, qoff, path, color)
     end
@@ -28,7 +31,10 @@ mutable struct Box{T} <: Shape{T}
     xyz::SVector{3,T}
     color::RGBA
 
-    function Box(x, y, z, m::T;color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
+    function Box(x, y, z, m::T;
+            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})
+        ) where T
+
         J = 1 / 12 * m * diagm([y^2 + z^2;x^2 + z^2;x^2 + y^2])
         bodyids = Int64[]
 
@@ -49,7 +55,9 @@ mutable struct Cylinder{T} <: Shape{T}
 
     # by default the cylinder points in the z direction
     # TODO other direction
-    function Cylinder(r, h, m::T;color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
+    function Cylinder(r, h, m::T;
+            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})
+        ) where T
         J = 1 / 2 * m * diagm([r^2 + 1 / 6 * h^2;r^2 + 1 / 6 * h^2;r^2])
         bodyids = Int64[]
 
@@ -68,7 +76,9 @@ mutable struct Sphere{T} <: Shape{T}
     r::T
     color::RGBA
 
-    function Sphere(r, m::T;color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
+    function Sphere(r, m::T;
+            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})
+        ) where T
         J = 2 / 5 * m * diagm([r^2 for i = 1:3])
         bodyids = Int64[]
 

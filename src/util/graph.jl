@@ -14,7 +14,8 @@ struct Graph{N}
     activedict::UnitDict{Base.OneTo{Int64},Bool}
 
     function Graph(origin::Origin,bodies::Vector{<:Body},
-        eqconstraints::Vector{<:EqualityConstraint},ineqconstraints::Vector{<:InequalityConstraint})
+            eqconstraints::Vector{<:EqualityConstraint},ineqconstraints::Vector{<:InequalityConstraint}
+        )
 
         oid = origin.id
         adjacency, dict = adjacencyMatrix(eqconstraints, bodies)
@@ -116,7 +117,10 @@ function dfs(adjacency::Matrix, dict::Dict, originid::Integer)
     return dfsgraph, convert(SVector{N}, dfslist), loops
 end
 
-function dfs!(A::Matrix, Adfs::Matrix, dict::Dict, list::Vector, visited::Vector, loops::Vector{<:Vector{<:Integer}}, index::Integer, currentid::Integer, parentid::Integer)
+function dfs!(A::Matrix, Adfs::Matrix, dict::Dict, list::Vector, visited::Vector, loops::Vector{<:Vector{<:Integer}},
+        index::Integer, currentid::Integer, parentid::Integer
+    )
+    
     i = dict[currentid]
     for (childid, j) in dict
         if A[i,j] && parentid != childid # connection from i to j in adjacency && not a direct connection back to the parent

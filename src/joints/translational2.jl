@@ -1,17 +1,17 @@
-@inline function getPositionDelta(joint::Translational2, body1::AbstractBody, body2::Body{T}, x::SVector{1,T}) where T
+@inline function getPositionDelta(joint::Translational2, body1::AbstractBody, body2::Body, x::SVector{1,T}) where T
     Δx = joint.V3' * x # in body1 frame
     return Δx
 end
-@inline function getVelocityDelta(joint::Translational2, body1::AbstractBody, body2::Body{T}, v::Union{T,SVector{1,T}}) where T
+@inline function getVelocityDelta(joint::Translational2, body1::AbstractBody, body2::Body, v::Union{T,SVector{1,T}}) where T
     Δv = joint.V3' * v # in body1 frame
     return Δv
 end
 
-@inline function setForce!(joint::Translational2, body1::Body, body2::Body{T}, F::SVector{1,T}) where T
+@inline function setForce!(joint::Translational2, body1::Body, body2::Body, F::SVector{1,T}) where T
     setForce!(joint, body1.state, body2.state, joint.V3' * F)
     return
 end
-@inline function setForce!(joint::Translational2, body1::Origin, body2::Body{T}, F::SVector{1,T}) where T
+@inline function setForce!(joint::Translational2, body1::Origin, body2::Body, F::SVector{1,T}) where T
     setForce!(joint, body2.state, joint.V3' * F)
     return
 end
