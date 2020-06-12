@@ -78,3 +78,17 @@ end
     return
 end
 
+@inline function settempvars!(body::Body{T}, x, v, F, q, ω, τ, d) where T
+    state = body.state
+    stateold = deepcopy(state)
+
+    state.xc = x
+    state.qc = q
+    state.vc = v
+    state.ωc = ω
+    state.Fk[1] = F
+    state.τk[1] = τ
+    state.d = d
+
+    return stateold
+end
