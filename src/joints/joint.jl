@@ -16,3 +16,5 @@ getN(joint::Joint{T,N}) where {T,N} = N
 @inline ∂g∂vela(joint::Joint{T,N}) where {T,N} = @SMatrix zeros(T, N, 6)
 @inline ∂g∂velb(joint::Joint{T,N}) where {T,N} = @SMatrix zeros(T, N, 6)
 @inline ∂g∂con(joint::Joint{T,N}) where {T,N} = @SMatrix zeros(T, N, 6)
+
+@inline ∂Fτb∂u(joint::Joint{T,N}) where {T,N} = @SMatrix zeros(T, 6, 3 - N)

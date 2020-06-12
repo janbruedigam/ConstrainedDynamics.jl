@@ -215,3 +215,63 @@ end
     stateb.τk[2] += τb
     return
 end
+
+
+@inline function ∂Fτa∂u(joint::Translational, statea::State)
+    vertices = joint.vertices
+    qa = statea.qk[2]
+
+    BFa = -VLmat(qa) * RᵀVᵀmat(qa)
+    Bτa = VLᵀmat(qa) * RVᵀmat(qa) * skew(BFa*vertices[1])
+
+    return [BFa; Bτa]
+end
+@inline function ∂Fτb∂u(joint::Translational, statea::State, stateb::State)
+    vertices = joint.vertices
+    qa = statea.qk[2]
+    qb = stateb.qk[2]
+
+    BFb = VLmat(qa) * RᵀVᵀmat(qa)
+    Bτb = VLᵀmat(qb) * RVᵀmat(qb) * skew(BFb*vertices[2])
+
+    return [BFb; Bτb]
+end
+@inline function ∂Fτb∂u(joint::Translational{T}, stateb::State) where T
+    vertices = joint.vertices
+    qb = stateb.qk[2]
+
+    BFb = SMatrix{3,3,T,9}(I)
+    Bτb = VLᵀmat(qb) * RVᵀmat(qb) * skew(vertices[2])
+
+    return [BFb; Bτb]
+end
+
+@inline function ∂Fτa∂u(joint::Rotational{T}, statea::State) where T
+    qoff = joint.qoff
+
+    BFa = (@SMatrix zeros(T, 3, 3))
+    Bτa = -VLmat(qoff) * RᵀVᵀmat(qoff)
+
+    return [BFa; Bτa]
+end
+@inline function ∂Fτb∂u(joint::Rotational{T}, statea::State, stateb::State) where T
+    qa = statea.qk[2]
+    qb = stateb.qk[2]
+    qoff = joint.qoff
+    qaiqaqoff = qb\qa*qoff
+
+    BFb = (@SMatrix zeros(T, 3, 3))
+    Bτb = -VLmat(qaiqaqoff) * RᵀVᵀmat(qaiqaqoff)
+
+    return [BFb; Bτb]
+end
+@inline function ∂Fτb∂u(joint::Rotational{T}, stateb::State) where T
+    qb = stateb.qk[2]
+    qoff = joint.qoff
+    qaiqoff = qb\qoff
+
+    BFb = (@SMatrix zeros(T, 3, 3))
+    Bτb = -VLmat(qaiqoff) * RᵀVᵀmat(qaiqoff)
+
+    return [BFb; Bτb]
+end

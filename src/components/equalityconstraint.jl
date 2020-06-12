@@ -119,15 +119,10 @@ end
     id == eqc.parentid ? (return ∂g∂vela(mechanism, eqc, id)) : (return ∂g∂velb(mechanism, eqc, id))
 end
 
-@inline function ∂g∂con(mechanism, eqc::EqualityConstraint, id::Integer)
-    return ∂g∂con(mechanism, eqc)
-end
-
 @generated function ∂g∂posa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂posa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
-
 @generated function ∂g∂posb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂posb(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
     return :(vcat($(vec...)))
@@ -137,13 +132,16 @@ end
     vec = [:(∂g∂vela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]), mechanism.Δt)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
-
 @generated function ∂g∂velb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂velb(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), mechanism.Δt)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂con(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
-    vec = [:(∂g∂con(eqc.constraints[$i])) for i = 1:Nc]
-    return :(vcat($(vec...)))
+@generated function ∂Fτ∂ua(mechanism, eqc::EqualityConstraint{T,N,Nc}, id) where {T,N,Nc}
+    vec = [:(∂Fτ∂ua(eqc.constraints[$i]), getbody(mechanism, id)) for i = 1:Nc]
+    return :(hcat($(vec...)))
+end
+@generated function ∂Fτ∂ub(mechanism, eqc::EqualityConstraint{T,N,Nc}, id) where {T,N,Nc}
+    vec = [:(∂Fτ∂ub(eqc.constraints[$i]), getbody(mechanism, eqc.parentid), getbody(mechanism, id)) for i = 1:Nc]
+    return :(hcat($(vec...)))
 end

@@ -16,6 +16,24 @@ end
     return
 end
 
+@inline function ∂Fτa∂u(joint::Translational2, body1::Body)
+    return ∂Fτa∂u(joint, body1.state) * joint.V3'
+end
+@inline function ∂Fτb∂u(joint::Translational2, body1::Body, body2::Body)
+    if body2.id == joint.cid
+        return ∂Fτb∂u(joint, body1.state, body2.state) * joint.V3'
+    else
+        return ∂Fτb∂u(joint)
+    end
+end
+@inline function ∂Fτb∂u(joint::Translational2, body1::Origin, body2::Body)
+    if body2.id == joint.cid
+        return return ∂Fτb∂u(joint, body2.state) * joint.V3'
+    else
+        return ∂Fτb∂u(joint)
+    end
+end
+
 @inline function minimalCoordinates(joint::Translational2, body1::Body, body2::Body)
     statea = body1.state
     stateb = body2.state

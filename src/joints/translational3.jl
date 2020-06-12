@@ -7,6 +7,13 @@ end
     return Δv
 end
 
+@inline function ∂Fτa∂u(joint::Translational3{T}, body1::Body) where T
+    return @SMatrix zeros(T, 6, 0)
+end
+@inline function ∂Fτb∂u(joint::Translational3{T}, body1::AbstractBody, body2::Body) where T
+    return @SMatrix zeros(T, 6, 0)
+end
+
 @inline minimalCoordinates(joint::Translational3, body1::AbstractBody{T}, body2::Body) where T = SVector{0,T}()
 
 @inline g(joint::Translational3, body1::Body, body2::Body, Δt) = g(joint, body1.state, body2.state, Δt)
