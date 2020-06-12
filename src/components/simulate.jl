@@ -68,8 +68,8 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
     bodies = mechanism.bodies
    
     for k = steps
-        newton!(mechanism, warning = debug)
         record && saveToStorage!(mechanism, storage, k)
+        newton!(mechanism, warning = debug)
         foreachactive(updatestate!, graph, bodies, Δt)
     end
     record ? (return storage) : (return) 
