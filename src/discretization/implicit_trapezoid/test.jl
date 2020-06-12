@@ -16,7 +16,7 @@
     return
 end
 
-@inline getxqkvector(state) = [state.xk[2];state.qk[2]]
+@inline getxqkvector(state) = [state.xk[2];params(state.qk[2])]
 @inline getxk(state) = state.xk[2]
 @inline getqk(state) = state.qk[2]
 @inline getstateandvestimate(state) = [getxqkvector(state);state.vc;state.ωc;state.vsol[2];state.ωsol[2]]
@@ -196,7 +196,7 @@ function rotfunc3pos(vars)
 
     offset = UnitQuaternion(SVector(vars[15:18]...))
 
-    return VLᵀmat(offset) * Lᵀmat(qa) * qb
+    return VLᵀmat(offset) * Lᵀmat(qa) * params(qb)
 end
 
 function rotfunc2pos(vars)
@@ -211,7 +211,7 @@ function rotfunc2pos(vars)
     V2 = vars[22:24]
     V12 = [V1';V2']
 
-    return V12 * VLᵀmat(offset) * Lᵀmat(qa) * qb
+    return V12 * VLᵀmat(offset) * Lᵀmat(qa) * params(qb)
 end
 
 function rotfunc1pos(vars)
@@ -224,7 +224,7 @@ function rotfunc1pos(vars)
 
     V3 = vars[19:21]
 
-    return V3' * VLᵀmat(offset) * Lᵀmat(qa) * qb
+    return V3' * VLᵀmat(offset) * Lᵀmat(qa) * params(qb)
 end
 
 
@@ -253,7 +253,7 @@ function rotfunc3vel(vars)
 
     offset = UnitQuaternion(SVector(vars[39:42]...))
 
-    return VLᵀmat(offset) * Lᵀmat(qa2) * qb2
+    return VLᵀmat(offset) * Lᵀmat(qa2) * params(qb2)
 end
 
 function rotfunc2vel(vars)
@@ -285,7 +285,7 @@ function rotfunc2vel(vars)
     V2 = vars[46:48]
     V12 = [V1';V2']    
 
-    return V12 * VLᵀmat(offset) * Lᵀmat(qa2) * qb2
+    return V12 * VLᵀmat(offset) * Lᵀmat(qa2) * params(qb2)
 end
 
 function rotfunc1vel(vars)
@@ -315,5 +315,5 @@ function rotfunc1vel(vars)
 
     V3 = vars[43:45]
 
-    return V3' * VLᵀmat(offset) * Lᵀmat(qa2) * qb2
+    return V3' * VLᵀmat(offset) * Lᵀmat(qa2) * params(qb2)
 end
