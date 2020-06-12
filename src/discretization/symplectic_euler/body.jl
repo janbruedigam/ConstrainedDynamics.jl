@@ -13,7 +13,7 @@
     sq2 = sqrt(4 / Δt^2 - ω2' * ω2)
     dynR = skewplusdiag(ω2, sq2) * (J * ω2) - skewplusdiag(ω1, sq1) * (J * ω1) - 2 * state.τk[1]
 
-    body.f = [dynT;dynR]
+    state.d = [dynT;dynR]
 
     for cid in connections(mechanism.graph, body.id)
         isinactive(graph, cid) && continue
@@ -25,7 +25,7 @@
         NtγTof!(mechanism, body, getineqconstraint(mechanism, cid))
     end
 
-    return body.f
+    return state.d
 end
 
 @inline function ∂dyn∂vel(body::Body{T}, Δt) where T

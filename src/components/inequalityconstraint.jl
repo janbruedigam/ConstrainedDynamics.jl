@@ -55,9 +55,10 @@ function resetVars!(ineqc::InequalityConstraint{T,N}) where {T,N}
 end
 
 @inline function NtγTof!(mechanism, body::Body, ineqc::InequalityConstraint{T,N}) where {T,N}
-    body.f -= ∂g∂pos(mechanism, ineqc, body)' * ineqc.γsol[2]
+    state = body.state
+    state.d -= ∂g∂pos(mechanism, ineqc, body)' * ineqc.γsol[2]
     for i=1:N
-        body.f -= additionalforce(ineqc.constraints[i])
+        state.d -= additionalforce(ineqc.constraints[i])
     end
     return
 end

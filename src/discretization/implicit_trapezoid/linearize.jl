@@ -1,7 +1,6 @@
-@inline function settempvars!(body::Body{T}, x, v, F, q, ω, τ, f) where T
+@inline function settempvars!(body::Body{T}, x, v, F, q, ω, τ, d) where T
     state = body.state
     stateold = deepcopy(state)
-    fold = body.f
 
     state.xc = x
     state.qc = q
@@ -11,15 +10,11 @@
     state.Fk[2] = F
     state.τk[1] = τ
     state.τk[2] = τ
-    body.f = f
-    return stateold, fold
+    state.d = d
+
+    return stateold
 end
 
-@inline function resettempvars!(body::Body, state, f)
-    body.state = state
-    body.f = f
-    return
-end
 
 @inline function ∂zp1∂z(mechanism, body::Body{T}, Δt) where T
     state = body.state

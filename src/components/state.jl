@@ -18,6 +18,9 @@ mutable struct State{T}
     qsol::Vector{UnitQuaternion{T}}
     vsol::Vector{SVector{3,T}}
     ωsol::Vector{SVector{3,T}}
+    
+    # Current equations of motion evaluation
+    d::SVector{6,T}
 
     function State{T}() where T
         xc = zeros(T, 3)
@@ -34,7 +37,10 @@ mutable struct State{T}
         qsol = [one(UnitQuaternion{T}) for i=1:2]
         vsol = [zeros(T, 3) for i=1:2]
         ωsol = [zeros(T, 3) for i=1:2]
-        new{T}(0, xc, qc, vc, ωc, xk, qk, Fk, τk, xsol, qsol, vsol, ωsol)
+
+        d = zeros(T, 6)
+
+        new{T}(0, xc, qc, vc, ωc, xk, qk, Fk, τk, xsol, qsol, vsol, ωsol, d)
     end
 end
 

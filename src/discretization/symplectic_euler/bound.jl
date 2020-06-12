@@ -27,7 +27,7 @@ end
     D = friction.D
     state = body.state
 
-    f = body.f
+    d = state.d
     v = state.vsol[2]
     ω = state.ωsol[2]
     state.vsol[2] = @SVector zeros(3)
@@ -35,7 +35,7 @@ end
     dyn = dynamics(mechanism, body)
     state.vsol[2] = v
     ω = state.ωsol[2] = ω
-    body.f = f
+    state.d = d
 
     b0 = D*dyn + friction.b # remove old friction force
 

@@ -8,16 +8,9 @@ mutable struct Body{T} <: AbstractBody{T}
 
     state::State{T}
 
-    # Solver variables
-    f::SVector{6,T}
-
 
     function Body(m::T, J::AbstractArray{T,2}; name::String="") where T
-        state = State{T}()
-
-        f = zeros(T, 6)
-
-        new{T}(getGlobalID(), name, true, m, J, state, f)
+        new{T}(getGlobalID(), name, true, m, J, State{T}())
     end
 
     function Body(shape::Shape; name::String="")
@@ -71,7 +64,7 @@ Base.length(::Body) = 6
 @inline getM(body::Body{T}) where T = [[SMatrix{3,3,T,9}(I*body.m);@SMatrix zeros(T,3,3)] [@SMatrix zeros(T,3,3);body.J]]
 
 @inline function ∂zp1∂z(mechanism, body::Body{T}, xc, vc, Fk, qc, ωc, τk, Δt) where T
-    stateold, fold = settempvars!(body, xc, vc, Fk, qc, ωc, τk, zeros(T,6))
+    stateold = settempvars!(body, xc, vc, Fk, qc, ωc, τk, (@SVector zeros(T,6)))
 
     discretizestate!(mechanism)
     foreach(setsolution!, mechanism.bodies)
@@ -79,7 +72,7 @@ Base.length(::Body) = 6
 
     A, B = ∂zp1∂z(mechanism, body::Body{T}, Δt)
     
-    resettempvars!(body, stateold, fold)
+    body.state = stateold
 
     return A, B
 end
