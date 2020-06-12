@@ -6,7 +6,7 @@ mutable struct Translational{T,N} <: Joint{T,N}
     F::SVector{3,T}
     τ::SVector{3,T}
 
-    cid::Int64
+    childid::Int64
 
     function Translational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T};
         p1::AbstractVector{T} = zeros(3), p2::AbstractVector{T} = zeros(3), axis::AbstractVector{T} = zeros(3)) where {T,N}
@@ -22,9 +22,9 @@ mutable struct Translational{T,N} <: Joint{T,N}
         F = zeros(T,3)
         τ = zeros(T,3)
 
-        cid = body2.id
+        childid = body2.id
 
-        new{T,N}(vertices, V12, V3, F, τ, cid), body1.id, body2.id
+        new{T,N}(vertices, V12, V3, F, τ, childid), body1.id, body2.id
     end
 end
 

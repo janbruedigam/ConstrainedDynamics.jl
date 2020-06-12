@@ -15,14 +15,14 @@
 
     state.d = [dynT;dynR]
 
-    for cid in connections(mechanism.graph, body.id)
-        isinactive(graph, cid) && continue
-        GtλTof!(mechanism, body, geteqconstraint(mechanism, cid))
+    for childid in connections(mechanism.graph, body.id)
+        isinactive(graph, childid) && continue
+        GtλTof!(mechanism, body, geteqconstraint(mechanism, childid))
     end
 
-    for cid in ineqchildren(mechanism.graph, body.id)
-        isinactive(graph, cid) && continue
-        NtγTof!(mechanism, body, getineqconstraint(mechanism, cid))
+    for childid in ineqchildren(mechanism.graph, body.id)
+        isinactive(graph, childid) && continue
+        NtγTof!(mechanism, body, getineqconstraint(mechanism, childid))
     end
 
     return state.d

@@ -48,7 +48,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
                 for (ind, bodyid) in enumerate(eqc.childids)
                     if bodyid == body.id
                         eqc.childids = setindex(eqc.childids, currentid, ind)
-                        eqc.constraints[ind].cid = currentid
+                        eqc.constraints[ind].childid = currentid
                     end
                 end
             end
@@ -151,20 +151,20 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
                 body = component
                 preds = predecessors(graph, id)
                 @assert length(preds) == 1
-                pid = preds[1]
-                constraint = geteqconstraint(mechanism, pid)
+                parentid = preds[1]
+                constraint = geteqconstraint(mechanism, parentid)
                 @assert length(constraint.constraints) == 2
 
-                gpreds = predecessors(graph, pid)
-                if length(gpreds) > 0 # predecessor is link
-                    @assert length(gpreds) == 1
-                    gpid = gpreds[1]
+                grandpreds = predecessors(graph, parentid)
+                if length(grandpreds) > 0 # predecessor is link
+                    @assert length(grandpreds) == 1
+                    grandparentid = grandpreds[1]
 
-                    pbody = getbody(mechanism, gpid)
-                    ggpreds = predecessors(graph, gpid)
-                    @assert length(ggpreds) == 1
-                    ggpid = ggpreds[1]
-                    pconstraint = geteqconstraint(mechanism, ggpid)
+                    pbody = getbody(mechanism, grandparentid)
+                    grandgrandpreds = predecessors(graph, grandparentid)
+                    @assert length(grandgrandpreds) == 1
+                    grandgrandparentid = grandgrandpreds[1]
+                    pconstraint = geteqconstraint(mechanism, grandgrandparentid)
                     @assert length(pconstraint.constraints) == 2
 
                     xpbody = pbody.state.xc

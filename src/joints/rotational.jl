@@ -6,7 +6,7 @@ mutable struct Rotational{T,N} <: Joint{T,N}
     F::SVector{3,T}
     τ::SVector{3,T}
 
-    cid::Int64
+    childid::Int64
 
     function Rotational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T}; axis::AbstractVector{T} = zeros(3), qoffset::UnitQuaternion{T} = one(UnitQuaternion{T})) where {T,N}
         axis = vrotate(SVector(axis...), inv(qoffset))
@@ -20,9 +20,9 @@ mutable struct Rotational{T,N} <: Joint{T,N}
         F = zeros(T,3)
         τ = zeros(T,3)
 
-        cid = body2.id
+        childid = body2.id
 
-        new{T,N}(V12, V3, qoffset, F, τ, cid), body1.id, body2.id
+        new{T,N}(V12, V3, qoffset, F, τ, childid), body1.id, body2.id
     end
 end
 

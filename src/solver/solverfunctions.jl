@@ -112,14 +112,14 @@ function setentries!(mechanism::Mechanism)
     for (id, body) in pairs(mechanism.bodies)
         isinactive(graph, id) && continue
         
-        for cid in directchildren(graph, id)
-            setLU!(mechanism, getentry(ldu, (id, cid)), id, geteqconstraint(mechanism, cid))
+        for childid in directchildren(graph, id)
+            setLU!(mechanism, getentry(ldu, (id, childid)), id, geteqconstraint(mechanism, childid))
         end
 
         diagonal = getentry(ldu, id)
         setDandΔs!(mechanism, diagonal, body)
-        for cid in ineqchildren(graph, id)
-            ineqc = getineqconstraint(mechanism, cid)
+        for childid in ineqchildren(graph, id)
+            ineqc = getineqconstraint(mechanism, childid)
             calcFrictionForce!(mechanism, ineqc)
             extendDandΔs!(mechanism, diagonal, body, ineqc)
         end
@@ -129,12 +129,12 @@ function setentries!(mechanism::Mechanism)
         id = eqc.id
         isinactive(graph, id) && continue
         
-        for cid in directchildren(graph, id)
-            setLU!(mechanism, getentry(ldu, (id, cid)), eqc, cid)
+        for childid in directchildren(graph, id)
+            setLU!(mechanism, getentry(ldu, (id, childid)), eqc, childid)
         end
 
-        for cid in loopchildren(graph, id)
-            setLU!(getentry(ldu, (id, cid)))
+        for childid in loopchildren(graph, id)
+            setLU!(getentry(ldu, (id, childid)))
         end
 
         diagonal = getentry(ldu, id)

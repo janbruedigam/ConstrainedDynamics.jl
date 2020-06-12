@@ -61,11 +61,11 @@ struct SparseLDU{T}
             haskey(bdict, id) ? node = bodies[bdict[id]] : node = eqcs[eqdict[id]]
             N1 = length(node)
 
-            for cid in successors(graph, id)
-                haskey(bdict, cid) ? cnode = bodies[bdict[cid]] : cnode = eqcs[eqdict[cid]]
+            for childid in successors(graph, id)
+                haskey(bdict, childid) ? cnode = bodies[bdict[childid]] : cnode = eqcs[eqdict[childid]]
                 N2 = length(cnode)
 
-                offdiagonals[(id, cid)] = OffDiagonalEntry{T,N2,N1}()
+                offdiagonals[(id, childid)] = OffDiagonalEntry{T,N2,N1}()
             end
         end
 

@@ -28,10 +28,10 @@ function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
         diagonal = getentry(ldu,id)
         A[range,range] = diagonal.D
 
-        for cid in successors(graph, id)
-            offdiagonal = getentry(ldu, (id, cid))
-            nc1 = first(rangeDict[cid])
-            nc2 = last(rangeDict[cid])
+        for childid in successors(graph, id)
+            offdiagonal = getentry(ldu, (id, childid))
+            nc1 = first(rangeDict[childid])
+            nc2 = last(rangeDict[childid])
 
             A[range,nc1:nc2] = offdiagonal.L
             A[nc1:nc2,range] = offdiagonal.U
@@ -88,7 +88,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xc, vc, qc, ωc, Fτ, bodyid
     return A, B, G
 end
 
-function lineardynamics(mechanism::Mechanism::{T,N,Nb}, xc, vc, Fk, qc, ωc, τk, eqcids) where {T,N,Nb}
+function lineardynamics(mechanism::Mechanism{T,N,Nb}, xc, vc, Fk, qc, ωc, τk, eqcids) where {T,N,Nb}
     Δt = mechanism.Δt
 
     # calculate next state
@@ -110,14 +110,14 @@ function lineardynamics(mechanism::Mechanism::{T,N,Nb}, xc, vc, Fk, qc, ωc, τk
         Bbody[col12,col6] = Bi
     end 
     for (i,eqc) in enumerate(mechanism.eqconstraints)
-        pid = eqc.parentid
-        if pid !== nothing
-            col6 = (pid-1)*6+1:pid*6
-            Bcontrol[col6,i] = ∂Fτ∂ua(mechanism, eqc, pid)
+        parentid = eqc.parentid
+        if parentid !== nothing
+            col6 = (parentid-1)*6+1:parentid*6
+            Bcontrol[col6,i] = ∂Fτ∂ua(mechanism, eqc, parentid)
         end
-        for cid in eqc.childids
-            col6 = (cid-1)*6+1:cid*6
-            Bcontrol[col6,i] = ∂Fτ∂ub(mechanism, eqc, cid)
+        for childid in eqc.childids
+            col6 = (childid-1)*6+1:childid*6
+            Bcontrol[col6,i] = ∂Fτ∂ub(mechanism, eqc, childid)
         end
     end
 
@@ -146,20 +146,20 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     for (i,eqc) in enumerate(mechanism.eqconstraints)
         ind2 += length(eqc)
 
-        pid = eqc.parentid
-        if pid !== nothing
-            colpa = (pid-1)*6+1:pid*6
-            colpb = pid*6+1:(pid+1)*6
+        parentid = eqc.parentid
+        if parentid !== nothing
+            colpa = (parentid-1)*6+1:parentid*6
+            colpb = parentid*6+1:(parentid+1)*6
             
-            G[ind1:ind2,colpa] = ∂g∂posa(mechanism, eqc, pid)
-            # G[ind1:ind2,colpb] = ∂g∂vela(mechanism, eqc, pid)
+            G[ind1:ind2,colpa] = ∂g∂posa(mechanism, eqc, parentid)
+            # G[ind1:ind2,colpb] = ∂g∂vela(mechanism, eqc, parentid)
         end
-        for cid in eqc.childids
-            colca = (cid-1)*12+1:(cid-1)*12+6
-            colcb = (cid-1)*12+7:(cid-1)*12+12
+        for childid in eqc.childids
+            colca = (childid-1)*12+1:(childid-1)*12+6
+            colcb = (childid-1)*12+7:(childid-1)*12+12
 
-            G[ind1:ind2,colca] = ∂g∂posb(mechanism, eqc, cid)
-            # G[ind1:ind2,colcb] = ∂g∂velb(mechanism, eqc, cid)
+            G[ind1:ind2,colca] = ∂g∂posb(mechanism, eqc, childid)
+            # G[ind1:ind2,colcb] = ∂g∂velb(mechanism, eqc, childid)
         end
 
         ind1 = ind2 + 1
