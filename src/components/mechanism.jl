@@ -134,8 +134,8 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         return Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
     end
 
-    function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, Δt::T = .01, g::T = -9.81) where T
-        origin, links, joints, shapes = parse_urdf(filename, T, floating)
+    function Mechanism(filename::AbstractString; floating::Bool=false, type::Type{T} = Float64, Δt::T = .01, g::T = -9.81) where T
+        origin, links, joints, shapes = parse_urdf(filename, floating, T)
 
         mechanism = Mechanism(origin, links, joints, shapes = shapes, Δt = Δt, g = g)
 
