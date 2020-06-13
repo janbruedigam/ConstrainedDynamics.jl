@@ -50,9 +50,7 @@ export Box,
     activate!,
     deactivate!,
 
-    linearizeSystem,
-    linearizeConstraints,
-    linearizeMechanism,
+    linearsystem,
 
     RotX,
     RotY,
