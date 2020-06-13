@@ -10,12 +10,8 @@ end
     include("jointdiff_test.jl")
 end
 
-@safetestset "Pendulum Period Tests" begin
-    include("pendulum_test.jl")
-end
-
-@safetestset "Nutation Behavior Test" begin
-    include("nutation_test.jl")
+@safetestset "Factorization Test" begin
+    include("factorization_test.jl")
 end
 
 @safetestset "Initialization Tests" begin
@@ -24,6 +20,14 @@ end
 
 @safetestset "Shape Tests" begin
     include("shape_test.jl")
+end
+
+@safetestset "Pendulum Period Tests" begin
+    include("pendulum_test.jl")
+end
+
+@safetestset "Nutation Behavior Test" begin
+    include("nutation_test.jl")
 end
 
 @safetestset "Example Tests" begin
