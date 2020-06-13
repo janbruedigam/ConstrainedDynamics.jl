@@ -96,7 +96,6 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     foreach(setsolution!, mechanism.bodies)
     newton!(mechanism) 
 
-    # Hier gehts weiter, vor allem mit B
     # get state linearization 
     A = zeros(T,12*Nb,12*Nb)
     Bbody = zeros(T,12*Nb,6*Nb)
