@@ -55,7 +55,7 @@ function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 end
 
 # TODO only works for 1DOF active constaints (eqcids)
-function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτ, bodyids, eqcids) where {T,N,Nb}
+function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,N,Nb}
     statesold = [State{T}() for i=1:Nb]
 
     # store old state and set new initial state
@@ -64,7 +64,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτ, bodyid
         statesold[i] = stateold
     end
     for (i,id) in enumerate(eqcids)
-        setForce!(mechanism, geteqconstraint(mechanism, id), [Fτ[i]])
+        setForce!(mechanism, geteqconstraint(mechanism, id), [Fτd[i]])
     end
 
     A, B = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
@@ -74,7 +74,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτ, bodyid
         settempvars!(getbody(mechanism, id), xd[i], vd[i], zeros(T,3), qd[i], ωd[i], zeros(T,3), zeros(T,6))
     end
     for (i,id) in enumerate(eqcids)
-        setForce!(mechanism, geteqconstraint(mechanism, id), [Fτ[i]])
+        setForce!(mechanism, geteqconstraint(mechanism, id), [Fτd[i]])
     end
 
     G = linearconstraints(mechanism) # TODO check again for Fk , τk
