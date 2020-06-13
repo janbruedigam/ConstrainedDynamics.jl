@@ -4,3 +4,4 @@
 /.benchmarkci
 /benchmark/*.json
 /notes
+/test/test.jl
