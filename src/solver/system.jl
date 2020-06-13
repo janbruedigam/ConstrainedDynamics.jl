@@ -147,18 +147,32 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 
         parentid = eqc.parentid
         if parentid !== nothing
-            colpa = (parentid-1)*6+1:parentid*6
-            colpb = parentid*6+1:(parentid+1)*6
+            colx = (parentid-1)*12+1:(parentid-1)*12+3
+            colv = (parentid-1)*12+4:(parentid-1)*12+6
+            colq = (parentid-1)*12+7:(parentid-1)*12+9
+            colω = (parentid-1)*12+10:(parentid-1)*12+12
             
-            G[ind1:ind2,colpa] = ∂g∂posa(mechanism, eqc, parentid)
-            # G[ind1:ind2,colpb] = ∂g∂vela(mechanism, eqc, parentid)
+            posderiv = ∂g∂posa(mechanism, eqc, parentid)
+            # velderiv = ∂g∂vela(mechanism, eqc, parentid)
+
+            G[ind1:ind2,colx] = posderiv[:,1:3]
+            # G[ind1:ind2,colv] = velderiv[:,1:3]
+            G[ind1:ind2,colq] = posderiv[:,4:6]
+            # G[ind1:ind2,colω] = velderiv[:,4:6]
         end
         for childid in eqc.childids
-            colca = (childid-1)*12+1:(childid-1)*12+6
-            colcb = (childid-1)*12+7:(childid-1)*12+12
+            colx = (childid-1)*12+1:(childid-1)*12+3
+            colv = (childid-1)*12+4:(childid-1)*12+6
+            colq = (childid-1)*12+7:(childid-1)*12+9
+            colω = (childid-1)*12+10:(childid-1)*12+12
 
-            G[ind1:ind2,colca] = ∂g∂posb(mechanism, eqc, childid)
-            # G[ind1:ind2,colcb] = ∂g∂velb(mechanism, eqc, childid)
+            posderiv = ∂g∂posa(mechanism, eqc, childid)
+            # velderiv = ∂g∂vela(mechanism, eqc, childid)
+
+            G[ind1:ind2,colx] = posderiv[:,1:3]
+            # G[ind1:ind2,colv] = velderiv[:,1:3]
+            G[ind1:ind2,colq] = posderiv[:,4:6]
+            # G[ind1:ind2,colω] = velderiv[:,4:6]
         end
 
         ind1 = ind2 + 1
