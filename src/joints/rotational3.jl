@@ -7,10 +7,10 @@ end
     return Δω
 end
 
-@inline function ∂Fτa∂u(joint::Rotational3{T}, body1::Body) where T
+@inline function ∂Fτ∂ua(joint::Rotational3{T}, body1::Body) where T
     return @SMatrix zeros(T, 6, 0)
 end
-@inline function ∂Fτb∂u(joint::Rotational3{T}, body1::AbstractBody, body2::Body) where T
+@inline function ∂Fτ∂ub(joint::Rotational3{T}, body1::AbstractBody, body2::Body) where T
     return @SMatrix zeros(T, 6, 0)
 end
 

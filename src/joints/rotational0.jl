@@ -27,21 +27,21 @@ end
     return
 end
 
-@inline function ∂Fτa∂u(joint::Rotational0, body1::Body)
-    return ∂Fτa∂u(joint, body1.state)
+@inline function ∂Fτ∂ua(joint::Rotational0, body1::Body)
+    return ∂Fτ∂ua(joint, body1.state)
 end
-@inline function ∂Fτb∂u(joint::Rotational0, body1::Body, body2::Body)
+@inline function ∂Fτ∂ub(joint::Rotational0, body1::Body, body2::Body)
     if body2.id == joint.childid
-        return ∂Fτb∂u(joint, body1.state, body2.state)
+        return ∂Fτ∂ub(joint, body1.state, body2.state)
     else
-        return ∂Fτb∂u(joint)
+        return ∂Fτ∂ub(joint)
     end
 end
-@inline function ∂Fτb∂u(joint::Rotational0, body1::Origin, body2::Body)
+@inline function ∂Fτ∂ub(joint::Rotational0, body1::Origin, body2::Body)
     if body2.id == joint.childid
-        return return ∂Fτb∂u(joint, body2.state)
+        return return ∂Fτ∂ub(joint, body2.state)
     else
-        return ∂Fτb∂u(joint)
+        return ∂Fτ∂ub(joint)
     end
 end
 

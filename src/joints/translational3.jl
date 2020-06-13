@@ -7,10 +7,10 @@ end
     return Δv
 end
 
-@inline function ∂Fτa∂u(joint::Translational3{T}, body1::Body) where T
+@inline function ∂Fτ∂ua(joint::Translational3{T}, body1::Body) where T
     return @SMatrix zeros(T, 6, 0)
 end
-@inline function ∂Fτb∂u(joint::Translational3{T}, body1::AbstractBody, body2::Body) where T
+@inline function ∂Fτ∂ub(joint::Translational3{T}, body1::AbstractBody, body2::Body) where T
     return @SMatrix zeros(T, 6, 0)
 end
 

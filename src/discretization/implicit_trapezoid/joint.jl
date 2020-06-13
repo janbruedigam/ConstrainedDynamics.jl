@@ -217,7 +217,7 @@ end
 end
 
 
-@inline function ∂Fτa∂u(joint::Translational, statea::State)
+@inline function ∂Fτ∂ua(joint::Translational, statea::State)
     vertices = joint.vertices
     qa = statea.qk[2]
 
@@ -226,7 +226,7 @@ end
 
     return [BFa; Bτa]
 end
-@inline function ∂Fτb∂u(joint::Translational, statea::State, stateb::State)
+@inline function ∂Fτ∂ub(joint::Translational, statea::State, stateb::State)
     vertices = joint.vertices
     qa = statea.qk[2]
     qb = stateb.qk[2]
@@ -236,7 +236,7 @@ end
 
     return [BFb; Bτb]
 end
-@inline function ∂Fτb∂u(joint::Translational{T}, stateb::State) where T
+@inline function ∂Fτ∂ub(joint::Translational{T}, stateb::State) where T
     vertices = joint.vertices
     qb = stateb.qk[2]
 
@@ -246,7 +246,7 @@ end
     return [BFb; Bτb]
 end
 
-@inline function ∂Fτa∂u(joint::Rotational{T}, statea::State) where T
+@inline function ∂Fτ∂ua(joint::Rotational{T}, statea::State) where T
     qoff = joint.qoff
 
     BFa = (@SMatrix zeros(T, 3, 3))
@@ -254,7 +254,7 @@ end
 
     return [BFa; Bτa]
 end
-@inline function ∂Fτb∂u(joint::Rotational{T}, statea::State, stateb::State) where T
+@inline function ∂Fτ∂ub(joint::Rotational{T}, statea::State, stateb::State) where T
     qa = statea.qk[2]
     qb = stateb.qk[2]
     qoff = joint.qoff
@@ -265,7 +265,7 @@ end
 
     return [BFb; Bτb]
 end
-@inline function ∂Fτb∂u(joint::Rotational{T}, stateb::State) where T
+@inline function ∂Fτ∂ub(joint::Rotational{T}, stateb::State) where T
     qb = stateb.qk[2]
     qoff = joint.qoff
     qaiqoff = qb\qoff
