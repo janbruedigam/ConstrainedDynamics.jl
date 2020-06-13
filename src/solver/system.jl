@@ -55,26 +55,26 @@ function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 end
 
 # TODO only works for 1DOF active constaints (eqcids)
-function linearsystem(mechanism::Mechanism{T,N,Nb}, xc, vc, qc, ωc, Fτ, bodyids, eqcids) where {T,N,Nb}
+function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτ, bodyids, eqcids) where {T,N,Nb}
     statesold = [State{T}() for i=1:Nb]
 
     # store old state and set new initial state
     for (i,id) in enumerate(bodyids)
-        stateold = settempvars!(getbody(mechanism, id), xc[i], vc[i], zeros(T,3), qc[i], ωc[i], zeros(T,3), zeros(T,6))
+        stateold = settempvars!(getbody(mechanism, id), xd[i], vd[i], zeros(T,3), qd[i], ωd[i], zeros(T,3), zeros(T,6))
         statesold[i] = stateold
     end
     for (i,id) in enumerate(eqcids)
-        setForce!(mechanism, geteqconstraint(mechanism, id), Fτ[i])
+        setForce!(mechanism, geteqconstraint(mechanism, id), [Fτ[i]])
     end
 
-    A, B = lineardynamics(mechanism, xc, vc, Fk, qc, ωc, τk, eqcids) # TODO check again for Fk , τk
+    A, B = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
 
     # reset new initial state
     for (i,id) in enumerate(bodyids)
-        settempvars!(getbody(mechanism, id), xc[i], vc[i], zeros(T,3), qc[i], ωc[i], zeros(T,3), zeros(T,6))
+        settempvars!(getbody(mechanism, id), xd[i], vd[i], zeros(T,3), qd[i], ωd[i], zeros(T,3), zeros(T,6))
     end
     for (i,id) in enumerate(eqcids)
-        setForce!(mechanism, geteqconstraint(mechanism, id), Fτ[i])
+        setForce!(mechanism, geteqconstraint(mechanism, id), [Fτ[i]])
     end
 
     G = linearconstraints(mechanism) # TODO check again for Fk , τk
@@ -88,7 +88,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xc, vc, qc, ωc, Fτ, bodyid
     return A, B, G
 end
 
-function lineardynamics(mechanism::Mechanism{T,N,Nb}, xc, vc, Fk, qc, ωc, τk, eqcids) where {T,N,Nb}
+function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     Δt = mechanism.Δt
 
     # calculate next state

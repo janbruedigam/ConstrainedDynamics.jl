@@ -138,10 +138,10 @@ end
 end
 
 @generated function ∂Fτ∂ua(mechanism, eqc::EqualityConstraint{T,N,Nc}, id) where {T,N,Nc}
-    vec = [:(∂Fτ∂ua(eqc.constraints[$i]), getbody(mechanism, id)) for i = 1:Nc]
+    vec = [:(∂Fτ∂ua(eqc.constraints[$i], getbody(mechanism, id))) for i = 1:Nc]
     return :(hcat($(vec...)))
 end
 @generated function ∂Fτ∂ub(mechanism, eqc::EqualityConstraint{T,N,Nc}, id) where {T,N,Nc}
-    vec = [:(∂Fτ∂ub(eqc.constraints[$i]), getbody(mechanism, eqc.parentid), getbody(mechanism, id)) for i = 1:Nc]
+    vec = [:(∂Fτ∂ub(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
     return :(hcat($(vec...)))
 end
