@@ -261,7 +261,7 @@ end
     qaiqaqoff = qb\qa*qoff
 
     BFb = (@SMatrix zeros(T, 3, 3))
-    Bτb = -VLmat(qaiqaqoff) * RᵀVᵀmat(qaiqaqoff)
+    Bτb = VLmat(qaiqaqoff) * RᵀVᵀmat(qaiqaqoff)
 
     return [BFb; Bτb]
 end
@@ -271,7 +271,7 @@ end
     qaiqoff = qb\qoff
 
     BFb = (@SMatrix zeros(T, 3, 3))
-    Bτb = -VLmat(qaiqoff) * RᵀVᵀmat(qaiqoff)
+    Bτb = VLmat(qaiqoff) * RᵀVᵀmat(qaiqoff)
 
     return [BFb; Bτb]
 end
