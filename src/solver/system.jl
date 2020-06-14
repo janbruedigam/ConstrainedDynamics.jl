@@ -108,7 +108,8 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
         A[col12,col12] = Ai
         Bbody[col12,col6] = Bi
     end 
-    for (i,eqc) in enumerate(mechanism.eqconstraints)
+    for (i,id) in enumerate(eqcids)
+        eqc = geteqconstraint(mechanism, id)
         parentid = eqc.parentid
         if parentid !== nothing
             col6 = (parentid-1)*6+1:parentid*6
