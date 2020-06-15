@@ -12,7 +12,7 @@ getGlobalOrder() = (global METHODORDER; return METHODORDER)
 
 @inline function derivωbar(ω::SVector{3,T}, Δt) where T
     msq = -sqrt(4 / Δt^2 - dot(ω, ω))
-    return Δt / 2 * [ω' / msq; SMatrix{3,3,T,9}(I)]
+    return Δt / 2 * [ω' / msq; I]
 end
 
 @inline function ωbar(ω, Δt)

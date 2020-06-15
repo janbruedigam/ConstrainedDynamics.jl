@@ -13,7 +13,7 @@ end
 @inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry{T,N}, eqc::EqualityConstraint) where {T,N}
     # diagonal.D = szeros(T, N, N)
     μ = 1e-10
-    diagonal.D = SMatrix{N,N,T,N*N}(-μ*I)
+    diagonal.D = -I*μ
     diagonal.Δs = g(mechanism, eqc)
     return
 end

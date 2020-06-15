@@ -13,6 +13,14 @@ Base.:*(u::LinearAlgebra.AdjointAbsVec, v::SVector{1,T}) where T = u * v[1]
 Base.:*(u::AbstractVector, v::SVector{1,T}) where T = u * v[1]
 
 
+Base.hcat(E::UniformScaling, A::SMatrix{N1,N2,T,N1N2}) where {T, N1, N2, N1N2} = hcat(SMatrix{N1,N1,T,N1*N1}(E), A)
+Base.hcat(A::SMatrix{N1,N2,T,N1N2}, E::UniformScaling) where {T, N1, N2, N1N2} = hcat(A, SMatrix{N1,N1,T,N1*N1}(E))
+Base.vcat(E::UniformScaling, A::SMatrix{N1,N2,T,N1N2}) where {T, N1, N2, N1N2} = vcat(SMatrix{N2,N2,T,N2*N2}(E), A)
+Base.vcat(A::SMatrix{N1,N2,T,N1N2}, E::UniformScaling) where {T, N1, N2, N1N2} = vcat(A, SMatrix{N2,N2,T,N2*N2}(E))
+
+Base.convert(::Type{SMatrix{N,N,T,N2}}, E::UniformScaling) where {T, N, N2} = SMatrix{N,N,T,N2}(E)
+
+
 @inline svcat(a::T) where T = SVector{1,T}(a)
 @inline svcat(a::StaticArray) = a
 @inline svcat(a::T, b::T) where T = SVector{2,T}(a, b)

@@ -64,7 +64,7 @@ end
     return X, Q
 end
 @inline function ∂g∂posb(joint::Translational{T}, qb::UnitQuaternion) where T
-    X = SMatrix{3,3,T,9}(I)
+    X = I
     Q = 2 * VRᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
 
     return X, Q

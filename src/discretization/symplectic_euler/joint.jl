@@ -132,7 +132,7 @@ end
     vertices = joint.vertices
     qb = stateb.qk[1]
 
-    BFb = SMatrix{3,3,T,9}(I)
+    BFb = I
     Bτb = VLᵀmat(qb) * RVᵀmat(qb) * skew(vertices[2])
 
     return [BFb; Bτb]

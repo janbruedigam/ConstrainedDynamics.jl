@@ -61,7 +61,7 @@ end
 
 Base.length(::Body) = 6
 
-@inline getM(body::Body{T}) where T = [[SMatrix{3,3,T,9}(I*body.m);szeros(T,3,3)] [szeros(T,3,3);body.J]]
+@inline getM(body::Body{T}) where T = [[I*body.m;szeros(T,3,3)] [szeros(T,3,3);body.J]]
 
 
 @inline function ∂dyn∂vel(body::Body{T}, Δt) where T
@@ -69,7 +69,7 @@ Base.length(::Body) = 6
     ω2 = body.state.ωsol[2]
     sq = sqrt(4 / Δt^2 - ω2' * ω2)
 
-    dynT = SMatrix{3,3,T,9}(body.m / Δt * I)
+    dynT = I * body.m / Δt
     dynR = skewplusdiag(ω2, sq) * J - J * ω2 * (ω2' / sq) - skew(J * ω2)
 
     Z = szeros(T, 3, 3)
@@ -82,10 +82,9 @@ end
     Z = szeros(T,3,3)
     Z2 = [Z Z]
     Z2t = Z2'
-    E = SMatrix{3,3,T,9}(I)
 
     # Position
-    AposT = [E E*Δt]
+    AposT = [I I*Δt]
     BposT = Z
 
         # This calculates the ϵ for q⊗Δq = q⊗(1 ϵᵀ)ᵀ
@@ -93,8 +92,8 @@ end
     BposR = Z
 
     # Velocity
-    AvelT = [Z E]
-    BvelT = E*Δt/body.m
+    AvelT = [Z I]
+    BvelT = I*Δt/body.m
 
     J = body.J
     ω1 = state.ωc
