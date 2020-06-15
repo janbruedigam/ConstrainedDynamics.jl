@@ -1,161 +1,113 @@
-# Translational
+# Position level constraints
 
-@inline function g(joint::Translational, xa, qa, xb, qb)
+@inline function g(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     vertices = joint.vertices
     return vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa))
 end
-@inline function g(joint::Translational, xb, qb)
+@inline function g(joint::Translational, xb::AbstractVector, qb::UnitQuaternion)
     vertices = joint.vertices
     return xb + vrotate(vertices[2], qb) - vertices[1]
 end
 
-@inline function g(joint::Translational, statea::State, stateb::State, Δt)
-    return g(joint, getx3(statea, Δt), getq3(statea, Δt), getx3(stateb, Δt), getq3(stateb, Δt))
+@inline function g(joint::Rotational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+    return Vmat(joint.qoff \ (qa \ qb))
 end
-@inline function g(joint::Translational, stateb::State, Δt)
-    return g(joint, getx3(stateb, Δt), getq3(stateb, Δt))
+@inline function g(joint::Rotational, xb::AbstractVector, qb::UnitQuaternion)
+    return Vmat(joint.qoff \ qb)
 end
 
 
-@inline function ∂g∂posa(joint::Translational, xa, qa, xb, qb)
+# Naive derivatives without accounting for quaternion specialness
+
+@inline function ∂g∂posa(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     point2 = xb + vrotate(joint.vertices[2], qb)
 
     X = -VLᵀmat(qa) * RVᵀmat(qa)
-    Q = 2 * VLᵀmat(qa) * (Lmat(UnitQuaternion(point2)) - Lmat(UnitQuaternion(xa))) * LVᵀmat(qa)
+    Q = 2 * VLᵀmat(qa) * (Lmat(UnitQuaternion(point2)) - Lmat(UnitQuaternion(xa)))
 
-    return [X Q]
+    return X, Q
 end
-@inline function ∂g∂posb(joint::Translational, qa, qb)
+@inline function ∂g∂posb(joint::Translational, qa::UnitQuaternion, qb::UnitQuaternion)
     X = VLᵀmat(qa) * RVᵀmat(qa)
-    Q = 2 * VLᵀmat(qa) * Rmat(qa) * Rᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2])) * LVᵀmat(qb)
+    Q = 2 * VLᵀmat(qa) * Rmat(qa) * Rᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
 
-    return [X Q]
+    return X, Q
 end
-@inline function ∂g∂posb(joint::Translational{T}, qb) where T
+@inline function ∂g∂posb(joint::Translational{T}, qb::UnitQuaternion) where T
     X = SMatrix{3,3,T,9}(I)
-    Q = 2 * VRᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2])) * LVᵀmat(qb)
+    Q = 2 * VRᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
+
+    return X, Q
+end
+
+@inline function ∂g∂posa(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+    X = @SMatrix zeros(T, 3, 3)
+    Q = VLᵀmat(joint.qoff) * Rmat(qb) * Tmat()
+
+    return X, Q
+end
+@inline function ∂g∂posb(joint::Rotational{T}, qa::UnitQuaternion, qb::UnitQuaternion) where T
+    X = @SMatrix zeros(T, 3, 3)
+    Q = VLᵀmat(joint.qoff) * Lᵀmat(qa)
+
+    return X, Q
+end
+@inline function ∂g∂posb(joint::Rotational{T}, qb::UnitQuaternion) where T
+    X = @SMatrix zeros(T, 3, 3)
+    Q = VLᵀmat(joint.qoff)
+
+    return X, Q
+end
+
+
+# Wrappers
+
+@inline function g(joint::Joint, statea::State, stateb::State, Δt)
+    return g(joint, getx3(statea, Δt), getq3(statea, Δt), getx3(stateb, Δt), getq3(stateb, Δt))
+end
+@inline function g(joint::Joint, stateb::State, Δt)
+    return g(joint, getx3(stateb, Δt), getq3(stateb, Δt))
+end
+
+@inline function ∂g∂posa(joint::Joint, statea::State, stateb::State)
+    X, Q = ∂g∂posa(joint, statea.xk[2], statea.qk[2], stateb.xk[2], stateb.qk[2])
+    Q = Q * LVᵀmat(statea.qk[2])
+
+    return [X Q]
+end
+@inline function ∂g∂posb(joint::Joint, statea::State, stateb::State)
+    X, Q = ∂g∂posb(joint, statea.qk[2], stateb.qk[2])
+    Q = Q * LVᵀmat(stateb.qk[2])
+
+    return [X Q]
+end
+@inline function ∂g∂posb(joint::Joint, stateb::State)
+    X, Q = ∂g∂posb(joint, stateb.qk[2])
+    Q = Q * LVᵀmat(stateb.qk[2])
 
     return [X Q]
 end
 
-@inline function ∂g∂posa(joint::Translational, statea::State, stateb::State)
-    return ∂g∂posa(joint, statea.xk[2], statea.qk[2], stateb.xk[2], stateb.qk[2])
-end
-@inline function ∂g∂posb(joint::Translational, statea::State, stateb::State)
-    return ∂g∂posb(joint, statea.qk[2], stateb.qk[2])
-end
-@inline function ∂g∂posb(joint::Translational, stateb::State)
-    return ∂g∂posb(joint, stateb.qk[2])
-end
+@inline function ∂g∂vela(joint::Joint, statea::State, stateb::State, Δt)
+    X, Q = ∂g∂posa(joint, getx3(statea,Δt), getq3(statea,Δt), getx3(stateb,Δt), getq3(stateb,Δt))
+    V = X * Δt
+    Ω = Q * Lmat(statea.qk[2]) * derivωbar(statea.ωsol[2], Δt)
 
-
-@inline function ∂g∂vela(joint::Translational, xa2, qa1, qa2, ωa, xb2, qb2, Δt)
-    point2 = xb2 + vrotate(joint.vertices[2], qb2)
-
-    V = -VLᵀmat(qa2) * RVᵀmat(qa2) * Δt
-    W = 2 * VLᵀmat(qa2) * (Lmat(UnitQuaternion(point2)) - Lmat(UnitQuaternion(xa2))) * Lmat(qa1)*derivωbar(ωa, Δt)
-
-    return [V W]
+    return [V Ω]
 end
-@inline function ∂g∂velb(joint::Translational, qa2, qb1, qb2, ωb, Δt)
-    V = VLᵀmat(qa2) * RVᵀmat(qa2) * Δt
-    W = 2 * VLᵀmat(qa2) * Rmat(qa2) * Rᵀmat(qb2) * Rmat(UnitQuaternion(joint.vertices[2])) * Lmat(qb1)*derivωbar(ωb, Δt)
+@inline function ∂g∂velb(joint::Joint, statea::State, stateb::State, Δt)
+    X, Q = ∂g∂posb(joint, getq3(statea,Δt), getq3(stateb,Δt))
+    V = X * Δt
+    Ω = Q * Lmat(stateb.qk[2]) * derivωbar(stateb.ωsol[2], Δt)
 
-    return [V W]
+    return [V Ω]
 end
-@inline function ∂g∂velb(joint::Translational{T}, qb1, qb2, ωb, Δt) where T
-    V = SMatrix{3,3,T,9}(I) * Δt
-    W = 2 * VRᵀmat(qb2) * Rmat(UnitQuaternion(joint.vertices[2])) * Lmat(qb1)*derivωbar(ωb, Δt)
+@inline function ∂g∂velb(joint::Joint, stateb::State, Δt)
+    X, Q = ∂g∂posb(joint, getq3(stateb,Δt))
+    V = X * Δt
+    Ω = Q * Lmat(stateb.qk[2]) * derivωbar(stateb.ωsol[2], Δt)
 
-    return [V W]
-end
-
-@inline function ∂g∂vela(joint::Translational, statea::State, stateb::State, Δt)
-    return ∂g∂vela(joint, getx3(statea,Δt), statea.qk[2], getq3(statea,Δt), statea.ωsol[2], getx3(stateb,Δt), getq3(stateb,Δt), Δt)
-end
-@inline function ∂g∂velb(joint::Translational, statea::State, stateb::State, Δt)
-    return ∂g∂velb(joint, getq3(statea,Δt), stateb.qk[2], getq3(stateb,Δt), stateb.ωsol[2], Δt)
-end
-@inline function ∂g∂velb(joint::Translational, stateb::State, Δt)
-    return ∂g∂velb(joint, stateb.qk[2], getq3(stateb,Δt), stateb.ωsol[2], Δt)
-end
-
-
-# Rotational
-
-@inline function g(joint::Rotational, qa, qb)
-    return joint.qoff \ (qa \ qb)
-end
-@inline function g(joint::Rotational, qb)
-    return joint.qoff \ qb
-end
-
-@inline function g(joint::Rotational, statea::State, stateb::State, Δt)
-    return Vmat(g(joint, getq3(statea,Δt), getq3(stateb,Δt)))
-end
-@inline function g(joint::Rotational, stateb::State, Δt)
-    return Vmat(g(joint, getq3(stateb,Δt)))
-end
-
-
-@inline function ∂g∂posa(joint::Rotational{T}, qa, qb) where T
-    X = @SMatrix zeros(T, 3, 3)
-    # R = VLᵀmat(joint.qoff) * Rmat(qb) * Tmat() * LVᵀmat(qa)
-    R = -VLᵀmat(joint.qoff) * Rmat(qb) * RᵀVᵀmat(qa)
-
-    return [X R]
-end
-@inline function ∂g∂posb(joint::Rotational{T}, qa, qb) where T
-    X = @SMatrix zeros(T, 3, 3)
-    R = VLᵀmat(joint.qoff) * Lᵀmat(qa) * LVᵀmat(qb)
-
-    return [X R]
-end
-@inline function ∂g∂posb(joint::Rotational{T}, qb) where T
-    X = @SMatrix zeros(T, 3, 3)
-    R = VLᵀmat(joint.qoff) * LVᵀmat(qb)
-
-    return [X R]
-end
-
-@inline function ∂g∂posa(joint::Rotational, statea::State, stateb::State)
-    return ∂g∂posa(joint, statea.qk[2], stateb.qk[2])
-end
-@inline function ∂g∂posb(joint::Rotational, statea::State, stateb::State)
-    return ∂g∂posb(joint, statea.qk[2], stateb.qk[2])
-end
-@inline function ∂g∂posb(joint::Rotational, stateb::State)
-    return ∂g∂posb(joint,  stateb.qk[2])
-end
-
-
-@inline function ∂g∂vela(joint::Rotational{T}, qa1, ωa, qb2, Δt) where T
-    V = (@SMatrix zeros(T, 3, 3)) * Δt
-    W = VLᵀmat(joint.qoff) * Rmat(qb2) * Tmat(T) * Lmat(qa1)*derivωbar(ωa, Δt)
-
-    return [V W]
-end
-@inline function ∂g∂velb(joint::Rotational{T}, qa2, qb1, ωb, Δt) where T
-    V = (@SMatrix zeros(T, 3, 3)) * Δt
-    W = VLᵀmat(joint.qoff) * Lᵀmat(qa2) * Lmat(qb1)*derivωbar(ωb, Δt)
-
-    return [V W]
-end
-@inline function ∂g∂velb(joint::Rotational{T}, qb1, ωb, Δt) where T
-    V = (@SMatrix zeros(T, 3, 3)) * Δt
-    W = VLᵀmat(joint.qoff) * Lmat(qb1)*derivωbar(ωb, Δt)
-
-    return [V W]
-end
-
-@inline function ∂g∂vela(joint::Rotational, statea::State, stateb::State, Δt)
-    return ∂g∂vela(joint, statea.qk[2], statea.ωsol[2], getq3(stateb,Δt), Δt)
-end
-@inline function ∂g∂velb(joint::Rotational, statea::State, stateb::State, Δt)
-    return ∂g∂velb(joint, getq3(statea,Δt), stateb.qk[2], stateb.ωsol[2], Δt)
-end
-@inline function ∂g∂velb(joint::Rotational, stateb::State, Δt)
-    return ∂g∂velb(joint, stateb.qk[2], stateb.ωsol[2], Δt)
+    return [V Ω]
 end
 
 
