@@ -33,3 +33,39 @@ Translational0 = Translational{T,0} where T
 Translational1 = Translational{T,1} where T
 Translational2 = Translational{T,2} where T
 Translational3 = Translational{T,3} where T
+
+
+# Position level constraints
+
+@inline function g(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+    vertices = joint.vertices
+    return vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa))
+end
+@inline function g(joint::Translational, xb::AbstractVector, qb::UnitQuaternion)
+    vertices = joint.vertices
+    return xb + vrotate(vertices[2], qb) - vertices[1]
+end
+
+
+# Naive derivatives without accounting for quaternion specialness
+
+@inline function ∂g∂posa(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+    point2 = xb + vrotate(joint.vertices[2], qb)
+
+    X = -VLᵀmat(qa) * RVᵀmat(qa)
+    Q = 2 * VLᵀmat(qa) * (Lmat(UnitQuaternion(point2)) - Lmat(UnitQuaternion(xa)))
+
+    return X, Q
+end
+@inline function ∂g∂posb(joint::Translational, qa::UnitQuaternion, qb::UnitQuaternion)
+    X = VLᵀmat(qa) * RVᵀmat(qa)
+    Q = 2 * VLᵀmat(qa) * Rmat(qa) * Rᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
+
+    return X, Q
+end
+@inline function ∂g∂posb(joint::Translational{T}, qb::UnitQuaternion) where T
+    X = SMatrix{3,3,T,9}(I)
+    Q = 2 * VRᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
+
+    return X, Q
+end

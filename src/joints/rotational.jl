@@ -33,3 +33,35 @@ Rotational0 = Rotational{T,0} where T
 Rotational1 = Rotational{T,1} where T
 Rotational2 = Rotational{T,2} where T
 Rotational3 = Rotational{T,3} where T
+
+
+# Position level constraints
+
+@inline function g(joint::Rotational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+    return Vmat(joint.qoff \ (qa \ qb))
+end
+@inline function g(joint::Rotational, xb::AbstractVector, qb::UnitQuaternion)
+    return Vmat(joint.qoff \ qb)
+end
+
+
+# Naive derivatives without accounting for quaternion specialness
+
+@inline function ∂g∂posa(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+    X = @SMatrix zeros(T, 3, 3)
+    Q = VLᵀmat(joint.qoff) * Rmat(qb) * Tmat()
+
+    return X, Q
+end
+@inline function ∂g∂posb(joint::Rotational{T}, qa::UnitQuaternion, qb::UnitQuaternion) where T
+    X = @SMatrix zeros(T, 3, 3)
+    Q = VLᵀmat(joint.qoff) * Lᵀmat(qa)
+
+    return X, Q
+end
+@inline function ∂g∂posb(joint::Rotational{T}, qb::UnitQuaternion) where T
+    X = @SMatrix zeros(T, 3, 3)
+    Q = VLᵀmat(joint.qoff)
+
+    return X, Q
+end

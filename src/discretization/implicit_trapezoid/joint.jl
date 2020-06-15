@@ -1,66 +1,4 @@
-# Position level constraints
-
-@inline function g(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
-    vertices = joint.vertices
-    return vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa))
-end
-@inline function g(joint::Translational, xb::AbstractVector, qb::UnitQuaternion)
-    vertices = joint.vertices
-    return xb + vrotate(vertices[2], qb) - vertices[1]
-end
-
-@inline function g(joint::Rotational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
-    return Vmat(joint.qoff \ (qa \ qb))
-end
-@inline function g(joint::Rotational, xb::AbstractVector, qb::UnitQuaternion)
-    return Vmat(joint.qoff \ qb)
-end
-
-
-# Naive derivatives without accounting for quaternion specialness
-
-@inline function ∂g∂posa(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
-    point2 = xb + vrotate(joint.vertices[2], qb)
-
-    X = -VLᵀmat(qa) * RVᵀmat(qa)
-    Q = 2 * VLᵀmat(qa) * (Lmat(UnitQuaternion(point2)) - Lmat(UnitQuaternion(xa)))
-
-    return X, Q
-end
-@inline function ∂g∂posb(joint::Translational, qa::UnitQuaternion, qb::UnitQuaternion)
-    X = VLᵀmat(qa) * RVᵀmat(qa)
-    Q = 2 * VLᵀmat(qa) * Rmat(qa) * Rᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
-
-    return X, Q
-end
-@inline function ∂g∂posb(joint::Translational{T}, qb::UnitQuaternion) where T
-    X = SMatrix{3,3,T,9}(I)
-    Q = 2 * VRᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
-
-    return X, Q
-end
-
-@inline function ∂g∂posa(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
-    X = @SMatrix zeros(T, 3, 3)
-    Q = VLᵀmat(joint.qoff) * Rmat(qb) * Tmat()
-
-    return X, Q
-end
-@inline function ∂g∂posb(joint::Rotational{T}, qa::UnitQuaternion, qb::UnitQuaternion) where T
-    X = @SMatrix zeros(T, 3, 3)
-    Q = VLᵀmat(joint.qoff) * Lᵀmat(qa)
-
-    return X, Q
-end
-@inline function ∂g∂posb(joint::Rotational{T}, qb::UnitQuaternion) where T
-    X = @SMatrix zeros(T, 3, 3)
-    Q = VLᵀmat(joint.qoff)
-
-    return X, Q
-end
-
-
-# Wrappers
+# Derivatives
 
 @inline function g(joint::Joint, statea::State, stateb::State, Δt)
     return g(joint, getx3(statea, Δt), getq3(statea, Δt), getx3(stateb, Δt), getq3(stateb, Δt))
@@ -168,6 +106,8 @@ end
     return
 end
 
+
+# Control derivatives
 
 @inline function ∂Fτ∂ua(joint::Translational, statea::State)
     vertices = joint.vertices
