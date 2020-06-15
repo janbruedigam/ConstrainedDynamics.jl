@@ -14,7 +14,7 @@ end
     return szeros(T, 6, 0)
 end
 
-@inline minimalCoordinates(joint::Rotational3{T}, body1::AbstractBody, body2::Body) where T = SVector{0,T}()
+@inline minimalCoordinates(joint::Rotational3{T}, body1::AbstractBody, body2::Body) where T = SA_F64[]
 
 @inline g(joint::Rotational3, body1::Body, body2::Body, Δt) = g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Rotational3, body1::Origin, body2::Body, Δt) = g(joint, body2.state, Δt)
