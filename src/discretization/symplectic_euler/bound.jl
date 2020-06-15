@@ -1,4 +1,4 @@
-@inline g(contact::Contact, x) = contact.Nx[SVector(1, 2, 3)]' * (x - contact.offset[SVector(1, 2, 3)])
+@inline g(contact::Contact, x) = contact.Nx[SA[1; 2; 3]]' * (x - contact.offset[SA[1; 2; 3]])
 @inline g(contact::Contact, state::State, Δt) = g(contact, getx3(state, Δt))
 
 @inline ∂g∂pos(contact::Contact) = contact.Nx

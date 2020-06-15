@@ -3,7 +3,7 @@
     Δt = mechanism.Δt
     graph = mechanism.graph
 
-    ezg = SVector{3,T}(0, 0, -mechanism.g)
+    ezg = SA{T}[0; 0; -mechanism.g]
     dynT = body.m * ((state.vsol[2] - state.vc) / Δt + ezg) - 1/2 * (state.Fk[1] + state.Fk[2])
 
     J = body.J

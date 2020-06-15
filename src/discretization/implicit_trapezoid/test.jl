@@ -25,7 +25,7 @@ end
 # Dyn diff test
 
 function dynTvel(vars)
-    ezg = SVector{3,Float64}(0, 0, 9.81)
+    ezg = SA[0; 0; -9.81]
     Δt = 0.01
     m = 1.
 

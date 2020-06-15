@@ -37,9 +37,9 @@ for i=1:10
     vω = rand(1)
     Fτ = rand(1)
 
-    setPosition!(mech,joint1,SVector{1,Float64}(xθ))
-    setVelocity!(mech,joint1,SVector{1,Float64}(vω))
-    setForce!(mech,joint1,SVector{1,Float64}(Fτ))    
+    setPosition!(mech,joint1,xθ)
+    setVelocity!(mech,joint1,vω)
+    setForce!(mech,joint1,Fτ)    
 
     storage = simulate!(mech, 10., record = true)
 

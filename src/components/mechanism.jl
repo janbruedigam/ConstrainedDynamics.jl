@@ -179,10 +179,10 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
                 else # predecessor is origin
                     pbody = origin
 
-                    xpbody = SVector{3,T}(0, 0, 0)
+                    xpbody = SA{T}[0; 0; 0]
                     qpbody = one(UnitQuaternion{T})
 
-                    xpjointworld = SVector{3,T}(0, 0, 0)
+                    xpjointworld = SA{T}[0; 0; 0]
                     qpjointworld = one(UnitQuaternion{T})
                 end
 
