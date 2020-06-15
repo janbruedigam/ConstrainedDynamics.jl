@@ -56,10 +56,15 @@ export Box,
     RotX,
     RotY,
     RotZ,
-    RGBA
+    RGBA,
+
+    szeros,
+    sones,
+    srand
 
 
 include(joinpath("util", "util.jl"))
+include(joinpath("util", "custom_static.jl"))
 include(joinpath("util", "customdict.jl"))
 include(joinpath("util", "quaternion.jl"))
 include(joinpath("util", "shapes.jl"))

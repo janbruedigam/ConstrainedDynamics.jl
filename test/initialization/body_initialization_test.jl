@@ -67,13 +67,13 @@ for i=1:3
         trueω2 = trueω1 + vrotate(axis2,trueq20)
         truev2 = v1 + vrotate(cross(axis1,p12) + Δv,trueq10) - vrotate(cross(vrotate(trueω2,inv(trueq20)),p21),trueq20)
 
-        ax1 = @SVector zeros(3)
+        ax1 = szeros(3)
         an1 = 0.0
         if norm(trueω1)>0
             ax1 = trueω1/norm(trueω1)
             an1 = norm(trueω1)
         end
-        ax2 = @SVector zeros(3)
+        ax2 = szeros(3)
         an2 = 0.0
         if norm(trueω2)>0
             ax2 = trueω2/norm(trueω2)
@@ -129,7 +129,7 @@ for i=1:3
     truev1 = trueF0*Δt
     trueω1 = vrotate(trueτ0*Δt,q1)
 
-    ax1 = @SVector zeros(3)
+    ax1 = szeros(3)
     an1 = 0.0
     if norm(trueω1)>0
         ax1 = trueω1/norm(trueω1)

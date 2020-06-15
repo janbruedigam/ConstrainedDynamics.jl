@@ -141,7 +141,7 @@ end
 @inline function ∂Fτ∂ua(joint::Rotational{T}, statea::State) where T
     qoff = joint.qoff
 
-    BFa = (@SMatrix zeros(T, 3, 3))
+    BFa = (szeros(T, 3, 3))
     Bτa = -VLmat(qoff) * RᵀVᵀmat(qoff)
 
     return [BFa; Bτa]
@@ -152,7 +152,7 @@ end
     qoff = joint.qoff
     qaiqaqoff = qb\qa*qoff
 
-    BFb = (@SMatrix zeros(T, 3, 3))
+    BFb = (szeros(T, 3, 3))
     Bτb = VLmat(qaiqaqoff) * RᵀVᵀmat(qaiqaqoff)
 
     return [BFb; Bτb]
@@ -162,7 +162,7 @@ end
     qoff = joint.qoff
     qaiqoff = qb\qoff
 
-    BFb = (@SMatrix zeros(T, 3, 3))
+    BFb = (szeros(T, 3, 3))
     Bτb = VLmat(qaiqoff) * RᵀVᵀmat(qaiqoff)
 
     return [BFb; Bτb]

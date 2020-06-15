@@ -1,17 +1,17 @@
 @inline function getPositionDelta(joint::Translational3, body1::AbstractBody, body2::Body, x::SVector{0,T}) where T
-    Δx = @SVector zeros(T,3)
+    Δx = szeros(T,3)
     return Δx
 end
 @inline function getVelocityDelta(joint::Translational3, body1::AbstractBody, body2::Body, v::SVector{0,T}) where T
-    Δv = @SVector zeros(T,3)
+    Δv = szeros(T,3)
     return Δv
 end
 
 @inline function ∂Fτ∂ua(joint::Translational3{T}, body1::Body) where T
-    return @SMatrix zeros(T, 6, 0)
+    return szeros(T, 6, 0)
 end
 @inline function ∂Fτ∂ub(joint::Translational3{T}, body1::AbstractBody, body2::Body) where T
-    return @SMatrix zeros(T, 6, 0)
+    return szeros(T, 6, 0)
 end
 
 @inline minimalCoordinates(joint::Translational3{T}, body1::AbstractBody, body2::Body) where T = SVector{0,T}()

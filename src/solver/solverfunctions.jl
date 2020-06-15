@@ -11,7 +11,7 @@ end
 end
 
 @inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry{T,N}, eqc::EqualityConstraint) where {T,N}
-    # diagonal.D = @SMatrix zeros(T, N, N)
+    # diagonal.D = szeros(T, N, N)
     μ = 1e-10
     diagonal.D = SMatrix{N,N,T,N*N}(-μ*I)
     diagonal.Δs = g(mechanism, eqc)
@@ -31,7 +31,7 @@ end
 end
 
 @inline function setLU!(offdiagonal::OffDiagonalEntry{T,N1,N2}) where {T,N1,N2}
-    offdiagonal.L = @SMatrix zeros(T, N2, N1)
+    offdiagonal.L = szeros(T, N2, N1)
     offdiagonal.U = offdiagonal.L'
     return
 end

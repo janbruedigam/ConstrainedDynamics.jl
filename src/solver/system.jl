@@ -54,6 +54,9 @@ function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     return A, x, b
 end
 
+
+
+
 # TODO only works for 1DOF active constaints (eqcids)
 function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,N,Nb}
     statesold = [State{T}() for i=1:Nb]

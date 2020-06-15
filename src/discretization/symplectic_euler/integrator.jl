@@ -62,8 +62,8 @@ end
     state.xsol[2] = state.xk[1]
     state.qsol[2] = state.qk[1]
 
-    state.Fk[1] = @SVector zeros(T,3)
-    state.τk[1] = @SVector zeros(T,3)
+    state.Fk[1] = szeros(T,3)
+    state.τk[1] = szeros(T,3)
     return
 end
 

@@ -22,7 +22,7 @@ end
 @inline schurD(contact::Contact, state::State, γ, s, Δt) = schurD(contact, γ, s, Δt)
 
 
-@inline function calcFrictionForce!(mechanism, friction::Contact, body::Body, γ)
+@inline function calcFrictionForce!(mechanism::Mechanism{T}, friction::Contact, body::Body, γ) where T
     cf = friction.cf
     D = friction.D
     state = body.state
@@ -30,8 +30,8 @@ end
     d = state.d
     v = state.vsol[2]
     ω = state.ωsol[2]
-    state.vsol[2] = @SVector zeros(3)
-    state.ωsol[2] = @SVector zeros(3)
+    state.vsol[2] = szeros(T, 3)
+    state.ωsol[2] = szeros(T, 3)
     dyn = dynamics(mechanism, body)
     state.vsol[2] = v
     ω = state.ωsol[2] = ω

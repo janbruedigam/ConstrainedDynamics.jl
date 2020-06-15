@@ -15,8 +15,8 @@ function dyntestT()
     v2 = rand(3)
 
     q1 = rand(UnitQuaternion)
-    ω1 = @SVector rand(3)
-    ω2 = @SVector rand(3)
+    ω1 = srand(3)
+    ω2 = srand(3)
 
 
     origin = Origin{Float64}()
@@ -48,8 +48,8 @@ function dyntestR()
     v2 = rand(3)
 
     q1 = rand(UnitQuaternion)
-    ω1 = @SVector rand(3)
-    ω2 = @SVector rand(3)
+    ω1 = srand(3)
+    ω2 = srand(3)
 
 
     origin = Origin{Float64}()

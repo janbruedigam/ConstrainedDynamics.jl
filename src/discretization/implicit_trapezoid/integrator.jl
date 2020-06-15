@@ -67,9 +67,9 @@ end
     state.qsol[2] = state.qk[2]
 
     state.Fk[1] = state.Fk[2]
-    state.Fk[2] = @SVector zeros(T,3)
+    state.Fk[2] = szeros(T,3)
     state.τk[1] = state.τk[2]
-    state.τk[2] = @SVector zeros(T,3)
+    state.τk[2] = szeros(T,3)
     return
 end
 

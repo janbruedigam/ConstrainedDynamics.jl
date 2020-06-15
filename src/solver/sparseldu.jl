@@ -7,9 +7,9 @@ mutable struct DiagonalEntry{T,N,N²} <: Entry{T}
 
     function DiagonalEntry{T,N}() where {T,N}
         N² = N^2
-        D = @SMatrix zeros(T, N, N)
-        Dinv = @SMatrix zeros(T, N, N)
-        Δs = @SVector zeros(T, N)
+        D = szeros(T, N, N)
+        Dinv = szeros(T, N, N)
+        Δs = szeros(T, N)
 
         new{T,N,N²}(D, Dinv, Δs)
     end
@@ -20,8 +20,8 @@ mutable struct OffDiagonalEntry{T,N1,N2,N1N2} <: Entry{T}
     U::SMatrix{N1,N2,T,N1N2}
 
     function OffDiagonalEntry{T,N1,N2}() where {T,N1,N2}
-        L = @SMatrix zeros(T, N2, N1)
-        U = @SMatrix zeros(T, N1, N2)
+        L = szeros(T, N2, N1)
+        U = szeros(T, N1, N2)
         
         new{T,N1,N2,N1 * N2}(L, U)
     end
@@ -32,8 +32,8 @@ mutable struct InequalityEntry{T,N} <: Entry{T}
     Δγ::SVector{N,T}
 
     function InequalityEntry{T,N}() where {T,N}
-        Δs = @SVector zeros(T, N)
-        Δγ = @SVector zeros(T, N)
+        Δs = szeros(T, N)
+        Δγ = szeros(T, N)
 
         new{T,N}(Δs, Δγ)
     end

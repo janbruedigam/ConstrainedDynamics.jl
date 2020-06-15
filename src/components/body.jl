@@ -61,7 +61,7 @@ end
 
 Base.length(::Body) = 6
 
-@inline getM(body::Body{T}) where T = [[SMatrix{3,3,T,9}(I*body.m);@SMatrix zeros(T,3,3)] [@SMatrix zeros(T,3,3);body.J]]
+@inline getM(body::Body{T}) where T = [[SMatrix{3,3,T,9}(I*body.m);szeros(T,3,3)] [szeros(T,3,3);body.J]]
 
 
 @inline function ∂dyn∂vel(body::Body{T}, Δt) where T
@@ -72,14 +72,14 @@ Base.length(::Body) = 6
     dynT = SMatrix{3,3,T,9}(body.m / Δt * I)
     dynR = skewplusdiag(ω2, sq) * J - J * ω2 * (ω2' / sq) - skew(J * ω2)
 
-    Z = @SMatrix zeros(T, 3, 3)
+    Z = szeros(T, 3, 3)
 
     return [[dynT; Z] [Z; dynR]]
 end
 
 @inline function ∂zp1∂z(mechanism, body::Body{T}, Δt) where T
     state = body.state
-    Z = @SMatrix zeros(T,3,3)
+    Z = szeros(T,3,3)
     Z2 = [Z Z]
     Z2t = Z2'
     E = SMatrix{3,3,T,9}(I)

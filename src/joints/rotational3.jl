@@ -3,15 +3,15 @@
     return Δq
 end
 @inline function getVelocityDelta(joint::Rotational3, body1::AbstractBody, body2::Body, ω::SVector{0,T}) where T
-    Δω = @SVector zeros(T,3)
+    Δω = szeros(T,3)
     return Δω
 end
 
 @inline function ∂Fτ∂ua(joint::Rotational3{T}, body1::Body) where T
-    return @SMatrix zeros(T, 6, 0)
+    return szeros(T, 6, 0)
 end
 @inline function ∂Fτ∂ub(joint::Rotational3{T}, body1::AbstractBody, body2::Body) where T
-    return @SMatrix zeros(T, 6, 0)
+    return szeros(T, 6, 0)
 end
 
 @inline minimalCoordinates(joint::Rotational3{T}, body1::AbstractBody, body2::Body) where T = SVector{0,T}()
