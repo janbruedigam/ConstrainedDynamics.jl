@@ -47,7 +47,7 @@ end
 end
 
 
-# Naive derivatives without accounting for quaternion specialness
+# Derivatives NOT accounting for quaternion specialness
 
 @inline function ∂g∂posa(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     point2 = xb + vrotate(joint.vertices[2], qb)
@@ -57,13 +57,13 @@ end
 
     return X, Q
 end
-@inline function ∂g∂posb(joint::Translational, qa::UnitQuaternion, qb::UnitQuaternion)
+@inline function ∂g∂posb(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     X = VLᵀmat(qa) * RVᵀmat(qa)
     Q = 2 * VLᵀmat(qa) * Rmat(qa) * Rᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
 
     return X, Q
 end
-@inline function ∂g∂posb(joint::Translational{T}, qb::UnitQuaternion) where T
+@inline function ∂g∂posb(joint::Translational{T}, xb::AbstractVector, qb::UnitQuaternion) where T
     X = I
     Q = 2 * VRᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
 

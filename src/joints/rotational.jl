@@ -45,7 +45,7 @@ end
 end
 
 
-# Naive derivatives without accounting for quaternion specialness
+# Derivatives NOT accounting for quaternion specialness
 
 @inline function ∂g∂posa(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
     X = szeros(T, 3, 3)
@@ -53,13 +53,13 @@ end
 
     return X, Q
 end
-@inline function ∂g∂posb(joint::Rotational{T}, qa::UnitQuaternion, qb::UnitQuaternion) where T
+@inline function ∂g∂posb(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
     X = szeros(T, 3, 3)
     Q = VLᵀmat(joint.qoff) * Lᵀmat(qa)
 
     return X, Q
 end
-@inline function ∂g∂posb(joint::Rotational{T}, qb::UnitQuaternion) where T
+@inline function ∂g∂posb(joint::Rotational{T}, xb::AbstractVector, qb::UnitQuaternion) where T
     X = szeros(T, 3, 3)
     Q = VLᵀmat(joint.qoff)
 

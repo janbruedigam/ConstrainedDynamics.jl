@@ -52,46 +52,46 @@ end
 @inline g(joint::Rotational1, body1::Body, body2::Body, Δt) = joint.V3 * g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Rotational1, body1::Origin, body2::Body, Δt) = joint.V3 * g(joint, body2.state, Δt)
 
-@inline function ∂g∂posa(joint::Rotational1, body1::Body, body2::Body)
+@inline function ∂g∂ᵣposa(joint::Rotational1, body1::Body, body2::Body)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂posa(joint, body1.state, body2.state)
+        return joint.V3 * ∂g∂ᵣposa(joint, body1.state, body2.state)
     else
-        return ∂g∂posa(joint)
+        return ∂g∂ᵣposa(joint)
     end
 end
-@inline function ∂g∂posb(joint::Rotational1, body1::Body, body2::Body)
+@inline function ∂g∂ᵣposb(joint::Rotational1, body1::Body, body2::Body)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂posb(joint, body1.state, body2.state)
+        return joint.V3 * ∂g∂ᵣposb(joint, body1.state, body2.state)
     else
-        return ∂g∂posb(joint)
+        return ∂g∂ᵣposb(joint)
     end
 end
-@inline function ∂g∂posb(joint::Rotational1, body1::Origin, body2::Body)
+@inline function ∂g∂ᵣposb(joint::Rotational1, body1::Origin, body2::Body)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂posb(joint, body2.state)
+        return joint.V3 * ∂g∂ᵣposb(joint, body2.state)
     else
-        return ∂g∂posb(joint)
+        return ∂g∂ᵣposb(joint)
     end
 end
 
-@inline function ∂g∂vela(joint::Rotational1, body1::Body, body2::Body, Δt)
+@inline function ∂g∂ᵣvela(joint::Rotational1, body1::Body, body2::Body, Δt)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂vela(joint, body1.state, body2.state, Δt)
+        return joint.V3 * ∂g∂ᵣvela(joint, body1.state, body2.state, Δt)
     else
-        return ∂g∂vela(joint)
+        return ∂g∂ᵣvela(joint)
     end
 end
-@inline function ∂g∂velb(joint::Rotational1, body1::Body, body2::Body, Δt)
+@inline function ∂g∂ᵣvelb(joint::Rotational1, body1::Body, body2::Body, Δt)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂velb(joint, body1.state, body2.state, Δt)
+        return joint.V3 * ∂g∂ᵣvelb(joint, body1.state, body2.state, Δt)
     else
-        return ∂g∂velb(joint)
+        return ∂g∂ᵣvelb(joint)
     end
 end
-@inline function ∂g∂velb(joint::Rotational1, body1::Origin, body2::Body, Δt)
+@inline function ∂g∂ᵣvelb(joint::Rotational1, body1::Origin, body2::Body, Δt)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂velb(joint, body2.state, Δt)
+        return joint.V3 * ∂g∂ᵣvelb(joint, body2.state, Δt)
     else
-        return ∂g∂velb(joint)
+        return ∂g∂ᵣvelb(joint)
     end
 end

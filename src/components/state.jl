@@ -13,7 +13,7 @@ mutable struct State{T}
     Fk::Vector{SVector{3,T}}
     τk::Vector{SVector{3,T}}
 
-    # Current solution estimate [before step;after step] (xsol and qsol are not set in code since they are trivially x2 and q2)
+    # Current solution estimate [before step;after step]
     xsol::Vector{SVector{3,T}}
     qsol::Vector{UnitQuaternion{T}}
     vsol::Vector{SVector{3,T}}

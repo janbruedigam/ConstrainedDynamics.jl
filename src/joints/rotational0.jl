@@ -61,7 +61,7 @@ end
 
 @inline g(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, Δt) = g(joint)
 
-@inline ∂g∂posa(joint::Rotational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂posa(joint)
-@inline ∂g∂posb(joint::Rotational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂posb(joint)
-@inline ∂g∂vela(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂vela(joint)
-@inline ∂g∂velb(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂velb(joint)
+@inline ∂g∂ᵣposa(joint::Rotational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂ᵣposa(joint)
+@inline ∂g∂ᵣposb(joint::Rotational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂ᵣposb(joint)
+@inline ∂g∂ᵣvela(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂ᵣvela(joint)
+@inline ∂g∂ᵣvelb(joint::Rotational0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂ᵣvelb(joint)
