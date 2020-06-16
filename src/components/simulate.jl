@@ -1,11 +1,11 @@
 function saveToStorage!(mechanism::Mechanism, storage::Storage, i)
     Δt = mechanism.Δt
-    for (ind, body) in enumerate(mechanism.bodies)
+    for (id, body) in pairs(mechanism.bodies)
         state = body.state
-        storage.x[ind][i] = state.xc
-        storage.q[ind][i] = state.qc
-        storage.v[ind][i] = state.vc
-        storage.ω[ind][i] = state.ωc
+        storage.x[id][i] = state.xc
+        storage.q[id][i] = state.qc
+        storage.v[id][i] = state.vc
+        storage.ω[id][i] = state.ωc
     end
     return
 end

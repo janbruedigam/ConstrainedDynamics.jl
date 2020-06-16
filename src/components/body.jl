@@ -80,11 +80,12 @@ end
 @inline function ∂zp1∂z(mechanism, body::Body{T}, Δt) where T
     state = body.state
     Z = szeros(T,3,3)
+    E = SMatrix{3,3,T,9}(I)
     Z2 = [Z Z]
     Z2t = Z2'
 
     # Position
-    AposT = [I I*Δt]
+    AposT = [I E*Δt] # TODO is there a UniformScaling way for this instead of E?
     BposT = Z
 
         # This calculates the ϵ for q⊗Δq = q⊗(1 ϵᵀ)ᵀ
@@ -103,8 +104,9 @@ end
 
     ω1func = skewplusdiag(-ω1, sq1) * J - J * ω1 * (ω1' / sq1) + skew(J * ω1)
     ω2func = skewplusdiag(ω2, sq2) * J - J * ω2 * (ω2' / sq2) - skew(J * ω2)
-    AvelR = [Z ω2func\ω1func]
-    BvelR = 2*inv(ω2func)
+    invω2func = inv(ω2func)
+    AvelR = [Z invω2func*ω1func]
+    BvelR = 2*invω2func
 
 
     AT = [[AposT;AvelT] [Z2;Z2]]

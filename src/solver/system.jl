@@ -93,6 +93,7 @@ end
 
 function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     Δt = mechanism.Δt
+    bodies = mechanism.bodies
 
     # calculate next state
     discretizestate!(mechanism)
@@ -104,7 +105,7 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     Bbody = zeros(T,12*Nb,6*Nb)
     Bcontrol = zeros(T,6*Nb,length(eqcids))
 
-    for (id,body) in enumerate(mechanism.bodies)
+    for (id,body) in pairs(bodies)
         col6 = (id-1)*6+1:id*6
         col12 = (id-1)*12+1:id*12
         Ai, Bi = ∂zp1∂z(mechanism, body, Δt)
@@ -131,6 +132,7 @@ end
 
 function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     Δt = mechanism.Δt
+    eqcs = mechanism.eqconstraints
 
     # set current state to knot points
     currentasknot!(mechanism)
@@ -139,14 +141,14 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     # get constraint linearization
     # is ∂g∂vel = 0 correct?
     neqcs = 0
-    for eqc in mechanism.eqconstraints
+    for eqc in eqcs
         neqcs += length(eqc)
     end
     G = zeros(T,neqcs,12*Nb)
 
     ind1 = 1
     ind2 = 0
-    for (i,eqc) in enumerate(mechanism.eqconstraints)
+    for eqc in eqcs
         ind2 += length(eqc)
 
         parentid = eqc.parentid
