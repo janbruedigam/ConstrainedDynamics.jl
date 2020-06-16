@@ -19,23 +19,23 @@ end
 @inline g(joint::Translational3, body1::Body, body2::Body, Δt) = g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Translational3, body1::Origin, body2::Body, Δt) = g(joint, body2.state, Δt)
 
-@inline function ∂g∂ᵣposa(joint::Translational3, body1::Body, body2::Body)
+@inline function ∂g∂ᵣposa(joint::Translational3, body1::Body, body2::Body, args...)
     if body2.id == joint.childid
-        return ∂g∂ᵣposa(joint, body1.state, body2.state)
+        return ∂g∂ᵣposa(joint, body1.state, body2.state, args...)
     else
         return ∂g∂ᵣposa(joint)
     end
 end
-@inline function ∂g∂ᵣposb(joint::Translational3, body1::Body, body2::Body)
+@inline function ∂g∂ᵣposb(joint::Translational3, body1::Body, body2::Body, args...)
     if body2.id == joint.childid
-        return ∂g∂ᵣposb(joint, body1.state, body2.state)
+        return ∂g∂ᵣposb(joint, body1.state, body2.state, args...)
     else
         return ∂g∂ᵣposb(joint)
     end
 end
-@inline function ∂g∂ᵣposb(joint::Translational3, body1::Origin, body2::Body)
+@inline function ∂g∂ᵣposb(joint::Translational3, body1::Origin, body2::Body, args...)
     if body2.id == joint.childid
-        return ∂g∂ᵣposb(joint, body2.state)
+        return ∂g∂ᵣposb(joint, body2.state, args...)
     else
         return ∂g∂ᵣposb(joint)
     end

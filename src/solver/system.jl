@@ -1,11 +1,11 @@
 function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     bodies = mechanism.bodies
-    eqconstraints = mechanism.eqconstraints
+    eqcs = mechanism.eqconstraints
     graph = mechanism.graph
     ldu = mechanism.ldu
 
     n = 6 * Nb
-    for eqc in eqconstraints
+    for eqc in eqcs
         n += length(eqc)
     end
 
@@ -54,6 +54,104 @@ function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     return A, x, b
 end
 
+function ∂g∂ᵣpossol(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+    Δt = mechanism.Δt
+    eqcs = mechanism.eqconstraints
+
+    nc = 0
+    for eqc in eqcs
+        nc += length(eqc)
+    end
+
+    G = zeros(T,nc,Nb*6)
+
+    ind1 = 1
+    ind2 = 0
+    for (id,eqc) in pairs(eqcs)
+        ind2 += length(eqc)
+        range = ind1:ind2
+
+        parentid = eqc.parentid
+        if parentid !== nothing
+            col6 = (parentid-1)*6+1:parentid*6
+            G[range,col6] = ∂g∂ᵣposa(mechanism, eqc, parentid, Δt)
+        end
+        for childid in eqc.childids
+            col6 = (childid-1)*6+1:childid*6
+            G[range,col6] = ∂g∂ᵣposb(mechanism, eqc, childid, Δt)
+        end
+
+        ind1 = ind2+1
+    end
+
+    return G
+end
+
+function ∂g∂ᵣposk(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+    Δt = mechanism.Δt
+    eqcs = mechanism.eqconstraints
+
+    nc = 0
+    for eqc in eqcs
+        nc += length(eqc)
+    end
+
+    G = zeros(T,nc,Nb*6)
+
+    ind1 = 1
+    ind2 = 0
+    for (id,eqc) in pairs(eqcs)
+        ind2 += length(eqc)
+        range = ind1:ind2
+
+        parentid = eqc.parentid
+        if parentid !== nothing
+            col6 = (parentid-1)*6+1:parentid*6
+            G[range,col6] = ∂g∂ᵣposa(mechanism, eqc, parentid)
+        end
+        for childid in eqc.childids
+            col6 = (childid-1)*6+1:childid*6
+            G[range,col6] = ∂g∂ᵣposb(mechanism, eqc, childid)
+        end
+
+        ind1 = ind2+1
+    end
+
+    return G
+end
+
+function ∂g∂ᵣvelsol(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+    Δt = mechanism.Δt
+    eqcs = mechanism.eqconstraints
+
+    nc = 0
+    for eqc in eqcs
+        nc += length(eqc)
+    end
+
+    G = zeros(T,nc,Nb*6)
+
+    ind1 = 1
+    ind2 = 0
+    for (id,eqc) in pairs(eqcs)
+        ind2 += length(eqc)
+        range = ind1:ind2
+
+        parentid = eqc.parentid
+        if parentid !== nothing
+            col6 = (parentid-1)*6+1:parentid*6
+            G[range,col6] = ∂g∂ᵣvela(mechanism, eqc, parentid)
+        end
+        for childid in eqc.childids
+            col6 = (childid-1)*6+1:childid*6
+            G[range,col6] = ∂g∂ᵣvelb(mechanism, eqc, childid)
+        end
+
+        ind1 = ind2+1
+    end
+
+    return G
+end
 
 
 
@@ -139,7 +237,7 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 
     # TODO
     # get constraint linearization
-    # is ∂g∂vel = 0 correct?
+    # is ∂g∂ᵣvel = 0 correct?
     neqcs = 0
     for eqc in eqcs
         neqcs += length(eqc)
@@ -158,8 +256,8 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
             colq = (parentid-1)*12+7:(parentid-1)*12+9
             colω = (parentid-1)*12+10:(parentid-1)*12+12
             
-            posderiv = ∂g∂posa(mechanism, eqc, parentid)
-            # velderiv = ∂g∂vela(mechanism, eqc, parentid)
+            posderiv = ∂g∂ᵣposa(mechanism, eqc, parentid)
+            # velderiv = ∂g∂ᵣvela(mechanism, eqc, parentid)
 
             G[ind1:ind2,colx] = posderiv[:,1:3]
             # G[ind1:ind2,colv] = velderiv[:,1:3]
@@ -172,8 +270,8 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
             colq = (childid-1)*12+7:(childid-1)*12+9
             colω = (childid-1)*12+10:(childid-1)*12+12
 
-            posderiv = ∂g∂posa(mechanism, eqc, childid)
-            # velderiv = ∂g∂vela(mechanism, eqc, childid)
+            posderiv = ∂g∂ᵣposa(mechanism, eqc, childid)
+            # velderiv = ∂g∂ᵣvela(mechanism, eqc, childid)
 
             G[ind1:ind2,colx] = posderiv[:,1:3]
             # G[ind1:ind2,colv] = velderiv[:,1:3]

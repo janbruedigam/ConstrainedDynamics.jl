@@ -52,23 +52,23 @@ end
 @inline g(joint::Rotational1, body1::Body, body2::Body, Δt) = joint.V3 * g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Rotational1, body1::Origin, body2::Body, Δt) = joint.V3 * g(joint, body2.state, Δt)
 
-@inline function ∂g∂ᵣposa(joint::Rotational1, body1::Body, body2::Body)
+@inline function ∂g∂ᵣposa(joint::Rotational1, body1::Body, body2::Body, args...)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂ᵣposa(joint, body1.state, body2.state)
+        return joint.V3 * ∂g∂ᵣposa(joint, body1.state, body2.state, args...)
     else
         return ∂g∂ᵣposa(joint)
     end
 end
-@inline function ∂g∂ᵣposb(joint::Rotational1, body1::Body, body2::Body)
+@inline function ∂g∂ᵣposb(joint::Rotational1, body1::Body, body2::Body, args...)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂ᵣposb(joint, body1.state, body2.state)
+        return joint.V3 * ∂g∂ᵣposb(joint, body1.state, body2.state, args...)
     else
         return ∂g∂ᵣposb(joint)
     end
 end
-@inline function ∂g∂ᵣposb(joint::Rotational1, body1::Origin, body2::Body)
+@inline function ∂g∂ᵣposb(joint::Rotational1, body1::Origin, body2::Body, args...)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂ᵣposb(joint, body2.state)
+        return joint.V3 * ∂g∂ᵣposb(joint, body2.state, args...)
     else
         return ∂g∂ᵣposb(joint)
     end

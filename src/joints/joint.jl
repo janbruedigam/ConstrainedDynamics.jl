@@ -72,7 +72,7 @@ end
 end
 
 
-# Convenience calls for dynamics calculation solver
+# Calls for dynamics
 g(joint::Joint, statea::State, stateb::State, Δt) = g(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)...)
 g(joint::Joint, stateb::State, Δt) = g(joint, posargsnext(stateb, Δt)...)
 
@@ -83,3 +83,36 @@ g(joint::Joint, stateb::State, Δt) = g(joint, posargsnext(stateb, Δt)...)
 ∂g∂ᵣvela(joint::Joint, statea::State, stateb::State, Δt) = ∂g∂ᵣvela(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)..., fullargssol(statea)..., Δt)
 ∂g∂ᵣvelb(joint::Joint, statea::State, stateb::State, Δt) = ∂g∂ᵣvelb(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)..., fullargssol(stateb)..., Δt)
 ∂g∂ᵣvelb(joint::Joint, stateb::State, Δt) = ∂g∂ᵣvelb(joint, posargsnext(stateb, Δt)..., fullargssol(stateb)..., Δt)
+
+# Extra calls for linearization
+@inline function ∂g∂ᵣposa(joint::Joint, x2a::AbstractVector, q2a::UnitQuaternion, x2b::AbstractVector, q2b::UnitQuaternion,
+        x1a::AbstractVector, v1a::AbstractVector, q1a::UnitQuaternion, ω1a::AbstractVector, Δt
+    )
+
+    X, Q = ∂g∂posa(joint, x2a, q2a, x2b, q2b)
+    Q = Q * Rmat(ωbar(ω1a, Δt)) * LVᵀmat(q1a)
+
+    return [X Q]
+end
+@inline function ∂g∂ᵣposb(joint::Joint, x2a::AbstractVector, q2a::UnitQuaternion, x2b::AbstractVector, q2b::UnitQuaternion,
+        x1b::AbstractVector, v1b::AbstractVector, q1b::UnitQuaternion, ω1b::AbstractVector, Δt
+    )
+
+    X, Q = ∂g∂posb(joint, x2a, q2a, x2b, q2b)
+    Q = Q * Rmat(ωbar(ω1b, Δt)) * LVᵀmat(q1b)
+
+    return [X Q]
+end
+@inline function ∂g∂ᵣposb(joint::Joint, x2b::AbstractVector, q2b::UnitQuaternion,
+        x1b::AbstractVector, v1b::AbstractVector, q1b::UnitQuaternion, ω1b::AbstractVector, Δt
+    )
+
+    X, Q = ∂g∂posb(joint, x2b, q2b)
+    Q = Q * Rmat(ωbar(ω1b, Δt)) * LVᵀmat(q1b)
+
+    return [X Q]
+end
+
+∂g∂ᵣposa(joint::Joint, statea::State, stateb::State, Δt) = ∂g∂ᵣposa(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)...)
+∂g∂ᵣposb(joint::Joint, statea::State, stateb::State, Δt) = ∂g∂ᵣposb(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)...)
+∂g∂ᵣposb(joint::Joint, stateb::State, Δt) = ∂g∂ᵣposb(joint, posargsnext(stateb, Δt)...)

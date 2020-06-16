@@ -119,12 +119,12 @@ end
     id == eqc.parentid ? (return ∂g∂ᵣvela(mechanism, eqc, id)) : (return ∂g∂ᵣvelb(mechanism, eqc, id))
 end
 
-@generated function ∂g∂ᵣposa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂ᵣposa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
+@generated function ∂g∂ᵣposa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer, args...) where {T,N,Nc}
+    vec = [:(∂g∂ᵣposa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]), args...)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
-@generated function ∂g∂ᵣposb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂ᵣposb(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
+@generated function ∂g∂ᵣposb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer, args...) where {T,N,Nc}
+    vec = [:(∂g∂ᵣposb(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), args...)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
