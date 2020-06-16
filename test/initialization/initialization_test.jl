@@ -13,3 +13,9 @@ end
 @safetestset "Revolute Joint Tests" begin
     include("revolute_joint_test.jl")
 end
+
+# include("initialization/cylindrical_joint_test.jl")
+# include("initialization/spherical_joint_test.jl")
+# include("initialization/cylindricalfree_joint_test.jl")
+# include("initialization/planar_joint_test.jl")
+# include("initialization/origincon_joint_test.jl")

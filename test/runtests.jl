@@ -8,9 +8,7 @@ include("diff/diff_test.jl")
     include("factorization_test.jl")
 end
 
-@safetestset "Initialization Tests" begin
-    include("initialization/initialization_test.jl")
-end
+include("initialization/initialization_test.jl")
 
 @safetestset "Shape Tests" begin
     include("shape_test.jl")
