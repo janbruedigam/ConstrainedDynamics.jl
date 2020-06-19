@@ -47,46 +47,46 @@ end
 @inline g(joint::Translational1, body1::Body, body2::Body, Δt) = joint.V3 * g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Translational1, body1::Origin, body2::Body, Δt) = joint.V3 * g(joint, body2.state, Δt)
 
-@inline function ∂g∂ᵣposa(joint::Translational1, body1::Body, body2::Body, args...)
+@inline function ∂g∂ʳposa(joint::Translational1, body1::Body, body2::Body, args...)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂ᵣposa(joint, body1.state, body2.state, args...)
+        return joint.V3 * ∂g∂ʳposa(joint, body1.state, body2.state, args...)
     else
-        return ∂g∂ᵣposa(joint)
+        return ∂g∂ʳposa(joint)
     end
 end
-@inline function ∂g∂ᵣposb(joint::Translational1, body1::Body, body2::Body, args...)
+@inline function ∂g∂ʳposb(joint::Translational1, body1::Body, body2::Body, args...)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂ᵣposb(joint, body1.state, body2.state, args...)
+        return joint.V3 * ∂g∂ʳposb(joint, body1.state, body2.state, args...)
     else
-        return ∂g∂ᵣposb(joint)
+        return ∂g∂ʳposb(joint)
     end
 end
-@inline function ∂g∂ᵣposb(joint::Translational1, body1::Origin, body2::Body, args...)
+@inline function ∂g∂ʳposb(joint::Translational1, body1::Origin, body2::Body, args...)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂ᵣposb(joint, body2.state, args...)
+        return joint.V3 * ∂g∂ʳposb(joint, body2.state, args...)
     else
-        return ∂g∂ᵣposb(joint)
+        return ∂g∂ʳposb(joint)
     end
 end
 
-@inline function ∂g∂ᵣvela(joint::Translational1, body1::Body, body2::Body, Δt)
+@inline function ∂g∂ʳvela(joint::Translational1, body1::Body, body2::Body, Δt)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂ᵣvela(joint, body1.state, body2.state, Δt)
+        return joint.V3 * ∂g∂ʳvela(joint, body1.state, body2.state, Δt)
     else
-        return ∂g∂ᵣvela(joint)
+        return ∂g∂ʳvela(joint)
     end
 end
-@inline function ∂g∂ᵣvelb(joint::Translational1, body1::Body, body2::Body, Δt)
+@inline function ∂g∂ʳvelb(joint::Translational1, body1::Body, body2::Body, Δt)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂ᵣvelb(joint, body1.state, body2.state, Δt)
+        return joint.V3 * ∂g∂ʳvelb(joint, body1.state, body2.state, Δt)
     else
-        return ∂g∂ᵣvelb(joint)
+        return ∂g∂ʳvelb(joint)
     end
 end
-@inline function ∂g∂ᵣvelb(joint::Translational1, body1::Origin, body2::Body, Δt)
+@inline function ∂g∂ʳvelb(joint::Translational1, body1::Origin, body2::Body, Δt)
     if body2.id == joint.childid
-        return joint.V3 * ∂g∂ᵣvelb(joint, body2.state, Δt)
+        return joint.V3 * ∂g∂ʳvelb(joint, body2.state, Δt)
     else
-        return ∂g∂ᵣvelb(joint)
+        return ∂g∂ʳvelb(joint)
     end
 end
