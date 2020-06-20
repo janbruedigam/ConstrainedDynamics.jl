@@ -83,36 +83,3 @@ g(joint::Joint, stateb::State, Δt) = g(joint, posargsnext(stateb, Δt)...)
 ∂g∂ʳvela(joint::Joint, statea::State, stateb::State, Δt) = ∂g∂ʳvela(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)..., fullargssol(statea)..., Δt)
 ∂g∂ʳvelb(joint::Joint, statea::State, stateb::State, Δt) = ∂g∂ʳvelb(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)..., fullargssol(stateb)..., Δt)
 ∂g∂ʳvelb(joint::Joint, stateb::State, Δt) = ∂g∂ʳvelb(joint, posargsnext(stateb, Δt)..., fullargssol(stateb)..., Δt)
-
-# Extra calls for linearization
-@inline function ∂g∂ʳposa(joint::Joint, x2a::AbstractVector, q2a::UnitQuaternion, x2b::AbstractVector, q2b::UnitQuaternion,
-        x1a::AbstractVector, v1a::AbstractVector, q1a::UnitQuaternion, ω1a::AbstractVector, Δt
-    )
-
-    X, Q = ∂g∂posa(joint, x2a, q2a, x2b, q2b)
-    Q = Q * Rmat(ωbar(ω1a, Δt)) * LVᵀmat(q1a)
-
-    return [X Q]
-end
-@inline function ∂g∂ʳposb(joint::Joint, x2a::AbstractVector, q2a::UnitQuaternion, x2b::AbstractVector, q2b::UnitQuaternion,
-        x1b::AbstractVector, v1b::AbstractVector, q1b::UnitQuaternion, ω1b::AbstractVector, Δt
-    )
-
-    X, Q = ∂g∂posb(joint, x2a, q2a, x2b, q2b)
-    Q = Q * Rmat(ωbar(ω1b, Δt)) * LVᵀmat(q1b)
-
-    return [X Q]
-end
-@inline function ∂g∂ʳposb(joint::Joint, x2b::AbstractVector, q2b::UnitQuaternion,
-        x1b::AbstractVector, v1b::AbstractVector, q1b::UnitQuaternion, ω1b::AbstractVector, Δt
-    )
-
-    X, Q = ∂g∂posb(joint, x2b, q2b)
-    Q = Q * Rmat(ωbar(ω1b, Δt)) * LVᵀmat(q1b)
-
-    return [X Q]
-end
-
-∂g∂ʳposa(joint::Joint, statea::State, stateb::State, Δt) = ∂g∂ʳposa(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)...)
-∂g∂ʳposb(joint::Joint, statea::State, stateb::State, Δt) = ∂g∂ʳposb(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)...)
-∂g∂ʳposb(joint::Joint, stateb::State, Δt) = ∂g∂ʳposb(joint, posargsnext(stateb, Δt)...)

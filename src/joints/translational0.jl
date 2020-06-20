@@ -46,7 +46,7 @@ end
 
 @inline g(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt) = g(joint)
 
-@inline ∂g∂ʳposa(joint::Translational0, body1::AbstractBody, body2::AbstractBody, args...) = ∂g∂ʳposa(joint)
-@inline ∂g∂ʳposb(joint::Translational0, body1::AbstractBody, body2::AbstractBody, args...) = ∂g∂ʳposb(joint)
+@inline ∂g∂ʳposa(joint::Translational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂ʳposa(joint)
+@inline ∂g∂ʳposb(joint::Translational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂ʳposb(joint)
 @inline ∂g∂ʳvela(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂ʳvela(joint)
 @inline ∂g∂ʳvelb(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂ʳvelb(joint)
