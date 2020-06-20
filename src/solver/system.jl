@@ -219,6 +219,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
     end
 
     A, B = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
+    λsol2 = [eqc.λsol[2] for eqc in mechanism.eqconstraints]
 
     # restore old state
     for (i,id) in enumerate(bodyids)
@@ -226,7 +227,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
         body.state = statesold[i]
     end
 
-    return A, B
+    return A, B, λsol2
 end
 
 
