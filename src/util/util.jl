@@ -19,3 +19,6 @@ function getfieldnumber(obj)
     end
     return i-1
 end
+
+@inline offsetrange(offset, length) = (offset-1)*length+1:offset*length
+@inline offsetrange(offset, length, totallength, inneroffset) = (offset-1)*totallength+(inneroffset-1)*length+1:(offset-1)*totallength+inneroffset*length
