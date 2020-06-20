@@ -2,12 +2,16 @@ using Test
 using SafeTestsets
 
 
-@safetestset "Dynamics Diff Tests" begin
-    include("dyndiff_test.jl")
+include("diff/diff_test.jl")
+
+@safetestset "Factorization Test" begin
+    include("factorization_test.jl")
 end
 
-@safetestset "Joint Diff Tests" begin
-    include("jointdiff_test.jl")
+include("initialization/initialization_test.jl")
+
+@safetestset "Shape Tests" begin
+    include("shape_test.jl")
 end
 
 @safetestset "Pendulum Period Tests" begin
@@ -16,14 +20,6 @@ end
 
 @safetestset "Nutation Behavior Test" begin
     include("nutation_test.jl")
-end
-
-@safetestset "Initialization Tests" begin
-    include("initialization_test.jl")
-end
-
-@safetestset "Shape Tests" begin
-    include("shape_test.jl")
 end
 
 @safetestset "Example Tests" begin

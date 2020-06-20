@@ -11,27 +11,27 @@ end
 end
 
 @inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry{T,N}, eqc::EqualityConstraint) where {T,N}
-    # diagonal.D = @SMatrix zeros(T, N, N)
+    # diagonal.D = szeros(T, N, N)
     μ = 1e-10
-    diagonal.D = SMatrix{N,N,T,N*N}(-μ*I)
+    diagonal.D = -I*μ
     diagonal.Δs = g(mechanism, eqc)
     return
 end
 
 @inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, bodyid::Integer, eqc::EqualityConstraint)
-    offdiagonal.L = ∂g∂pos(mechanism, eqc, bodyid)'
-    offdiagonal.U = ∂g∂vel(mechanism, eqc, bodyid)
+    offdiagonal.L = ∂g∂ʳpos(mechanism, eqc, bodyid)'
+    offdiagonal.U = ∂g∂ʳvel(mechanism, eqc, bodyid)
     return
 end
 
 @inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, bodyid::Integer)
-    offdiagonal.L = ∂g∂vel(mechanism, eqc, bodyid)
-    offdiagonal.U = ∂g∂pos(mechanism, eqc, bodyid)'
+    offdiagonal.L = ∂g∂ʳvel(mechanism, eqc, bodyid)
+    offdiagonal.U = ∂g∂ʳpos(mechanism, eqc, bodyid)'
     return
 end
 
 @inline function setLU!(offdiagonal::OffDiagonalEntry{T,N1,N2}) where {T,N1,N2}
-    offdiagonal.L = @SMatrix zeros(T, N2, N1)
+    offdiagonal.L = szeros(T, N2, N1)
     offdiagonal.U = offdiagonal.L'
     return
 end
@@ -112,14 +112,14 @@ function setentries!(mechanism::Mechanism)
     for (id, body) in pairs(mechanism.bodies)
         isinactive(graph, id) && continue
         
-        for cid in directchildren(graph, id)
-            setLU!(mechanism, getentry(ldu, (id, cid)), id, geteqconstraint(mechanism, cid))
+        for childid in directchildren(graph, id)
+            setLU!(mechanism, getentry(ldu, (id, childid)), id, geteqconstraint(mechanism, childid))
         end
 
         diagonal = getentry(ldu, id)
         setDandΔs!(mechanism, diagonal, body)
-        for cid in ineqchildren(graph, id)
-            ineqc = getineqconstraint(mechanism, cid)
+        for childid in ineqchildren(graph, id)
+            ineqc = getineqconstraint(mechanism, childid)
             calcFrictionForce!(mechanism, ineqc)
             extendDandΔs!(mechanism, diagonal, body, ineqc)
         end
@@ -129,12 +129,12 @@ function setentries!(mechanism::Mechanism)
         id = eqc.id
         isinactive(graph, id) && continue
         
-        for cid in directchildren(graph, id)
-            setLU!(mechanism, getentry(ldu, (id, cid)), eqc, cid)
+        for childid in directchildren(graph, id)
+            setLU!(mechanism, getentry(ldu, (id, childid)), eqc, childid)
         end
 
-        for cid in loopchildren(graph, id)
-            setLU!(getentry(ldu, (id, cid)))
+        for childid in loopchildren(graph, id)
+            setLU!(getentry(ldu, (id, childid)))
         end
 
         diagonal = getentry(ldu, id)

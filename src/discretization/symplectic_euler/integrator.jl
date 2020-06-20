@@ -10,9 +10,17 @@ getGlobalOrder() = (global METHODORDER; return METHODORDER)
 @inline getx3(state::State, Δt) = state.xk[1] + state.vsol[2]*Δt
 @inline getq3(state::State, Δt) = state.qk[1] * ωbar(state.ωsol[2],Δt)
 
+@inline posargsc(state::State) = (state.xc, state.qc)
+@inline fullargsc(state::State) = (state.xc, state.vc, state.qc, state.ωc)
+@inline posargsk(state::State; k=1) = (state.xk[k], state.qk[k])
+@inline posargssol(state::State) = (state.xsol[2], state.qsol[2])
+@inline fullargssol(state::State) = (state.xsol[2], state.vsol[2], state.qsol[2], state.ωsol[2])
+@inline posargsnext(state::State, Δt) = (getx3(state, Δt), getq3(state, Δt))
+
+
 @inline function derivωbar(ω::SVector{3,T}, Δt) where T
     msq = -sqrt(4 / Δt^2 - dot(ω, ω))
-    return Δt / 2 * [ω' / msq; SMatrix{3,3,T,9}(I)]
+    return Δt / 2 * [ω' / msq; I]
 end
 
 @inline function ωbar(ω, Δt)
@@ -62,8 +70,8 @@ end
     state.xsol[2] = state.xk[1]
     state.qsol[2] = state.qk[1]
 
-    state.Fk[1] = @SVector zeros(T,3)
-    state.τk[1] = @SVector zeros(T,3)
+    state.Fk[1] = szeros(T,3)
+    state.τk[1] = szeros(T,3)
     return
 end
 
@@ -78,3 +86,17 @@ end
     return
 end
 
+@inline function settempvars!(body::Body{T}, x, v, F, q, ω, τ, d) where T
+    state = body.state
+    stateold = deepcopy(state)
+
+    state.xc = x
+    state.qc = q
+    state.vc = v
+    state.ωc = ω
+    state.Fk[1] = F
+    state.τk[1] = τ
+    state.d = d
+
+    return stateold
+end

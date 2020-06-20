@@ -1,11 +1,13 @@
-function setPosition!(body::Body{T};x::AbstractVector{T} = SVector{3,T}(0, 0, 0),q::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
+function setPosition!(body::Body{T}; x::AbstractVector{T} = SA{T}[0;0;0], q::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
     body.state.xc = x
     body.state.qc = q
     return
 end
 
 function setPosition!(body1::Body{T}, body2::Body{T};
-    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
+        p1::AbstractVector{T} = SA{T}[0;0;0], p2::AbstractVector{T} = SA{T}[0;0;0], 
+        Δx::AbstractVector{T} = SA{T}[0;0;0], Δq::UnitQuaternion{T} = one(UnitQuaternion{T})
+    ) where T
 
     q1 = body1.state.qc
     q2 = body1.state.qc * Δq
@@ -15,7 +17,9 @@ function setPosition!(body1::Body{T}, body2::Body{T};
 end
 
 function setPosition!(body1::Origin{T}, body2::Body{T};
-    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δx::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δq::UnitQuaternion{T} = one(UnitQuaternion{T})) where T
+        p1::AbstractVector{T} = SA{T}[0;0;0], p2::AbstractVector{T} = SA{T}[0;0;0],
+        Δx::AbstractVector{T} = SA{T}[0;0;0], Δq::UnitQuaternion{T} = one(UnitQuaternion{T})
+    ) where T
 
     q2 = Δq
     x2 = p1 + Δx - vrotate(p2, q2)
@@ -24,14 +28,16 @@ function setPosition!(body1::Origin{T}, body2::Body{T};
 end
 
 
-function setVelocity!(body::Body{T};v::AbstractVector{T} = SVector{3,T}(0, 0, 0),ω::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
+function setVelocity!(body::Body{T}; v::AbstractVector{T} = SA{T}[0;0;0], ω::AbstractVector{T} = SA{T}[0;0;0]) where T
     body.state.vc = v
     body.state.ωc = ω
     return
 end
 
 function setVelocity!(body1::Body{T}, body2::Body{T};
-    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δv::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δω::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
+        p1::AbstractVector{T} = SA{T}[0;0;0], p2::AbstractVector{T} = SA{T}[0;0;0],
+        Δv::AbstractVector{T} = SA{T}[0;0;0], Δω::AbstractVector{T} = SA{T}[0;0;0]
+    ) where T
 
     q1 = body1.state.qc
     q2 = body2.state.qc
@@ -53,7 +59,9 @@ function setVelocity!(body1::Body{T}, body2::Body{T};
 end
 
 function setVelocity!(body1::Origin{T}, body2::Body{T};
-    p1::AbstractVector{T} = SVector{3,T}(0, 0, 0), p2::AbstractVector{T} = SVector{3,T}(0, 0, 0), Δv::AbstractVector{T} = SVector{3,T}(0, 0, 0),Δω::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
+        p1::AbstractVector{T} = SA{T}[0;0;0], p2::AbstractVector{T} = SA{T}[0;0;0],
+        Δv::AbstractVector{T} = SA{T}[0;0;0], Δω::AbstractVector{T} = SA{T}[0;0;0]
+    ) where T
     
     q2 = body2.state.qc
 
@@ -67,7 +75,10 @@ function setVelocity!(body1::Origin{T}, body2::Body{T};
     return 
 end
 
-function setForce!(body::Body{T};F::AbstractVector{T} = SVector{3,T}(0, 0, 0),τ::AbstractVector{T} = SVector{3,T}(0, 0, 0),p::AbstractVector{T} = SVector{3,T}(0, 0, 0)) where T
+function setForce!(body::Body{T}; 
+        F::AbstractVector{T} = SA{T}[0;0;0], τ::AbstractVector{T} = SA{T}[0;0;0], p::AbstractVector{T} = SA{T}[0;0;0]
+    ) where T
+    
     τ += vrotate(torqueFromForce(F, p),inv(body.state.qc)) # in local coordinates
     setForce!(body.state, F, τ)
     return 

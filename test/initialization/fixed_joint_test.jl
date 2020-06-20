@@ -31,16 +31,16 @@ for i=1:10
 
     mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
 
-    setPosition!(mech,joint1,SVector{0,Float64}())
-    setVelocity!(mech,joint1,SVector{0,Float64}())
-    setForce!(mech,joint1,SVector{0,Float64}())
+    setPosition!(mech,joint1,SA_F64[])
+    setVelocity!(mech,joint1,SA_F64[])
+    setForce!(mech,joint1,SA_F64[])
 
     storage = simulate!(mech, 10., record = true)
 
-    truex = [(p1 - vrotate(SVector{3,Float64}(p2),qoff)) for i=0:999]
+    truex = [(p1 - vrotate(p2,qoff)) for i=0:999]
     trueq = [qoff for i=0:999]
 
-    @test isapprox(norm(minimalCoordinates(mech, joint1) - SVector{0,Float64}()), 0.0; atol = 1e-8)
+    @test isapprox(norm(minimalCoordinates(mech, joint1) - SA_F64[]), 0.0; atol = 1e-8)
     @test isapprox(sum(norm.(storage.x[1].-truex))/1000, 0.0; atol = 1e-8)
     @test isapprox(sum(norm.(storage.q[1].-trueq))/1000, 0.0; atol = 1e-8)
 end

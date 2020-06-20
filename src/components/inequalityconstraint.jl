@@ -46,18 +46,19 @@ end
 
 
 function resetVars!(ineqc::InequalityConstraint{T,N}) where {T,N}
-    ineqc.ssol[1] = @SVector ones(T, N)
-    ineqc.ssol[2] = @SVector ones(T, N)
-    ineqc.γsol[1] = @SVector ones(T, N)
-    ineqc.γsol[2] = @SVector ones(T, N)
+    ineqc.ssol[1] = sones(T, N)
+    ineqc.ssol[2] = sones(T, N)
+    ineqc.γsol[1] = sones(T, N)
+    ineqc.γsol[2] = sones(T, N)
 
     return 
 end
 
 @inline function NtγTof!(mechanism, body::Body, ineqc::InequalityConstraint{T,N}) where {T,N}
-    body.f -= ∂g∂pos(mechanism, ineqc, body)' * ineqc.γsol[2]
+    state = body.state
+    state.d -= ∂g∂pos(mechanism, ineqc, body)' * ineqc.γsol[2]
     for i=1:N
-        body.f -= additionalforce(ineqc.constraints[i])
+        state.d -= additionalforce(ineqc.constraints[i])
     end
     return
 end
@@ -90,7 +91,7 @@ end
 
 
 function schurf(mechanism, ineqc::InequalityConstraint{T,N}, body) where {T,N}
-    val = @SVector zeros(T, 6)
+    val = szeros(T, 6)
     for i = 1:N
         val += schurf(ineqc, ineqc.constraints[i], i, body, mechanism.μ, mechanism.Δt)
     end
@@ -98,7 +99,7 @@ function schurf(mechanism, ineqc::InequalityConstraint{T,N}, body) where {T,N}
 end
 
 function schurD(ineqc::InequalityConstraint{T,N}, body, Δt) where {T,N}
-    val = @SMatrix zeros(T, 6, 6)
+    val = szeros(T, 6, 6)
     for i = 1:N
         val += schurD(ineqc, ineqc.constraints[i], i, body, Δt)
     end

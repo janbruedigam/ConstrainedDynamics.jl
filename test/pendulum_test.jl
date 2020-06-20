@@ -59,9 +59,3 @@ T = T0*1.017
 traj = getindex.(storage.x[1],2)
 diff = traj[1:Δ]-traj[Δ+1:2*Δ]
 @test maximum(diff)<0.1
-
-
-q1 = UnitQuaternion(RotX(π / 2))
-setPosition!(origin,link1,p2 = p2,Δq = q1)
-setVelocity!(link1)
-storage = simulate!(mech,10.,record = true)

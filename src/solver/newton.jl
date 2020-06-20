@@ -1,5 +1,8 @@
 # Newton with line search 
-function newton!(mechanism::Mechanism{T,N,Nb,Ne,0}; ε = 1e-10, newtonIter = 100, lineIter = 10, warning::Bool = false) where {T,N,Nb,Ne}
+function newton!(mechanism::Mechanism{T,N,Nb,Ne,0};
+        ε = 1e-10, newtonIter = 100, lineIter = 10, warning::Bool = false
+    ) where {T,N,Nb,Ne}
+    
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     graph = mechanism.graph
@@ -31,7 +34,10 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,0}; ε = 1e-10, newtonIter = 100
 end
 
 # Newton on interior point with line search
-function newton!(mechanism::Mechanism{T,N,Nb,Ne,Ni}; ε = 1e-10, σ = 0.1, μ = 1.0, newtonIter = 100, lineIter = 10, warning::Bool = false) where {T,N,Nb,Ne,Ni}
+function newton!(mechanism::Mechanism{T,N,Nb,Ne,Ni};
+        ε = 1e-10, σ = 0.1, μ = 1.0, newtonIter = 100, lineIter = 10, warning::Bool = false
+    ) where {T,N,Nb,Ne,Ni}
+    
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
@@ -137,8 +143,8 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
 end
 
 @inline function lineStep!(body::Body, diagonal::DiagonalEntry, scale)
-    body.state.vsol[2] = body.state.vsol[1] - 1 / (2^scale) * diagonal.Δs[SVector(1, 2, 3)]
-    body.state.ωsol[2] = body.state.ωsol[1] - 1 / (2^scale) * diagonal.Δs[SVector(4, 5, 6)]
+    body.state.vsol[2] = body.state.vsol[1] - 1 / (2^scale) * diagonal.Δs[SA[1; 2; 3]]
+    body.state.ωsol[2] = body.state.ωsol[1] - 1 / (2^scale) * diagonal.Δs[SA[4; 5; 6]]
     return
 end
 
@@ -148,8 +154,8 @@ end
 end
 
 @inline function lineStep!(body::Body, diagonal, scale, mechanism)
-    body.state.vsol[2] = body.state.vsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SVector(1, 2, 3)]
-    body.state.ωsol[2] = body.state.ωsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SVector(4, 5, 6)]
+    body.state.vsol[2] = body.state.vsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SA[1; 2; 3]]
+    body.state.ωsol[2] = body.state.ωsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SA[4; 5; 6]]
     return
 end
 

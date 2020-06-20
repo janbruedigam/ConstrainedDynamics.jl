@@ -49,7 +49,7 @@ for i=1:3
         v1 = rand(3)
         Δv = rand(3)
 
-        setPosition!(link1, x = po1 - vrotate(SVector{3,Float64}(p1o),q1), q = q1)
+        setPosition!(link1, x = po1 - vrotate(p1o,q1), q = q1)
         setPosition!(link1, link2, Δx = Δx, Δq = Δq, p1 = p12, p2 = p21)
         
         setVelocity!(link1,v = v1, ω = axis1)
@@ -57,23 +57,23 @@ for i=1:3
 
         storage = simulate!(mech, 10., record = true)
 
-        truex10 = po1-vrotate(SVector{3,Float64}(p1o),q1)
+        truex10 = po1-vrotate(p1o,q1)
         trueq10 = q1
-        truex20 = truex10 + vrotate(SVector{3,Float64}(p12 + Δx),q1) - vrotate(SVector{3,Float64}(p21),q1*Δq)
+        truex20 = truex10 + vrotate(p12 + Δx,q1) - vrotate(p21,q1*Δq)
         trueq20 = q1*Δq
 
-        trueω1 = vrotate(SVector{3,Float64}(axis1),trueq10)
+        trueω1 = vrotate(axis1,trueq10)
         truev1 = v1
-        trueω2 = trueω1 + vrotate(SVector{3,Float64}(axis2),trueq20)
-        truev2 = v1 + vrotate(SVector{3,Float64}(cross(axis1,p12) + Δv),trueq10) - vrotate(SVector{3,Float64}(cross(vrotate(trueω2,inv(trueq20)),p21)),trueq20)
+        trueω2 = trueω1 + vrotate(axis2,trueq20)
+        truev2 = v1 + vrotate(cross(axis1,p12) + Δv,trueq10) - vrotate(cross(vrotate(trueω2,inv(trueq20)),p21),trueq20)
 
-        ax1 = @SVector zeros(3)
+        ax1 = szeros(3)
         an1 = 0.0
         if norm(trueω1)>0
             ax1 = trueω1/norm(trueω1)
             an1 = norm(trueω1)
         end
-        ax2 = @SVector zeros(3)
+        ax2 = szeros(3)
         an2 = 0.0
         if norm(trueω2)>0
             ax2 = trueω2/norm(trueω2)
@@ -129,7 +129,7 @@ for i=1:3
     truev1 = trueF0*Δt
     trueω1 = vrotate(trueτ0*Δt,q1)
 
-    ax1 = @SVector zeros(3)
+    ax1 = szeros(3)
     an1 = 0.0
     if norm(trueω1)>0
         ax1 = trueω1/norm(trueω1)

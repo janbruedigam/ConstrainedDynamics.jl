@@ -6,10 +6,13 @@ mutable struct Rotational{T,N} <: Joint{T,N}
     F::SVector{3,T}
     τ::SVector{3,T}
 
-    cid::Int64
+    childid::Int64
 
-    function Rotational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T}; axis::AbstractVector{T} = zeros(3), qoffset::UnitQuaternion{T} = one(UnitQuaternion{T})) where {T,N}
-        axis = vrotate(SVector(axis...), inv(qoffset))
+    function Rotational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T}; 
+            axis::AbstractVector{T} = zeros(3), qoffset::UnitQuaternion{T} = one(UnitQuaternion{T})
+        ) where {T,N}
+        
+        axis = vrotate(axis, inv(qoffset))
         if norm(axis) != 0
             axis = axis / norm(axis)
         end
@@ -20,9 +23,9 @@ mutable struct Rotational{T,N} <: Joint{T,N}
         F = zeros(T,3)
         τ = zeros(T,3)
 
-        cid = body2.id
+        childid = body2.id
 
-        new{T,N}(V12, V3, qoffset, F, τ, cid), body1.id, body2.id
+        new{T,N}(V12, V3, qoffset, F, τ, childid), body1.id, body2.id
     end
 end
 
@@ -30,3 +33,35 @@ Rotational0 = Rotational{T,0} where T
 Rotational1 = Rotational{T,1} where T
 Rotational2 = Rotational{T,2} where T
 Rotational3 = Rotational{T,3} where T
+
+
+# Position level constraints
+
+@inline function g(joint::Rotational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+    return Vmat(joint.qoff \ (qa \ qb))
+end
+@inline function g(joint::Rotational, xb::AbstractVector, qb::UnitQuaternion)
+    return Vmat(joint.qoff \ qb)
+end
+
+
+# Derivatives NOT accounting for quaternion specialness
+
+@inline function ∂g∂posa(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+    X = szeros(T, 3, 3)
+    Q = VLᵀmat(joint.qoff) * Rmat(qb) * Tmat()
+
+    return X, Q
+end
+@inline function ∂g∂posb(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+    X = szeros(T, 3, 3)
+    Q = VLᵀmat(joint.qoff) * Lᵀmat(qa)
+
+    return X, Q
+end
+@inline function ∂g∂posb(joint::Rotational{T}, xb::AbstractVector, qb::UnitQuaternion) where T
+    X = szeros(T, 3, 3)
+    Q = VLᵀmat(joint.qoff)
+
+    return X, Q
+end

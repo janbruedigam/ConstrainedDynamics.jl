@@ -5,10 +5,10 @@ struct Storage{T,N}
     ω::Vector{Vector{SVector{3,T}}}
 
     function Storage{T}(steps, nbodies) where T
-        x = [[(@SVector zeros(3)) for i = steps] for j = 1:nbodies]
+        x = [[szeros(T, 3) for i = steps] for j = 1:nbodies]
         q = [[one(UnitQuaternion{T}) for i = steps] for j = 1:nbodies]
-        v = [[(@SVector zeros(3)) for i = steps] for j = 1:nbodies]
-        ω = [[(@SVector zeros(3)) for i = steps] for j = 1:nbodies]
+        v = [[szeros(T, 3) for i = steps] for j = 1:nbodies]
+        ω = [[szeros(T, 3) for i = steps] for j = 1:nbodies]
         new{T,length(steps)}(x, q, v, ω)
     end
 

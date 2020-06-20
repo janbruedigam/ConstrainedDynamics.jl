@@ -1,4 +1,4 @@
-@inline g(contact::Contact, x) = contact.Nx[SVector(1, 2, 3)]' * (x - contact.offset[SVector(1, 2, 3)])
+@inline g(contact::Contact, x) = contact.Nx[SA[1; 2; 3]]' * (x - contact.offset[SA[1; 2; 3]])
 @inline g(contact::Contact, state::State, Δt) = g(contact, getx3(state, Δt))
 
 @inline ∂g∂pos(contact::Contact) = contact.Nx
@@ -22,20 +22,20 @@ end
 @inline schurD(contact::Contact, state::State, γ, s, Δt) = schurD(contact, γ, s, Δt)
 
 
-@inline function calcFrictionForce!(mechanism, friction::Contact, body::Body, γ)
+@inline function calcFrictionForce!(mechanism::Mechanism{T}, friction::Contact, body::Body, γ) where T
     cf = friction.cf
     D = friction.D
     state = body.state
 
-    f = body.f
+    d = state.d
     v = state.vsol[2]
     ω = state.ωsol[2]
-    state.vsol[2] = @SVector zeros(3)
-    state.ωsol[2] = @SVector zeros(3)
+    state.vsol[2] = szeros(T, 3)
+    state.ωsol[2] = szeros(T, 3)
     dyn = dynamics(mechanism, body)
     state.vsol[2] = v
     ω = state.ωsol[2] = ω
-    body.f = f
+    state.d = d
 
     b0 = D*dyn + friction.b # remove old friction force
 

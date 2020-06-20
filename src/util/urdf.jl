@@ -18,7 +18,7 @@ function parse_vector(xel, name::String, T; default::String="0")
     return vec
 end
 
-function parse_inertia_matrix(xinertia, T)
+function parse_inertiamatrix(xinertia, T)
     if xinertia === nothing
         J = zeros(T, 3, 3)
     else
@@ -54,7 +54,7 @@ function parse_inertia(xinertial, T)
         J = zeros(T, 3, 3)
     else
         x, q = parse_pose(find_element(xinertial, "origin"), T)
-        J = parse_inertia_matrix(find_element(xinertial, "inertia"), T)
+        J = parse_inertiamatrix(find_element(xinertial, "inertia"), T)
         m = parse_scalar(find_element(xinertial, "mass"), "value", T, default = "0")
     end
 
@@ -84,7 +84,7 @@ function parse_shape(xvisual, T)
         x, q = parse_pose(find_element(xvisual, "origin"), T)
 
         shapenodes = LightXML.XMLElement[]
-        for node in child_nodes(xgeometry)  # c is an instance of XMLNode
+        for node in child_nodes(xgeometry)  # node is an instance of XMLNode
             if is_elementnode(node)
                 push!(shapenodes, XMLElement(node))
             end
@@ -160,7 +160,7 @@ end
 
 # TODO offset correct (e.g. for Planar)?
 function parse_joint(xjoint, origin, plink, clink, T)
-    joint_type = attribute(xjoint, "type")
+    jointtype = attribute(xjoint, "type")
     x, q = parse_pose(find_element(xjoint, "origin"), T)
     axis = parse_vector(find_element(xjoint, "axis"), "xyz", T, default = "1 0 0")
     p1 = x
@@ -168,15 +168,15 @@ function parse_joint(xjoint, origin, plink, clink, T)
     name = attribute(xjoint, "name")
     
     # TODO limits for revolute joint?
-    if joint_type == "revolute" || joint_type == "continuous"
+    if jointtype == "revolute" || jointtype == "continuous"
         joint = EqualityConstraint(Revolute(plink, clink, axis; p1=p1, p2=p2, qoffset = q), name=name)
-    elseif joint_type == "prismatic"
+    elseif jointtype == "prismatic"
         joint = EqualityConstraint(Prismatic(plink, clink, axis; p1=p1, p2=p2, qoffset = q), name=name)
-    elseif joint_type == "planar"
+    elseif jointtype == "planar"
         joint = EqualityConstraint(Planar(plink, clink, axis; p1=p1, p2=p2), name=name)
-    elseif joint_type == "fixed"
+    elseif jointtype == "fixed"
         joint = EqualityConstraint(Fixed(plink, clink; p1=p1, p2=p2, qoffset = q), name=name)
-    elseif joint_type == "floating" # Floating relative to non-origin link not supported
+    elseif jointtype == "floating" # Floating relative to non-origin link not supported
         @assert origin == plink
         joint = EqualityConstraint(OriginConnection(origin, clink), name=name)
     end
@@ -184,7 +184,7 @@ function parse_joint(xjoint, origin, plink, clink, T)
     return joint
 end
 
-function parse_joints(xjoints, ldict, T, floating)
+function parse_joints(xjoints, ldict, floating, T)
     origins = Origin{T}[]
     links = Body{T}[]
     joints = EqualityConstraint{T}[]
@@ -239,7 +239,7 @@ function parse_joints(xjoints, ldict, T, floating)
     return origin, links, joints
 end
 
-function parse_urdf(filename, ::Type{T}, floating) where T
+function parse_urdf(filename, floating, ::Type{T}) where T
     xdoc = LightXML.parse_file(filename)
     xroot = LightXML.root(xdoc)
     @assert LightXML.name(xroot) == "robot"
@@ -248,7 +248,7 @@ function parse_urdf(filename, ::Type{T}, floating) where T
     xjoints = get_elements_by_tagname(xroot, "joint")
 
     ldict, shapes = parse_links(xlinks, T)
-    origin, links, joints = parse_joints(xjoints, ldict, T, floating)
+    origin, links, joints = parse_joints(xjoints, ldict, floating, T)
 
     free(xdoc)
 

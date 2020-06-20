@@ -19,8 +19,9 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
 
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
-        eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+            eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
+            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+        ) where T
 
         resetGlobalID()
         order = getGlobalOrder()
@@ -48,7 +49,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
                 for (ind, bodyid) in enumerate(eqc.childids)
                     if bodyid == body.id
                         eqc.childids = setindex(eqc.childids, currentid, ind)
-                        eqc.constraints[ind].cid = currentid
+                        eqc.constraints[ind].childid = currentid
                     end
                 end
             end
@@ -108,14 +109,16 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+        ) where T
 
         ineqcs = InequalityConstraint{T}[]
         return Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
-        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+        ) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
@@ -125,7 +128,8 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
-        Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+        ) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
@@ -134,8 +138,8 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         return Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
     end
 
-    function Mechanism(filename::AbstractString; floating::Bool=false, scalar_type::Type{T} = Float64, Δt::T = .01, g::T = -9.81) where T
-        origin, links, joints, shapes = parse_urdf(filename, T, floating)
+    function Mechanism(filename::AbstractString; floating::Bool=false, type::Type{T} = Float64, Δt::T = .01, g::T = -9.81) where T
+        origin, links, joints, shapes = parse_urdf(filename, floating, T)
 
         mechanism = Mechanism(origin, links, joints, shapes = shapes, Δt = Δt, g = g)
 
@@ -151,20 +155,20 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
                 body = component
                 preds = predecessors(graph, id)
                 @assert length(preds) == 1
-                pid = preds[1]
-                constraint = geteqconstraint(mechanism, pid)
+                parentid = preds[1]
+                constraint = geteqconstraint(mechanism, parentid)
                 @assert length(constraint.constraints) == 2
 
-                gpreds = predecessors(graph, pid)
-                if length(gpreds) > 0 # predecessor is link
-                    @assert length(gpreds) == 1
-                    gpid = gpreds[1]
+                grandpreds = predecessors(graph, parentid)
+                if length(grandpreds) > 0 # predecessor is link
+                    @assert length(grandpreds) == 1
+                    grandparentid = grandpreds[1]
 
-                    pbody = getbody(mechanism, gpid)
-                    ggpreds = predecessors(graph, gpid)
-                    @assert length(ggpreds) == 1
-                    ggpid = ggpreds[1]
-                    pconstraint = geteqconstraint(mechanism, ggpid)
+                    pbody = getbody(mechanism, grandparentid)
+                    grandgrandpreds = predecessors(graph, grandparentid)
+                    @assert length(grandgrandpreds) == 1
+                    grandgrandparentid = grandgrandpreds[1]
+                    pconstraint = geteqconstraint(mechanism, grandgrandparentid)
                     @assert length(pconstraint.constraints) == 2
 
                     xpbody = pbody.state.xc
@@ -175,10 +179,10 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
                 else # predecessor is origin
                     pbody = origin
 
-                    xpbody = SVector{3,T}(0, 0, 0)
+                    xpbody = SA{T}[0; 0; 0]
                     qpbody = one(UnitQuaternion{T})
 
-                    xpjointworld = SVector{3,T}(0, 0, 0)
+                    xpjointworld = SA{T}[0; 0; 0]
                     qpjointworld = one(UnitQuaternion{T})
                 end
 

@@ -14,7 +14,8 @@ struct Graph{N}
     activedict::UnitDict{Base.OneTo{Int64},Bool}
 
     function Graph(origin::Origin,bodies::Vector{<:Body},
-        eqconstraints::Vector{<:EqualityConstraint},ineqconstraints::Vector{<:InequalityConstraint})
+            eqconstraints::Vector{<:EqualityConstraint},ineqconstraints::Vector{<:InequalityConstraint}
+        )
 
         oid = origin.id
         adjacency, dict = adjacencyMatrix(eqconstraints, bodies)
@@ -78,15 +79,15 @@ function adjacencyMatrix(eqconstraints::Vector{<:EqualityConstraint}, bodies::Ve
     n = 0
 
     for constraint in eqconstraints
-        cid = constraint.id
+        childid = constraint.id
         A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
-        dict[cid] = n += 1
+        dict[childid] = n += 1
         for bodyid in unique([constraint.parentid;constraint.childids])
             if !haskey(dict, bodyid)
                 A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
                 dict[bodyid] = n += 1
             end
-            A[dict[cid],dict[bodyid]] = true
+            A[dict[childid],dict[bodyid]] = true
         end
     end
     for body in bodies # add unconnected bodies
@@ -116,7 +117,10 @@ function dfs(adjacency::Matrix, dict::Dict, originid::Integer)
     return dfsgraph, convert(SVector{N}, dfslist), loops
 end
 
-function dfs!(A::Matrix, Adfs::Matrix, dict::Dict, list::Vector, visited::Vector, loops::Vector{<:Vector{<:Integer}}, index::Integer, currentid::Integer, parentid::Integer)
+function dfs!(A::Matrix, Adfs::Matrix, dict::Dict, list::Vector, visited::Vector, loops::Vector{<:Vector{<:Integer}},
+        index::Integer, currentid::Integer, parentid::Integer
+    )
+    
     i = dict[currentid]
     for (childid, j) in dict
         if A[i,j] && parentid != childid # connection from i to j in adjacency && not a direct connection back to the parent
@@ -179,8 +183,8 @@ function successors(dfslist, pattern, dict::Dict)
     N = length(dfslist)
     sucs = [Int64[] for i = 1:N]
     for i = 1:N
-        for cid in dfslist
-            pattern[i][dict[cid]] && push!(sucs[i], cid)
+        for childid in dfslist
+            pattern[i][dict[childid]] && push!(sucs[i], childid)
         end
     end
 
@@ -192,8 +196,8 @@ function directchildren(dfslist, dfsgraph, dict::Dict)
     N = length(dfslist)
     dirs = [Int64[] for i = 1:N]
     for i = 1:N
-        for cid in dfslist
-            dfsgraph[i][dict[cid]] && push!(dirs[i], cid)
+        for childid in dfslist
+            dfsgraph[i][dict[childid]] && push!(dirs[i], childid)
         end
     end
 
@@ -205,8 +209,8 @@ function loopchildren(dfslist, fillins, dict::Dict)
     N = length(dfslist)
     loos = [Int64[] for i = 1:N]
     for i = 1:N
-        for cid in dfslist
-            fillins[i][dict[cid]] && push!(loos[i], cid)
+        for childid in dfslist
+            fillins[i][dict[childid]] && push!(loos[i], childid)
         end
     end
 
@@ -230,8 +234,8 @@ function predecessors(dfslist, pattern, dict::Dict)
     N = length(dfslist)
     preds = [Int64[] for i = 1:N]
     for i = 1:N
-        for cid in reverse(dfslist)
-            pattern[dict[cid]][i] && push!(preds[i], cid)
+        for childid in reverse(dfslist)
+            pattern[dict[childid]][i] && push!(preds[i], childid)
         end
     end
 
@@ -243,8 +247,8 @@ function connections(dfslist, adjacency, dict::Dict)
     N = length(dfslist)
     cons = [Int64[] for i = 1:N]
     for i = 1:N
-        for cid in dfslist
-            adjacency[i][dict[cid]] && push!(cons[i], cid)
+        for childid in dfslist
+            adjacency[i][dict[childid]] && push!(cons[i], childid)
         end
     end
 
@@ -261,23 +265,23 @@ end
 @inline isactive(graph, id::Integer) = graph.activedict[id]
 @inline isinactive(graph, id::Integer) = !isactive(graph, id)
 
-@inline function hassuccessor(graph::Graph{N}, id, cid) where N
+@inline function hassuccessor(graph::Graph{N}, id, childid) where N
     for val in graph.successors[graph.dict[id]]
-        val == cid && (return true)
+        val == childid && (return true)
     end
     return false
 end
 
-@inline function haspredecessor(graph::Graph{N}, id, pid) where N
+@inline function haspredecessor(graph::Graph{N}, id, parentid) where N
     for val in graph.predecessors[graph.dict[id]]
-        val == pid && (return true)
+        val == parentid && (return true)
     end
     return false
 end
 
-@inline function hasdirectchild(graph::Graph{N}, id, cid) where N
+@inline function hasdirectchild(graph::Graph{N}, id, childid) where N
     for val in graph.directchildren[graph.dict[id]]
-        val == cid && (return true)
+        val == childid && (return true)
     end
     return false
 end

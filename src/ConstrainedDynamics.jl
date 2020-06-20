@@ -42,6 +42,7 @@ export Box,
     simulate!,
 
     disassemble,
+    getid,
     getcomponent,
     getbody,
     geteqconstraint,
@@ -50,17 +51,20 @@ export Box,
     activate!,
     deactivate!,
 
-    linearizeSystem,
-    linearizeConstraints,
-    linearizeMechanism,
+    linearsystem,
 
     RotX,
     RotY,
     RotZ,
-    RGBA
+    RGBA,
+
+    szeros,
+    sones,
+    srand
 
 
 include(joinpath("util", "util.jl"))
+include(joinpath("util", "custom_static.jl"))
 include(joinpath("util", "customdict.jl"))
 include(joinpath("util", "quaternion.jl"))
 include(joinpath("util", "shapes.jl"))
@@ -102,7 +106,7 @@ include(joinpath("components", "mechanism_functions.jl"))
 include(joinpath("components", "simulate.jl"))
 include(joinpath("components", "initialize.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
-include(joinpath("solver", "fullsystem.jl"))
+include(joinpath("solver", "system.jl"))
 
 include(joinpath("util", "urdf.jl"))
 
