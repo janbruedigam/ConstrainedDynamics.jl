@@ -54,8 +54,6 @@ function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     return A, x, b
 end
 
-function ∂g∂ʳright()
-end
 
 function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     Δt = mechanism.Δt
@@ -289,6 +287,9 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
 
     A = -Dinv*inv(Ffz)*Fz
     B = -Dinv*inv(Ffz)*Bbody*Bcontrol
+
+    A = A[1:Nb*12,1:Nb*12]
+    B = B[1:Nb*12,:]
 
 
     return A, B
