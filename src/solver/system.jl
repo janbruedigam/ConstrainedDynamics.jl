@@ -88,16 +88,16 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 pcol3a = offsetrange(parentid,3,13,1)
                 pcol3b = offsetrange(parentid,3,13,2)
                 pcol3c = offsetrange(parentid,3,13,3)
-                pcol3c = pcol3c[begin]:pcol3c[end]+1
+                pcol3c = first(pcol3c):last(pcol3c)+1
                 pcol3d = offsetrange(parentid,3,13,4)
-                pcol3d = pcol3d[begin]+1:pcol3d[end]+1
+                pcol3d = first(pcol3d)+1:last(pcol3d)+1
 
                 ccol3a = offsetrange(childid,3,13,1)
                 ccol3b = offsetrange(childid,3,13,2)
                 ccol3c = offsetrange(childid,3,13,3)
-                ccol3c = ccol3c[begin]:ccol3c[end]+1
+                ccol3c = first(ccol3c):last(ccol3c)+1
                 ccol3d = offsetrange(childid,3,13,4)
-                ccol3d = ccol3d[begin]+1:ccol3d[end]+1
+                ccol3d = first(ccol3d)+1:last(ccol3d)+1
 
                 pXl, pQl = ∂g∂posa(eqc.constraints[i], posargsnext(pstate, Δt)..., posargsnext(cstate, Δt)...) # x3
                 pGr = ∂g∂ʳposa(eqc.constraints[i], posargssol(pstate)..., posargssol(cstate)...) # x2
@@ -161,9 +161,9 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 ccol3a = offsetrange(childid,3,13,1)
                 ccol3b = offsetrange(childid,3,13,2)
                 ccol3c = offsetrange(childid,3,13,3)
-                ccol3c = ccol3c[begin]:ccol3c[end]+1
+                ccol3c = first(ccol3c):last(ccol3c)+1
                 ccol3d = offsetrange(childid,3,13,4)
-                ccol3d = ccol3d[begin]+1:ccol3d[end]+1
+                ccol3d = first(ccol3d)+1:last(ccol3d)+1
 
 
                 cXl, cQl =  ∂g∂posb(eqc.constraints[i], posargsnext(cstate, Δt)...) # x3
