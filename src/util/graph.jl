@@ -41,6 +41,10 @@ struct Graph{N}
             eqc.parentid == oid && (eqc.parentid = nothing)
         end
 
+        for ineqc in ineqconstraints
+            activedict[ineqc.id] = true
+        end
+
         N = length(dict)
 
         adjacency = convert(Vector{SVector{N,Bool}}, adjacency)
