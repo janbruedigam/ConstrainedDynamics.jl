@@ -236,13 +236,14 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
 
     nc = 0
     for eqc in eqcs
+        !eqc.active && continue
         nc += length(eqc)
     end
 
     # calculate next state
     discretizestate!(mechanism)
     foreach(setsolution!, mechanism.bodies)
-    newton!(mechanism) 
+    newton!(mechanism)
 
     # get state linearization 
     Fz = zeros(T,Nb*13+nc,Nb*12+nc)
@@ -267,6 +268,8 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     end
     for (i,id) in enumerate(eqcids)
         eqc = geteqconstraint(mechanism, id)
+        !eqc.active && continue
+
         parentid = eqc.parentid
         if parentid !== nothing
             col6 = offsetrange(parentid,6)
