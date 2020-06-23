@@ -127,7 +127,7 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
             isinactive(graph, eqc.id) && continue
             lineStep!(eqc, getentry(ldu, eqc.id), scale, mechanism)
         end
-        for (id,ineqc) in ineqcs
+        for ineqc in ineqcs
             isinactive(graph, ineqc.id) && continue
             lineStep!(ineqc, getineqentry(ldu, ineqc.id), scale, mechanism)
         end
