@@ -146,15 +146,15 @@ end
 
 # Currently only for eqcs
 @inline function activate!(mechanism::Mechanism, id::Integer)
-    eqc = geteqconstraint(mechanism, id)
-    activate!(eqc)
+    component = getcomponent(mechanism, id)
+    activate!(component)
     activate!(mechanism.graph,id)
     return
 end
 
 @inline function deactivate!(mechanism::Mechanism, id::Integer)
-    eqc = geteqconstraint(mechanism, id)
-    deactivate!(eqc)
+    component = getcomponent(mechanism, id)
+    deactivate!(component)
     deactivate!(mechanism.graph,id)
     return
 end
