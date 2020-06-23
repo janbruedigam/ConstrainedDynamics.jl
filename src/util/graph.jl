@@ -39,10 +39,15 @@ struct Graph{N}
 
         for eqc in eqconstraints
             eqc.parentid == oid && (eqc.parentid = nothing)
+            activedict[eqc.id] = isactive(eqc)
+        end
+
+        for body in bodies
+            activedict[body.id] = isactive(body)
         end
 
         for ineqc in ineqconstraints
-            activedict[ineqc.id] = true
+            activedict[ineqc.id] = isactive(ineqc)
         end
 
         N = length(dict)

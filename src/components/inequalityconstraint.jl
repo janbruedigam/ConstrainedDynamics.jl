@@ -1,7 +1,7 @@
 mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
     id::Int64
     name::String
-    # active::Bool
+    active::Bool
 
     constraints::Cs
     parentid::Int64
@@ -40,7 +40,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
         ssol = [ones(T, N) for i=1:2]
         γsol = [ones(T, N) for i=1:2]
 
-        new{T,N,typeof(constraints)}(getGlobalID(), name, constraints, parentid, ssol, γsol)
+        new{T,N,typeof(constraints)}(getGlobalID(), name, true, constraints, parentid, ssol, γsol)
     end
 end
 
@@ -55,10 +55,12 @@ function resetVars!(ineqc::InequalityConstraint{T,N}) where {T,N}
 end
 
 @inline function NtγTof!(mechanism, body::Body, ineqc::InequalityConstraint{T,N}) where {T,N}
-    state = body.state
-    state.d -= ∂g∂pos(mechanism, ineqc, body)' * ineqc.γsol[2]
-    for i=1:N
-        state.d -= additionalforce(ineqc.constraints[i])
+    if isactive(ineqc)
+        state = body.state
+        state.d -= ∂g∂pos(mechanism, ineqc, body)' * ineqc.γsol[2]
+        for i=1:N
+            state.d -= additionalforce(ineqc.constraints[i])
+        end
     end
     return
 end

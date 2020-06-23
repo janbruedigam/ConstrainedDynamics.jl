@@ -11,5 +11,8 @@ Base.show(io::IO, component::Component) = summary(io, component)
 
 Base.length(::AbstractConstraint{T,N}) where {T,N} = N
 getid(component::Component) = component.id
-# activate!(component::Component) = (component.active = true; return)
-# deactivate!(component::Component) = (component.active = false; return)
+activate!(component::Component) = (component.active = true; return)
+deactivate!(component::Component) = (component.active = false; return)
+
+isactive(component::Component) = component.active
+isinactive(component::Component) = !isactive(component)

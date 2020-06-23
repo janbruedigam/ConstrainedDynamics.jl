@@ -1,7 +1,7 @@
 mutable struct Body{T} <: AbstractBody{T}
     id::Int64
     name::String
-    # active::Bool
+    active::Bool
 
     m::T
     J::SMatrix{3,3,T,9}
@@ -10,7 +10,7 @@ mutable struct Body{T} <: AbstractBody{T}
 
 
     function Body(m::T, J::AbstractArray{T,2}; name::String="") where T
-        new{T}(getGlobalID(), name, m, J, State{T}())
+        new{T}(getGlobalID(), name, true, m, J, State{T}())
     end
 
     function Body(shape::Shape; name::String="")

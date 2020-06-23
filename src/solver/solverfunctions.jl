@@ -110,7 +110,7 @@ function setentries!(mechanism::Mechanism)
     ldu = mechanism.ldu
 
     for (id, body) in pairs(mechanism.bodies)
-        isinactive(graph, id) && continue
+        isinactive(body) && continue
         
         for childid in directchildren(graph, id)
             setLU!(mechanism, getentry(ldu, (id, childid)), id, geteqconstraint(mechanism, childid))
@@ -127,7 +127,7 @@ function setentries!(mechanism::Mechanism)
 
     for eqc in mechanism.eqconstraints
         id = eqc.id
-        isinactive(graph, id) && continue
+        isinactive(eqc) && continue
         
         for childid in directchildren(graph, id)
             setLU!(mechanism, getentry(ldu, (id, childid)), eqc, childid)

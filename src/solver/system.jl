@@ -236,8 +236,8 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     graph = mechanism.graph
 
     nc = 0
-    for (id,eqc) in pairs(eqcs)
-        isinactive(graph, id) && continue
+    for eqc in eqcs
+        isinactive(eqc) && continue
         nc += length(eqc)
     end
 
@@ -268,8 +268,8 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
         Dinv[col12,col13] = Dinvi
     end
     for (i,id) in enumerate(eqcids)
-        isinactive(graph, id) && continue
         eqc = geteqconstraint(mechanism, id)
+        isinactive(eqc) && continue
 
         parentid = eqc.parentid
         if parentid !== nothing
