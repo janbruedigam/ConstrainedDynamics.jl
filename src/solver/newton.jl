@@ -85,12 +85,10 @@ function lineSearch!(mechanism::Mechanism{T,N,Nb,Ne,0}, normf0;iter = 10, warnin
     eqcs = mechanism.eqconstraints
 
     for n = Base.OneTo(iter + 1)
-        for (id,body) in pairs(bodies)
-            # isinactive(graph, id) && continue
+        for body in bodies
             lineStep!(body, getentry(ldu, body.id), scale)
         end
-        for (id,eqc) in pairs(eqcs)
-            # isinactive(graph, id) && continue
+        for eqc in eqcs
             lineStep!(eqc, getentry(ldu, eqc.id), scale)
         end
 
