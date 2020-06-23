@@ -80,16 +80,17 @@ function lineSearch!(mechanism::Mechanism{T,N,Nb,Ne,0}, normf0;iter = 10, warnin
     normf1 = normf0
     scale = 0
     ldu = mechanism.ldu
+    graph = mechanism.graph
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
 
     for n = Base.OneTo(iter + 1)
-        for body in bodies
-            !body.active && continue
+        for (id,body) in pairs(bodies)
+            isinactive(graph, id) && continue
             lineStep!(body, getentry(ldu, body.id), scale)
         end
-        for eqc in eqcs
-            !eqc.active && continue
+        for (id,eqc) in pairs(eqcs)
+            isinactive(graph, id) && continue
             lineStep!(eqc, getentry(ldu, eqc.id), scale)
         end
 
@@ -110,6 +111,7 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     meritf1 = meritf0
     scale = 0
     ldu = mechanism.ldu
+    graph = mechanism.graph
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
@@ -117,16 +119,16 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     feasibilityStepLength!(mechanism)
 
     for n = Base.OneTo(iter)
-        for body in bodies
-            !body.active && continue
+        for (id,body) in pairs(bodies)
+            isinactive(graph, id) && continue
             lineStep!(body, getentry(ldu, body.id), scale, mechanism)
         end
-        for eqc in eqcs
-            !eqc.active && continue
+        for (id,eqc) in pairs(eqcs)
+            isinactive(graph, id) && continue
             lineStep!(eqc, getentry(ldu, eqc.id), scale, mechanism)
         end
-        for ineqc in ineqcs
-            !ineqc.active && continue
+        for (id,ineqc) in pairs(ineqcs)
+            isinactive(graph, id) && continue
             lineStep!(ineqc, getineqentry(ldu, ineqc.id), scale, mechanism)
         end
 

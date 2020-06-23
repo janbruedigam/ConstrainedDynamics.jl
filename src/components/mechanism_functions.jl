@@ -148,15 +148,11 @@ end
 end
 
 @inline function activate!(mechanism::Mechanism, id::Integer)
-    component = getcomponent(mechanism, id)
-    activate!(component)
     activate!(mechanism.graph,id)
     return
 end
 
 @inline function deactivate!(mechanism::Mechanism, id::Integer)
-    component = getcomponent(mechanism, id)
-    deactivate!(component)
     deactivate!(mechanism.graph,id)
     return
 end

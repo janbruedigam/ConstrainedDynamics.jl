@@ -1,7 +1,7 @@
 mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     id::Int64
     name::String
-    active::Bool
+    # active::Bool
 
     constraints::Cs
     parentid::Union{Int64,Nothing}
@@ -48,7 +48,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
 
         λsol = [zeros(T, N) for i=1:2]
 
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, true, constraints, parentid, childids, inds, λsol)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, constraints, parentid, childids, inds, λsol)
     end
 end
 
