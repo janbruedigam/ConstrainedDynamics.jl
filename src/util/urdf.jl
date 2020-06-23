@@ -1,33 +1,42 @@
-function parse_scalar(xel, name::String, T; default::String="0")
-    if xel === nothing
-        scalar = parse(T, default)
-    else
-        scalar = parse(T, attribute(xel, name))
+unsafeattribute(::Nothing, ::Core.AbstractString) = nothing
+unsafeattribute(x::LightXML.XMLElement, name::Core.AbstractString) = attribute(x, name)
+
+function parse_scalar(xel, name::String, T; default::Union{String,Nothing}=nothing)
+    scalarstr = unsafeattribute(xel, name)
+    if scalarstr === nothing 
+        if default === nothing
+            @error "no parsable scalar found"
+        else
+            scalarstr = default
+        end
     end
 
-    return scalar
+    return parse(T, scalarstr)
 end
 
-function parse_vector(xel, name::String, T; default::String="0")
-    if xel === nothing || attribute(xel, name) === nothing
-        vec = [parse(T, str) for str in split(default)]
-    else
-        vec = [parse(T, str) for str in split(attribute(xel, name))]
+function parse_vector(xel, name::String, T; default::Union{String,Nothing}=nothing)
+    vectorstr = unsafeattribute(xel, name)
+    if vectorstr === nothing 
+        if default === nothing
+            @error "no parsable vector found"
+        else
+            vectorstr = default
+        end
     end
 
-    return vec
+    return parse.(T,split(vectorstr))
 end
 
 function parse_inertiamatrix(xinertia, T)
     if xinertia === nothing
         J = zeros(T, 3, 3)
     else
-        ixx = parse_scalar(xinertia, "ixx", T, default = "0")
+        ixx = parse_scalar(xinertia, "ixx", T)
         ixy = parse_scalar(xinertia, "ixy", T, default = "0")
         ixz = parse_scalar(xinertia, "ixz", T, default = "0")
-        iyy = parse_scalar(xinertia, "iyy", T, default = "0")
+        iyy = parse_scalar(xinertia, "iyy", T)
         iyz = parse_scalar(xinertia, "iyz", T, default = "0")
-        izz = parse_scalar(xinertia, "izz", T, default = "0")
+        izz = parse_scalar(xinertia, "izz", T)
         J = [ixx ixy ixz; ixy iyy iyz; ixz iyz izz]
     end
 
@@ -61,26 +70,48 @@ function parse_inertia(xinertial, T)
     return x, q, m, J
 end
 
-function parse_xmaterial(xmaterial, T)
+function parse_robotmaterials(xroot, T)
+    xmaterials = get_elements_by_tagname(xroot, "material")
+
+    mdict = Dict{String,Vector{T}}()
+
+    for xmaterial in xmaterials
+        name = attribute(xmaterial, "name")
+        colornode = find_element(xmaterial, "color")
+        colorvec = parse_vector(colornode, "rgba", T)
+        mdict[name] = colorvec
+    end
+
+    return mdict
+end
+
+function parse_xmaterial(xmaterial, materialdict, T)
     if xmaterial === nothing
         color = RGBA(0.75, 0.75, 0.75)
     else
+        name = unsafeattribute(xmaterial, "name")
+        if haskey(materialdict, name)
+            colorvec = materialdict[name]
+        else
+            colorvec = [0.75; 0.75; 0.75; 1.0]
+        end
         colornode = find_element(xmaterial, "color")
-        colorvec = parse_vector(colornode, "rgba", T, default = "0.5 0.5 0.5 1")
-        color = RGBA(colorvec[1:3]...)
+        colorvec = parse_vector(colornode, "rgba", T, default = string(colorvec[1]," ",colorvec[2]," ",colorvec[3]," ",colorvec[4]))
+
+        color = RGBA(colorvec...)
     end
 
     return color
 end
 
-function parse_shape(xvisual, T)
+function parse_shape(xvisual, materialdict, T)
     if xvisual === nothing
         shape = nothing
     else
         xgeometry = find_element(xvisual, "geometry")
         @assert xgeometry !== nothing
 
-        color = parse_xmaterial(find_element(xvisual, "material"), T)
+        color = parse_xmaterial(find_element(xvisual, "material"), materialdict, T)
         x, q = parse_pose(find_element(xvisual, "origin"), T)
 
         shapenodes = LightXML.XMLElement[]
@@ -123,11 +154,11 @@ function parse_shape(xvisual, T)
     return shape
 end
 
-function parse_link(xlink, T)
+function parse_link(xlink, materialdict, T)
     xvisual = find_element(xlink, "visual")
 
     x, q, m, J = parse_inertia(find_element(xlink, "inertial"), T)
-    shape = parse_shape(find_element(xlink, "visual"), T)
+    shape = parse_shape(find_element(xlink, "visual"), materialdict, T)
     name = attribute(xlink, "name")
 
     if shape === nothing
@@ -145,12 +176,12 @@ function parse_link(xlink, T)
     return link, shape
 end
 
-function parse_links(xlinks, T)
+function parse_links(xlinks, materialdict, T)
     ldict = Dict{String,AbstractBody{T}}()
     shapes = Shape{T}[]
 
     for xlink in xlinks
-        link, shape = parse_link(xlink, T)
+        link, shape = parse_link(xlink, materialdict, T)
         ldict[link.name] = link
         shape !== nothing && push!(shapes, shape)
     end
@@ -247,7 +278,8 @@ function parse_urdf(filename, floating, ::Type{T}) where T
     xlinks = get_elements_by_tagname(xroot, "link")
     xjoints = get_elements_by_tagname(xroot, "joint")
 
-    ldict, shapes = parse_links(xlinks, T)
+    materialdict = parse_robotmaterials(xroot, T)
+    ldict, shapes = parse_links(xlinks, materialdict, T)
     origin, links, joints = parse_joints(xjoints, ldict, floating, T)
 
     free(xdoc)

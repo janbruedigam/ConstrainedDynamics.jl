@@ -53,8 +53,7 @@ mutable struct Cylinder{T} <: Shape{T}
     rh::SVector{2,T}
     color::RGBA
 
-    # by default the cylinder points in the z direction
-    # TODO other direction
+    # Cylinder points in the z direction
     function Cylinder(r, h, m::T;
             color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})
         ) where T
