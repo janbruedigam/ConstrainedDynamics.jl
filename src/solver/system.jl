@@ -271,7 +271,6 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     end
     for (i,id) in enumerate(eqcids)
         eqc = geteqconstraint(mechanism, id)
-        isinactive(eqc) && continue
 
         parentid = eqc.parentid
         if parentid !== nothing
