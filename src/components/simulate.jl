@@ -33,14 +33,13 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
 
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
-    graph = mechanism.graph
     bodies = mechanism.bodies
 
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, k)
         newton!(mechanism, warning = debug)
-        foreachactive(updatestate!, graph, bodies, Δt)
+        foreachactive(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
@@ -52,7 +51,6 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
 
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
-    graph = mechanism.graph
     bodies = mechanism.bodies
 
     control! = controller.control!
@@ -61,7 +59,7 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, controller, k)
         newton!(mechanism, warning = debug)
-        foreachactive(updatestate!, graph, bodies, Δt)
+        foreachactive(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
@@ -73,13 +71,12 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
 
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
-    graph = mechanism.graph
     bodies = mechanism.bodies
    
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         newton!(mechanism, warning = debug)
-        foreachactive(updatestate!, graph, bodies, Δt)
+        foreachactive(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end

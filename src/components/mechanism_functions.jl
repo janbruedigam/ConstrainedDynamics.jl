@@ -90,34 +90,31 @@ end
 end
 
 @inline function normf(mechanism::Mechanism)
-    graph = mechanism.graph
     mechanism.normf = 0
     
-    foreachactive(addNormf!, graph, mechanism.bodies, mechanism)
-    foreachactive(addNormf!, graph, mechanism.eqconstraints, mechanism)
-    foreachactive(addNormf!, graph, mechanism.ineqconstraints, mechanism)
+    foreachactive(addNormf!, mechanism.bodies, mechanism)
+    foreachactive(addNormf!, mechanism.eqconstraints, mechanism)
+    foreachactive(addNormf!, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normf)
 end
 
 @inline function meritf(mechanism::Mechanism)
-    graph = mechanism.graph
     mechanism.normf = 0
 
-    foreachactive(addNormf!, graph, mechanism.bodies, mechanism)
-    foreachactive(addNormf!, graph, mechanism.eqconstraints, mechanism)
-    foreachactive(addNormfμ!, graph, mechanism.ineqconstraints, mechanism)
+    foreachactive(addNormf!, mechanism.bodies, mechanism)
+    foreachactive(addNormf!, mechanism.eqconstraints, mechanism)
+    foreachactive(addNormfμ!, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normf)
 end
 
 @inline function normΔs(mechanism::Mechanism)
-    graph = mechanism.graph
     mechanism.normΔs = 0
 
-    foreachactive(addNormΔs!, graph, mechanism.bodies, mechanism)
-    foreachactive(addNormΔs!, graph, mechanism.eqconstraints, mechanism)
-    foreachactive(addNormΔs!, graph, mechanism.ineqconstraints, mechanism)
+    foreachactive(addNormΔs!, mechanism.bodies, mechanism)
+    foreachactive(addNormΔs!, mechanism.eqconstraints, mechanism)
+    foreachactive(addNormΔs!, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normΔs)
 end
@@ -147,6 +144,7 @@ end
     return
 end
 
+# Currently only for eqcs
 @inline function activate!(mechanism::Mechanism, id::Integer)
     component = getcomponent(mechanism, id)
     activate!(component)

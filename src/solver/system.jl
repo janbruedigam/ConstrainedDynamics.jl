@@ -61,6 +61,7 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 
     nc = 0
     for eqc in eqcs
+        isinactive(eqc) && continue
         nc += length(eqc)
     end
 
@@ -69,6 +70,7 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 
     oneindc = 0
     for eqc in eqcs
+        isinactive(eqc) && continue
         ind1 = 1
         ind2 = 0
 
@@ -233,16 +235,18 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     Δt = mechanism.Δt
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
+    graph = mechanism.graph
 
     nc = 0
     for eqc in eqcs
+        isinactive(eqc) && continue
         nc += length(eqc)
     end
 
     # calculate next state
     discretizestate!(mechanism)
     foreach(setsolution!, mechanism.bodies)
-    newton!(mechanism) 
+    newton!(mechanism)
 
     # get state linearization 
     Fz = zeros(T,Nb*13+nc,Nb*12+nc)
@@ -267,6 +271,7 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     end
     for (i,id) in enumerate(eqcids)
         eqc = geteqconstraint(mechanism, id)
+
         parentid = eqc.parentid
         if parentid !== nothing
             col6 = offsetrange(parentid,6)

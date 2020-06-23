@@ -18,8 +18,8 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,0};
         normf1 = lineSearch!(mechanism, normf0;iter = lineIter, warning = warning)
         normΔs1 = normΔs(mechanism)
 
-        foreachactive(updatesolution!, graph, bodies)
-        foreachactive(updatesolution!, graph, eqcs)
+        foreachactive(updatesolution!, bodies)
+        foreachactive(updatesolution!, eqcs)
 
         if normf1 < ε && normΔs1 < ε
             # warning && (@info string("Newton iterations: ",n))
@@ -45,7 +45,7 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,Ni};
     ldu = mechanism.ldu
     Δt = mechanism.Δt
 
-    foreachactive(resetVars!, graph, ineqcs)
+    foreachactive(resetVars!, ineqcs)
     mechanism.μ = μ
 
     meritf0 = meritf(mechanism)
@@ -56,9 +56,9 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,Ni};
 
         meritf1 = lineSearch!(mechanism, meritf0;iter = lineIter, warning = warning)
 
-        foreachactive(updatesolution!, graph, bodies)
-        foreachactive(updatesolution!, graph, eqcs)
-        foreachactive(updatesolution!, graph, ineqcs)
+        foreachactive(updatesolution!, bodies)
+        foreachactive(updatesolution!, eqcs)
+        foreachactive(updatesolution!, ineqcs)
 
         if normf(mechanism) < ε
             warning && (@info string("Newton iterations: ", n))
@@ -80,16 +80,17 @@ function lineSearch!(mechanism::Mechanism{T,N,Nb,Ne,0}, normf0;iter = 10, warnin
     normf1 = normf0
     scale = 0
     ldu = mechanism.ldu
+    graph = mechanism.graph
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
 
     for n = Base.OneTo(iter + 1)
         for body in bodies
-            !body.active && continue
+            isinactive(body) && continue
             lineStep!(body, getentry(ldu, body.id), scale)
         end
         for eqc in eqcs
-            !eqc.active && continue
+            isinactive(eqc) && continue
             lineStep!(eqc, getentry(ldu, eqc.id), scale)
         end
 
@@ -110,6 +111,7 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     meritf1 = meritf0
     scale = 0
     ldu = mechanism.ldu
+    graph = mechanism.graph
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
@@ -118,15 +120,15 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
 
     for n = Base.OneTo(iter)
         for body in bodies
-            !body.active && continue
+            isinactive(body) && continue
             lineStep!(body, getentry(ldu, body.id), scale, mechanism)
         end
         for eqc in eqcs
-            !eqc.active && continue
+            isinactive(eqc) && continue
             lineStep!(eqc, getentry(ldu, eqc.id), scale, mechanism)
         end
         for ineqc in ineqcs
-            !ineqc.active && continue
+            isinactive(ineqc) && continue
             lineStep!(ineqc, getineqentry(ldu, ineqc.id), scale, mechanism)
         end
 
