@@ -61,6 +61,7 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 
     nc = 0
     for eqc in eqcs
+        isinactive(eqc) && continue
         nc += length(eqc)
     end
 
@@ -69,6 +70,7 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 
     oneindc = 0
     for eqc in eqcs
+        isinactive(eqc) && continue
         ind1 = 1
         ind2 = 0
 
