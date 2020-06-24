@@ -8,8 +8,8 @@ mutable struct Translational{T,N} <: Joint{T,N}
 
     childid::Int64
 
-    function Translational{T,N}(body1::AbstractBody{T}, body2::AbstractBody{T};
-            p1::AbstractVector{T} = zeros(3), p2::AbstractVector{T} = zeros(3), axis::AbstractVector{T} = zeros(3)
+    function Translational{T,N}(body1::AbstractBody, body2::AbstractBody;
+            p1::AbstractVector = zeros(3), p2::AbstractVector = zeros(3), axis::AbstractVector = zeros(3)
         ) where {T,N}
         
         vertices = (p1, p2)
@@ -63,7 +63,7 @@ end
 
     return X, Q
 end
-@inline function ∂g∂posb(joint::Translational{T}, xb::AbstractVector, qb::UnitQuaternion) where T
+@inline function ∂g∂posb(joint::Translational, xb::AbstractVector, qb::UnitQuaternion)
     X = I
     Q = 2 * VRᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
 

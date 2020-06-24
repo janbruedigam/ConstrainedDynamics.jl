@@ -14,7 +14,7 @@ end
     return szeros(T, 6, 0)
 end
 
-@inline minimalCoordinates(joint::Translational3{T}, body1::AbstractBody, body2::Body) where T = SA_F64[]
+@inline minimalCoordinates(joint::Translational3{T}, body1::AbstractBody, body2::Body) where T = SA{T}[]
 
 @inline g(joint::Translational3, body1::Body, body2::Body, Δt) = g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Translational3, body1::Origin, body2::Body, Δt) = g(joint, body2.state, Δt)

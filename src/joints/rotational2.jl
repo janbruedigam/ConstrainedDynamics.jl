@@ -1,24 +1,24 @@
-@inline function getPositionDelta(joint::Rotational2, body1::AbstractBody, body2::Body, θ::SVector{1,T}) where T
+@inline function getPositionDelta(joint::Rotational2, body1::AbstractBody, body2::Body, θ::SVector{1})
     q = UnitQuaternion(cos(θ[1]/2), (joint.V3*sin(θ[1]/2))..., false)
     Δq = joint.qoff * q # in body1 frame
     return Δq
 end
-@inline function getVelocityDelta(joint::Rotational2, body1::Body, body2::Body, ω::SVector{1,T}) where T
+@inline function getVelocityDelta(joint::Rotational2, body1::Body, body2::Body, ω::SVector{1})
     ω = joint.V3' * ω
     Δω = vrotate(ω, inv(body2.state.qc)*body1.state.qc*joint.qoff) # in body2 frame
     return Δω
 end
-@inline function getVelocityDelta(joint::Rotational2, body1::Origin, body2::Body, ω::SVector{1,T}) where T
+@inline function getVelocityDelta(joint::Rotational2, body1::Origin, body2::Body, ω::SVector{1})
     ω = joint.V3' * ω
     Δω = vrotate(ω, inv(body2.state.qc)*joint.qoff) # in body2 frame
     return Δω
 end
 
-@inline function setForce!(joint::Rotational2, body1::Body, body2::Body, τ::SVector{1,T}) where T
+@inline function setForce!(joint::Rotational2, body1::Body, body2::Body, τ::SVector{1})
     setForce!(joint, body1.state, body2.state, joint.V3' * τ)
     return
 end
-@inline function setForce!(joint::Rotational2, body1::Origin, body2::Body, τ::SVector{1,T}) where T
+@inline function setForce!(joint::Rotational2, body1::Origin, body2::Body, τ::SVector{1})
     setForce!(joint, body2.state, joint.V3' * τ)
     return
 end

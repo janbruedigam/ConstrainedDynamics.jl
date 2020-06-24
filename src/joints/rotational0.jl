@@ -9,20 +9,20 @@
     Δq = joint.qoff * q # in body1 frame
     return Δq
 end
-@inline function getVelocityDelta(joint::Rotational0, body1::Body, body2::Body, ω::SVector{3,T}) where T
+@inline function getVelocityDelta(joint::Rotational0, body1::Body, body2::Body, ω::SVector{3})
     Δω = vrotate(ω, inv(body2.state.qc)*body1.state.qc*joint.qoff) # in body2 frame
     return Δω
 end
-@inline function getVelocityDelta(joint::Rotational0, body1::Origin, body2::Body, ω::SVector{3,T}) where T
+@inline function getVelocityDelta(joint::Rotational0, body1::Origin, body2::Body, ω::SVector{3})
     Δω = vrotate(ω, inv(body2.state.qc)*joint.qoff) # in body2 frame
     return Δω
 end
 
-@inline function setForce!(joint::Rotational0, body1::Body, body2::Body, τ::SVector{3,T}) where T
+@inline function setForce!(joint::Rotational0, body1::Body, body2::Body, τ::SVector{3})
     setForce!(joint, body1.state, body2.state, τ)
     return
 end
-@inline function setForce!(joint::Rotational0, body1::Origin, body2::Body, τ::SVector{3,T}) where T
+@inline function setForce!(joint::Rotational0, body1::Origin, body2::Body, τ::SVector{3})
     setForce!(joint, body2.state, τ)
     return
 end
