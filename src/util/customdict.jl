@@ -24,6 +24,8 @@ end
 
 
 @inline Base.length(dict::UnitDict) = length(dict.values)
+@inline Base.firstindex(dict::UnitDict) = first(dict.keys)
+@inline Base.lastindex(dict::UnitDict) = last(dict.keys)
 
 @inline Base.getindex(dict::UnitDict{Base.OneTo{K},T}, key::K) where {T,K} = dict.values[key]
 @inline Base.getindex(dict::UnitDict{UnitRange{K},T}, key::K) where {T,K} = dict.values[key - first(dict.keys) + 1]
