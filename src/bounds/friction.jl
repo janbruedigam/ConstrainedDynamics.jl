@@ -6,7 +6,7 @@ mutable struct Friction{T} <: Contact{T}
     offset::SVector{6,T}
 
 
-    function Friction(body::Body{T}, normal::AbstractVector{T}, cf::T;offset::AbstractVector{T} = zeros(3)) where T
+    function Friction(body::Body{T}, normal::AbstractVector, cf::Real; offset::AbstractVector = zeros(3)) where T
         @assert cf>0
         normal = normal / norm(normal)
 

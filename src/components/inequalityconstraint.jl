@@ -87,7 +87,7 @@ function h(ineqc::InequalityConstraint)
     return ineqc.ssol[2] .* ineqc.γsol[2]
 end
 
-function hμ(ineqc::InequalityConstraint{T}, μ) where T
+function hμ(ineqc::InequalityConstraint, μ)
     return ineqc.ssol[2] .* ineqc.γsol[2] .- μ
 end
 

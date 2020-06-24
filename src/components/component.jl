@@ -9,6 +9,7 @@ resetGlobalID() = (global CURRENTID = -1; return)
 
 Base.show(io::IO, component::Component) = summary(io, component)
 
+Base.eltype(::Type{<:Component{E}}) where {E} = @isdefined(E) ? E : Any
 Base.length(::AbstractConstraint{T,N}) where {T,N} = N
 getid(component::Component) = component.id
 activate!(component::Component) = (component.active = true; return)

@@ -3,7 +3,7 @@ mutable struct Impact{T} <: Contact{T}
     offset::SVector{6,T}
 
 
-    function Impact(body::Body{T}, normal::AbstractVector{T};offset::AbstractVector{T} = zeros(3)) where T
+    function Impact(body::Body{T}, normal::AbstractVector; offset::AbstractVector = zeros(3)) where T
         normal = normal / norm(normal)
 
         # Derived from plane equation a*v1 + b*v2 + distance*v3 = p - offset

@@ -11,9 +11,10 @@ mutable struct Mesh{T} <: Shape{T}
     path::String
     color::RGBA
 
-    function Mesh(path::String, m::T, J::AbstractMatrix{T};
-            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})
-        ) where T
+    function Mesh(path::String, m::Real, J::AbstractMatrix;
+            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector = zeros(3), qoff::UnitQuaternion = one(UnitQuaternion)
+        )
+        T = promote_type(eltype.((m, J, xoff, qoff))...)
 
         bodyids = Int64[]
         new{T}(bodyids, m, J, xoff, qoff, path, color)
@@ -31,9 +32,10 @@ mutable struct Box{T} <: Shape{T}
     xyz::SVector{3,T}
     color::RGBA
 
-    function Box(x, y, z, m::T;
-            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})
-        ) where T
+    function Box(x::Real, y::Real, z::Real, m::Real;
+            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector = zeros(3), qoff::UnitQuaternion = one(UnitQuaternion)
+        )
+        T = promote_type(eltype.((x, y, z, m, xoff, qoff))...)
 
         J = 1 / 12 * m * diagm([y^2 + z^2;x^2 + z^2;x^2 + y^2])
         bodyids = Int64[]
@@ -54,9 +56,11 @@ mutable struct Cylinder{T} <: Shape{T}
     color::RGBA
 
     # Cylinder points in the z direction
-    function Cylinder(r, h, m::T;
-            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})
-        ) where T
+    function Cylinder(r::Real, h::Real, m::Real;
+            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector = zeros(3), qoff::UnitQuaternion = one(UnitQuaternion)
+        )
+        T = promote_type(eltype.((r, h, m, xoff, qoff))...)
+
         J = 1 / 2 * m * diagm([r^2 + 1 / 6 * h^2;r^2 + 1 / 6 * h^2;r^2])
         bodyids = Int64[]
 
@@ -75,9 +79,11 @@ mutable struct Sphere{T} <: Shape{T}
     r::T
     color::RGBA
 
-    function Sphere(r, m::T;
-            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector{T} = zeros(3), qoff::UnitQuaternion{T} = one(UnitQuaternion{T})
-        ) where T
+    function Sphere(r::Real, m::Real;
+            color = RGBA(0.75, 0.75, 0.75), xoff::AbstractVector = zeros(3), qoff::UnitQuaternion = one(UnitQuaternion)
+        )
+        T = promote_type(eltype.((r, h, m, xoff, qoff))...)
+        
         J = 2 / 5 * m * diagm([r^2 for i = 1:3])
         bodyids = Int64[]
 

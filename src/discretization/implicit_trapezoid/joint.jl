@@ -77,7 +77,7 @@ end
 
     return [BFb; Bτb]
 end
-@inline function ∂Fτ∂ub(joint::Translational{T}, stateb::State) where T
+@inline function ∂Fτ∂ub(joint::Translational, stateb::State)
     vertices = joint.vertices
     qb = stateb.qk[2]
 

@@ -67,7 +67,7 @@ function getshape(shapes::Vector{<:Shape}, id)
     return
 end
 
-@inline function normf(mechanism::Mechanism, body::Body{T}) where T
+@inline function normf(mechanism::Mechanism, body::Body)
     f = dynamics(mechanism, body)
     return dot(f, f)
 end

@@ -9,7 +9,8 @@ mutable struct Body{T} <: AbstractBody{T}
     state::State{T}
 
 
-    function Body(m::T, J::AbstractArray{T,2}; name::String="") where T
+    function Body(m::Real, J::AbstractArray; name::String="")
+        T = promote_type(eltype.((m, J))...)
         new{T}(getGlobalID(), name, true, m, J, State{T}())
     end
 
@@ -19,7 +20,7 @@ mutable struct Body{T} <: AbstractBody{T}
         return body
     end
 
-    function Body(::Type{T},contents...) where T
+    function Body{T}(contents...) where T
         new{T}(getGlobalID(), contents...)
     end
 end
@@ -43,7 +44,7 @@ function Base.deepcopy(b::Body{T}) where T
         push!(contents, deepcopy(getfield(b, i)))
     end
 
-    return Body(T, contents...)
+    return Body{T}(contents...)
 end
 
 function Base.deepcopy(b::Body{T}, shape::Shape) where T
@@ -53,7 +54,7 @@ function Base.deepcopy(b::Body{T}, shape::Shape) where T
         push!(contents, deepcopy(getfield(b, i)))
     end
 
-    body = Body(T, contents...)
+    body = Body{T}(contents...)
     @assert (body.m == shape.m && body.J == shape.J)
     push!(shape.bodyids, body.id)
     return body

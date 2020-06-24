@@ -20,7 +20,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
             eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
-            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+            Δt::Real = .01, g::Real = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
         ) where T
 
         resetGlobalID()
@@ -109,7 +109,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
-            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+            Δt::Real = .01, g::Real = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
         ) where T
 
         ineqcs = InequalityConstraint{T}[]
@@ -117,7 +117,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
-            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+            Δt::Real = .01, g::Real = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
         ) where T
 
         eqc = EqualityConstraint{T}[]
@@ -128,7 +128,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
-            Δt::T = .01, g::T = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+            Δt::Real = .01, g::Real = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
         ) where T
 
         eqc = EqualityConstraint{T}[]
@@ -138,7 +138,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         return Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
     end
 
-    function Mechanism(filename::AbstractString; floating::Bool=false, type::Type{T} = Float64, Δt::T = .01, g::T = -9.81) where T
+    function Mechanism(filename::AbstractString; floating::Bool=false, type::Type{T} = Float64, Δt::Real = .01, g::Real = -9.81) where T
         origin, links, joints, shapes = parse_urdf(filename, floating, T)
 
         mechanism = Mechanism(origin, links, joints, shapes = shapes, Δt = Δt, g = g)
@@ -226,7 +226,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
     end
 end
 
-function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape{T}} = Shape{T}[]) where T
+function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape} = Shape{T}[]) where T
     origin = mechanism.origin
     bodies = mechanism.bodies.values
     eqconstraints = mechanism.eqconstraints.values
@@ -301,7 +301,7 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape{T}} = Shape
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,Nb,Ne,0}) where {T,N,Nb,Ne}
-    summary(io, M); println(io, " with ", length(M.bodies), " bodies and ", length(M.eqconstraints), " constraints")
+    summary(io, M); println(io, " with ", Nb, " bodies and ", Ne, " constraints")
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,Nb,Ne,Ni}) where {T,N,Nb,Ne,Ni}

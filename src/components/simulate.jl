@@ -27,9 +27,9 @@ function initializeSimulation!(mechanism::Mechanism, debug::Bool)
 end
 
 # with control function 
-function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T}, control!::Function;
+function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Storage, control!::Function;
         record::Bool = false,debug::Bool = false
-    ) where T
+    )
 
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
@@ -45,9 +45,9 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
 end
 
 # with controller
-function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T}, controller::Controller;
+function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Storage, controller::Controller;
         record::Bool = false,debug::Bool = false
-    ) where T
+    )
 
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
@@ -65,9 +65,9 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
 end
 
 # without control
-function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::Storage{T};
+function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Storage;
         record::Bool = false,debug::Bool = false
-    ) where T
+    )
 
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
@@ -81,7 +81,7 @@ function simulate!(mechanism::Mechanism{T}, steps::AbstractUnitRange, storage::S
     record ? (return storage) : (return) 
 end
 
-function simulate!(mechanism::Mechanism{T}, tend::T, args...;
+function simulate!(mechanism::Mechanism{T}, tend::Real, args...;
         record::Bool = false,debug::Bool = false
     ) where T
 
@@ -91,7 +91,7 @@ function simulate!(mechanism::Mechanism{T}, tend::T, args...;
     return storage # can be "nothing"
 end
 
-function simulate!(mechanism::Mechanism{T}, storage::Storage{T,N}, args...;
+function simulate!(mechanism::Mechanism, storage::Storage{T,N}, args...;
         record::Bool = true,debug::Bool = false
     ) where {T,N}
     
