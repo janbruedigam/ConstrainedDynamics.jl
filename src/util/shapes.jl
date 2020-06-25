@@ -82,7 +82,7 @@ mutable struct Sphere{T} <: Shape{T}
     function Sphere(r::Real, m::Real;
             color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
         )
-        T = promote_type(eltype.((r, h, m, xoffset, qoffset))...)
+        T = promote_type(eltype.((r, m, xoffset, qoffset))...)
         
         J = 2 / 5 * m * diagm([r^2 for i = 1:3])
         bodyids = Int64[]
