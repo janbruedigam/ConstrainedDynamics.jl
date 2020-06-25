@@ -4,6 +4,24 @@ end
 
 deleteat(M::Array,i::Integer) = deleteat(M, i, i)
 
+function orthogonalrows(axis::AbstractVector)
+    if norm(axis) > 0 
+        axis = normalize(axis)
+    end
+    A = svd(skew(axis)).Vt
+    inds = SA[1; 2; 3]
+    V1 = A[1,inds]'
+    V2 = A[2,inds]'
+    V3 = axis' # instead of A[3,:] for correct sign: abs(axis) = abs(A[3,:])
+
+    return V1, V2, V3
+end
+
+function orthogonalcols(axis::AbstractVector)
+    V1, V2, V3 = orthogonalrows(axis)
+    return V1', V2', V3'
+end
+
 @inline function skewplusdiag(v::AbstractVector{T},w::T) where T
     SA[
          w    -v[3]  v[2]

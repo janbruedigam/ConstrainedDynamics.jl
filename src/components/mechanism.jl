@@ -27,7 +27,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         order = getGlobalOrder()
 
         for body in bodies
-            if norm(body.m)==0 || norm(body.J)==0
+            if norm(body.m) == 0 || norm(body.J) == 0
                 @info "Potentially bad inertial properties detected"
             end 
         end
@@ -147,77 +147,77 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
         xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
         qjointlist = Dict{Int64,UnitQuaternion{T}}() # stores id, q in world frame
 
-        for id in graph.rdfslist
+        for id in graph.rdfslist # from root to leaves
             component = getcomponent(mechanism, id)
             if typeof(component) <: Body
+                body = component
+                xbodylocal = body.state.xc
+                qbodylocal = body.state.qc
                 shape = getshape(shapes, id)
 
-                body = component
-                preds = predecessors(graph, id)
-                @assert length(preds) == 1
+                preds = predecessors(graph, id);                    @assert length(preds) == 1
                 parentid = preds[1]
-                constraint = geteqconstraint(mechanism, parentid)
-                @assert length(constraint.constraints) == 2
+                constraint = geteqconstraint(mechanism, parentid);  @assert length(constraint.constraints) == 2
+                grandpreds = predecessors(graph, parentid);         @assert length(grandpreds) ∈ [0;1]
 
-                grandpreds = predecessors(graph, parentid)
-                if length(grandpreds) > 0 # predecessor is link
-                    @assert length(grandpreds) == 1
+                if length(grandpreds) == 1 # predecessor is link
                     grandparentid = grandpreds[1]
 
-                    pbody = getbody(mechanism, grandparentid)
-                    grandgrandpreds = predecessors(graph, grandparentid)
-                    @assert length(grandgrandpreds) == 1
+                    parentbody = getbody(mechanism, grandparentid)
+                    grandgrandpreds = predecessors(graph, grandparentid);               @assert length(grandgrandpreds) == 1
                     grandgrandparentid = grandgrandpreds[1]
-                    pconstraint = geteqconstraint(mechanism, grandgrandparentid)
-                    @assert length(pconstraint.constraints) == 2
+                    parentconstraint = geteqconstraint(mechanism, grandgrandparentid);  @assert length(parentconstraint.constraints) == 2
 
-                    xpbody = pbody.state.xc
-                    qpbody = pbody.state.qc
+                    xparentbody = parentbody.state.xc # in world frame
+                    qparentbody = parentbody.state.qc # in world frame
 
-                    xpjointworld = xjointlist[pconstraint.id]
-                    qpjointworld = qjointlist[pconstraint.id]
+                    xparentjoint = xjointlist[parentconstraint.id] # in world frame
+                    qparentjoint = qjointlist[parentconstraint.id] # in world frame
                 else # predecessor is origin
-                    pbody = origin
+                    parentbody = origin
 
-                    xpbody = SA{T}[0; 0; 0]
-                    qpbody = one(UnitQuaternion{T})
+                    xparentbody = SA{T}[0; 0; 0]
+                    qparentbody = one(UnitQuaternion{T})
 
-                    xpjointworld = SA{T}[0; 0; 0]
-                    qpjointworld = one(UnitQuaternion{T})
+                    xparentjoint = SA{T}[0; 0; 0]
+                    qparentjoint = one(UnitQuaternion{T})
                 end
 
-                # urdf joint's x and q in parent's (pbody) frame
-                xjoint = vrotate(xpjointworld + vrotate(constraint.constraints[1].vertices[1], qpjointworld) - xpbody, inv(qpbody))
-                qjoint = qpbody \ qpjointworld * constraint.constraints[2].qoff
+                # urdf joint's x and q in parent's (parentbody) frame
+                xjointlocal = vrotate(xparentjoint + vrotate(constraint.constraints[1].vertices[1], qparentjoint) - xparentbody, inv(qparentbody))
+                qjointlocal = qparentbody \ qparentjoint * constraint.constraints[2].qoffset
 
                 # store joint's x and q in world frame
-                xjointworld = xpbody + vrotate(xjoint, qpbody)
-                qjointworld = qpbody * qjoint
-                xjointlist[constraint.id] = xjointworld
-                qjointlist[constraint.id] = qjointworld
+                xjoint = xparentbody + vrotate(xjointlocal, qparentbody)
+                qjoint = qparentbody * qjointlocal
+                xjointlist[constraint.id] = xjoint
+                qjointlist[constraint.id] = qjoint
 
-                # difference to parent body (pbody)
-                qbody = qjoint * body.state.qc
+                # difference to parent body (parentbody)
+                qoffset = qjointlocal * qbodylocal
 
                 # actual joint properties
-                p1 = xjoint # in parent's (pbody) frame
-                p2 = vrotate(-body.state.xc, inv(body.state.qc)) # in body frame (body.state.xc and body.state.qc are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
+                p1 = xjointlocal # in parent's (parentbody) frame
+                p2 = vrotate(-xbodylocal, inv(qbodylocal)) # in body frame (xbodylocal and qbodylocal are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
                 constraint.constraints[1].vertices = (p1, p2)
 
-                V3 = vrotate(constraint.constraints[2].V3', qjoint) # in parent's (pbody) frame
+                V3 = vrotate(constraint.constraints[2].V3', qjointlocal) # in parent's (parentbody) frame
                 V12 = (svd(skew(V3)).Vt)[1:2,:]
                 constraint.constraints[2].V3 = V3'
                 constraint.constraints[2].V12 = V12
-                constraint.constraints[2].qoff = qbody # in parent's (pbody) frame
+                constraint.constraints[2].qoffset = qoffset # in parent's (parentbody) frame
 
                 # actual body properties
                 setPosition!(body) # set everything to zero
-                setPosition!(pbody, body, p1 = p1, p2 = p2, Δq = qbody)
+                setPosition!(parentbody, body, p1 = p1, p2 = p2, Δq = qoffset)
+                xbody = body.state.xc
+                qbody = body.state.qc
+
 
                 # shape relative
                 if shape !== nothing
-                    shape.xoff = vrotate(xjointworld + vrotate(shape.xoff, qjointworld) - body.state.xc, inv(body.state.qc))
-                    shape.qoff = qbody \ qjoint * shape.qoff
+                    shape.xoffset = vrotate(xjoint + vrotate(shape.xoffset, qjoint) - xbody, inv(qbody))
+                    shape.qoffset = qoffset \ qjointlocal * shape.qoffset
                 end
             end
         end

@@ -33,7 +33,7 @@ end
     qa = statea.qk[2]
     qb = stateb.qk[2]    
 
-    τa = vrotate(-τ, qa*joint.qoff) # in world coordinates
+    τa = vrotate(-τ, qa) # in world coordinates
     τb = -τa # in world coordinates
 
     τa = vrotate(τa,inv(qa)) # in local coordinates
@@ -46,7 +46,7 @@ end
 @inline function setForce!(joint::Rotational, stateb::State, τ)
     qb = stateb.qk[2]
 
-    τa = vrotate(-τ, joint.qoff) # in world coordinates
+    τa = -τ # in world coordinates
     τb = -τa # in world coordinates
 
     τb = vrotate(τb,inv(qb)) # in local coordinates
@@ -88,31 +88,26 @@ end
 end
 
 @inline function ∂Fτ∂ua(joint::Rotational{T}, statea::State) where T
-    qoff = joint.qoff
-
     BFa = (szeros(T, 3, 3))
-    Bτa = -VLmat(qoff) * RᵀVᵀmat(qoff)
+    Bτa = -I
 
     return [BFa; Bτa]
 end
 @inline function ∂Fτ∂ub(joint::Rotational{T}, statea::State, stateb::State) where T
     qa = statea.qk[2]
     qb = stateb.qk[2]
-    qoff = joint.qoff
-    qaiqaqoff = qb\qa*qoff
+    qbinvqa = qb\qa
 
     BFb = (szeros(T, 3, 3))
-    Bτb = VLmat(qaiqaqoff) * RᵀVᵀmat(qaiqaqoff)
+    Bτb = VLmat(qbinvqa) * RᵀVᵀmat(qbinvqa)
 
     return [BFb; Bτb]
 end
 @inline function ∂Fτ∂ub(joint::Rotational{T}, stateb::State) where T
     qb = stateb.qk[2]
-    qoff = joint.qoff
-    qaiqoff = qb\qoff
 
     BFb = (szeros(T, 3, 3))
-    Bτb = VLmat(qaiqoff) * RᵀVᵀmat(qaiqoff)
+    Bτb = VLᵀmat(qb) * RVᵀmat(qb)
 
     return [BFb; Bτb]
 end

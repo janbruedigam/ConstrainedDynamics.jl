@@ -1,5 +1,5 @@
 @inline function getPositionDelta(joint::Rotational3, body1::AbstractBody, body2::Body, θ::SVector{0})
-    Δq = joint.qoff
+    Δq = joint.qoffset
     return Δq
 end
 @inline function getVelocityDelta(joint::Rotational3, body1::AbstractBody, body2::Body, ω::SVector{0,T}) where T

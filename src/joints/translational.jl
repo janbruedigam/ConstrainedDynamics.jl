@@ -1,8 +1,8 @@
 mutable struct Translational{T,N} <: Joint{T,N}
-    vertices::NTuple{2,SVector{3,T}}
-    V12::SMatrix{2,3,T,6}
-    V3::Adjoint{T,SVector{3,T}}
-
+    V3::Adjoint{T,SVector{3,T}} # in body1's frame
+    V12::SMatrix{2,3,T,6} # in body1's frame
+    vertices::NTuple{2,SVector{3,T}} # in body1's & body2's frames
+    
     F::SVector{3,T}
     τ::SVector{3,T}
 
@@ -13,19 +13,15 @@ mutable struct Translational{T,N} <: Joint{T,N}
         ) where {T,N}
         
         vertices = (p1, p2)
-        if norm(axis) != 0
-            axis = axis / norm(axis)
-        end
-        A = svd(skew(axis)).Vt # in frame of body1
-        V12 = A[1:2,:]
-        V3 = axis' # instead of A[3,:] for correct sign: abs(axis) = abs(A[3,:])
+        V1, V2, V3 = orthogonalrows(axis)
+        V12 = [V1;V2]
 
         F = zeros(T,3)
         τ = zeros(T,3)
 
         childid = body2.id
 
-        new{T,N}(vertices, V12, V3, F, τ, childid), body1.id, body2.id
+        new{T,N}(V3, V12, vertices, F, τ, childid), body1.id, body2.id
     end
 end
 

@@ -39,13 +39,13 @@ end
     statea = body1.state
     stateb = body2.state
     # q = g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
-    q = joint.qoff \ (statea.qc \ stateb.qc)
+    q = statea.qc \ stateb.qc / joint.qoffset
     return joint.V12 * rotation_vector(q)
 end
 @inline function minimalCoordinates(joint::Rotational1, body1::Origin, body2::Body)
     stateb = body2.state
     # q = g(joint, stateb.xc, stateb.qc)
-    q = joint.qoff \ stateb.qc
+    q = stateb.qc / joint.qoffset
     return joint.V12 * rotation_vector(q)
 end
 
