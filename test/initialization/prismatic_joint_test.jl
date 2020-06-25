@@ -37,7 +37,7 @@ for i=1:10
     vω = rand(1)
     Fτ = rand(1)
 
-    setPosition!(mech,joint1,xθ)
+    setPosition!(mech,joint1,xθ;iter=false)
     setVelocity!(mech,joint1,vω)
     setForce!(mech,joint1,Fτ)    
 
