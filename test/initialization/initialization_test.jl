@@ -17,5 +17,5 @@ end
 # include("initialization/cylindrical_joint_test.jl")
 # include("initialization/spherical_joint_test.jl")
 # include("initialization/cylindricalfree_joint_test.jl")
-# include("initialization/planar_joint_test.jl")
+# include("initialization/planarfree_joint_test.jl")
 # include("initialization/origincon_joint_test.jl")

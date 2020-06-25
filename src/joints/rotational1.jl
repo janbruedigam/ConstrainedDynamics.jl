@@ -1,18 +1,18 @@
 # No idea what kind of joint this actually is...
-@inline function getPositionDelta(joint::Rotational1, body1::AbstractBody, body2::Body, θ::SVector{2,T}) where T
+@inline function getPositionDelta(joint::Rotational1, body1::AbstractBody, body2::Body, θ::SVector{2})
     #TODO define this function
     @error("not defined for rot2")
 end
-@inline function getVelocityDelta(joint::Rotational1, body1::AbstractBody, body2::Body, ω::SVector{2,T}) where T
+@inline function getVelocityDelta(joint::Rotational1, body1::AbstractBody, body2::Body, ω::SVector{2})
     #TODO define this function
     @error("not defined for rot2")
 end
 
-@inline function setForce!(joint::Rotational1, body1::Body, body2::Body, τ::SVector{2,T}) where T
+@inline function setForce!(joint::Rotational1, body1::Body, body2::Body, τ::SVector{2})
     setForce!(joint, body1.state, body2.state, joint.V12' * τ)
     return
 end
-@inline function setForce!(joint::Rotational1, body1::Origin, body2::Body, τ::SVector{2,T}) where T
+@inline function setForce!(joint::Rotational1, body1::Origin, body2::Body, τ::SVector{2})
     setForce!(joint, body2.state, joint.V12' * τ)
     return
 end
@@ -39,13 +39,13 @@ end
     statea = body1.state
     stateb = body2.state
     # q = g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
-    q = joint.qoff \ (statea.qc \ stateb.qc)
+    q = statea.qc \ stateb.qc / joint.qoffset
     return joint.V12 * rotation_vector(q)
 end
 @inline function minimalCoordinates(joint::Rotational1, body1::Origin, body2::Body)
     stateb = body2.state
     # q = g(joint, stateb.xc, stateb.qc)
-    q = joint.qoff \ stateb.qc
+    q = stateb.qc / joint.qoffset
     return joint.V12 * rotation_vector(q)
 end
 

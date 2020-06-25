@@ -1,4 +1,4 @@
-function Base.convert(T::Type{Vector{SVector{N2,T1}}}, M::Matrix{T2}) where {N2,T1,T2}
+function Base.convert(T::Type{Vector{SVector{N2,T1}}}, M::Matrix) where {N2,T1}
     N1 = size(M)[1]
     @assert size(M)[2] == N2
     Mout = [szeros(T1, N2) for i = 1:N1]

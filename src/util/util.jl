@@ -1,8 +1,26 @@
-function deleteat(M::Array{T,2}, i1::Integer, i2::Integer) where T
+function deleteat(M::Array, i1::Integer, i2::Integer)
     return [M[1:i1 - 1,1:i2 - 1] M[1:i1 - 1,i2 + 1:end];M[i1 + 1:end,1:i2 - 1] M[i1 + 1:end,i2 + 1:end]]
 end
 
-deleteat(M::Array{T,2},i::Integer) where T = deleteat(M, i, i)
+deleteat(M::Array,i::Integer) = deleteat(M, i, i)
+
+function orthogonalrows(axis::AbstractVector)
+    if norm(axis) > 0 
+        axis = normalize(axis)
+    end
+    A = svd(skew(axis)).Vt
+    inds = SA[1; 2; 3]
+    V1 = A[1,inds]'
+    V2 = A[2,inds]'
+    V3 = axis' # instead of A[3,:] for correct sign: abs(axis) = abs(A[3,:])
+
+    return V1, V2, V3
+end
+
+function orthogonalcols(axis::AbstractVector)
+    V1, V2, V3 = orthogonalrows(axis)
+    return V1', V2', V3'
+end
 
 @inline function skewplusdiag(v::AbstractVector{T},w::T) where T
     SA[

@@ -3,16 +3,14 @@ mutable struct Impact{T} <: Contact{T}
     offset::SVector{6,T}
 
 
-    function Impact(body::Body{T}, normal::AbstractVector{T};offset::AbstractVector{T} = zeros(3)) where T
-        normal = normal / norm(normal)
-
+    function Impact(body::Body{T}, normal::AbstractVector; offset::AbstractVector = zeros(3)) where T
         # Derived from plane equation a*v1 + b*v2 + distance*v3 = p - offset
-        A = Array(svd(skew(normal)).V) # gives two plane vectors
-        A[:,3] = normal # to ensure correct sign
+        V1, V2, V3 = orthogonalcols(normal) # gives two plane vectors and the original normal axis
+        A = [V1 V2 V3]
         Ainv = inv(A)
-        ainv3 = Ainv[3,:]
-        Nx = [ainv3;0;0;0]'
-        offset = [offset;0;0;0]
+        ainv3 = Ainv[3,SA[1; 2; 3]]
+        Nx = [ainv3;0.0;0.0;0.0]'
+        offset = [offset;0.0;0.0;0.0]
 
         new{T}(Nx, offset), body.id
     end

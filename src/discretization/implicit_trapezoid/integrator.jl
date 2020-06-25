@@ -17,7 +17,7 @@ getGlobalOrder() = (global METHODORDER; return METHODORDER)
 @inline fullargssol(state::State) = (state.xsol[2], state.vsol[2], state.qsol[2], state.ωsol[2])
 @inline posargsnext(state::State, Δt) = (getx3(state, Δt), getq3(state, Δt))
 
-@inline function derivωbar(ω::SVector{3,T}, Δt) where T
+@inline function derivωbar(ω::SVector{3}, Δt)
     msq = -sqrt(4 / Δt^2 - dot(ω, ω))
     return Δt / 2 * [ω' / msq; I]
 end

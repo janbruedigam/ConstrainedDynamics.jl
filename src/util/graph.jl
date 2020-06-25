@@ -265,33 +265,33 @@ end
 @inline isactive(graph, id::Integer) = graph.activedict[id]
 @inline isinactive(graph, id::Integer) = !isactive(graph, id)
 
-@inline function hassuccessor(graph::Graph{N}, id, childid) where N
+@inline function hassuccessor(graph::Graph, id, childid)
     for val in graph.successors[graph.dict[id]]
         val == childid && (return true)
     end
     return false
 end
 
-@inline function haspredecessor(graph::Graph{N}, id, parentid) where N
+@inline function haspredecessor(graph::Graph, id, parentid)
     for val in graph.predecessors[graph.dict[id]]
         val == parentid && (return true)
     end
     return false
 end
 
-@inline function hasdirectchild(graph::Graph{N}, id, childid) where N
+@inline function hasdirectchild(graph::Graph, id, childid)
     for val in graph.directchildren[graph.dict[id]]
         val == childid && (return true)
     end
     return false
 end
 
-@inline function activate!(graph::Graph{N}, id::Integer) where N
+@inline function activate!(graph::Graph, id::Integer)
     graph.activedict[id] = true
     return
 end
 
-@inline function deactivate!(graph::Graph{N}, id::Integer) where N
+@inline function deactivate!(graph::Graph, id::Integer)
     graph.activedict[id] = false
     return
 end

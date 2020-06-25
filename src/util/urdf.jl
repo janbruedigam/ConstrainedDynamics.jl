@@ -131,17 +131,17 @@ function parse_shape(xvisual, materialdict, T)
             shapenode = shapenodes[1]
             if name(shapenode) == "box"
                 xyz = parse_vector(shapenode, "size", T, default = "1 1 1")
-                shape = Box(xyz..., zero(T), color = color, xoff = x, qoff = q)
+                shape = Box(xyz..., zero(T), color = color, xoffset = x, qoffset = q)
             elseif name(shapenode) == "cylinder"
                 r = parse_scalar(shapenode, "radius", T, default = "0.5")
                 l = parse_scalar(shapenode, "length", T, default = "1")
-                shape = Cylinder(r, l, zero(T), color = color, xoff = x, qoff = q)
+                shape = Cylinder(r, l, zero(T), color = color, xoffset = x, qoffset = q)
             elseif name(shapenode) == "sphere"
                 r = parse_scalar(shapenode, "radius", T, default = "0.5")
-                shape = Sphere(r, zero(T), color = color, xoff = x, qoff = q)
+                shape = Sphere(r, zero(T), color = color, xoffset = x, qoffset = q)
             elseif name(shapenode) == "mesh"
                 path = attribute(shapenode, "filename")
-                shape = Mesh(path, zero(T), zeros(T, 3, 3), color = color, xoff = x, qoff = q)
+                shape = Mesh(path, zero(T), zeros(T, 3, 3), color = color, xoffset = x, qoffset = q)
             else
                 @info "Unkown geometry."
                 shape = nothing
@@ -189,7 +189,6 @@ function parse_links(xlinks, materialdict, T)
     return ldict, shapes
 end
 
-# TODO offset correct (e.g. for Planar)?
 function parse_joint(xjoint, origin, plink, clink, T)
     jointtype = attribute(xjoint, "type")
     x, q = parse_pose(find_element(xjoint, "origin"), T)
@@ -204,7 +203,7 @@ function parse_joint(xjoint, origin, plink, clink, T)
     elseif jointtype == "prismatic"
         joint = EqualityConstraint(Prismatic(plink, clink, axis; p1=p1, p2=p2, qoffset = q), name=name)
     elseif jointtype == "planar"
-        joint = EqualityConstraint(Planar(plink, clink, axis; p1=p1, p2=p2), name=name)
+        joint = EqualityConstraint(Planar(plink, clink, axis; p1=p1, p2=p2, qoffset = q), name=name)
     elseif jointtype == "fixed"
         joint = EqualityConstraint(Fixed(plink, clink; p1=p1, p2=p2, qoffset = q), name=name)
     elseif jointtype == "floating" # Floating relative to non-origin link not supported

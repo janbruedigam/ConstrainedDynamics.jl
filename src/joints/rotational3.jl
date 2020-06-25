@@ -1,5 +1,5 @@
-@inline function getPositionDelta(joint::Rotational3, body1::AbstractBody, body2::Body, θ::SVector{0,T}) where T
-    Δq = joint.qoff
+@inline function getPositionDelta(joint::Rotational3, body1::AbstractBody, body2::Body, θ::SVector{0})
+    Δq = joint.qoffset
     return Δq
 end
 @inline function getVelocityDelta(joint::Rotational3, body1::AbstractBody, body2::Body, ω::SVector{0,T}) where T
@@ -14,7 +14,7 @@ end
     return szeros(T, 6, 0)
 end
 
-@inline minimalCoordinates(joint::Rotational3{T}, body1::AbstractBody, body2::Body) where T = SA_F64[]
+@inline minimalCoordinates(joint::Rotational3{T}, body1::AbstractBody, body2::Body) where T = SA{T}[]
 
 @inline g(joint::Rotational3, body1::Body, body2::Body, Δt) = g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Rotational3, body1::Origin, body2::Body, Δt) = g(joint, body2.state, Δt)
