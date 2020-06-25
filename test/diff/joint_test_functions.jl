@@ -1,5 +1,5 @@
 using ConstrainedDynamics
-using ConstrainedDynamics: posargsk, fullargssol, VLᵀmat, Lᵀmat, ωbar
+using ConstrainedDynamics: posargsk, fullargssol, Lmat, VLᵀmat, Lᵀmat, ωbar
 using Rotations
 using Rotations: params
 using StaticArrays
@@ -117,7 +117,7 @@ function rotfuncpos(vars)
 
     offset = UnitQuaternion(SA[vars[15:18]...], false)
 
-    return VLᵀmat(offset) * Lᵀmat(qa) * params(qb)
+    return VLᵀmat(qa) * Lmat(qb) * params(inv(offset))
 end
 
 function rotfunc3pos(vars)
@@ -164,7 +164,7 @@ function rotfuncvel(vars)
 
     offset = UnitQuaternion(SA[vars[27:30]...], false)
 
-    return VLᵀmat(offset) * Lᵀmat(qa2) * params(qb2)
+    return VLᵀmat(qa2) * Lmat(qb2) * params(inv(offset))
 end
 
 function rotfunc3vel(vars)
