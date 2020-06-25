@@ -31,7 +31,7 @@ for i=1:10
 
     mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
 
-    setPosition!(mech,joint1,SA_F64[])
+    setPosition!(mech,joint1,SA_F64[]; iter=false)
     setVelocity!(mech,joint1,SA_F64[])
     setForce!(mech,joint1,SA_F64[])
 
