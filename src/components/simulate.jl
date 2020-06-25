@@ -10,15 +10,6 @@ function saveToStorage!(mechanism::Mechanism, storage::Storage, i)
     return
 end
 
-function verifyConstraints!(mechanism::Mechanism)
-    for eqc in mechanism.eqconstraints
-        if norm(g(mechanism, eqc)) > 1e-3
-            @info string("Bad constraint satisfaction at constraint: ", eqc.id, ", |g| = ", norm(g(mechanism, eqc)))
-        end
-    end
-    return
-end
-
 function initializeSimulation!(mechanism::Mechanism, debug::Bool)
     discretizestate!(mechanism)
     debug && verifyConstraints!(mechanism)

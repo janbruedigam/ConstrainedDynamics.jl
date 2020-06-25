@@ -144,7 +144,6 @@ end
     return
 end
 
-# Currently only for eqcs
 @inline function activate!(mechanism::Mechanism, id::Integer)
     component = getcomponent(mechanism, id)
     activate!(component)
