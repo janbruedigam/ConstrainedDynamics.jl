@@ -7,13 +7,9 @@ function verifyConstraints!(mechanism::Mechanism)
     return
 end
 
-function activate!(mechanism::Mechanism)
+function activateConstraints!(mechanism::Mechanism)
     graph = mechanism.graph
 
-    for (id,body) in pairs(mechanism.bodies)
-        activate!(body)
-        activate!(mechanism.graph,id)
-    end
     for (id,eqc) in pairs(mechanism.eqconstraints)
         activate!(eqc)
         activate!(mechanism.graph,id)
@@ -26,13 +22,9 @@ function activate!(mechanism::Mechanism)
     return
 end
 
-function deactivate!(mechanism::Mechanism)
+function deactivateConstraints!(mechanism::Mechanism)
     graph = mechanism.graph
-
-    for (id,body) in pairs(mechanism.bodies)
-        deactivate!(body)
-        deactivate!(mechanism.graph,id)
-    end
+    
     for (id,eqc) in pairs(mechanism.eqconstraints)
         deactivate!(eqc)
         deactivate!(mechanism.graph,id)
