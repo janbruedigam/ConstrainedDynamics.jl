@@ -13,7 +13,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     function EqualityConstraint(data...; name::String="")
         jointdata = Tuple{Joint,Int64,Int64}[]
         for info in data
-            if typeof(info[1]) <: Joint
+            if info[1] isa Joint
                 push!(jointdata, info)
             else
                 for subinfo in info
@@ -53,9 +53,26 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
 end
 
 
+function setPosition!(mechanism, eqc::EqualityConstraint, xθ; iter::Bool = true)
+    if !iter
+        _setPosition!(mechanism, eqc, xθ)
+    else
+        currentvals = minimalCoordinates(mechanism)
+        _setPosition!(mechanism, eqc, xθ)
+        for id in recursivedirectchildren!(mechanism.graph, eqc.id)
+            component = getcomponent(mechanism, id)
+            if component isa EqualityConstraint
+                _setPosition!(mechanism, component, currentvals[id])
+            end
+        end
+    end
+
+    return
+end
+
 # TODO make zero alloc
 # TODO currently assumed constraints are in order and only joints which is the case unless very low level constraint setting
-function setPosition!(mechanism, eqc::EqualityConstraint{T,N,Nc}, xθ) where {T,N,Nc}
+function _setPosition!(mechanism, eqc::EqualityConstraint{T,N,Nc}, xθ) where {T,N,Nc}
     @assert length(xθ)==3*Nc-N
     n = Int64(Nc/2)
     body1 = getbody(mechanism, eqc.parentid)

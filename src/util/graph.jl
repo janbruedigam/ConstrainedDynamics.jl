@@ -255,6 +255,15 @@ function connections(dfslist, adjacency, dict::Dict)
     return cons
 end
 
+function recursivedirectchildren!(graph, id::Integer)
+    dirs = copy(directchildren(graph, id))
+    dirslocal = copy(dirs)
+    for childid in dirslocal
+        append!(dirs, recursivedirectchildren!(graph, childid))
+    end
+    return dirs
+end
+
 
 @inline directchildren(graph, id::Integer) = graph.directchildren[graph.dict[id]]
 @inline loopchildren(graph, id::Integer) = graph.loopchildren[graph.dict[id]]

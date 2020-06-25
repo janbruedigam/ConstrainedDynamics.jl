@@ -176,7 +176,7 @@ function factor!(graph::Graph, ldu::SparseLDU)
     return 
 end
 
-function solve!(mechanism)
+function solve!(mechanism::Mechanism)
     ldu = mechanism.ldu
     graph = mechanism.graph
     dfslist = graph.dfslist

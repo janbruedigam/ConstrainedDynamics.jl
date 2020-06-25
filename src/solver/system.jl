@@ -41,7 +41,7 @@ function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
         x[range] = diagonal.Δs
 
         # b
-        if typeof(component) <:Body
+        if component isa Body
             b[range] = dynamics(mechanism, component)
         else
             b[range] = g(mechanism, component)
@@ -106,7 +106,7 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cGr =  ∂g∂ʳposb(eqc.constraints[i], posargssol(pstate)..., posargssol(cstate)...) # x2
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
-                if typeof(eqc.constraints[i])<:Joint{T,2}
+                if eqc.constraints[i] isa Joint{T,2}
                     pXl = eqc.constraints[i].V12 * pXl
                     pQl = eqc.constraints[i].V12 * pQl
                     pXr = eqc.constraints[i].V12 * pXr
@@ -115,7 +115,7 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                     cQl = eqc.constraints[i].V12 * cQl
                     cXr = eqc.constraints[i].V12 * cXr
                     cQr = eqc.constraints[i].V12 * cQr
-                elseif typeof(eqc.constraints[i])<:Joint{T,3}
+                elseif eqc.constraints[i] isa Joint{T,3}
                     pXl = convert(SMatrix{3,3,T,9}, pXl)
                     pQl = convert(SMatrix{3,4,T,12}, pQl)
                     cXl = convert(SMatrix{3,3,T,9}, cXl)
@@ -170,12 +170,12 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cGr =  ∂g∂ʳposb(eqc.constraints[i], posargssol(cstate)...) # x2
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
-                if typeof(eqc.constraints[i])<:Joint{T,2}
+                if eqc.constraints[i] isa Joint{T,2}
                     cXl = eqc.constraints[i].V12 * cXl
                     cQl = eqc.constraints[i].V12 * cQl
                     cXr = eqc.constraints[i].V12 * cXr
                     cQr = eqc.constraints[i].V12 * cQr
-                elseif typeof(eqc.constraints[i])<:Joint{T,3}
+                elseif eqc.constraints[i] isa Joint{T,3}
                     cXl = convert(SMatrix{3,3,T,9}, cXl)
                     cQl = convert(SMatrix{3,4,T,12}, cQl)
                 else

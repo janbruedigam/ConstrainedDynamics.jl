@@ -14,7 +14,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
     function InequalityConstraint(data...; name::String="")
         bounddata = Tuple{Bound,Int64}[]
         for info in data
-            if typeof(info[1]) <: Bound
+            if info[1] isa Bound
                 push!(bounddata, info)
             else
                 for subinfo in info
@@ -121,7 +121,7 @@ end
 function calcFrictionForce!(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
     for i = 1:N
         constraint = ineqc.constraints[i]
-        if typeof(constraint) <: Friction
+        if constraint isa Friction
             calcFrictionForce!(mechanism, ineqc, constraint, i, getbody(mechanism, ineqc.parentid))
         end
     end
