@@ -17,3 +17,18 @@ deactivate!(component::Component) = (component.active = false; return)
 
 isactive(component::Component) = component.active
 isinactive(component::Component) = !isactive(component)
+
+function Base.getindex(dict::UnitDict{Base.OneTo{K},<:Component}, key::String) where K
+    for component in dict.values
+        component.name == key && return component
+    end
+    
+    return
+end
+function Base.getindex(dict::UnitDict{UnitRange{K},<:Component}, key::String) where K
+    for component in dict.values
+        component.name == key && return component
+    end
+    
+    return
+end
