@@ -149,7 +149,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni}
 
         for id in graph.rdfslist # from root to leaves
             component = getcomponent(mechanism, id)
-            if typeof(component) <: Body
+            if component isa Body
                 body = component
                 xbodylocal = body.state.xc
                 qbodylocal = body.state.qc
