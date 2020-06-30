@@ -54,7 +54,7 @@ function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     return A, x, b
 end
 
-
+# TODO Gl and Gr probably wrong!
 function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     Δt = mechanism.Δt
     eqcs = mechanism.eqconstraints
@@ -65,6 +65,7 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
         nc += length(eqc)
     end
 
+    Gl = zeros(T,nc,Nb*12)
     Gr = zeros(T,nc,Nb*13)
 
     oneindc = 0
@@ -84,38 +85,71 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 
                 ind2 += getN(eqc.constraints[i])
                 range = oneindc+ind1:oneindc+ind2
+
+                pcol3a12 = offsetrange(parentid,3,12,1)
+                pcol3b12 = offsetrange(parentid,3,12,2)
+                pcol3c12 = offsetrange(parentid,3,12,3)
+                pcol3d12 = offsetrange(parentid,3,12,4)
+
                 pcol3b = offsetrange(parentid,3,13,2)
                 pcol3d = offsetrange(parentid,3,13,4)
                 pcol3d = first(pcol3d)+1:last(pcol3d)+1
+
+                ccol3a12 = offsetrange(childid,3,12,1)
+                ccol3b12 = offsetrange(childid,3,12,2)
+                ccol3c12 = offsetrange(childid,3,12,3)
+                ccol3d12 = offsetrange(childid,3,12,4)
 
                 ccol3b = offsetrange(childid,3,13,2)
                 ccol3d = offsetrange(childid,3,13,4)
                 ccol3d = first(ccol3d)+1:last(ccol3d)+1
 
+                pXl, pQl = ∂g∂posa(eqc.constraints[i], posargsnext(pstate, Δt)..., posargsnext(cstate, Δt)...) # x3
                 pGr = ∂g∂ʳposa(eqc.constraints[i], posargssol(pstate)..., posargssol(cstate)...) # x2
                 pXr, pQr = pGr[:,1:3], pGr[:,4:6]
+                cXl, cQl =  ∂g∂posb(eqc.constraints[i], posargsnext(pstate, Δt)..., posargsnext(cstate, Δt)...) # x3
                 cGr =  ∂g∂ʳposb(eqc.constraints[i], posargssol(pstate)..., posargssol(cstate)...) # x2
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
                 if eqc.constraints[i] isa Joint{T,2}
+                    pXl = eqc.constraints[i].V12 * pXl
+                    pQl = eqc.constraints[i].V12 * pQl
                     pXr = eqc.constraints[i].V12 * pXr
                     pQr = eqc.constraints[i].V12 * pQr
+                    cXl = eqc.constraints[i].V12 * cXl
+                    cQl = eqc.constraints[i].V12 * cQl
                     cXr = eqc.constraints[i].V12 * cXr
                     cQr = eqc.constraints[i].V12 * cQr
                 elseif eqc.constraints[i] isa Joint{T,3}
+                    pXl = convert(SMatrix{3,3,T,9}, pXl)
+                    pQl = convert(SMatrix{3,4,T,12}, pQl)
+                    cXl = convert(SMatrix{3,3,T,9}, cXl)
+                    cQl = convert(SMatrix{3,4,T,12}, cQl)
                 else
                     @error "not supported"
                 end
 
+                pGlx = pXl
+                pGlq = pQl
                 pGrx = pXr
                 pGrq = pQr
 
+                Gl[range,pcol3a12] = pGlx
+                Gl[range,pcol3b12] = pGlx*Δt
+                Gl[range,pcol3c12] = pGlq*Rmat(ωbar(pstate.ωsol[2],Δt))*LVᵀmat(pstate.qsol[2])
+                Gl[range,pcol3d12] = pGlq*Lmat(pstate.qsol[2])*derivωbar(pstate.ωsol[2],Δt)
                 Gr[range,pcol3b] = -pGrx
                 Gr[range,pcol3d] = -pGrq
 
+                cGlx = cXl
+                cGlq = cQl
                 cGrx = cXr
                 cGrq = cQr
 
+                Gl[range,ccol3a12] = cGlx
+                Gl[range,ccol3b12] = cGlx*Δt
+                Gl[range,ccol3c12] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt))*LVᵀmat(cstate.qsol[2])
+                Gl[range,ccol3d12] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)
                 Gr[range,ccol3b] = cGrx
                 Gr[range,ccol3d] = cGrq
 
@@ -129,26 +163,41 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 ind2 += getN(eqc.constraints[i])
                 range = oneindc+ind1:oneindc+ind2
 
+                ccol3a12 = offsetrange(childid,3,12,1)
+                ccol3b12 = offsetrange(childid,3,12,2)
+                ccol3c12 = offsetrange(childid,3,12,3)
+                ccol3d12 = offsetrange(childid,3,12,4)
+
                 ccol3b = offsetrange(childid,3,13,2)
                 ccol3d = offsetrange(childid,3,13,4)
                 ccol3d = first(ccol3d)+1:last(ccol3d)+1
 
 
+                cXl, cQl =  ∂g∂posb(eqc.constraints[i], posargsnext(cstate, Δt)...) # x3
                 cGr =  ∂g∂ʳposb(eqc.constraints[i], posargssol(cstate)...) # x2
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
                 if eqc.constraints[i] isa Joint{T,2}
+                    cXl = eqc.constraints[i].V12 * cXl
+                    cQl = eqc.constraints[i].V12 * cQl
                     cXr = eqc.constraints[i].V12 * cXr
                     cQr = eqc.constraints[i].V12 * cQr
                 elseif eqc.constraints[i] isa Joint{T,3}
-                    # nothing
+                    cXl = convert(SMatrix{3,3,T,9}, cXl)
+                    cQl = convert(SMatrix{3,4,T,12}, cQl)
                 else
                     @error "not supported"
                 end
 
+                cGlx = cXl
+                cGlq = cQl
                 cGrx = cXr
                 cGrq = cQr
 
+                Gl[range,ccol3a12] = cGlx
+                Gl[range,ccol3b12] = cGlx*Δt
+                Gl[range,ccol3c12] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt))*LVᵀmat(cstate.qsol[2])
+                Gl[range,ccol3d12] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)
                 Gr[range,ccol3b] = cGrx
                 Gr[range,ccol3d] = cGrq
 
@@ -159,7 +208,7 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
         oneindc += length(eqc)
     end
 
-    return -Gr'
+    return Gl, -Gr'
 end
 
 
@@ -176,7 +225,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
         setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
     end
 
-    A, Bu, Bλ = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
+    A, Bu, Bλ, G = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
 
     # restore old state
     for (i,id) in enumerate(bodyids)
@@ -184,7 +233,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
         body.state = statesold[i]
     end
 
-    return A, Bu, Bλ
+    return A, Bu, Bλ, G
 end
 
 
@@ -242,12 +291,13 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     end
 
     # Fz = Fz # no addition necessary
-    Fλ = ∂g∂ʳextension(mechanism)
+    Gl, Fλ = ∂g∂ʳextension(mechanism)
+    G =  
 
     A = -invFfz*Fz
     Bu = -invFfz*Fu*Bcontrol
     Bλ = -invFfz*Fλ
 
 
-    return A, Bu, Bλ
+    return A, Bu, Bλ, Gl
 end
