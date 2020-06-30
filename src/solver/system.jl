@@ -65,7 +65,6 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
         nc += length(eqc)
     end
 
-    Gl = zeros(T,nc,Nb*13)
     Gr = zeros(T,nc,Nb*13)
 
     oneindc = 0
@@ -85,66 +84,38 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 
                 ind2 += getN(eqc.constraints[i])
                 range = oneindc+ind1:oneindc+ind2
-                pcol3a = offsetrange(parentid,3,13,1)
                 pcol3b = offsetrange(parentid,3,13,2)
-                pcol3c = offsetrange(parentid,3,13,3)
-                pcol3c = first(pcol3c):last(pcol3c)+1
                 pcol3d = offsetrange(parentid,3,13,4)
                 pcol3d = first(pcol3d)+1:last(pcol3d)+1
 
-                ccol3a = offsetrange(childid,3,13,1)
                 ccol3b = offsetrange(childid,3,13,2)
-                ccol3c = offsetrange(childid,3,13,3)
-                ccol3c = first(ccol3c):last(ccol3c)+1
                 ccol3d = offsetrange(childid,3,13,4)
                 ccol3d = first(ccol3d)+1:last(ccol3d)+1
 
-                pXl, pQl = ∂g∂posa(eqc.constraints[i], posargsnext(pstate, Δt)..., posargsnext(cstate, Δt)...) # x3
                 pGr = ∂g∂ʳposa(eqc.constraints[i], posargssol(pstate)..., posargssol(cstate)...) # x2
                 pXr, pQr = pGr[:,1:3], pGr[:,4:6]
-                cXl, cQl =  ∂g∂posb(eqc.constraints[i], posargsnext(pstate, Δt)..., posargsnext(cstate, Δt)...) # x3
                 cGr =  ∂g∂ʳposb(eqc.constraints[i], posargssol(pstate)..., posargssol(cstate)...) # x2
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
                 if eqc.constraints[i] isa Joint{T,2}
-                    pXl = eqc.constraints[i].V12 * pXl
-                    pQl = eqc.constraints[i].V12 * pQl
                     pXr = eqc.constraints[i].V12 * pXr
                     pQr = eqc.constraints[i].V12 * pQr
-                    cXl = eqc.constraints[i].V12 * cXl
-                    cQl = eqc.constraints[i].V12 * cQl
                     cXr = eqc.constraints[i].V12 * cXr
                     cQr = eqc.constraints[i].V12 * cQr
                 elseif eqc.constraints[i] isa Joint{T,3}
-                    pXl = convert(SMatrix{3,3,T,9}, pXl)
-                    pQl = convert(SMatrix{3,4,T,12}, pQl)
-                    cXl = convert(SMatrix{3,3,T,9}, cXl)
-                    cQl = convert(SMatrix{3,4,T,12}, cQl)
                 else
                     @error "not supported"
                 end
 
-                pGlx = pXl
-                pGlq = pQl
                 pGrx = pXr
                 pGrq = pQr
 
-                Gl[range,pcol3a] = pGlx
-                Gl[range,pcol3b] = pGlx*Δt
-                Gl[range,pcol3c] = pGlq*Rmat(ωbar(pstate.ωsol[2],Δt))
-                Gl[range,pcol3d] = pGlq*Lmat(pstate.qsol[2])*derivωbar(pstate.ωsol[2],Δt)
                 Gr[range,pcol3b] = -pGrx
                 Gr[range,pcol3d] = -pGrq
 
-                cGlx = cXl
-                cGlq = cQl
                 cGrx = cXr
                 cGrq = cQr
 
-                Gl[range,ccol3a] = cGlx
-                Gl[range,ccol3b] = cGlx*Δt
-                Gl[range,ccol3c] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt))
-                Gl[range,ccol3d] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)
                 Gr[range,ccol3b] = cGrx
                 Gr[range,ccol3d] = cGrq
 
@@ -158,39 +129,26 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 ind2 += getN(eqc.constraints[i])
                 range = oneindc+ind1:oneindc+ind2
 
-                ccol3a = offsetrange(childid,3,13,1)
                 ccol3b = offsetrange(childid,3,13,2)
-                ccol3c = offsetrange(childid,3,13,3)
-                ccol3c = first(ccol3c):last(ccol3c)+1
                 ccol3d = offsetrange(childid,3,13,4)
                 ccol3d = first(ccol3d)+1:last(ccol3d)+1
 
 
-                cXl, cQl =  ∂g∂posb(eqc.constraints[i], posargsnext(cstate, Δt)...) # x3
                 cGr =  ∂g∂ʳposb(eqc.constraints[i], posargssol(cstate)...) # x2
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
                 if eqc.constraints[i] isa Joint{T,2}
-                    cXl = eqc.constraints[i].V12 * cXl
-                    cQl = eqc.constraints[i].V12 * cQl
                     cXr = eqc.constraints[i].V12 * cXr
                     cQr = eqc.constraints[i].V12 * cQr
                 elseif eqc.constraints[i] isa Joint{T,3}
-                    cXl = convert(SMatrix{3,3,T,9}, cXl)
-                    cQl = convert(SMatrix{3,4,T,12}, cQl)
+                    # nothing
                 else
                     @error "not supported"
                 end
 
-                cGlx = cXl
-                cGlq = cQl
                 cGrx = cXr
                 cGrq = cQr
 
-                Gl[range,ccol3a] = cGlx
-                Gl[range,ccol3b] = cGlx*Δt
-                Gl[range,ccol3c] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt))
-                Gl[range,ccol3d] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)
                 Gr[range,ccol3b] = cGrx
                 Gr[range,ccol3d] = cGrq
 
@@ -201,7 +159,7 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
         oneindc += length(eqc)
     end
 
-    return Gl, -Gr'
+    return -Gr'
 end
 
 
@@ -218,8 +176,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
         setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
     end
 
-    A, B = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
-    λsol2 = [eqc.λsol[2] for eqc in mechanism.eqconstraints]
+    A, Bu, Bλ = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
 
     # restore old state
     for (i,id) in enumerate(bodyids)
@@ -227,7 +184,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
         body.state = statesold[i]
     end
 
-    return A, B, λsol2
+    return A, Bu, Bλ
 end
 
 
@@ -249,26 +206,27 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     newton!(mechanism)
 
     # get state linearization 
-    Fz = zeros(T,Nb*13+nc,Nb*12+nc)
-    Ffz = zeros(T,Nb*13+nc,Nb*13+nc)
-    Dinv = zeros(T,Nb*12+nc,Nb*13+nc)
-    Bbody = zeros(T,Nb*13+nc,Nb*6)
+    Fz = zeros(T,Nb*13,Nb*12)
+    Fu = zeros(T,Nb*13,Nb*6)
+    Fλ = zeros(T,Nb*13,nc)
+    invFfz = zeros(T,Nb*12,Nb*13)
+
     Bcontrol = zeros(T,Nb*6,length(eqcids))
 
     for (id,body) in pairs(bodies)
         col6 = offsetrange(id,6)
         col12 = offsetrange(id,12)
         col13 = offsetrange(id,13)
-        col18 = offsetrange(id,18)
 
-        Ai, Bi = ∂F∂z(mechanism, body, Δt)
-        Fz[col13,col12] = Ai
-        Bbody[col13,col6] = Bi
+        Fzi = ∂F∂z(body, Δt)
+        Fui = ∂F∂u(body, Δt)
+        invFfzi = inv∂F∂fz(body, Δt)
 
-        Ai, Dinvi = ∂F∂fz(mechanism, body, Δt)
-        Ffz[col13,col13] = Ai
-        Dinv[col12,col13] = Dinvi
+        Fz[col13,col12] = Fzi
+        Fu[col13,col6] = Fui
+        invFfz[col12,col13] = invFfzi
     end
+
     for (i,id) in enumerate(eqcids)
         eqc = geteqconstraint(mechanism, id)
 
@@ -284,18 +242,12 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     end
 
     # Fz = Fz # no addition necessary
+    Fλ = ∂g∂ʳextension(mechanism)
 
-    Gl, mGrt = ∂g∂ʳextension(mechanism)
-    Ffz[Nb*13+1:Nb*13+nc,1:Nb*13] = Gl
-    Ffz[1:Nb*13,Nb*13+1:Nb*13+nc] = mGrt
-    Dinv[Nb*12+1:Nb*12+nc,Nb*13+1:Nb*13+nc] = diagm(ones(T,nc))
-
-    A = -Dinv*inv(Ffz)*Fz
-    B = -Dinv*inv(Ffz)*Bbody*Bcontrol
-
-    A = A[1:Nb*12,1:Nb*12]
-    B = B[1:Nb*12,:]
+    A = -invFfz*Fz
+    Bu = -invFfz*Fu*Bcontrol
+    Bλ = -invFfz*Fλ
 
 
-    return A, B
+    return A, Bu, Bλ
 end
