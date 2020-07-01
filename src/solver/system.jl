@@ -138,8 +138,8 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 Gl[range,pcol3b12] = pGlx*Δt
                 Gl[range,pcol3c12] = pGlq*Rmat(ωbar(pstate.ωsol[2],Δt))*LVᵀmat(pstate.qsol[2])
                 Gl[range,pcol3d12] = pGlq*Lmat(pstate.qsol[2])*derivωbar(pstate.ωsol[2],Δt)
-                Gr[range,pcol3b] = -pGrx
-                Gr[range,pcol3d] = -pGrq
+                Gr[range,pcol3b] = pGrx
+                Gr[range,pcol3d] = pGrq
 
                 cGlx = cXl
                 cGlq = cQl
@@ -292,7 +292,6 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
 
     # Fz = Fz # no addition necessary
     Gl, Fλ = ∂g∂ʳextension(mechanism)
-    G =  
 
     A = -invFfz*Fz
     Bu = -invFfz*Fu*Bcontrol
