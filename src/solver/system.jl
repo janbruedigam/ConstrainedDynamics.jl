@@ -225,7 +225,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
         setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
     end
 
-    A, Bu, Bλ, G = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
+    A, Bu, Bλ, G, bg = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
 
     # restore old state
     for (i,id) in enumerate(bodyids)
@@ -233,7 +233,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
         body.state = statesold[i]
     end
 
-    return A, Bu, Bλ, G
+    return A, Bu, Bλ, G, bg
 end
 
 
@@ -258,6 +258,7 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     Fz = zeros(T,Nb*13,Nb*12)
     Fu = zeros(T,Nb*13,Nb*6)
     Fλ = zeros(T,Nb*13,nc)
+    fg = zeros(T,Nb*13)
     invFfz = zeros(T,Nb*12,Nb*13)
 
     Bcontrol = zeros(T,Nb*6,length(eqcids))
@@ -269,10 +270,12 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
 
         Fzi = ∂F∂z(body, Δt)
         Fui = ∂F∂u(body, Δt)
+        fgi = ∂F∂g(body, Δt) * -mechanism.g
         invFfzi = inv∂F∂fz(body, Δt)
 
         Fz[col13,col12] = Fzi
         Fu[col13,col6] = Fui
+        fg[col13] = fgi
         invFfz[col12,col13] = invFfzi
     end
 
@@ -296,7 +299,8 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     A = -invFfz*Fz
     Bu = -invFfz*Fu*Bcontrol
     Bλ = -invFfz*Fλ
+    bg = -invFfz*fg
 
 
-    return A, Bu, Bλ, Gl
+    return A, Bu, Bλ, Gl, bg
 end
