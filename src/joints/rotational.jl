@@ -60,3 +60,61 @@ end
 
     return X, Q
 end
+
+# vec(G) Jacobian
+@inline function ∂2g∂posaa(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+    XX = szeros(T, 9, 3)
+    XQ = szeros(T, 9, 4)
+    QX = szeros(T, 12, 3)
+    QQ = szeros(T, 12, 4)
+
+    return XX, XQ, QX, QQ
+end
+@inline function ∂2g∂posab(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+    VRtqoff = VRᵀmat(joint.qoffset)
+    R1, R2, R3, R4 = ∂R∂qsplit(T)
+
+    Q1 = VRtqoff * R1
+    Q2 = -VRtqoff * R2
+    Q3 = -VRtqoff * R3
+    Q4 = -VRtqoff * R4
+
+    XX = szeros(T, 9, 3)
+    XQ = szeros(T, 9, 4)
+    QX = szeros(T, 12, 3)
+    QQ = [Q1; Q2; Q3; Q4]
+
+    return XX, XQ, QX, QQ
+end
+@inline function ∂2g∂posba(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+    VRtqoff = VRᵀmat(joint.qoffset)
+    Lt1, Lt2, Lt3, Lt4 = ∂Lᵀ∂qsplit(T)
+
+    Q1 = VRtqoff * Lt1
+    Q2 = VRtqoff * Lt2
+    Q3 = VRtqoff * Lt3
+    Q4 = VRtqoff * Lt4
+
+    XX = szeros(T, 9, 3)
+    XQ = szeros(T, 9, 4)
+    QX = szeros(T, 12, 3)
+    QQ = [Q1; Q2; Q3; Q4]
+
+    return XX, XQ, QX, QQ
+end
+@inline function ∂2g∂posbb(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+    XX = szeros(T, 9, 3)
+    XQ = szeros(T, 9, 4)
+    QX = szeros(T, 12, 3)
+    QQ = szeros(T, 12, 4)
+
+    return XX, XQ, QX, QQ
+end
+@inline function ∂2g∂posbb(joint::Rotational{T}, xb::AbstractVector, qb::UnitQuaternion) where T
+    XX = szeros(T, 9, 3)
+    XQ = szeros(T, 9, 4)
+    QX = szeros(T, 12, 3)
+    QQ = szeros(T, 12, 4)
+
+    return XX, XQ, QX, QQ
+end

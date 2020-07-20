@@ -101,3 +101,5 @@ end
         return ∂g∂ʳvelb(joint)
     end
 end
+
+@inline reductionmat(joint::Rotational2{T}) where T = joint.V12

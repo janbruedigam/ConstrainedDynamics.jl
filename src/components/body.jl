@@ -141,20 +141,20 @@ end
 
 # end
 
-function inv∂F∂fz(body::Body{T}, Δt) where T
+function ∂F∂fz(body::Body{T}, Δt) where T
     state = body.state
     Z3 = szeros(T,3,3)
     Z34 = szeros(T,3,4)
+    Z43 = szeros(T,4,3)
     Z67 = szeros(T,6,7)
-    Z6 = szeros(T,6,6)
-    E3 = SMatrix{3,3,T,9}(I)
+    Z76 = szeros(T,7,6)
 
 
     AposT = [I Z3]
 
-    AvelT = [Z3 I*Δt/body.m]
+    AvelT = [Z3 I*body.m/Δt]
 
-    AposR = [VLᵀmat(state.qsol[2]) Z3]
+    AposR = [I Z43]
 
     J = body.J
     ω2 = state.ωsol[2]
@@ -163,5 +163,5 @@ function inv∂F∂fz(body::Body{T}, Δt) where T
     AvelR = [Z34 inv(ω2func)]
 
 
-    return [[AposT;AvelT] Z67;Z6 [AposR;AvelR]]
+    return [[AposT;AvelT] Z67;Z76 [AposR;AvelR]], [I Z3 Z34 Z3;Z3 I Z34 Z3;Z3 Z3 VLᵀmat(state.qsol[2]) Z3;Z3 Z3 Z34 I]
 end

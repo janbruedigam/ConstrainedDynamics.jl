@@ -162,3 +162,178 @@ end
     vec = [:(∂Fτ∂ub(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
     return :(hcat($(vec...)))
 end
+
+
+function contensoraa(eqc::EqualityConstraint{T}, consti, body1, body2) where T
+    A = zeros(T,13,13)
+
+    n1 = 1
+    n2 = 0
+    for i=1:consti-1
+        n1 += getN(eqc.constraints[i])
+        n2 += getN(eqc.constraints[i])
+    end
+    n2 += getN(eqc.constraints[consti])
+    λ = eqc.λsol[2][n1:n2]
+    constraint = eqc.constraints[consti]
+
+    statea = body1.state
+    stateb = body2.state
+    XX, XQ, QX, QQ = ∂2g∂posaa(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
+
+    K1 = zeros(T,9,9)
+    K2 = zeros(T,9,9)
+    K3 = zeros(T,12,12)
+    K4 = zeros(T,12,12)
+    K1[1,1] = K1[2,4] = K1[3,7] = K1[4,2] = K1[5,5] = K1[6,8] = K1[7,3] = K1[8,6] = K1[9,9] = 1
+    K2 = K1
+    K3[1,1] = K3[2,4] = K3[3,7] = K3[4,10] = K3[5,2] = K3[6,5] = K3[7,8] = K3[8,11] = K3[9,3] = K3[10,6] = K3[11,9] = K3[12,12] = 1
+    K4 = K3
+    E = SMatrix{3,3,T,9}(I)
+
+    A[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K1*XX
+    A[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K2*XQ
+    A[11:13,1:3] = kron(λ'*reductionmat(constraint),VLᵀmat(statea.qsol[2]))*K3*QX
+    A[11:13,7:10] = kron(λ'*reductionmat(constraint),VLᵀmat(statea.qsol[2]))*K4*QQ
+ 
+    return A
+end
+
+function contensorab(eqc::EqualityConstraint{T}, consti, body1, body2) where T
+    A = zeros(T,13,13)
+
+    n1 = 1
+    n2 = 0
+    for i=1:consti-1
+        n1 += getN(eqc.constraints[i])
+        n2 += getN(eqc.constraints[i])
+    end
+    n2 += getN(eqc.constraints[consti])
+    λ = eqc.λsol[2][n1:n2]
+    constraint = eqc.constraints[consti]
+
+    statea = body1.state
+    stateb = body2.state
+    XX, XQ, QX, QQ = ∂2g∂posab(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
+
+    K1 = zeros(T,9,9)
+    K2 = zeros(T,9,9)
+    K3 = zeros(T,12,12)
+    K4 = zeros(T,12,12)
+    K1[1,1] = K1[2,4] = K1[3,7] = K1[4,2] = K1[5,5] = K1[6,8] = K1[7,3] = K1[8,6] = K1[9,9] = 1
+    K2 = K1
+    K3[1,1] = K3[2,4] = K3[3,7] = K3[4,10] = K3[5,2] = K3[6,5] = K3[7,8] = K3[8,11] = K3[9,3] = K3[10,6] = K3[11,9] = K3[12,12] = 1
+    K4 = K3
+    E = SMatrix{3,3,T,9}(I)
+
+    A[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K1*XX
+    A[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K2*XQ
+    A[11:13,1:3] = kron(λ'*reductionmat(constraint),VLᵀmat(statea.qsol[2]))*K3*QX
+    A[11:13,7:10] = kron(λ'*reductionmat(constraint),VLᵀmat(statea.qsol[2]))*K4*QQ
+
+    return A
+end
+
+function contensorba(eqc::EqualityConstraint{T}, consti, body1, body2) where T
+    A = zeros(T,13,13)
+
+    n1 = 1
+    n2 = 0
+    for i=1:consti-1
+        n1 += getN(eqc.constraints[i])
+        n2 += getN(eqc.constraints[i])
+    end
+    n2 += getN(eqc.constraints[consti])
+    λ = eqc.λsol[2][n1:n2]
+    constraint = eqc.constraints[consti]
+
+    statea = body1.state
+    stateb = body2.state
+    XX, XQ, QX, QQ = ∂2g∂posba(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
+
+    K1 = zeros(T,9,9)
+    K2 = zeros(T,9,9)
+    K3 = zeros(T,12,12)
+    K4 = zeros(T,12,12)
+    K1[1,1] = K1[2,4] = K1[3,7] = K1[4,2] = K1[5,5] = K1[6,8] = K1[7,3] = K1[8,6] = K1[9,9] = 1
+    K2 = K1
+    K3[1,1] = K3[2,4] = K3[3,7] = K3[4,10] = K3[5,2] = K3[6,5] = K3[7,8] = K3[8,11] = K3[9,3] = K3[10,6] = K3[11,9] = K3[12,12] = 1
+    K4 = K3
+    E = SMatrix{3,3,T,9}(I)
+
+    A[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K1*XX
+    A[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K2*XQ
+    A[11:13,1:3] = kron(λ'*reductionmat(constraint),VLᵀmat(stateb.qsol[2]))*K3*QX
+    A[11:13,7:10] = kron(λ'*reductionmat(constraint),VLᵀmat(stateb.qsol[2]))*K4*QQ
+
+    return A
+end
+
+function contensorbb(eqc::EqualityConstraint{T}, consti, body1, body2) where T
+    A = zeros(T,13,13)
+
+    n1 = 1
+    n2 = 0
+    for i=1:consti-1
+        n1 += getN(eqc.constraints[i])
+        n2 += getN(eqc.constraints[i])
+    end
+    n2 += getN(eqc.constraints[consti])
+    λ = eqc.λsol[2][n1:n2]
+    constraint = eqc.constraints[consti]
+
+    statea = body1.state
+    stateb = body2.state
+    XX, XQ, QX, QQ = ∂2g∂posbb(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
+
+    K1 = zeros(T,9,9)
+    K2 = zeros(T,9,9)
+    K3 = zeros(T,12,12)
+    K4 = zeros(T,12,12)
+    K1[1,1] = K1[2,4] = K1[3,7] = K1[4,2] = K1[5,5] = K1[6,8] = K1[7,3] = K1[8,6] = K1[9,9] = 1
+    K2 = K1
+    K3[1,1] = K3[2,4] = K3[3,7] = K3[4,10] = K3[5,2] = K3[6,5] = K3[7,8] = K3[8,11] = K3[9,3] = K3[10,6] = K3[11,9] = K3[12,12] = 1
+    K4 = K3
+    E = SMatrix{3,3,T,9}(I)
+
+    A[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K1*XX
+    A[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K2*XQ
+    A[11:13,1:3] = kron(λ'*reductionmat(constraint),VLᵀmat(stateb.qsol[2]))*K3*QX
+    A[11:13,7:10] = kron(λ'*reductionmat(constraint),VLᵀmat(stateb.qsol[2]))*K4*QQ
+
+    return A
+end
+
+function contensorbb(eqc::EqualityConstraint{T}, consti, body2) where T
+    A = zeros(T,13,13)
+
+    n1 = 1
+    n2 = 0
+    for i=1:consti-1
+        n1 += getN(eqc.constraints[i])
+        n2 += getN(eqc.constraints[i])
+    end
+    n2 += getN(eqc.constraints[consti])
+    λ = eqc.λsol[2][n1:n2]
+    constraint = eqc.constraints[consti]
+
+    stateb = body2.state
+    XX, XQ, QX, QQ = ∂2g∂posbb(constraint, stateb.xsol[2], stateb.qsol[2]).*-1
+
+    K1 = zeros(T,9,9)
+    K2 = zeros(T,9,9)
+    K3 = zeros(T,12,12)
+    K4 = zeros(T,12,12)
+    K1[1,1] = K1[2,4] = K1[3,7] = K1[4,2] = K1[5,5] = K1[6,8] = K1[7,3] = K1[8,6] = K1[9,9] = 1
+    K2 = K1
+    K3[1,1] = K3[2,4] = K3[3,7] = K3[4,10] = K3[5,2] = K3[6,5] = K3[7,8] = K3[8,11] = K3[9,3] = K3[10,6] = K3[11,9] = K3[12,12] = 1
+    K4 = K3
+    E = SMatrix{3,3,T,9}(I)
+
+    A[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K1*XX
+    A[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K2*XQ
+    A[11:13,1:3] = kron(λ'*reductionmat(constraint),VLᵀmat(stateb.qsol[2]))*K3*QX
+    A[11:13,7:10] = kron(λ'*reductionmat(constraint),VLᵀmat(stateb.qsol[2]))*K4*QQ
+
+    return A
+end

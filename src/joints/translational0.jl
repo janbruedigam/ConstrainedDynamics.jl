@@ -50,3 +50,5 @@ end
 @inline ∂g∂ʳposb(joint::Translational0, body1::AbstractBody, body2::AbstractBody) = ∂g∂ʳposb(joint)
 @inline ∂g∂ʳvela(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂ʳvela(joint)
 @inline ∂g∂ʳvelb(joint::Translational0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂ʳvelb(joint)
+
+@inline reductionmat(joint::Translational0{T}) where T = szeros(T,0,3)

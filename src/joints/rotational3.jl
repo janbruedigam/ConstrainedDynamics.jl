@@ -62,3 +62,5 @@ end
         return ∂g∂ʳvelb(joint)
     end
 end
+
+@inline reductionmat(joint::Rotational3{T}) where T = SMatrix{3,3,T,9}(I)

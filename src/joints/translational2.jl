@@ -90,3 +90,5 @@ end
         return ∂g∂ʳvelb(joint)
     end
 end
+
+@inline reductionmat(joint::Translational2{T}) where T = joint.V12

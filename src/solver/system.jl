@@ -225,7 +225,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
         setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
     end
 
-    A, Bu, Bλ, G, bg = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
+    A, Bu, Bλ, G = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
 
     # restore old state
     for (i,id) in enumerate(bodyids)
@@ -233,7 +233,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
         body.state = statesold[i]
     end
 
-    return A, Bu, Bλ, G, bg
+    return A, Bu, Bλ, G
 end
 
 
@@ -258,8 +258,8 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     Fz = zeros(T,Nb*13,Nb*12)
     Fu = zeros(T,Nb*13,Nb*6)
     Fλ = zeros(T,Nb*13,nc)
-    fg = zeros(T,Nb*13)
-    invFfz = zeros(T,Nb*12,Nb*13)
+    Ffz = zeros(T,Nb*13,Nb*13)
+    invFfzquat = zeros(T,Nb*12,Nb*13)
 
     Bcontrol = zeros(T,Nb*6,length(eqcids))
 
@@ -270,13 +270,12 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
 
         Fzi = ∂F∂z(body, Δt)
         Fui = ∂F∂u(body, Δt)
-        fgi = ∂F∂g(body, Δt) * -mechanism.g
-        invFfzi = inv∂F∂fz(body, Δt)
+        Ffzi, invFfzquati = ∂F∂fz(body, Δt)
 
         Fz[col13,col12] = Fzi
         Fu[col13,col6] = Fui
-        fg[col13] = fgi
-        invFfz[col12,col13] = invFfzi
+        Ffz[col13,col13] = Ffzi
+        invFfzquat[col12,col13] = invFfzquati
     end
 
     for (i,id) in enumerate(eqcids)
@@ -293,14 +292,48 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
         end
     end
 
-    # Fz = Fz # no addition necessary
-    Gl, Fλ = ∂g∂ʳextension(mechanism)
+    for (i,id) in enumerate(eqcids)
+        eqc = geteqconstraint(mechanism, id)
 
-    A = -invFfz*Fz
-    Bu = -invFfz*Fu*Bcontrol
-    Bλ = -invFfz*Fλ
-    bg = -invFfz*fg
+        parentid = eqc.parentid
+        if parentid !== nothing
+            body1 = getbody(mechanism, parentid)
+            pcol13 = offsetrange(parentid,13)
+            for (consti, childid) in enumerate(eqc.childids)
+                body2 = getbody(mechanism, childid)
+                ccol13 = offsetrange(childid,13)
 
+                tensaa = contensoraa(eqc, consti, body1, body2)
+                tensab = contensorab(eqc, consti, body1, body2)
+                tensba = contensorba(eqc, consti, body1, body2)
+                tensbb = contensorbb(eqc, consti, body1, body2)
+                Ffz[pcol13,pcol13] += tensaa
+                Ffz[pcol13,ccol13] += tensab
+                Ffz[ccol13,pcol13] += tensba
+                Ffz[ccol13,ccol13] += tensbb
+            end
+        else
+            for (consti, childid) in enumerate(eqc.childids)
+                body2 = getbody(mechanism, childid)
+                ccol13 = offsetrange(childid,13)
 
-    return A, Bu, Bλ, Gl, bg
+                tensbb = contensorbb(eqc, consti, body2)
+                Ffz[ccol13,ccol13] += tensbb
+            end
+        end
+    end
+
+    G, Fλ = ∂g∂ʳextension(mechanism)
+
+    invFfz = invFfzquat * inv(Ffz)
+    A = - invFfz * Fz
+    Bu = - invFfz * Fu * Bcontrol
+    Bλ = - invFfz * Fλ
+
+    return A, Bu, Bλ, G
 end
+
+
+# function linearconstraints(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
+
+# end
