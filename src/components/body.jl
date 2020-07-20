@@ -160,7 +160,7 @@ function ∂F∂fz(body::Body{T}, Δt) where T
     ω2 = state.ωsol[2]
     sq2 = sqrt(4 / Δt^2 - ω2' * ω2)
     ω2func = skewplusdiag(ω2, sq2) * J - J * ω2 * (ω2' / sq2) - skew(J * ω2)
-    AvelR = [Z34 inv(ω2func)]
+    AvelR = [Z34 ω2func]
 
 
     return [[AposT;AvelT] Z67;Z76 [AposR;AvelR]], [I Z3 Z34 Z3;Z3 I Z34 Z3;Z3 Z3 VLᵀmat(state.qsol[2]) Z3;Z3 Z3 Z34 I]
