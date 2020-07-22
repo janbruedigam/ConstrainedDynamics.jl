@@ -114,9 +114,6 @@ end
     return XX, XQ, QX, QQ
 end
 @inline function ∂2g∂posbb(joint::Translational{T}, xb::AbstractVector, qb::UnitQuaternion) where T
-    Rt1, Rt2, Rt3, Rt4 = ∂Rᵀ∂qsplit(T)
-    L1, L2, L3, L4 = ∂L∂qsplit(T)
-
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = szeros(T, 9, 3)
