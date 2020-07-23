@@ -54,8 +54,109 @@ function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     return A, x, b
 end
 
-# TODO Gl and Gr probably wrong!
-function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+
+# TODO only works for 1DOF active constaints (eqcids)
+function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,N,Nb}
+    statesold = [State{T}() for i=1:Nb]
+
+    # store old state and set new initial state
+    for (i,id) in enumerate(bodyids)
+        stateold = settempvars!(getbody(mechanism, id), xd[i], vd[i], zeros(T,3), qd[i], ωd[i], zeros(T,3), zeros(T,6))
+        statesold[i] = stateold
+    end
+    for (i,id) in enumerate(eqcids)
+        setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
+    end
+
+    A, Bu, Bλ, G = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
+
+    # restore old state
+    for (i,id) in enumerate(bodyids)
+        body = getbody(mechanism, id)
+        body.state = statesold[i]
+    end
+
+    return A, Bu, Bλ, G
+end
+
+
+function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
+    Δt = mechanism.Δt
+    bodies = mechanism.bodies
+    eqcs = mechanism.eqconstraints
+    graph = mechanism.graph
+
+    nc = 0
+    for eqc in eqcs
+        isinactive(eqc) && continue
+        nc += length(eqc)
+    end
+
+    # calculate next state
+    discretizestate!(mechanism)
+    foreach(setsolution!, mechanism.bodies)
+    newton!(mechanism)
+
+    # get state linearization 
+    Fz = zeros(T,Nb*13,Nb*12)
+    Fu = zeros(T,Nb*13,Nb*6)
+    Fλ = zeros(T,Nb*13,nc)
+    Ffz = zeros(T,Nb*13,Nb*13)
+    invFfzquat = zeros(T,Nb*12,Nb*13)
+
+    Bcontrol = zeros(T,Nb*6,length(eqcids))
+
+    for (id,body) in pairs(bodies)
+        col6 = offsetrange(id,6)
+        col12 = offsetrange(id,12)
+        col13 = offsetrange(id,13)
+
+        Fzi = ∂F∂z(body, Δt)
+        Fui = ∂F∂u(body, Δt)
+        Ffzi, invFfzquati = ∂F∂fz(body, Δt)
+
+        Fz[col13,col12] = Fzi
+        Fu[col13,col6] = Fui
+        Ffz[col13,col13] = Ffzi
+        invFfzquat[col12,col13] = invFfzquati
+    end
+
+    Ffz += linearconstraintmapping(mechanism)
+
+    for (i,id) in enumerate(eqcids)
+        eqc = geteqconstraint(mechanism, id)
+
+        parentid = eqc.parentid
+        if parentid !== nothing
+            col6 = offsetrange(parentid,6)
+            Bcontrol[col6,i] = ∂Fτ∂ua(mechanism, eqc, parentid)
+        end
+        for childid in eqc.childids
+            col6 = offsetrange(childid,6)
+            Bcontrol[col6,i] = ∂Fτ∂ub(mechanism, eqc, childid)
+        end
+    end
+
+    # display(round.(Ffz,digits=5))
+    # display(round.(invFfzquat * inv(Ffz),digits=5))
+
+    
+
+    G, Fλ = linearconstraints(mechanism)
+
+    invFfz = invFfzquat * inv(Ffz)
+    A = -invFfz * Fz
+    Bu = -invFfz * Fu * Bcontrol
+    Bλ = -invFfz * Fλ
+
+    # display(round.(Ffz,digits=5))
+    # display(round.(invFfz,digits=5))
+    # display(round.(Fz,digits=5))
+
+    return A, Bu, Bλ, G
+end
+
+function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     Δt = mechanism.Δt
     eqcs = mechanism.eqconstraints
 
@@ -211,116 +312,34 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     return Gl, -Gr'
 end
 
+function linearconstraintmapping(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+    FfzG = zeros(T,Nb*13,Nb*13)
 
-# TODO only works for 1DOF active constaints (eqcids)
-function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,N,Nb}
-    statesold = [State{T}() for i=1:Nb]
+    K = zeros(T,9,9)
+    K[1,1] = K[2,4] = K[3,7] = K[4,2] = K[5,5] = K[6,8] = K[7,3] = K[8,6] = K[9,9] = 1
+    E = SMatrix{3,3,T,9}(I)
 
-    # store old state and set new initial state
-    for (i,id) in enumerate(bodyids)
-        stateold = settempvars!(getbody(mechanism, id), xd[i], vd[i], zeros(T,3), qd[i], ωd[i], zeros(T,3), zeros(T,6))
-        statesold[i] = stateold
-    end
-    for (i,id) in enumerate(eqcids)
-        setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
-    end
-
-    A, Bu, Bλ, G = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
-
-    # restore old state
-    for (i,id) in enumerate(bodyids)
-        body = getbody(mechanism, id)
-        body.state = statesold[i]
-    end
-
-    return A, Bu, Bλ, G
-end
-
-
-function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
-    Δt = mechanism.Δt
-    bodies = mechanism.bodies
-    eqcs = mechanism.eqconstraints
-    graph = mechanism.graph
-
-    nc = 0
-    for eqc in eqcs
-        isinactive(eqc) && continue
-        nc += length(eqc)
-    end
-
-    # calculate next state
-    discretizestate!(mechanism)
-    foreach(setsolution!, mechanism.bodies)
-    newton!(mechanism)
-
-    # get state linearization 
-    Fz = zeros(T,Nb*13,Nb*12)
-    Fu = zeros(T,Nb*13,Nb*6)
-    Fλ = zeros(T,Nb*13,nc)
-    Ffz = zeros(T,Nb*13,Nb*13)
-    invFfzquat = zeros(T,Nb*12,Nb*13)
-
-    Bcontrol = zeros(T,Nb*6,length(eqcids))
-
-    for (id,body) in pairs(bodies)
-        col6 = offsetrange(id,6)
-        col12 = offsetrange(id,12)
-        col13 = offsetrange(id,13)
-
-        Fzi = ∂F∂z(body, Δt)
-        Fui = ∂F∂u(body, Δt)
-        Ffzi, invFfzquati = ∂F∂fz(body, Δt)
-
-        Fz[col13,col12] = Fzi
-        Fu[col13,col6] = Fui
-        Ffz[col13,col13] = Ffzi
-        invFfzquat[col12,col13] = invFfzquati
-    end
-
-    for (i,id) in enumerate(eqcids)
-        eqc = geteqconstraint(mechanism, id)
-
+    for eqc in mechanism.eqconstraints
         parentid = eqc.parentid
-        if parentid !== nothing
-            col6 = offsetrange(parentid,6)
-            Bcontrol[col6,i] = ∂Fτ∂ua(mechanism, eqc, parentid)
-        end
-        for childid in eqc.childids
-            col6 = offsetrange(childid,6)
-            Bcontrol[col6,i] = ∂Fτ∂ub(mechanism, eqc, childid)
-        end
-    end
 
-    # display(round.(Ffz,digits=5))
-    # display(round.(invFfzquat * inv(Ffz),digits=5))
-
-    for (i,eqc) in enumerate(mechanism.eqconstraints)
-        # display(eqc.λsol[2])
-
-        K = zeros(T,9,9)
-        K[1,1] = K[2,4] = K[3,7] = K[4,2] = K[5,5] = K[6,8] = K[7,3] = K[8,6] = K[9,9] = 1
-        E = SMatrix{3,3,T,9}(I)
-
-        parentid = eqc.parentid
         if parentid !== nothing
             body1 = getbody(mechanism, parentid)
-            statea = body1.state
+            state1 = body1.state
             pcol13 = offsetrange(parentid,13)
 
-            for (consti, childid) in enumerate(eqc.childids)
+            for (i, childid) in enumerate(eqc.childids)
                 body2 = getbody(mechanism, childid)
-                stateb = body2.state
-                constraint = eqc.constraints[consti]
+                state2 = body2.state
+                constraint = eqc.constraints[i]
                 ccol13 = offsetrange(childid,13)
 
                 n1 = 1
                 n2 = 0
-                for i=1:consti-1
-                    n1 += getN(eqc.constraints[i])
-                    n2 += getN(eqc.constraints[i])
+                for j=1:i-1
+                    n1 += getN(eqc.constraints[j])
+                    n2 += getN(eqc.constraints[j])
                 end
-                n2 += getN(eqc.constraints[consti])
+                n2 += getN(eqc.constraints[i])
                 λ = eqc.λsol[2][n1:n2]
 
                 Aaa = zeros(T,13,13)
@@ -328,79 +347,67 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
                 Aba = zeros(T,13,13)
                 Abb = zeros(T,13,13)                
 
-                XX, XQ, QX, QQ = ∂2g∂posaa(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
-                Aaa[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K*XX
-                Aaa[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K*XQ
-                Aaa[11:13,1:3] = kron(λ'*reductionmat(constraint),E)*K*QX
-                Aaa[11:13,7:10] = kron(λ'*reductionmat(constraint),E)*K*QQ
+                kronproduct = -kron(λ'*reductionmat(constraint),E)*K
 
-                XX, XQ, QX, QQ = ∂2g∂posab(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
-                Aab[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K*XX
-                Aab[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K*XQ
-                Aab[11:13,1:3] = kron(λ'*reductionmat(constraint),E)*K*QX
-                Aab[11:13,7:10] = kron(λ'*reductionmat(constraint),E)*K*QQ
+                XX, XQ, QX, QQ = ∂2g∂posaa(constraint, state1.xsol[2], state1.qsol[2], state2.xsol[2], state2.qsol[2])
+                Aaa[4:6,1:3] = kronproduct*XX
+                Aaa[4:6,7:10] = kronproduct*XQ
+                Aaa[11:13,1:3] = kronproduct*QX
+                Aaa[11:13,7:10] = kronproduct*QQ
 
-                XX, XQ, QX, QQ = ∂2g∂posba(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
-                Aba[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K*XX
-                Aba[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K*XQ
-                Aba[11:13,1:3] = kron(λ'*reductionmat(constraint),E)*K*QX
-                Aba[11:13,7:10] = kron(λ'*reductionmat(constraint),E)*K*QQ
+                XX, XQ, QX, QQ = ∂2g∂posab(constraint, state1.xsol[2], state1.qsol[2], state2.xsol[2], state2.qsol[2])
+                Aab[4:6,1:3] = kronproduct*XX
+                Aab[4:6,7:10] = kronproduct*XQ
+                Aab[11:13,1:3] = kronproduct*QX
+                Aab[11:13,7:10] = kronproduct*QQ
 
-                XX, XQ, QX, QQ = ∂2g∂posbb(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
-                Abb[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K*XX
-                Abb[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K*XQ
-                Abb[11:13,1:3] = kron(λ'*reductionmat(constraint),E)*K*QX
-                Abb[11:13,7:10] = kron(λ'*reductionmat(constraint),E)*K*QQ
+                XX, XQ, QX, QQ = ∂2g∂posba(constraint, state1.xsol[2], state1.qsol[2], state2.xsol[2], state2.qsol[2])
+                Aba[4:6,1:3] = kronproduct*XX
+                Aba[4:6,7:10] = kronproduct*XQ
+                Aba[11:13,1:3] = kronproduct*QX
+                Aba[11:13,7:10] = kronproduct*QQ
 
-                Ffz[pcol13,pcol13] += Aaa
-                Ffz[pcol13,ccol13] += Aab
-                Ffz[ccol13,pcol13] += Aba
-                Ffz[ccol13,ccol13] += Abb
+                XX, XQ, QX, QQ = ∂2g∂posbb(constraint, state1.xsol[2], state1.qsol[2], state2.xsol[2], state2.qsol[2])
+                Abb[4:6,1:3] = kronproduct*XX
+                Abb[4:6,7:10] = kronproduct*XQ
+                Abb[11:13,1:3] = kronproduct*QX
+                Abb[11:13,7:10] = kronproduct*QQ
+
+                FfzG[pcol13,pcol13] += Aaa
+                FfzG[pcol13,ccol13] += Aab
+                FfzG[ccol13,pcol13] += Aba
+                FfzG[ccol13,ccol13] += Abb
             end
         else
-            for (consti, childid) in enumerate(eqc.childids)
+            for (i, childid) in enumerate(eqc.childids)
                 body2 = getbody(mechanism, childid)
-                stateb = body2.state
-                constraint = eqc.constraints[consti]
+                state2 = body2.state
+                constraint = eqc.constraints[i]
                 ccol13 = offsetrange(childid,13)
 
                 n1 = 1
                 n2 = 0
-                for i=1:consti-1
+                for i=1:i-1
                     n1 += getN(eqc.constraints[i])
                     n2 += getN(eqc.constraints[i])
                 end
-                n2 += getN(eqc.constraints[consti])
+                n2 += getN(eqc.constraints[i])
                 λ = eqc.λsol[2][n1:n2]
 
                 Abb = zeros(T,13,13)
 
-                XX, XQ, QX, QQ = ∂2g∂posbb(constraint, stateb.xsol[2], stateb.qsol[2]).*-1
-                Abb[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K*XX
-                Abb[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K*XQ
-                Abb[11:13,1:3] = kron(λ'*reductionmat(constraint),E)*K*QX
-                Abb[11:13,7:10] = kron(λ'*reductionmat(constraint),E)*K*QQ
+                kronproduct = -kron(λ'*reductionmat(constraint),E)*K
 
-                Ffz[ccol13,ccol13] += Abb
+                XX, XQ, QX, QQ = ∂2g∂posbb(constraint, state2.xsol[2], state2.qsol[2])
+                Abb[4:6,1:3] = kronproduct*XX
+                Abb[4:6,7:10] = kronproduct*XQ
+                Abb[11:13,1:3] = kronproduct*QX
+                Abb[11:13,7:10] = kronproduct*QQ
+
+                FfzG[ccol13,ccol13] += Abb
             end
         end
     end
 
-    G, Fλ = ∂g∂ʳextension(mechanism)
-
-    invFfz = invFfzquat * inv(Ffz)
-    A = - invFfz * Fz
-    Bu = - invFfz * Fu * Bcontrol
-    Bλ = - invFfz * Fλ
-
-    # display(round.(Ffz,digits=5))
-    # display(round.(invFfz,digits=5))
-    # display(round.(Fz,digits=5))
-
-    return A, Bu, Bλ, G
+    return FfzG
 end
-
-
-# function linearconstraints(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
-
-# end
