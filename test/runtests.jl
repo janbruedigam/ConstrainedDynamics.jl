@@ -14,12 +14,8 @@ include("initialization/initialization_test.jl")
     include("shape_test.jl")
 end
 
-@safetestset "Pendulum Period Tests" begin
-    include("pendulum_test.jl")
-end
-
-@safetestset "Nutation Behavior Test" begin
-    include("nutation_test.jl")
+@safetestset "Dynamics Tests" begin
+    include("dynamics/dynamics_test.jl")
 end
 
 @safetestset "Example Tests" begin

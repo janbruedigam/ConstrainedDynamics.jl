@@ -55,7 +55,108 @@ function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 end
 
 
-function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+# TODO only works for 1DOF active constaints (eqcids)
+function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,N,Nb}
+    statesold = [State{T}() for i=1:Nb]
+
+    # store old state and set new initial state
+    for (i,id) in enumerate(bodyids)
+        stateold = settempvars!(getbody(mechanism, id), xd[i], vd[i], zeros(T,3), qd[i], ωd[i], zeros(T,3), zeros(T,6))
+        statesold[i] = stateold
+    end
+    for (i,id) in enumerate(eqcids)
+        setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
+    end
+
+    A, Bu, Bλ, G = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
+
+    # restore old state
+    for (i,id) in enumerate(bodyids)
+        body = getbody(mechanism, id)
+        body.state = statesold[i]
+    end
+
+    return A, Bu, Bλ, G
+end
+
+
+function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
+    Δt = mechanism.Δt
+    bodies = mechanism.bodies
+    eqcs = mechanism.eqconstraints
+    graph = mechanism.graph
+
+    nc = 0
+    for eqc in eqcs
+        isinactive(eqc) && continue
+        nc += length(eqc)
+    end
+
+    # calculate next state
+    discretizestate!(mechanism)
+    foreach(setsolution!, mechanism.bodies)
+    newton!(mechanism)
+
+    # get state linearization 
+    Fz = zeros(T,Nb*13,Nb*12)
+    Fu = zeros(T,Nb*13,Nb*6)
+    Fλ = zeros(T,Nb*13,nc)
+    Ffz = zeros(T,Nb*13,Nb*13)
+    invFfzquat = zeros(T,Nb*12,Nb*13)
+
+    Bcontrol = zeros(T,Nb*6,length(eqcids))
+
+    for (id,body) in pairs(bodies)
+        col6 = offsetrange(id,6)
+        col12 = offsetrange(id,12)
+        col13 = offsetrange(id,13)
+
+        Fzi = ∂F∂z(body, Δt)
+        Fui = ∂F∂u(body, Δt)
+        Ffzi, invFfzquati = ∂F∂fz(body, Δt)
+
+        Fz[col13,col12] = Fzi
+        Fu[col13,col6] = Fui
+        Ffz[col13,col13] = Ffzi
+        invFfzquat[col12,col13] = invFfzquati
+    end
+
+    Ffz += linearconstraintmapping(mechanism)
+
+    for (i,id) in enumerate(eqcids)
+        eqc = geteqconstraint(mechanism, id)
+
+        parentid = eqc.parentid
+        if parentid !== nothing
+            col6 = offsetrange(parentid,6)
+            Bcontrol[col6,i] = ∂Fτ∂ua(mechanism, eqc, parentid)
+        end
+        for childid in eqc.childids
+            col6 = offsetrange(childid,6)
+            Bcontrol[col6,i] = ∂Fτ∂ub(mechanism, eqc, childid)
+        end
+    end
+
+    # display(round.(Ffz,digits=5))
+    # display(round.(invFfzquat * inv(Ffz),digits=5))
+
+    
+
+    G, Fλ = linearconstraints(mechanism)
+
+    invFfz = invFfzquat * inv(Ffz)
+    A = -invFfz * Fz
+    Bu = -invFfz * Fu * Bcontrol
+    Bλ = -invFfz * Fλ
+
+    # display(round.(Ffz,digits=5))
+    # display(round.(invFfz,digits=5))
+    # display(round.(Fz,digits=5))
+
+    return A, Bu, Bλ, G
+end
+
+function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     Δt = mechanism.Δt
     eqcs = mechanism.eqconstraints
 
@@ -65,7 +166,7 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
         nc += length(eqc)
     end
 
-    Gl = zeros(T,nc,Nb*13)
+    Gl = zeros(T,nc,Nb*12)
     Gr = zeros(T,nc,Nb*13)
 
     oneindc = 0
@@ -85,17 +186,22 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 
                 ind2 += getN(eqc.constraints[i])
                 range = oneindc+ind1:oneindc+ind2
-                pcol3a = offsetrange(parentid,3,13,1)
+
+                pcol3a12 = offsetrange(parentid,3,12,1)
+                pcol3b12 = offsetrange(parentid,3,12,2)
+                pcol3c12 = offsetrange(parentid,3,12,3)
+                pcol3d12 = offsetrange(parentid,3,12,4)
+
                 pcol3b = offsetrange(parentid,3,13,2)
-                pcol3c = offsetrange(parentid,3,13,3)
-                pcol3c = first(pcol3c):last(pcol3c)+1
                 pcol3d = offsetrange(parentid,3,13,4)
                 pcol3d = first(pcol3d)+1:last(pcol3d)+1
 
-                ccol3a = offsetrange(childid,3,13,1)
+                ccol3a12 = offsetrange(childid,3,12,1)
+                ccol3b12 = offsetrange(childid,3,12,2)
+                ccol3c12 = offsetrange(childid,3,12,3)
+                ccol3d12 = offsetrange(childid,3,12,4)
+
                 ccol3b = offsetrange(childid,3,13,2)
-                ccol3c = offsetrange(childid,3,13,3)
-                ccol3c = first(ccol3c):last(ccol3c)+1
                 ccol3d = offsetrange(childid,3,13,4)
                 ccol3d = first(ccol3d)+1:last(ccol3d)+1
 
@@ -129,22 +235,22 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 pGrx = pXr
                 pGrq = pQr
 
-                Gl[range,pcol3a] = pGlx
-                Gl[range,pcol3b] = pGlx*Δt
-                Gl[range,pcol3c] = pGlq*Rmat(ωbar(pstate.ωsol[2],Δt))
-                Gl[range,pcol3d] = pGlq*Lmat(pstate.qsol[2])*derivωbar(pstate.ωsol[2],Δt)
-                Gr[range,pcol3b] = -pGrx
-                Gr[range,pcol3d] = -pGrq
+                Gl[range,pcol3a12] = pGlx
+                Gl[range,pcol3b12] = pGlx*Δt
+                Gl[range,pcol3c12] = pGlq*Rmat(ωbar(pstate.ωsol[2],Δt))*LVᵀmat(pstate.qsol[2])
+                Gl[range,pcol3d12] = pGlq*Lmat(pstate.qsol[2])*derivωbar(pstate.ωsol[2],Δt)
+                Gr[range,pcol3b] = pGrx
+                Gr[range,pcol3d] = pGrq
 
                 cGlx = cXl
                 cGlq = cQl
                 cGrx = cXr
                 cGrq = cQr
 
-                Gl[range,ccol3a] = cGlx
-                Gl[range,ccol3b] = cGlx*Δt
-                Gl[range,ccol3c] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt))
-                Gl[range,ccol3d] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)
+                Gl[range,ccol3a12] = cGlx
+                Gl[range,ccol3b12] = cGlx*Δt
+                Gl[range,ccol3c12] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt))*LVᵀmat(cstate.qsol[2])
+                Gl[range,ccol3d12] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)
                 Gr[range,ccol3b] = cGrx
                 Gr[range,ccol3d] = cGrq
 
@@ -158,10 +264,12 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 ind2 += getN(eqc.constraints[i])
                 range = oneindc+ind1:oneindc+ind2
 
-                ccol3a = offsetrange(childid,3,13,1)
+                ccol3a12 = offsetrange(childid,3,12,1)
+                ccol3b12 = offsetrange(childid,3,12,2)
+                ccol3c12 = offsetrange(childid,3,12,3)
+                ccol3d12 = offsetrange(childid,3,12,4)
+
                 ccol3b = offsetrange(childid,3,13,2)
-                ccol3c = offsetrange(childid,3,13,3)
-                ccol3c = first(ccol3c):last(ccol3c)+1
                 ccol3d = offsetrange(childid,3,13,4)
                 ccol3d = first(ccol3d)+1:last(ccol3d)+1
 
@@ -187,10 +295,10 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cGrx = cXr
                 cGrq = cQr
 
-                Gl[range,ccol3a] = cGlx
-                Gl[range,ccol3b] = cGlx*Δt
-                Gl[range,ccol3c] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt))
-                Gl[range,ccol3d] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)
+                Gl[range,ccol3a12] = cGlx
+                Gl[range,ccol3b12] = cGlx*Δt
+                Gl[range,ccol3c12] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt))*LVᵀmat(cstate.qsol[2])
+                Gl[range,ccol3d12] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)
                 Gr[range,ccol3b] = cGrx
                 Gr[range,ccol3d] = cGrq
 
@@ -204,98 +312,102 @@ function ∂g∂ʳextension(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     return Gl, -Gr'
 end
 
+function linearconstraintmapping(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+    FfzG = zeros(T,Nb*13,Nb*13)
 
-# TODO only works for 1DOF active constaints (eqcids)
-function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,N,Nb}
-    statesold = [State{T}() for i=1:Nb]
+    K = zeros(T,9,9)
+    K[1,1] = K[2,4] = K[3,7] = K[4,2] = K[5,5] = K[6,8] = K[7,3] = K[8,6] = K[9,9] = 1
+    E = SMatrix{3,3,T,9}(I)
 
-    # store old state and set new initial state
-    for (i,id) in enumerate(bodyids)
-        stateold = settempvars!(getbody(mechanism, id), xd[i], vd[i], zeros(T,3), qd[i], ωd[i], zeros(T,3), zeros(T,6))
-        statesold[i] = stateold
-    end
-    for (i,id) in enumerate(eqcids)
-        setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
-    end
-
-    A, B = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
-    λsol2 = [eqc.λsol[2] for eqc in mechanism.eqconstraints]
-
-    # restore old state
-    for (i,id) in enumerate(bodyids)
-        body = getbody(mechanism, id)
-        body.state = statesold[i]
-    end
-
-    return A, B, λsol2
-end
-
-
-function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
-    Δt = mechanism.Δt
-    bodies = mechanism.bodies
-    eqcs = mechanism.eqconstraints
-    graph = mechanism.graph
-
-    nc = 0
-    for eqc in eqcs
-        isinactive(eqc) && continue
-        nc += length(eqc)
-    end
-
-    # calculate next state
-    discretizestate!(mechanism)
-    foreach(setsolution!, mechanism.bodies)
-    newton!(mechanism)
-
-    # get state linearization 
-    Fz = zeros(T,Nb*13+nc,Nb*12+nc)
-    Ffz = zeros(T,Nb*13+nc,Nb*13+nc)
-    Dinv = zeros(T,Nb*12+nc,Nb*13+nc)
-    Bbody = zeros(T,Nb*13+nc,Nb*6)
-    Bcontrol = zeros(T,Nb*6,length(eqcids))
-
-    for (id,body) in pairs(bodies)
-        col6 = offsetrange(id,6)
-        col12 = offsetrange(id,12)
-        col13 = offsetrange(id,13)
-        col18 = offsetrange(id,18)
-
-        Ai, Bi = ∂F∂z(mechanism, body, Δt)
-        Fz[col13,col12] = Ai
-        Bbody[col13,col6] = Bi
-
-        Ai, Dinvi = ∂F∂fz(mechanism, body, Δt)
-        Ffz[col13,col13] = Ai
-        Dinv[col12,col13] = Dinvi
-    end
-    for (i,id) in enumerate(eqcids)
-        eqc = geteqconstraint(mechanism, id)
-
+    for eqc in mechanism.eqconstraints
         parentid = eqc.parentid
+
         if parentid !== nothing
-            col6 = offsetrange(parentid,6)
-            Bcontrol[col6,i] = ∂Fτ∂ua(mechanism, eqc, parentid)
-        end
-        for childid in eqc.childids
-            col6 = offsetrange(childid,6)
-            Bcontrol[col6,i] = ∂Fτ∂ub(mechanism, eqc, childid)
+            body1 = getbody(mechanism, parentid)
+            state1 = body1.state
+            pcol13 = offsetrange(parentid,13)
+
+            for (i, childid) in enumerate(eqc.childids)
+                body2 = getbody(mechanism, childid)
+                state2 = body2.state
+                constraint = eqc.constraints[i]
+                ccol13 = offsetrange(childid,13)
+
+                n1 = 1
+                n2 = 0
+                for j=1:i-1
+                    n1 += getN(eqc.constraints[j])
+                    n2 += getN(eqc.constraints[j])
+                end
+                n2 += getN(eqc.constraints[i])
+                λ = eqc.λsol[2][n1:n2]
+
+                Aaa = zeros(T,13,13)
+                Aab = zeros(T,13,13)
+                Aba = zeros(T,13,13)
+                Abb = zeros(T,13,13)                
+
+                kronproduct = -kron(λ'*reductionmat(constraint),E)*K
+
+                XX, XQ, QX, QQ = ∂2g∂posaa(constraint, state1.xsol[2], state1.qsol[2], state2.xsol[2], state2.qsol[2])
+                Aaa[4:6,1:3] = kronproduct*XX
+                Aaa[4:6,7:10] = kronproduct*XQ
+                Aaa[11:13,1:3] = kronproduct*QX
+                Aaa[11:13,7:10] = kronproduct*QQ
+
+                XX, XQ, QX, QQ = ∂2g∂posab(constraint, state1.xsol[2], state1.qsol[2], state2.xsol[2], state2.qsol[2])
+                Aab[4:6,1:3] = kronproduct*XX
+                Aab[4:6,7:10] = kronproduct*XQ
+                Aab[11:13,1:3] = kronproduct*QX
+                Aab[11:13,7:10] = kronproduct*QQ
+
+                XX, XQ, QX, QQ = ∂2g∂posba(constraint, state1.xsol[2], state1.qsol[2], state2.xsol[2], state2.qsol[2])
+                Aba[4:6,1:3] = kronproduct*XX
+                Aba[4:6,7:10] = kronproduct*XQ
+                Aba[11:13,1:3] = kronproduct*QX
+                Aba[11:13,7:10] = kronproduct*QQ
+
+                XX, XQ, QX, QQ = ∂2g∂posbb(constraint, state1.xsol[2], state1.qsol[2], state2.xsol[2], state2.qsol[2])
+                Abb[4:6,1:3] = kronproduct*XX
+                Abb[4:6,7:10] = kronproduct*XQ
+                Abb[11:13,1:3] = kronproduct*QX
+                Abb[11:13,7:10] = kronproduct*QQ
+
+                FfzG[pcol13,pcol13] += Aaa
+                FfzG[pcol13,ccol13] += Aab
+                FfzG[ccol13,pcol13] += Aba
+                FfzG[ccol13,ccol13] += Abb
+            end
+        else
+            for (i, childid) in enumerate(eqc.childids)
+                body2 = getbody(mechanism, childid)
+                state2 = body2.state
+                constraint = eqc.constraints[i]
+                ccol13 = offsetrange(childid,13)
+
+                n1 = 1
+                n2 = 0
+                for i=1:i-1
+                    n1 += getN(eqc.constraints[i])
+                    n2 += getN(eqc.constraints[i])
+                end
+                n2 += getN(eqc.constraints[i])
+                λ = eqc.λsol[2][n1:n2]
+
+                Abb = zeros(T,13,13)
+
+                kronproduct = -kron(λ'*reductionmat(constraint),E)*K
+
+                XX, XQ, QX, QQ = ∂2g∂posbb(constraint, state2.xsol[2], state2.qsol[2])
+                Abb[4:6,1:3] = kronproduct*XX
+                Abb[4:6,7:10] = kronproduct*XQ
+                Abb[11:13,1:3] = kronproduct*QX
+                Abb[11:13,7:10] = kronproduct*QQ
+
+                FfzG[ccol13,ccol13] += Abb
+            end
         end
     end
 
-    # Fz = Fz # no addition necessary
-
-    Gl, mGrt = ∂g∂ʳextension(mechanism)
-    Ffz[Nb*13+1:Nb*13+nc,1:Nb*13] = Gl
-    Ffz[1:Nb*13,Nb*13+1:Nb*13+nc] = mGrt
-    Dinv[Nb*12+1:Nb*12+nc,Nb*13+1:Nb*13+nc] = diagm(ones(T,nc))
-
-    A = -Dinv*inv(Ffz)*Fz
-    B = -Dinv*inv(Ffz)*Bbody*Bcontrol
-
-    A = A[1:Nb*12,1:Nb*12]
-    B = B[1:Nb*12,:]
-
-
-    return A, B
+    return FfzG
 end

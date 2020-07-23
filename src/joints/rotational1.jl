@@ -95,3 +95,5 @@ end
         return ∂g∂ʳvelb(joint)
     end
 end
+
+@inline reductionmat(joint::Rotational1) = joint.V3
