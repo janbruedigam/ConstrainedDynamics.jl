@@ -292,11 +292,11 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
         end
     end
 
-    # display(Ffz)
-    # display(invFfzquat * inv(Ffz))
+    # display(round.(Ffz,digits=5))
+    # display(round.(invFfzquat * inv(Ffz),digits=5))
 
-    for (i,id) in enumerate(eqcids)
-        eqc = geteqconstraint(mechanism, id)
+    for (i,eqc) in enumerate(mechanism.eqconstraints)
+        # display(eqc.λsol[2])
 
         parentid = eqc.parentid
         if parentid !== nothing
@@ -333,9 +333,9 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     Bu = - invFfz * Fu * Bcontrol
     Bλ = - invFfz * Fλ
 
-    # display(Ffz)
-    # display(invFfz)
-    # display(Fz)
+    # display(round.(Ffz,digits=5))
+    # display(round.(invFfz,digits=5))
+    # display(round.(Fz,digits=5))
 
     return A, Bu, Bλ, G
 end
