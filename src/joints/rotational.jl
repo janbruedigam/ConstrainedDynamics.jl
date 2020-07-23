@@ -44,7 +44,7 @@ end
 
 @inline function ∂g∂posa(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
     X = szeros(T, 3, 3)
-    Q = VRᵀmat(joint.qoffset) * Rmat(qb) * Tmat()
+    Q = VRᵀmat(joint.qoffset) * Rmat(qb) * Tmat(T)
 
     return X, Q
 end
@@ -61,12 +61,14 @@ end
     return X, Q
 end
 
-# vec(G) Jacobian
+
+# vec(G) Jacobian (also NOT accounting for quaternion specialness)
+
 @inline function ∂2g∂posaa(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = szeros(T, 9, 3)
-    QQ = kron(Vmat(),VRᵀmat(joint.qoffset)*Rmat(qb)*Tmat())*vcat(∂L∂qsplit(T)...)
+    QQ = kron(Vmat(T),VRᵀmat(joint.qoffset)*Rmat(qb)*Tmat(T))*∂L∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
@@ -74,7 +76,7 @@ end
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = szeros(T, 9, 3)
-    QQ = kron(VLᵀmat(qa)*Tmat(),VRᵀmat(joint.qoffset))*vcat(∂R∂qsplit(T)...)
+    QQ = kron(VLᵀmat(qa)*Tmat(T),VRᵀmat(joint.qoffset))*∂R∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
@@ -82,7 +84,7 @@ end
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = szeros(T, 9, 3)
-    QQ = kron(VLᵀmat(qb),VRᵀmat(joint.qoffset))*vcat(∂Lᵀ∂qsplit(T)...)
+    QQ = kron(VLᵀmat(qb),VRᵀmat(joint.qoffset))*∂Lᵀ∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
@@ -90,7 +92,7 @@ end
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = szeros(T, 9, 3)
-    QQ = kron(Vmat(),VRᵀmat(joint.qoffset)*Lᵀmat(qa))*vcat(∂L∂qsplit(T)...)
+    QQ = kron(Vmat(T),VRᵀmat(joint.qoffset)*Lᵀmat(qa))*∂L∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
@@ -98,7 +100,7 @@ end
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = szeros(T, 9, 3)
-    QQ = kron(Vmat(),VRᵀmat(joint.qoffset))*vcat(∂L∂qsplit(T)...)
+    QQ = kron(Vmat(T),VRᵀmat(joint.qoffset))*∂L∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end

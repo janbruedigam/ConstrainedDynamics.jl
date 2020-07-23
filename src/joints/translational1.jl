@@ -91,4 +91,4 @@ end
     end
 end
 
-@inline reductionmat(joint::Translational1{T}) where T = joint.V3
+@inline reductionmat(joint::Translational1) = joint.V3

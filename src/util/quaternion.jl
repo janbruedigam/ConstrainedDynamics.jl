@@ -85,128 +85,96 @@ function RᵀVᵀmat(q::UnitQuaternion)
 end
 
 function ∂L∂qsplit(::Type{T}) where T
-    M1 = SA{T}[
+    return SA{T}[
         1 0 0 0
         0 1 0 0
         0 0 1 0
         0 0 0 1
-    ]
 
-    M2 = SA{T}[
         0 -1 0 0
         1 0 0 0
         0 0 0 1
         0 0 -1 0
-    ]
 
-    M3 = SA{T}[
         0 0 -1 0
         0 0 0 -1
         1 0 0 0
         0 1 0 0
-    ]
-
-    M4 = SA{T}[
+        
         0 0 0 -1
         0 0 1 0
         0 -1 0 0
         1 0 0 0
     ]
-
-    return M1, M2, M3, M4
 end
 function ∂Lᵀ∂qsplit(::Type{T}) where T
-    M1 = SA{T}[
+    return SA{T}[
         1 0 0 0
         0 -1 0 0
         0 0 -1 0
         0 0 0 -1
-    ]
-
-    M2 = SA{T}[
+        
         0 1 0 0
         1 0 0 0
         0 0 0 -1
         0 0 1 0
-    ]
-
-    M3 = SA{T}[
+        
         0 0 1 0
         0 0 0 1
         1 0 0 0
         0 -1 0 0
-    ]
-
-    M4 = SA{T}[
+        
         0 0 0 1
         0 0 -1 0
         0 1 0 0
         1 0 0 0
     ]
-
-    return M1, M2, M3, M4
 end
 function ∂R∂qsplit(::Type{T}) where T
-    M1 = SA{T}[
+    return SA{T}[
         1 0 0 0
         0 1 0 0
         0 0 1 0
         0 0 0 1
-    ]
-
-    M2 = SA{T}[
+        
         0 -1 0 0
         1 0 0 0
         0 0 0 -1
         0 0 1 0
-    ]
-
-    M3 = SA{T}[
+        
         0 0 -1 0
         0 0 0 1
         1 0 0 0
         0 -1 0 0
-    ]
-
-    M4 = SA{T}[
+        
         0 0 0 -1
         0 0 -1 0
         0 1 0 0
         1 0 0 0
     ]
-
-    return M1, M2, M3, M4
 end
 function ∂Rᵀ∂qsplit(::Type{T}) where T
-    M1 = SA{T}[
+    return SA{T}[
         1 0 0 0
         0 -1 0 0
         0 0 -1 0
         0 0 0 -1
-    ]
-
-    M2 = SA{T}[
+        
         0 1 0 0
         1 0 0 0
         0 0 0 1
         0 0 -1 0
-    ]
-
-    M3 = SA{T}[
+        
         0 0 1 0
         0 0 0 -1
         1 0 0 0
         0 1 0 0
-    ]
-
-    M4 = SA{T}[
+        
         0 0 0 1
         0 0 1 0
         0 -1 0 0
         1 0 0 0
     ]
-
-    return M1, M2, M3, M4
 end
 
 function slerp(q1,q2,h)

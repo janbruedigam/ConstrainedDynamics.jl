@@ -96,4 +96,4 @@ end
     end
 end
 
-@inline reductionmat(joint::Rotational1{T}) where T = joint.V3
+@inline reductionmat(joint::Rotational1) = joint.V3

@@ -298,30 +298,90 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     for (i,eqc) in enumerate(mechanism.eqconstraints)
         # display(eqc.λsol[2])
 
+        K = zeros(T,9,9)
+        K[1,1] = K[2,4] = K[3,7] = K[4,2] = K[5,5] = K[6,8] = K[7,3] = K[8,6] = K[9,9] = 1
+        E = SMatrix{3,3,T,9}(I)
+
         parentid = eqc.parentid
         if parentid !== nothing
             body1 = getbody(mechanism, parentid)
+            statea = body1.state
             pcol13 = offsetrange(parentid,13)
+
             for (consti, childid) in enumerate(eqc.childids)
                 body2 = getbody(mechanism, childid)
+                stateb = body2.state
+                constraint = eqc.constraints[consti]
                 ccol13 = offsetrange(childid,13)
 
-                tensaa = contensoraa(eqc, consti, body1, body2)
-                tensab = contensorab(eqc, consti, body1, body2)
-                tensba = contensorba(eqc, consti, body1, body2)
-                tensbb = contensorbb(eqc, consti, body1, body2)
-                Ffz[pcol13,pcol13] += tensaa
-                Ffz[pcol13,ccol13] += tensab
-                Ffz[ccol13,pcol13] += tensba
-                Ffz[ccol13,ccol13] += tensbb
+                n1 = 1
+                n2 = 0
+                for i=1:consti-1
+                    n1 += getN(eqc.constraints[i])
+                    n2 += getN(eqc.constraints[i])
+                end
+                n2 += getN(eqc.constraints[consti])
+                λ = eqc.λsol[2][n1:n2]
+
+                Aaa = zeros(T,13,13)
+                Aab = zeros(T,13,13)
+                Aba = zeros(T,13,13)
+                Abb = zeros(T,13,13)                
+
+                XX, XQ, QX, QQ = ∂2g∂posaa(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
+                Aaa[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K*XX
+                Aaa[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K*XQ
+                Aaa[11:13,1:3] = kron(λ'*reductionmat(constraint),E)*K*QX
+                Aaa[11:13,7:10] = kron(λ'*reductionmat(constraint),E)*K*QQ
+
+                XX, XQ, QX, QQ = ∂2g∂posab(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
+                Aab[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K*XX
+                Aab[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K*XQ
+                Aab[11:13,1:3] = kron(λ'*reductionmat(constraint),E)*K*QX
+                Aab[11:13,7:10] = kron(λ'*reductionmat(constraint),E)*K*QQ
+
+                XX, XQ, QX, QQ = ∂2g∂posba(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
+                Aba[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K*XX
+                Aba[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K*XQ
+                Aba[11:13,1:3] = kron(λ'*reductionmat(constraint),E)*K*QX
+                Aba[11:13,7:10] = kron(λ'*reductionmat(constraint),E)*K*QQ
+
+                XX, XQ, QX, QQ = ∂2g∂posbb(constraint, statea.xsol[2], statea.qsol[2], stateb.xsol[2], stateb.qsol[2]).*-1
+                Abb[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K*XX
+                Abb[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K*XQ
+                Abb[11:13,1:3] = kron(λ'*reductionmat(constraint),E)*K*QX
+                Abb[11:13,7:10] = kron(λ'*reductionmat(constraint),E)*K*QQ
+
+                Ffz[pcol13,pcol13] += Aaa
+                Ffz[pcol13,ccol13] += Aab
+                Ffz[ccol13,pcol13] += Aba
+                Ffz[ccol13,ccol13] += Abb
             end
         else
             for (consti, childid) in enumerate(eqc.childids)
                 body2 = getbody(mechanism, childid)
+                stateb = body2.state
+                constraint = eqc.constraints[consti]
                 ccol13 = offsetrange(childid,13)
 
-                tensbb = contensorbb(eqc, consti, body2)
-                Ffz[ccol13,ccol13] += tensbb
+                n1 = 1
+                n2 = 0
+                for i=1:consti-1
+                    n1 += getN(eqc.constraints[i])
+                    n2 += getN(eqc.constraints[i])
+                end
+                n2 += getN(eqc.constraints[consti])
+                λ = eqc.λsol[2][n1:n2]
+
+                Abb = zeros(T,13,13)
+
+                XX, XQ, QX, QQ = ∂2g∂posbb(constraint, stateb.xsol[2], stateb.qsol[2]).*-1
+                Abb[4:6,1:3] = kron(λ'*reductionmat(constraint),E)*K*XX
+                Abb[4:6,7:10] = kron(λ'*reductionmat(constraint),E)*K*XQ
+                Abb[11:13,1:3] = kron(λ'*reductionmat(constraint),E)*K*QX
+                Abb[11:13,7:10] = kron(λ'*reductionmat(constraint),E)*K*QQ
+
+                Ffz[ccol13,ccol13] += Abb
             end
         end
     end

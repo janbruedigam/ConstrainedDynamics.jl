@@ -79,6 +79,8 @@ Base.length(::Body) = 6
 end
 
 
+# Derivatives for linearizations
+
 function ∂F∂z(body::Body{T}, Δt) where T
     state = body.state
     Z3 = szeros(T,3,3)
@@ -119,27 +121,6 @@ function ∂F∂u(body::Body{T}, Δt) where T
     
     return [BposT;BvelT;BposR;BvelR]
 end
-
-function ∂F∂g(body::Body{T}, Δt) where T
-    Z3 = szeros(T,3,3)
-    Z43 = szeros(T,4,3)
-
-
-    BposT = [0;0;0] # TODO is there a UniformScaling way for this instead of E3?
-
-    BvelT = [0;0;body.m]
-
-    BposR = [0;0;0;0]
-
-    BvelR = [0;0;0]
-
-    
-    return [BposT;BvelT;BposR;BvelR]
-end
-
-# function ∂F∂λ()
-
-# end
 
 function ∂F∂fz(body::Body{T}, Δt) where T
     state = body.state

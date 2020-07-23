@@ -66,42 +66,33 @@ end
     return X, Q
 end
 
-# vec(G) Jacobian
+
+# vec(G) Jacobian (also NOT accounting for quaternion specialness)
+
 @inline function ∂2g∂posaa(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
-    L1, L2, L3, L4 = ∂L∂qsplit(T)
-    L1 = L1[:,2:4]
-    L2 = L2[:,2:4]
-    L3 = L3[:,2:4]
-    L4 = L4[:,2:4]
     Lpos = Lmat(UnitQuaternion(xb + vrotate(joint.vertices[2], qb) - xa))
     Ltpos = Lᵀmat(UnitQuaternion(xb + vrotate(joint.vertices[2], qb) - xa))
 
     XX = szeros(T, 9, 3)
-    XQ = -kron(Vmat(),VLᵀmat(qa))*vcat(∂R∂qsplit(T)...) -kron(VRᵀmat(qa),Vmat())*vcat(∂Lᵀ∂qsplit(T)...)
-    QX = -kron(VLᵀmat(qa),2*VLᵀmat(qa))*vcat(L1,L2,L3,L4)
-    QQ = kron(Vmat(),2*VLᵀmat(qa)*Lpos)*vcat(∂L∂qsplit(T)...) + kron(VLᵀmat(qa)*Ltpos,2*Vmat())*vcat(∂Lᵀ∂qsplit(T)...)
+    XQ = -kron(Vmat(T),VLᵀmat(qa))*∂R∂qsplit(T) - kron(VRᵀmat(qa),Vmat(T))*∂Lᵀ∂qsplit(T)
+    QX = -kron(VLᵀmat(qa),2*VLᵀmat(qa))*∂L∂qsplit(T)[:,SA[2; 3; 4]]
+    QQ = kron(Vmat(T),2*VLᵀmat(qa)*Lpos)*∂L∂qsplit(T) + kron(VLᵀmat(qa)*Ltpos,2*Vmat(T))*∂Lᵀ∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
 @inline function ∂2g∂posab(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
-    L1, L2, L3, L4 = ∂L∂qsplit(T)
-    L1 = L1[:,2:4]
-    L2 = L2[:,2:4]
-    L3 = L3[:,2:4]
-    L4 = L4[:,2:4]
-
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
-    QX = kron(VLᵀmat(qa),2*VLᵀmat(qa))*vcat(L1,L2,L3,L4)
-    QQ = kron(VLᵀmat(qa),2*VLᵀmat(qa)*Lmat(qb)*Lmat(UnitQuaternion(joint.vertices[2])))*vcat(∂Lᵀ∂qsplit(T)...) + kron(VLᵀmat(qa)*Lmat(qb)*Lᵀmat(UnitQuaternion(joint.vertices[2])),2*VLᵀmat(qa))*vcat(∂L∂qsplit(T)...)
+    QX = kron(VLᵀmat(qa),2*VLᵀmat(qa))*∂L∂qsplit(T)[:,SA[2; 3; 4]]
+    QQ = kron(VLᵀmat(qa),2*VLᵀmat(qa)*Lmat(qb)*Lmat(UnitQuaternion(joint.vertices[2])))*∂Lᵀ∂qsplit(T) + kron(VLᵀmat(qa)*Lmat(qb)*Lᵀmat(UnitQuaternion(joint.vertices[2])),2*VLᵀmat(qa))*∂L∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
 @inline function ∂2g∂posba(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
     XX = szeros(T, 9, 3)
-    XQ = kron(Vmat(),VLᵀmat(qa))*vcat(∂R∂qsplit(T)...) + kron(VRᵀmat(qa),Vmat())*vcat(∂Lᵀ∂qsplit(T)...)
+    XQ = kron(Vmat(T),VLᵀmat(qa))*∂R∂qsplit(T) + kron(VRᵀmat(qa),Vmat(T))*∂Lᵀ∂qsplit(T)
     QX = szeros(T, 9, 3)
-    QQ = kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2]))*Rmat(qb),2*VLᵀmat(qa))*vcat(∂R∂qsplit(T)...) + kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2]))*Rmat(qb)*Rᵀmat(qa),2*Vmat())*vcat(∂Lᵀ∂qsplit(T)...)
+    QQ = kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2]))*Rmat(qb),2*VLᵀmat(qa))*∂R∂qsplit(T) + kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2]))*Rmat(qb)*Rᵀmat(qa),2*Vmat(T))*∂Lᵀ∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
@@ -109,7 +100,7 @@ end
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = szeros(T, 9, 3)
-    QQ = kron(Vmat(),2*VLᵀmat(qa)*Rmat(qa)*Rᵀmat(qb)*Rmat(UnitQuaternion(joint.vertices[2])))*vcat(∂L∂qsplit(T)...) + kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2])),2*VLᵀmat(qa)*Rmat(qa))*vcat(∂Rᵀ∂qsplit(T)...)
+    QQ = kron(Vmat(T),2*VLᵀmat(qa)*Rmat(qa)*Rᵀmat(qb)*Rmat(UnitQuaternion(joint.vertices[2])))*∂L∂qsplit(T) + kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2])),2*VLᵀmat(qa)*Rmat(qa))*∂Rᵀ∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
@@ -117,7 +108,7 @@ end
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = szeros(T, 9, 3)
-    QQ = kron(Vmat(),2*VRᵀmat(qb)*Rmat(UnitQuaternion(joint.vertices[2])))*vcat(∂L∂qsplit(T)...) + kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2])),2*Vmat())*vcat(∂Rᵀ∂qsplit(T)...)
+    QQ = kron(Vmat(T),2*VRᵀmat(qb)*Rmat(UnitQuaternion(joint.vertices[2])))*∂L∂qsplit(T) + kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2])),2*Vmat(T))*∂Rᵀ∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
