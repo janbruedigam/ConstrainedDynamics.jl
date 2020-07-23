@@ -41,11 +41,9 @@ shapes = [box,cyl,box2]
 mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
 setPosition!(link1,x = -p0)
 setPosition!(link2,x = p3 + p1)
-setPosition!(link3,x = -p2)
-setVelocity!(link2,ω = [0;0;1.])
-setVelocity!(link3,ω = [1.;0;0])
-setForce!(link2,τ = [0;0;1.])
+setPosition!(link3,x = p2)
+setVelocity!(link2,ω = [0;0;2.])
+setVelocity!(link3,ω = [2.;0;0])
 
-
-storage = simulate!(mech, 10., record = true, debug = true)
+storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)
