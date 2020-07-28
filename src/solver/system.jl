@@ -56,6 +56,7 @@ end
 
 
 # TODO only works for 1DOF active constaints (eqcids)
+# Maximal Coordinates
 function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,N,Nb}
     statesold = [State{T}() for i=1:Nb]
 
@@ -77,6 +78,41 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
     end
 
     return A, Bu, Bλ, G
+end
+# Minimal Coordinates
+function linearsystem(mechanism::Mechanism{T,N,Nb}, xθd, vωd, Fτd, controlledids, controlids) where {T,N,Nb}
+    statesold = [State{T}() for i=1:Nb]
+    xd = [szeros(T,3) for i=1:Nb]
+    vd = [szeros(T,3) for i=1:Nb]
+    qd = [one(UnitQuaternion{T}) for i=1:Nb]
+    ωd = [szeros(T,3) for i=1:Nb]
+
+    # store old state and set new initial state
+    for (id,body) in pairs(mechanism.bodies)
+        statesold[id] = deepcopy(body.state)
+    end
+    for (i,id) in enumerate(controlledids)
+        setPosition!(mechanism, geteqconstraint(mechanism, id), xθd[i])
+    end
+    for (id,body) in pairs(mechanism.bodies)
+        state = body.state
+        xd[id] = state.xc
+        vd[id] = state.vc
+        qd[id] = state.qc
+        ωd[id] = state.ωc
+    end
+    for (i,id) in enumerate(controlids)
+        setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
+    end
+
+    A, Bu, Bλ, G = lineardynamics(mechanism, controlids) # TODO check again for Fk , τk
+
+    # restore old state
+    for (id,body) in pairs(mechanism.bodies)
+        body.state = statesold[id]
+    end
+
+    return A, Bu, Bλ, G, xd, vd, qd, ωd
 end
 
 
