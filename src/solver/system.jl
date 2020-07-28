@@ -92,7 +92,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xθd, vωd, Fτd, controlled
         statesold[id] = deepcopy(body.state)
     end
     for (i,id) in enumerate(controlledids)
-        setPosition!(mechanism, geteqconstraint(mechanism, id), xθd[i])
+        setPosition!(mechanism, geteqconstraint(mechanism, id), [xθd[i]])
     end
     for (id,body) in pairs(mechanism.bodies)
         state = body.state
@@ -102,7 +102,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xθd, vωd, Fτd, controlled
         ωd[id] = state.ωc
     end
     for (i,id) in enumerate(controlids)
-        setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
+        setForce!(mechanism, geteqconstraint(mechanism, id), [Fτd[i]])
     end
 
     A, Bu, Bλ, G = lineardynamics(mechanism, controlids) # TODO check again for Fk , τk
