@@ -36,6 +36,4 @@ shapes = [b1,b2]
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(origin,link1,p2 = vert11,Δq = q1)
-setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = inv(q1))
-setForce!(link2,τ = [0;0.2;0])
-
+setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = inv(q1)*UnitQuaternion(RotY(0.2)))

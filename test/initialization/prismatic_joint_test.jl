@@ -39,9 +39,15 @@ for i=1:10
 
     setPosition!(mech,joint1,xθ;iter=false)
     setVelocity!(mech,joint1,vω)
-    setForce!(mech,joint1,Fτ)    
+    function control!(mechanism, k)
+        if k==1
+            setForce!(mech,joint1,Fτ) 
+        end
+        return
+    end
+    # setForce!(mech,joint1,Fτ)    
 
-    storage = simulate!(mech, 10., record = true)
+    storage = simulate!(mech, 10., control!, record = true)
 
     @test isapprox(norm(minimalCoordinates(mech, joint1) - (xθ + (vω + Fτ*Δt)*10.0)), 0.0; atol = 1e-3)
     @test isapprox(norm(link1.state.xc - (p1 - vrotate(p2,qoff) + axis*(xθ + (vω + Fτ*Δt)*10.0)[1])), 0.0; atol = 1e-3)

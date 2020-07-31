@@ -31,10 +31,12 @@ files = [
 controlled = [
     "doublependulum_disconnection"
     "joint_force"
+    "joint_torque"
     "pendulum_forced"
     "nutation"
     "football"
     "fourbar_disconnection"
+    "slider_crank"
 ]
 
 for file in files

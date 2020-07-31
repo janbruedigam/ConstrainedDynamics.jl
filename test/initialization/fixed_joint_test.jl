@@ -33,7 +33,7 @@ for i=1:10
 
     setPosition!(mech,joint1,SA_F64[]; iter=false)
     setVelocity!(mech,joint1,SA_F64[])
-    setForce!(mech,joint1,SA_F64[])
+    # setForce!(mech,joint1,SA_F64[]) # Does not do anything
 
     storage = simulate!(mech, 10., record = true)
 

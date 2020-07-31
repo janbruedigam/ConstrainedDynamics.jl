@@ -37,9 +37,15 @@ for i=1:10
 
     setPosition!(mech,joint1,xθ;iter=false)
     setVelocity!(mech,joint1,vω)
-    setForce!(mech,joint1,Fτ)
+    function control!(mechanism, k)
+        if k==1
+            setForce!(mech,joint1,Fτ) 
+        end
+        return
+    end
+    # setForce!(mech,joint1,Fτ)
 
-    storage = simulate!(mech, 10., record = true)
+    storage = simulate!(mech, 10., control!, record = true)
 
     angend = mod((xθ + (vω + Fτ*Δt)*10.0)[1],2pi)
     qend = qoff*UnitQuaternion(cos(angend/2), (axis*sin(angend/2))..., false)

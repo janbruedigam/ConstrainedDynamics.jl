@@ -30,7 +30,13 @@ links = [link1; link2]
 constraints = [joint0to1;joint1to2]
 shapes = [b1;b2]
 
+function joint_torque_control!(mechanism, k)
+    τ = SA[0.05]
+    setForce!(mechanism, joint1to2, τ * 0)
+    return
+end
+
 mech = Mechanism(origin, links, constraints, shapes = shapes, g = 0.)
 setPosition!(link1,link2,p1 = vert12,p2 = vert11)
 
-setForce!(mech, joint1to2, [0.05])
+# setForce!(mech, joint1to2, [0.05])

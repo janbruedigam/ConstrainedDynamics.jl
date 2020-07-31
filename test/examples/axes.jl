@@ -40,5 +40,5 @@ setPosition!(origin,link3,Δq = UnitQuaternion(RotX(0.)),p2=v3)
 # setVelocity!(origin,link2,Δω = [0.;1;1],p2=v2)
 # setVelocity!(origin,link3,Δω = [0.;1;1],p2=v3)
 # setVelocity!(link2,v = [-2.5;2.5;5],ω = [2;4;10.])
-setForce!(link1,τ=[0.1;0;0])
+# setForce!(link1,τ=[0.1;0;0])
 
