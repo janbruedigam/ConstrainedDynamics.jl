@@ -36,12 +36,18 @@ links = [link1; link2]
 constraints = [joint0to12;joint1to2]
 shapes = [box,cyl]
 
+function slider_crank_control!(mechanism, k)
+    τ = SA[0;0.3]
+    setForce!(mechanism, joint1to2, τ * 0)
+    return
+end
+
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(link1,x = -p0)
 setPosition!(link2,x = p3 + p1)
 
-a = [0;0;0;0;0.3]
+# a = [0;0;0;0;0.3]
 
-setForce!(mech,joint0to12,a)
+# setForce!(mech,joint0to12,a)
 # setForce!(link2,τ=[0;0;0.3])
