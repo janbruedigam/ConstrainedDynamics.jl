@@ -34,7 +34,7 @@ end
 end
 
 
-@inline function discretizestate!(body::Body, Δt)
+@inline function discretizestate!(body::Body{T}, Δt) where T
     state = body.state
     xc = state.xc
     qc = state.qc
