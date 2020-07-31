@@ -44,6 +44,9 @@ end
     state.xk[1] = xc + vc*Δt
     state.qk[1] = qc * ωbar(ωc,Δt)
 
+    state.Fk[1] = szeros(T,3)
+    state.τk[1] = szeros(T,3)
+
     return
 end
 
