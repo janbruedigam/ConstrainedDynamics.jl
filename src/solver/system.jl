@@ -263,36 +263,14 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
                 mat = reductionmat(eqc.constraints[i])
-                pXl = mat * pXl
-                pQl = mat * pQl
-                pXr = mat * pXr
-                pQr = mat * pQr
-                cXl = mat * cXl
-                cQl = mat * cQl
-                cXr = mat * cXr
-                cQr = mat * cQr
-                # if eqc.constraints[i] isa Joint{T,2}
-                #     pXl = eqc.constraints[i].V12 * pXl
-                #     pQl = eqc.constraints[i].V12 * pQl
-                #     pXr = eqc.constraints[i].V12 * pXr
-                #     pQr = eqc.constraints[i].V12 * pQr
-                #     cXl = eqc.constraints[i].V12 * cXl
-                #     cQl = eqc.constraints[i].V12 * cQl
-                #     cXr = eqc.constraints[i].V12 * cXr
-                #     cQr = eqc.constraints[i].V12 * cQr
-                # elseif eqc.constraints[i] isa Joint{T,3}
-                #     pXl = convert(SMatrix{3,3,T,9}, pXl)
-                #     pQl = convert(SMatrix{3,4,T,12}, pQl)
-                #     cXl = convert(SMatrix{3,3,T,9}, cXl)
-                #     cQl = convert(SMatrix{3,4,T,12}, cQl)
-                # else
-                #     @error "not supported"
-                # end
-
-                pGlx = pXl
-                pGlq = pQl
-                pGrx = pXr
-                pGrq = pQr
+                pGlx = mat * pXl
+                pGlq = mat * pQl
+                pGrx = mat * pXr
+                pGrq = mat * pQr
+                cGlx = mat * cXl
+                cGlq = mat * cQl
+                cGrx = mat * cXr
+                cGrq = mat * cQr
 
                 Gl[range,pcol3a12] = pGlx
                 Gl[range,pcol3b12] = pGlx*Δt
@@ -300,11 +278,6 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 Gl[range,pcol3d12] = pGlq*Lmat(pstate.qsol[2])*derivωbar(pstate.ωsol[2],Δt)
                 Gr[range,pcol3b] = pGrx
                 Gr[range,pcol3d] = pGrq
-
-                cGlx = cXl
-                cGlq = cQl
-                cGrx = cXr
-                cGrq = cQr
 
                 Gl[range,ccol3a12] = cGlx
                 Gl[range,ccol3b12] = cGlx*Δt
@@ -338,26 +311,10 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
                 mat = reductionmat(eqc.constraints[i])
-                cXl = mat * cXl
-                cQl = mat * cQl
-                cXr = mat * cXr
-                cQr = mat * cQr
-                # if eqc.constraints[i] isa Joint{T,2}
-                #     cXl = eqc.constraints[i].V12 * cXl
-                #     cQl = eqc.constraints[i].V12 * cQl
-                #     cXr = eqc.constraints[i].V12 * cXr
-                #     cQr = eqc.constraints[i].V12 * cQr
-                # elseif eqc.constraints[i] isa Joint{T,3}
-                #     cXl = convert(SMatrix{3,3,T,9}, cXl)
-                #     cQl = convert(SMatrix{3,4,T,12}, cQl)
-                # else
-                #     @error "not supported"
-                # end
-
-                cGlx = cXl
-                cGlq = cQl
-                cGrx = cXr
-                cGrq = cQr
+                cGlx = mat * cXl
+                cGlq = mat * cQl
+                cGrx = mat * cXr
+                cGrq = mat * cQr
 
                 Gl[range,ccol3a12] = cGlx
                 Gl[range,ccol3b12] = cGlx*Δt
