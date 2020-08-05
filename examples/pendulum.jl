@@ -27,7 +27,7 @@ constraints = [joint_between_origin_and_link1]
 shapes = [box]
 
 
-mech = Mechanism(origin, links, constraints, shapes = shapes)
+mech = LinearMechanism(Mechanism(origin, links, constraints, shapes = shapes))
 setPosition!(origin,link1,p2 = p2,Δq = q1)
 
 storage = simulate!(mech, 10., record = true)

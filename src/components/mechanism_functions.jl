@@ -99,6 +99,12 @@ end
     return sqrt(mechanism.normf)
 end
 
+@inline function normf(mechanism::LinearMechanism)
+    mechanism.normf = norm([fdynamics(mechanism); fconstraints(mechanism)])
+
+    return sqrt(mechanism.normf)
+end
+
 @inline function meritf(mechanism::Mechanism)
     mechanism.normf = 0
 
@@ -156,4 +162,21 @@ end
     deactivate!(component)
     deactivate!(mechanism.graph,id)
     return
+end
+
+@inline function fdynamics(mechanism::LinearMechanism)
+    A = mechanism.A
+    Bλ = mechanism.Bλ
+    z0 = mechanism.z0
+    z1 = mechanism.z1
+    λ1 = mechanism.λ1
+
+    return A*z0 + Bλ*λ1 - z1
+end
+
+@inline function fconstraints(mechanism::LinearMechanism)
+    G = mechanism.G
+    z1 = mechanism.z1
+
+    return G*z1
 end

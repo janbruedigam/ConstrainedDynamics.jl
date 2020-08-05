@@ -4,7 +4,7 @@ using LinearAlgebra
 using StaticArrays
 using StaticArrays: SUnitRange
 using Rotations
-using Rotations: pure_quaternion, params, lmult, rmult, tmat, vmat, hmat, skew
+using Rotations: RotationError, pure_quaternion, params, lmult, rmult, tmat, vmat, hmat, skew
 
 using Colors: RGBA, RGB
 using LightXML
@@ -20,6 +20,7 @@ export Box,
     EqualityConstraint,
     InequalityConstraint,
     Mechanism,
+    LinearMechanism,
     Storage,
     Controller,
 
@@ -103,6 +104,7 @@ include(joinpath("components", "controller.jl"))
 
 include(joinpath("solver", "sparseldu.jl"))
 include(joinpath("components", "mechanism.jl"))
+include(joinpath("components", "linear_mechanism.jl"))
 include(joinpath("components", "mechanism_functions.jl"))
 include(joinpath("components", "mechanism_ui.jl"))
 include(joinpath("components", "simulate.jl"))
@@ -113,6 +115,7 @@ include(joinpath("solver", "system.jl"))
 include(joinpath("util", "urdf.jl"))
 
 include(joinpath("solver", "newton.jl"))
+include(joinpath("solver", "linesearch.jl"))
 
 
 include(joinpath("discretization", "SymplecticEuler.jl"))

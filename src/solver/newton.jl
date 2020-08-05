@@ -7,7 +7,6 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,0};
     eqcs = mechanism.eqconstraints
     graph = mechanism.graph
     ldu = mechanism.ldu
-    Δt = mechanism.Δt
 
     normf0 = normf(mechanism)
     for n = Base.OneTo(newtonIter)
@@ -43,7 +42,6 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,Ni};
     ineqcs = mechanism.ineqconstraints
     graph = mechanism.graph
     ldu = mechanism.ldu
-    Δt = mechanism.Δt
 
     foreachactive(resetVars!, ineqcs)
     mechanism.μ = μ
@@ -76,98 +74,38 @@ function newton!(mechanism::Mechanism{T,N,Nb,Ne,Ni};
     return
 end
 
-function lineSearch!(mechanism::Mechanism{T,N,Nb,Ne,0}, normf0;iter = 10, warning::Bool = false) where {T,N,Nb,Ne}
-    normf1 = normf0
-    scale = 0
-    ldu = mechanism.ldu
-    graph = mechanism.graph
-    bodies = mechanism.bodies
-    eqcs = mechanism.eqconstraints
+function newton!(mechanism::LinearMechanism{T,N,Nb,Ne,0};
+        ε = 1e-10, newtonIter = 100, lineIter = 10, warning::Bool = false
+    ) where {T,N,Nb,Ne}
 
-    for n = Base.OneTo(iter + 1)
-        for body in bodies
-            isinactive(body) && continue
-            lineStep!(body, getentry(ldu, body.id), scale)
-        end
-        for eqc in eqcs
-            isinactive(eqc) && continue
-            lineStep!(eqc, getentry(ldu, eqc.id), scale)
-        end
+    A = mechanism.A
+    Bu = mechanism.Bu
+    Bλ = mechanism.Bλ
+    G = mechanism.G
+    nc = size(G)[1]
+    Z = zeros(T,nc,nc)
 
-        normf1 = normf(mechanism)
-        if normf1 >= normf0
-            scale += 1
+    normf0 = normf(mechanism)
+    for n = Base.OneTo(newtonIter)
+        M = [-I Bλ;G Z]
+        Δsol = M\[fdynamics(mechanism); fconstraints(mechanism)]
+        mechanism.Δz = Δsol[1:12*Nb]
+        mechanism.Δλ = Δsol[12*Nb+1:end]
+
+        normf1 = lineSearch!(mechanism, normf0;iter = lineIter, warning = warning)
+        # normΔs1 = normΔs(mechanism)
+
+        # foreachactive(updatesolution!, bodies)
+        # foreachactive(updatesolution!, eqcs)
+
+        if normf1 < ε #&& normΔs1 < ε
+            # warning && (@info string("Newton iterations: ",n))
+            return
         else
-            return normf1
+            normf0 = normf1
         end
     end
 
-    warning && (@info string("lineSearch! did not converge. n = ", iter, ". Last tol: ", normf1))
-    return normf1
-end
-
-
-function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = false)
-    meritf1 = meritf0
-    scale = 0
-    ldu = mechanism.ldu
-    graph = mechanism.graph
-    bodies = mechanism.bodies
-    eqcs = mechanism.eqconstraints
-    ineqcs = mechanism.ineqconstraints
-
-    feasibilityStepLength!(mechanism)
-
-    for n = Base.OneTo(iter)
-        for body in bodies
-            isinactive(body) && continue
-            lineStep!(body, getentry(ldu, body.id), scale, mechanism)
-        end
-        for eqc in eqcs
-            isinactive(eqc) && continue
-            lineStep!(eqc, getentry(ldu, eqc.id), scale, mechanism)
-        end
-        for ineqc in ineqcs
-            isinactive(ineqc) && continue
-            lineStep!(ineqc, getineqentry(ldu, ineqc.id), scale, mechanism)
-        end
-
-        meritf1 = meritf(mechanism)
-        if meritf1 >= meritf0
-            scale += 1
-        else
-            return meritf1
-        end
-    end
-
-    warning && (@info string("lineSearch! did not converge. n = ", iter, ". Last tol: ", meritf1))
-    return meritf1
-end
-
-@inline function lineStep!(body::Body, diagonal::DiagonalEntry, scale)
-    body.state.vsol[2] = body.state.vsol[1] - 1 / (2^scale) * diagonal.Δs[SA[1; 2; 3]]
-    body.state.ωsol[2] = body.state.ωsol[1] - 1 / (2^scale) * diagonal.Δs[SA[4; 5; 6]]
-    return
-end
-
-@inline function lineStep!(eqc::EqualityConstraint, diagonal::DiagonalEntry, scale)
-    eqc.λsol[2] = eqc.λsol[1] - 1 / (2^scale) * -diagonal.Δs
-    return
-end
-
-@inline function lineStep!(body::Body, diagonal, scale, mechanism)
-    body.state.vsol[2] = body.state.vsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SA[1; 2; 3]]
-    body.state.ωsol[2] = body.state.ωsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SA[4; 5; 6]]
-    return
-end
-
-@inline function lineStep!(eqc::EqualityConstraint, diagonal, scale, mechanism)
-    eqc.λsol[2] = eqc.λsol[1] - 1 / (2^scale) * mechanism.α * -diagonal.Δs
-    return
-end
-
-@inline function lineStep!(ineqc::InequalityConstraint, entry, scale, mechanism)
-    ineqc.ssol[2] = ineqc.ssol[1] - 1 / (2^scale) * mechanism.α * entry.Δs
-    ineqc.γsol[2] = ineqc.γsol[1] - 1 / (2^scale) * mechanism.α * -entry.Δγ
+    warning && (@info string("newton! did not converge. n = ", newtonIter, ", tol = ", normf(mechanism), "."))
     return
 end

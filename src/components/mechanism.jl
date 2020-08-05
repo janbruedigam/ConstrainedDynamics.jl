@@ -1,4 +1,6 @@
-mutable struct Mechanism{T,N,Nb,Ne,Ni}
+abstract type AbstractMechanism{T,N,Nb,Ne,Ni} end
+
+mutable struct Mechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
     eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
@@ -300,10 +302,10 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape} = Shape{T}
     return origin, bodies, eqconstraints, ineqconstraints, shapes
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,Nb,Ne,0}) where {T,N,Nb,Ne}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::AbstractMechanism{T,N,Nb,Ne,0}) where {T,N,Nb,Ne}
     summary(io, M); println(io, " with ", Nb, " bodies and ", Ne, " constraints")
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::Mechanism{T,N,Nb,Ne,Ni}) where {T,N,Nb,Ne,Ni}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::AbstractMechanism{T,N,Nb,Ne,Ni}) where {T,N,Nb,Ne,Ni}
     summary(io, M); println(io, " with ", Nb, " bodies, ", Ne, " equality constraints, and ", Ni, " inequality constraints")
 end
