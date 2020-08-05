@@ -70,8 +70,8 @@ function lineSearch!(mechanism::LinearMechanism{T,N,Nb,Ne,0}, normf0;iter = 10, 
     scale = 0
 
     for n = Base.OneTo(iter + 1)
-        mechanism.z1 = mechanism.z0 - 1 / (2^scale) * mechanism.Δz
-        mechanism.λ1 = mechanism.λ0 - 1 / (2^scale) * mechanism.Δλ
+        mechanism.zsol[2] = mechanism.zsol[1] - 1 / (2^scale) * mechanism.Δz
+        mechanism.λsol[2] = mechanism.λsol[1] - 1 / (2^scale) * mechanism.Δλ
 
         normf1 = normf(mechanism)
         if normf1 >= normf0

@@ -29,36 +29,41 @@ mutable struct LinearMechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
     qd::Vector{UnitQuaternion{T}}
     ωd::Vector{SVector{3,T}}
 
-    z0::Vector{T}
-    z1::Vector{T}
+    z::Vector{T}
+    zsol::Vector{Vector{T}}
     Δz::Vector{T}
-    λ0::Vector{T}
-    λ1::Vector{T}
+    λ::Vector{T}
+    λsol::Vector{Vector{T}}
     Δλ::Vector{T}
 
 
-    function LinearMechanism(mechanism::Mechanism{T,N,Nb,Ne,Ni}; 
-            xd = [szeros(T,3) for i=1:Nb],
-            vd = [szeros(T,3) for i=1:Nb],
-            qd = [one(UnitQuaternion{T}) for i=1:Nb],
-            ωd = [szeros(T,3) for i=1:Nb]
-        ) where {T,N,Nb,Ne,Ni}
+    function LinearMechanism(mechanism::Mechanism{T,N,Nb,Ne,Ni}, xd, vd, qd, ωd) where {T,N,Nb,Ne,Ni}
 
         A, Bu, Bλ, G = linearsystem(mechanism, xd, vd, qd, ωd, [], getid.(mechanism.bodies), [])
 
-        z0 = zeros(T,Nb*12)
-        z1 = zeros(T,Nb*12)
+        z = zeros(T,Nb*12)
+        zsol = [zeros(T,Nb*12) for i=1:2]
         Δz = zeros(T,Nb*12)
 
         nc = 0
         for eqc in mechanism.eqconstraints
             nc += length(eqc)
         end
-        λ0 = zeros(T,nc)
-        λ1 = zeros(T,nc)
+        λ = zeros(T,nc)
+        λsol = [zeros(T,nc) for i=1:2]
         Δλ = zeros(T,nc)
 
 
-        new{T,N,Nb,Ne,Ni}([getfield(mechanism,i) for i=1:getfieldnumber(mechanism)]..., A, Bu, Bλ, G, xd, vd, qd, ωd, z0, z1, Δz, λ0, λ1, Δλ)
+        new{T,N,Nb,Ne,Ni}([getfield(mechanism,i) for i=1:getfieldnumber(mechanism)]..., A, Bu, Bλ, G, xd, vd, qd, ωd, z, zsol, Δz, λ, λsol, Δλ)
+    end
+
+    function LinearMechanism(mechanism::Mechanism{T,N,Nb,Ne,Ni}; 
+        xd = [mechanism.bodies[i].state.xc for i=1:Nb],
+        vd = [mechanism.bodies[i].state.vc for i=1:Nb],
+        qd = [mechanism.bodies[i].state.qc for i=1:Nb],
+        ωd = [mechanism.bodies[i].state.ωc for i=1:Nb]
+    ) where {T,N,Nb,Ne,Ni}
+
+        return LinearMechanism(mechanism, xd, vd, qd, ωd)
     end
 end

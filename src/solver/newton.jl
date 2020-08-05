@@ -95,8 +95,8 @@ function newton!(mechanism::LinearMechanism{T,N,Nb,Ne,0};
         normf1 = lineSearch!(mechanism, normf0;iter = lineIter, warning = warning)
         # normΔs1 = normΔs(mechanism)
 
-        # foreachactive(updatesolution!, bodies)
-        # foreachactive(updatesolution!, eqcs)
+        mechanism.zsol[1] = mechanism.zsol[2]
+        mechanism.λsol[1] = mechanism.λsol[2]
 
         if normf1 < ε #&& normΔs1 < ε
             # warning && (@info string("Newton iterations: ",n))
