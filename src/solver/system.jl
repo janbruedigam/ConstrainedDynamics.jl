@@ -128,6 +128,13 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
         nc += length(eqc)
     end
 
+    nu = 0
+    for id in eqcids
+        eqc = geteqconstraint(mechanism, id)
+        nu += 6-length(eqc)
+    end
+
+
     # calculate next state
     discretizestate!(mechanism)
     foreach(setsolution!, mechanism.bodies)
@@ -140,7 +147,7 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     Ffz = zeros(T,Nb*13,Nb*13)
     invFfzquat = zeros(T,Nb*12,Nb*13)
 
-    Bcontrol = zeros(T,Nb*6,length(eqcids))
+    Bcontrol = zeros(T,Nb*6,nu)
 
     for (id,body) in pairs(bodies)
         col6 = offsetrange(id,6)
@@ -159,18 +166,25 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
 
     Ffz += linearconstraintmapping(mechanism)
 
-    for (i,id) in enumerate(eqcids)
+
+    n1 = 1
+    n2 = 0
+
+    for id in eqcids
         eqc = geteqconstraint(mechanism, id)
+        n2 += 6-length(eqc)
 
         parentid = eqc.parentid
         if parentid !== nothing
             col6 = offsetrange(parentid,6)
-            Bcontrol[col6,i] = ∂Fτ∂ua(mechanism, eqc, parentid)
+            Bcontrol[col6,n1:n2] = ∂Fτ∂ua(mechanism, eqc, parentid)
         end
         for childid in eqc.childids
             col6 = offsetrange(childid,6)
-            Bcontrol[col6,i] = ∂Fτ∂ub(mechanism, eqc, childid)
+            Bcontrol[col6,n1:n2] = ∂Fτ∂ub(mechanism, eqc, childid)
         end
+
+        n1 = n2+1
     end
 
     # display(round.(Ffz,digits=5))
@@ -248,23 +262,32 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cGr =  ∂g∂ʳposb(eqc.constraints[i], posargssol(pstate)..., posargssol(cstate)...) # x2
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
-                if eqc.constraints[i] isa Joint{T,2}
-                    pXl = eqc.constraints[i].V12 * pXl
-                    pQl = eqc.constraints[i].V12 * pQl
-                    pXr = eqc.constraints[i].V12 * pXr
-                    pQr = eqc.constraints[i].V12 * pQr
-                    cXl = eqc.constraints[i].V12 * cXl
-                    cQl = eqc.constraints[i].V12 * cQl
-                    cXr = eqc.constraints[i].V12 * cXr
-                    cQr = eqc.constraints[i].V12 * cQr
-                elseif eqc.constraints[i] isa Joint{T,3}
-                    pXl = convert(SMatrix{3,3,T,9}, pXl)
-                    pQl = convert(SMatrix{3,4,T,12}, pQl)
-                    cXl = convert(SMatrix{3,3,T,9}, cXl)
-                    cQl = convert(SMatrix{3,4,T,12}, cQl)
-                else
-                    @error "not supported"
-                end
+                mat = reductionmat(eqc.constraints[i])
+                pXl = mat * pXl
+                pQl = mat * pQl
+                pXr = mat * pXr
+                pQr = mat * pQr
+                cXl = mat * cXl
+                cQl = mat * cQl
+                cXr = mat * cXr
+                cQr = mat * cQr
+                # if eqc.constraints[i] isa Joint{T,2}
+                #     pXl = eqc.constraints[i].V12 * pXl
+                #     pQl = eqc.constraints[i].V12 * pQl
+                #     pXr = eqc.constraints[i].V12 * pXr
+                #     pQr = eqc.constraints[i].V12 * pQr
+                #     cXl = eqc.constraints[i].V12 * cXl
+                #     cQl = eqc.constraints[i].V12 * cQl
+                #     cXr = eqc.constraints[i].V12 * cXr
+                #     cQr = eqc.constraints[i].V12 * cQr
+                # elseif eqc.constraints[i] isa Joint{T,3}
+                #     pXl = convert(SMatrix{3,3,T,9}, pXl)
+                #     pQl = convert(SMatrix{3,4,T,12}, pQl)
+                #     cXl = convert(SMatrix{3,3,T,9}, cXl)
+                #     cQl = convert(SMatrix{3,4,T,12}, cQl)
+                # else
+                #     @error "not supported"
+                # end
 
                 pGlx = pXl
                 pGlq = pQl
@@ -314,17 +337,22 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cGr =  ∂g∂ʳposb(eqc.constraints[i], posargssol(cstate)...) # x2
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
-                if eqc.constraints[i] isa Joint{T,2}
-                    cXl = eqc.constraints[i].V12 * cXl
-                    cQl = eqc.constraints[i].V12 * cQl
-                    cXr = eqc.constraints[i].V12 * cXr
-                    cQr = eqc.constraints[i].V12 * cQr
-                elseif eqc.constraints[i] isa Joint{T,3}
-                    cXl = convert(SMatrix{3,3,T,9}, cXl)
-                    cQl = convert(SMatrix{3,4,T,12}, cQl)
-                else
-                    @error "not supported"
-                end
+                mat = reductionmat(eqc.constraints[i])
+                cXl = mat * cXl
+                cQl = mat * cQl
+                cXr = mat * cXr
+                cQr = mat * cQr
+                # if eqc.constraints[i] isa Joint{T,2}
+                #     cXl = eqc.constraints[i].V12 * cXl
+                #     cQl = eqc.constraints[i].V12 * cQl
+                #     cXr = eqc.constraints[i].V12 * cXr
+                #     cQr = eqc.constraints[i].V12 * cQr
+                # elseif eqc.constraints[i] isa Joint{T,3}
+                #     cXl = convert(SMatrix{3,3,T,9}, cXl)
+                #     cQl = convert(SMatrix{3,4,T,12}, cQl)
+                # else
+                #     @error "not supported"
+                # end
 
                 cGlx = cXl
                 cGlq = cQl
