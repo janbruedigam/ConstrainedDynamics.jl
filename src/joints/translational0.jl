@@ -7,11 +7,11 @@ end
     return Δv
 end
 
-@inline function setForce!(joint::Translational2, body1::Body, body2::Body, F::SVector{3})
+@inline function setForce!(joint::Translational0, body1::Body, body2::Body, F::SVector{3})
     setForce!(joint, body1.state, body2.state, F)
     return
 end
-@inline function setForce!(joint::Translational2, body1::Origin, body2::Body, F::SVector{3})
+@inline function setForce!(joint::Translational0, body1::Origin, body2::Body, F::SVector{3})
     setForce!(joint, body2.state, F)
     return
 end
