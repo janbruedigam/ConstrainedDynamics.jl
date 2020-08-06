@@ -12,7 +12,7 @@ box = Box(width, depth, length1, length1)
 p2 = [0.0;0.0;length1 / 2] # joint connection point
 
 # Initial orientation
-ϕ1 = π / 2
+ϕ1 = 0.3 #π / 2
 q1 = UnitQuaternion(RotX(ϕ1))
 
 # Links
@@ -26,9 +26,11 @@ links = [link1]
 constraints = [joint_between_origin_and_link1]
 shapes = [box]
 
-
 mech = Mechanism(origin, links, constraints, shapes = shapes)
+setPosition!(origin,link1,p2 = p2)
+linmech = LinearMechanism(mech)
 setPosition!(origin,link1,p2 = p2,Δq = q1)
 
-storage = simulate!(mech, 10., record = true)
-visualize(mech, storage, shapes)
+
+storage = simulate!(linmech, 10, record = true)
+visualize(linmech, storage, shapes)
