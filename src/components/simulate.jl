@@ -60,6 +60,22 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
     record ? (return storage) : (return) 
 end
 
+function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage::Storage, control!::Function;
+        record::Bool = false,debug::Bool = false
+    )
+
+    initializeSimulation!(mechanism, debug)
+
+    for k = steps
+        record && saveToStorage!(mechanism, storage, k)
+        control!(mechanism, k)
+        newton!(mechanism, warning = debug)
+        mechanism.z = mechanism.zsol[2]
+        mechanism.λ = mechanism.λsol[2]
+    end
+    record ? (return storage) : (return) 
+end
+
 # with controller
 function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Storage, controller::Controller;
         record::Bool = false,debug::Bool = false

@@ -166,12 +166,14 @@ end
 
 @inline function fdynamics(mechanism::LinearMechanism)
     A = mechanism.A
+    Bu = mechanism.Bu
     Bλ = mechanism.Bλ
     z0 = mechanism.z
     z1 = mechanism.zsol[2]
     λ1 = mechanism.λsol[2]
+    u = mechanism.u
 
-    return A*z0 + Bλ*λ1 - z1
+    return A*z0 + Bu*u + Bλ*λ1 - z1
 end
 
 @inline function fconstraints(mechanism::LinearMechanism)
