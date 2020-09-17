@@ -178,7 +178,7 @@ function ∂Rᵀ∂qsplit(::Type{T}) where T
 end
 
 function slerp(q1,q2,h)
-    s = q1'*q2
+    s = params(q1)'*params(q2)
     if s < 0
         s = -s
         q2 = -q2
@@ -187,7 +187,7 @@ function slerp(q1,q2,h)
     qdiff = q1\q2
     φdiff, udiff = rotation_vector(qdiff)
     φint = φdiff*h
-    qint = UnitQuaternion(cos(φint/2),udiff*sin(φint/2))
+    qint = UnitQuaternion(cos(φint/2),(udiff*sin(φint/2))...,false)
     
     return q1*qint
 end
