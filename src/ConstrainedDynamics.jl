@@ -80,10 +80,6 @@ include(joinpath("bounds", "bound.jl"))
 
 include(joinpath("joints", "translational.jl"))
 include(joinpath("joints", "rotational.jl"))
-include(joinpath("joints", "joint0.jl"))
-include(joinpath("joints", "joint1.jl"))
-include(joinpath("joints", "joint2.jl"))
-include(joinpath("joints", "joint3.jl"))
 include(joinpath("joints", "prototypes.jl"))
 
 include(joinpath("bounds", "contact.jl"))
