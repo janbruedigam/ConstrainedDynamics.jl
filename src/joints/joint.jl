@@ -10,6 +10,15 @@ Base.show(io::IO, joint::Joint) = summary(io, joint)
 getT(joint::Joint{T}) where T = T
 getN(joint::Joint{T,N}) where {T,N} = N
 
+@inline constraintmat(::Joint0{T}) where T = szeros(T,0,3)
+@inline nullspacemat(::Joint0{T}) where T = SMatrix{3,3,T,9}(I)
+@inline constraintmat(joint::Joint1) = joint.V3
+@inline nullspacemat(joint::Joint1) = joint.V12
+@inline constraintmat(joint::Joint2) = joint.V12
+@inline nullspacemat(joint::Joint2) = joint.V3
+@inline constraintmat(::Joint3{T}) where T = SMatrix{3,3,T,9}(I)
+@inline nullspacemat(::Joint3{T}) where T = szeros(T,0,3)
+
 @inline setForce!(joint::Joint) = return
 
 @inline minimalCoordinates(joint::Joint{T,N}) where {T,N} = szeros(T, 3 - N)
@@ -25,14 +34,12 @@ getN(joint::Joint{T,N}) where {T,N} = N
 
 @inline ∂Fτ∂ub(joint::Joint{T,N}) where {T,N} = szeros(T, 6, 3 - N)
 
-@inline setForce!(joint::Joint, body1::Body, body2::Body, Fτ::SVector{0}) = setForce!(joint) # Needed because of some StaticArrays type issue (zero is ambiguous)
-@inline setForce!(joint::Joint, body1::Origin, body2::Body, Fτ::SVector{0}) = setForce!(joint) # Needed because of some StaticArrays type issue (zero is ambiguous)
 @inline function setForce!(joint::Joint, body1::Body, body2::Body, Fτ::SVector)
-    setForce!(joint, body1.state, body2.state, nullspacemat(joint)' * Fτ)
+    setForce!(joint, body1.state, body2.state, zerodimstaticadjoint(nullspacemat(joint)) * Fτ)
     return
 end
 @inline function setForce!(joint::Joint, body1::Origin, body2::Body, Fτ::SVector)
-    setForce!(joint, body2.state, nullspacemat(joint)' * Fτ)
+    setForce!(joint, body2.state, zerodimstaticadjoint(nullspacemat(joint)) * Fτ)
     return
 end
 
@@ -108,18 +115,18 @@ end
 end
 
 @inline function ∂Fτ∂ua(joint::Joint, body1::Body)
-    return ∂Fτ∂ua(joint, body1.state) * nullspacemat(joint)'
+    return ∂Fτ∂ua(joint, body1.state) * zerodimstaticadjoint(nullspacemat(joint))
 end
 @inline function ∂Fτ∂ub(joint::Joint, body1::Body, body2::Body)
     if body2.id == joint.childid
-        return ∂Fτ∂ub(joint, body1.state, body2.state) * nullspacemat(joint)'
+        return ∂Fτ∂ub(joint, body1.state, body2.state) * zerodimstaticadjoint(nullspacemat(joint))
     else
         return ∂Fτ∂ub(joint)
     end
 end
 @inline function ∂Fτ∂ub(joint::Joint, body1::Origin, body2::Body)
     if body2.id == joint.childid
-        return return ∂Fτ∂ub(joint, body2.state) * nullspacemat(joint)'
+        return return ∂Fτ∂ub(joint, body2.state) * zerodimstaticadjoint(nullspacemat(joint))
     else
         return ∂Fτ∂ub(joint)
     end

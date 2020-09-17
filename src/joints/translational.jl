@@ -31,6 +31,25 @@ Translational2 = Translational{T,2} where T
 Translational3 = Translational{T,3} where T
 
 
+@inline function getPositionDelta(joint::Translational, body1::AbstractBody, body2::Body, x::SVector)
+    Δx = zerodimstaticadjoint(nullspacemat(joint)) * x # in body1 frame
+    return Δx
+end
+@inline function getVelocityDelta(joint::Translational, body1::AbstractBody, body2::Body, v::SVector)
+    Δv = zerodimstaticadjoint(nullspacemat(joint)) * v # in body1 frame
+    return Δv
+end
+
+@inline function minimalCoordinates(joint::Translational, body1::Body, body2::Body)
+    statea = body1.state
+    stateb = body2.state
+    return nullspacemat(joint) * g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
+end
+@inline function minimalCoordinates(joint::Translational, body1::Origin, body2::Body)
+    stateb = body2.state
+    return nullspacemat(joint) * g(joint, stateb.xc, stateb.qc)
+end
+
 # Position level constraints
 
 @inline function g(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
