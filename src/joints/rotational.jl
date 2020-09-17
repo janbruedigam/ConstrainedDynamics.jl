@@ -29,6 +29,43 @@ Rotational1 = Rotational{T,1} where T
 Rotational2 = Rotational{T,2} where T
 Rotational3 = Rotational{T,3} where T
 
+@inline function getPositionDelta(joint::Rotational, body1::AbstractBody, body2::Body, θ::SVector{N,T}) where {T,N}
+    # axis angle representation
+    θ = zerodimstaticadjoint(nullspacemat(joint)) * θ
+    nθ = norm(θ)
+    if nθ == 0
+        q = one(UnitQuaternion{T})
+    else
+        q = UnitQuaternion(cos(nθ/2),(θ/nθ*sin(nθ/2))..., false)
+    end
+    
+    Δq = q * joint.qoffset # in body1 frame
+    return Δq
+end
+@inline function getVelocityDelta(joint::Rotational, body1::Body, body2::Body, ω::SVector)
+    ω = zerodimstaticadjoint(nullspacemat(joint)) * ω
+    Δω = vrotate(ω, inv(body2.state.qc)*body1.state.qc) # in body2 frame
+    return Δω
+end
+@inline function getVelocityDelta(joint::Rotational, body1::Origin, body2::Body, ω::SVector)
+    ω = zerodimstaticadjoint(nullspacemat(joint)) * ω
+    Δω = vrotate(ω, inv(body2.state.qc)) # in body2 frame
+    return Δω
+end
+
+@inline function minimalCoordinates(joint::Rotational, body1::Body, body2::Body)
+    statea = body1.state
+    stateb = body2.state
+    # q = g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
+    q = statea.qc \ stateb.qc / joint.qoffset
+    return nullspacemat(joint) * rotation_vector(q)
+end
+@inline function minimalCoordinates(joint::Rotational, body1::Origin, body2::Body)
+    stateb = body2.state
+    # q = g(joint, stateb.xc, stateb.qc)
+    q = stateb.qc / joint.qoffset
+    return nullspacemat(joint) * rotation_vector(q)
+end
 
 # Position level constraints
 
