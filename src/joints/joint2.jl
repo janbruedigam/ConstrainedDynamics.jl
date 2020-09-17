@@ -1,3 +1,11 @@
+@inline function getPositionDelta(joint::Translational2, body1::AbstractBody, body2::Body, x::SVector{1})
+    Δx = joint.V3' * x # in body1 frame
+    return Δx
+end
+@inline function getVelocityDelta(joint::Translational2, body1::AbstractBody, body2::Body, v::SVector{1})
+    Δv = joint.V3' * v # in body1 frame
+    return Δv
+end
 @inline function getPositionDelta(joint::Rotational2, body1::AbstractBody, body2::Body, θ::SVector{1})
     q = UnitQuaternion(cos(θ[1]/2), (joint.V3*sin(θ[1]/2))..., false)
     Δq = q * joint.qoffset # in body1 frame
@@ -14,26 +22,26 @@ end
     return Δω
 end
 
-@inline function setForce!(joint::Rotational2, body1::Body, body2::Body, τ::SVector{1})
-    setForce!(joint, body1.state, body2.state, joint.V3' * τ)
+@inline function setForce!(joint::Joint2, body1::Body, body2::Body, Fτ::SVector{1})
+    setForce!(joint, body1.state, body2.state, joint.V3' * Fτ)
     return
 end
-@inline function setForce!(joint::Rotational2, body1::Origin, body2::Body, τ::SVector{1})
-    setForce!(joint, body2.state, joint.V3' * τ)
+@inline function setForce!(joint::Joint2, body1::Origin, body2::Body, Fτ::SVector{1})
+    setForce!(joint, body2.state, joint.V3' * Fτ)
     return
 end
 
-@inline function ∂Fτ∂ua(joint::Rotational2, body1::Body)
+@inline function ∂Fτ∂ua(joint::Joint2, body1::Body)
     return ∂Fτ∂ua(joint, body1.state) * joint.V3'
 end
-@inline function ∂Fτ∂ub(joint::Rotational2, body1::Body, body2::Body)
+@inline function ∂Fτ∂ub(joint::Joint2, body1::Body, body2::Body)
     if body2.id == joint.childid
         return ∂Fτ∂ub(joint, body1.state, body2.state) * joint.V3'
     else
         return ∂Fτ∂ub(joint)
     end
 end
-@inline function ∂Fτ∂ub(joint::Rotational2, body1::Origin, body2::Body)
+@inline function ∂Fτ∂ub(joint::Joint2, body1::Origin, body2::Body)
     if body2.id == joint.childid
         return return ∂Fτ∂ub(joint, body2.state) * joint.V3'
     else
@@ -41,6 +49,15 @@ end
     end
 end
 
+@inline function minimalCoordinates(joint::Translational2, body1::Body, body2::Body)
+    statea = body1.state
+    stateb = body2.state
+    return joint.V3 * g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
+end
+@inline function minimalCoordinates(joint::Translational2, body1::Origin, body2::Body)
+    stateb = body2.state
+    return joint.V3 * g(joint, stateb.xc, stateb.qc)
+end
 @inline function minimalCoordinates(joint::Rotational2, body1::Body, body2::Body)
     statea = body1.state
     stateb = body2.state
@@ -55,24 +72,24 @@ end
     return joint.V3 * rotation_vector(q)
 end
 
-@inline g(joint::Rotational2, body1::Body, body2::Body, Δt) = joint.V12 * g(joint, body1.state, body2.state, Δt)
-@inline g(joint::Rotational2, body1::Origin, body2::Body, Δt) = joint.V12 * g(joint, body2.state, Δt)
+@inline g(joint::Joint2, body1::Body, body2::Body, Δt) = joint.V12 * g(joint, body1.state, body2.state, Δt)
+@inline g(joint::Joint2, body1::Origin, body2::Body, Δt) = joint.V12 * g(joint, body2.state, Δt)
 
-@inline function ∂g∂ʳposa(joint::Rotational2, body1::Body, body2::Body)
+@inline function ∂g∂ʳposa(joint::Joint2, body1::Body, body2::Body)
     if body2.id == joint.childid
         return joint.V12 * ∂g∂ʳposa(joint, body1.state, body2.state)
     else
         return ∂g∂ʳposa(joint)
     end
 end
-@inline function ∂g∂ʳposb(joint::Rotational2, body1::Body, body2::Body)
+@inline function ∂g∂ʳposb(joint::Joint2, body1::Body, body2::Body)
     if body2.id == joint.childid
         return joint.V12 * ∂g∂ʳposb(joint, body1.state, body2.state)
     else
         return ∂g∂ʳposb(joint)
     end
 end
-@inline function ∂g∂ʳposb(joint::Rotational2, body1::Origin, body2::Body)
+@inline function ∂g∂ʳposb(joint::Joint2, body1::Origin, body2::Body)
     if body2.id == joint.childid
         return joint.V12 * ∂g∂ʳposb(joint, body2.state)
     else
@@ -80,21 +97,21 @@ end
     end
 end
 
-@inline function ∂g∂ʳvela(joint::Rotational2, body1::Body, body2::Body, Δt)
+@inline function ∂g∂ʳvela(joint::Joint2, body1::Body, body2::Body, Δt)
     if body2.id == joint.childid
         return joint.V12 * ∂g∂ʳvela(joint, body1.state, body2.state, Δt)
     else
         return ∂g∂ʳvela(joint)
     end
 end
-@inline function ∂g∂ʳvelb(joint::Rotational2, body1::Body, body2::Body, Δt)
+@inline function ∂g∂ʳvelb(joint::Joint2, body1::Body, body2::Body, Δt)
     if body2.id == joint.childid
         return joint.V12 * ∂g∂ʳvelb(joint, body1.state, body2.state, Δt)
     else
         return ∂g∂ʳvelb(joint)
     end
 end
-@inline function ∂g∂ʳvelb(joint::Rotational2, body1::Origin, body2::Body, Δt)
+@inline function ∂g∂ʳvelb(joint::Joint2, body1::Origin, body2::Body, Δt)
     if body2.id == joint.childid
         return joint.V12 * ∂g∂ʳvelb(joint, body2.state, Δt)
     else
@@ -102,4 +119,4 @@ end
     end
 end
 
-@inline reductionmat(joint::Rotational2) = joint.V12
+@inline reductionmat(joint::Joint2) = joint.V12
