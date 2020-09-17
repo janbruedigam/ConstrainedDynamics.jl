@@ -16,33 +16,6 @@ end
     @error("not defined for rot2")
 end
 
-@inline function setForce!(joint::Joint1, body1::Body, body2::Body, Fτ::SVector{2})
-    setForce!(joint, body1.state, body2.state, joint.V12' * Fτ)
-    return
-end
-@inline function setForce!(joint::Joint1, body1::Origin, body2::Body, Fτ::SVector{2})
-    setForce!(joint, body2.state, joint.V12' * Fτ)
-    return
-end
-
-@inline function ∂Fτ∂ua(joint::Joint1, body1::Body)
-    return ∂Fτ∂ua(joint, body1.state) * joint.V12'
-end
-@inline function ∂Fτ∂ub(joint::Joint1, body1::Body, body2::Body)
-    if body2.id == joint.childid
-        return ∂Fτ∂ub(joint, body1.state, body2.state) * joint.V12'
-    else
-        return ∂Fτ∂ub(joint)
-    end
-end
-@inline function ∂Fτ∂ub(joint::Joint1, body1::Origin, body2::Body)
-    if body2.id == joint.childid
-        return return ∂Fτ∂ub(joint, body2.state) * joint.V12'
-    else
-        return ∂Fτ∂ub(joint)
-    end
-end
-
 @inline function minimalCoordinates(joint::Translational1, body1::Body, body2::Body)
     statea = body1.state
     stateb = body2.state
@@ -66,75 +39,5 @@ end
     return joint.V12 * rotation_vector(q)
 end
 
-@inline g(joint::Joint1, body1::Body, body2::Body, Δt) = joint.V3 * g(joint, body1.state, body2.state, Δt)
-@inline g(joint::Joint1, body1::Origin, body2::Body, Δt) = joint.V3 * g(joint, body2.state, Δt)
-@inline g(joint::Joint1, body1::Body, body2::Body) = joint.V3 * g(joint, body1.state, body2.state)
-@inline g(joint::Joint1, body1::Origin, body2::Body) = joint.V3 * g(joint, body2.state)
-
-@inline function ∂g∂ʳposa(joint::Joint1, body1::Body, body2::Body)
-    if body2.id == joint.childid
-        return joint.V3 * ∂g∂ʳposa(joint, body1.state, body2.state)
-    else
-        return ∂g∂ʳposa(joint)
-    end
-end
-@inline function ∂g∂ʳposb(joint::Joint1, body1::Body, body2::Body)
-    if body2.id == joint.childid
-        return joint.V3 * ∂g∂ʳposb(joint, body1.state, body2.state)
-    else
-        return ∂g∂ʳposb(joint)
-    end
-end
-@inline function ∂g∂ʳposb(joint::Joint1, body1::Origin, body2::Body)
-    if body2.id == joint.childid
-        return joint.V3 * ∂g∂ʳposb(joint, body2.state)
-    else
-        return ∂g∂ʳposb(joint)
-    end
-end
-
-@inline function ∂g∂posac(joint::Joint1, body1::Body, body2::Body)
-    if body2.id == joint.childid
-        return joint.V3 * ∂g∂posac(joint, body1.state, body2.state)
-    else
-        return ∂g∂posac(joint)
-    end
-end
-@inline function ∂g∂posbc(joint::Joint1, body1::Body, body2::Body)
-    if body2.id == joint.childid
-        return joint.V3 * ∂g∂posbc(joint, body1.state, body2.state)
-    else
-        return ∂g∂posbc(joint)
-    end
-end
-@inline function ∂g∂posbc(joint::Joint1, body1::Origin, body2::Body)
-    if body2.id == joint.childid
-        return joint.V3 * ∂g∂posbc(joint, body2.state)
-    else
-        return ∂g∂posbc(joint)
-    end
-end
-
-@inline function ∂g∂ʳvela(joint::Joint1, body1::Body, body2::Body, Δt)
-    if body2.id == joint.childid
-        return joint.V3 * ∂g∂ʳvela(joint, body1.state, body2.state, Δt)
-    else
-        return ∂g∂ʳvela(joint)
-    end
-end
-@inline function ∂g∂ʳvelb(joint::Joint1, body1::Body, body2::Body, Δt)
-    if body2.id == joint.childid
-        return joint.V3 * ∂g∂ʳvelb(joint, body1.state, body2.state, Δt)
-    else
-        return ∂g∂ʳvelb(joint)
-    end
-end
-@inline function ∂g∂ʳvelb(joint::Joint1, body1::Origin, body2::Body, Δt)
-    if body2.id == joint.childid
-        return joint.V3 * ∂g∂ʳvelb(joint, body2.state, Δt)
-    else
-        return ∂g∂ʳvelb(joint)
-    end
-end
-
-@inline reductionmat(joint::Joint1) = joint.V3
+@inline constraintmat(joint::Joint1) = joint.V3
+@inline nullspacemat(joint::Joint1) = joint.V12

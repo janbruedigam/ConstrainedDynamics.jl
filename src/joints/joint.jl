@@ -11,7 +11,6 @@ getT(joint::Joint{T}) where T = T
 getN(joint::Joint{T,N}) where {T,N} = N
 
 @inline setForce!(joint::Joint) = return
-@inline setForce!(joint::Joint, body1::AbstractBody, body2::AbstractBody, Fτ::SVector{0}) = setForce!(joint)
 
 @inline minimalCoordinates(joint::Joint{T,N}) where {T,N} = szeros(T, 3 - N)
 @inline g(joint::Joint{T,N}) where {T,N} = szeros(T, N)
@@ -23,10 +22,108 @@ getN(joint::Joint{T,N}) where {T,N} = N
 
 @inline ∂g∂posac(joint::Joint{T,N}) where {T,N} = szeros(T, N, 7)
 @inline ∂g∂posbc(joint::Joint{T,N}) where {T,N} = szeros(T, N, 7)
-@inline ∂g∂velac(joint::Joint{T,N}) where {T,N} = szeros(T, N, 7)
-@inline ∂g∂velbc(joint::Joint{T,N}) where {T,N} = szeros(T, N, 7)
 
 @inline ∂Fτ∂ub(joint::Joint{T,N}) where {T,N} = szeros(T, 6, 3 - N)
+
+@inline setForce!(joint::Joint, body1::Body, body2::Body, Fτ::SVector{0}) = setForce!(joint) # Needed because of some StaticArrays type issue (zero is ambiguous)
+@inline setForce!(joint::Joint, body1::Origin, body2::Body, Fτ::SVector{0}) = setForce!(joint) # Needed because of some StaticArrays type issue (zero is ambiguous)
+@inline function setForce!(joint::Joint, body1::Body, body2::Body, Fτ::SVector)
+    setForce!(joint, body1.state, body2.state, nullspacemat(joint)' * Fτ)
+    return
+end
+@inline function setForce!(joint::Joint, body1::Origin, body2::Body, Fτ::SVector)
+    setForce!(joint, body2.state, nullspacemat(joint)' * Fτ)
+    return
+end
+
+@inline g(joint::Joint, body1::Body, body2::Body, Δt) = constraintmat(joint) * g(joint, body1.state, body2.state, Δt)
+@inline g(joint::Joint, body1::Origin, body2::Body, Δt) = constraintmat(joint) * g(joint, body2.state, Δt)
+@inline g(joint::Joint, body1::Body, body2::Body) = constraintmat(joint) * g(joint, body1.state, body2.state)
+@inline g(joint::Joint, body1::Origin, body2::Body) = constraintmat(joint) * g(joint, body2.state)
+
+@inline function ∂g∂ʳposa(joint::Joint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return constraintmat(joint) * ∂g∂ʳposa(joint, body1.state, body2.state)
+    else
+        return ∂g∂ʳposa(joint)
+    end
+end
+@inline function ∂g∂ʳposb(joint::Joint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return constraintmat(joint) * ∂g∂ʳposb(joint, body1.state, body2.state)
+    else
+        return ∂g∂ʳposb(joint)
+    end
+end
+@inline function ∂g∂ʳposb(joint::Joint, body1::Origin, body2::Body)
+    if body2.id == joint.childid
+        return constraintmat(joint) * ∂g∂ʳposb(joint, body2.state)
+    else
+        return ∂g∂ʳposb(joint)
+    end
+end
+
+@inline function ∂g∂posac(joint::Joint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return constraintmat(joint) * ∂g∂posac(joint, body1.state, body2.state)
+    else
+        return ∂g∂posac(joint)
+    end
+end
+@inline function ∂g∂posbc(joint::Joint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return constraintmat(joint) * ∂g∂posbc(joint, body1.state, body2.state)
+    else
+        return ∂g∂posbc(joint)
+    end
+end
+@inline function ∂g∂posbc(joint::Joint, body1::Origin, body2::Body)
+    if body2.id == joint.childid
+        return constraintmat(joint) * ∂g∂posbc(joint, body2.state)
+    else
+        return ∂g∂posbc(joint)
+    end
+end
+
+@inline function ∂g∂ʳvela(joint::Joint, body1::Body, body2::Body, Δt)
+    if body2.id == joint.childid
+        return constraintmat(joint) * ∂g∂ʳvela(joint, body1.state, body2.state, Δt)
+    else
+        return ∂g∂ʳvela(joint)
+    end
+end
+@inline function ∂g∂ʳvelb(joint::Joint, body1::Body, body2::Body, Δt)
+    if body2.id == joint.childid
+        return constraintmat(joint) * ∂g∂ʳvelb(joint, body1.state, body2.state, Δt)
+    else
+        return ∂g∂ʳvelb(joint)
+    end
+end
+@inline function ∂g∂ʳvelb(joint::Joint, body1::Origin, body2::Body, Δt)
+    if body2.id == joint.childid
+        return constraintmat(joint) * ∂g∂ʳvelb(joint, body2.state, Δt)
+    else
+        return ∂g∂ʳvelb(joint)
+    end
+end
+
+@inline function ∂Fτ∂ua(joint::Joint, body1::Body)
+    return ∂Fτ∂ua(joint, body1.state) * nullspacemat(joint)'
+end
+@inline function ∂Fτ∂ub(joint::Joint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return ∂Fτ∂ub(joint, body1.state, body2.state) * nullspacemat(joint)'
+    else
+        return ∂Fτ∂ub(joint)
+    end
+end
+@inline function ∂Fτ∂ub(joint::Joint, body1::Origin, body2::Body)
+    if body2.id == joint.childid
+        return return ∂Fτ∂ub(joint, body2.state) * nullspacemat(joint)'
+    else
+        return ∂Fτ∂ub(joint)
+    end
+end
 
 
 # Derivatives accounting for quaternion specialness

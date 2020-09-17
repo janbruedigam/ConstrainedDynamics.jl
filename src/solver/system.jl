@@ -262,7 +262,7 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cGr =  ∂g∂ʳposb(eqc.constraints[i], posargssol(pstate)..., posargssol(cstate)...) # x2
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
-                mat = reductionmat(eqc.constraints[i])
+                mat = constraintmat(eqc.constraints[i])
                 pGlx = mat * pXl
                 pGlq = mat * pQl
                 pGrx = mat * pXr
@@ -310,7 +310,7 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cGr =  ∂g∂ʳposb(eqc.constraints[i], posargssol(cstate)...) # x2
                 cXr, cQr = cGr[:,1:3], cGr[:,4:6]
 
-                mat = reductionmat(eqc.constraints[i])
+                mat = constraintmat(eqc.constraints[i])
                 cGlx = mat * cXl
                 cGlq = mat * cQl
                 cGrx = mat * cXr
@@ -368,7 +368,7 @@ function linearconstraintmapping(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 Aba = zeros(T,13,13)
                 Abb = zeros(T,13,13)                
 
-                kronproduct = -kron(λ'*reductionmat(constraint),E)*K
+                kronproduct = -kron(λ'*constraintmat(constraint),E)*K
 
                 XX, XQ, QX, QQ = ∂2g∂posaa(constraint, state1.xsol[2], state1.qsol[2], state2.xsol[2], state2.qsol[2])
                 Aaa[4:6,1:3] = kronproduct*XX
@@ -417,7 +417,7 @@ function linearconstraintmapping(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 
                 Abb = zeros(T,13,13)
 
-                kronproduct = -kron(λ'*reductionmat(constraint),E)*K
+                kronproduct = -kron(λ'*constraintmat(constraint),E)*K
 
                 XX, XQ, QX, QQ = ∂2g∂posbb(constraint, state2.xsol[2], state2.qsol[2])
                 Abb[4:6,1:3] = kronproduct*XX
