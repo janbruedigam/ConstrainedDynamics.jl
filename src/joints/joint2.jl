@@ -121,11 +121,11 @@ end
     end
 end
 
-@inline function ∂g∂velac(joint::Joint2, body1::Body, body2::Body, Δt)
+@inline function ∂g∂ʳvela(joint::Joint2, body1::Body, body2::Body, Δt)
     if body2.id == joint.childid
-        return joint.V12 * ∂g∂velac(joint, body1.state, body2.state, Δt)
+        return joint.V12 * ∂g∂ʳvela(joint, body1.state, body2.state, Δt)
     else
-        return ∂g∂velac(joint)
+        return ∂g∂ʳvela(joint)
     end
 end
 @inline function ∂g∂ʳvelb(joint::Joint2, body1::Body, body2::Body, Δt)
