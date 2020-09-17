@@ -21,6 +21,11 @@ getN(joint::Joint{T,N}) where {T,N} = N
 @inline ∂g∂ʳvela(joint::Joint{T,N}) where {T,N} = szeros(T, N, 6)
 @inline ∂g∂ʳvelb(joint::Joint{T,N}) where {T,N} = szeros(T, N, 6)
 
+@inline ∂g∂posac(joint::Joint{T,N}) where {T,N} = szeros(T, N, 7)
+@inline ∂g∂posbc(joint::Joint{T,N}) where {T,N} = szeros(T, N, 7)
+@inline ∂g∂velac(joint::Joint{T,N}) where {T,N} = szeros(T, N, 7)
+@inline ∂g∂velbc(joint::Joint{T,N}) where {T,N} = szeros(T, N, 7)
+
 @inline ∂Fτ∂ub(joint::Joint{T,N}) where {T,N} = szeros(T, 6, 3 - N)
 
 
@@ -80,6 +85,8 @@ end
 # Calls for dynamics
 g(joint::Joint, statea::State, stateb::State, Δt) = g(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)...)
 g(joint::Joint, stateb::State, Δt) = g(joint, posargsnext(stateb, Δt)...)
+g(joint::Joint, statea::State, stateb::State) = g(joint, posargsc(statea)..., posargsc(stateb)...)
+g(joint::Joint, stateb::State) = g(joint, posargsc(stateb)...)
 
 ∂g∂ʳposa(joint::Joint, statea::State, stateb::State) = ∂g∂ʳposa(joint, posargsk(statea)..., posargsk(stateb)...)
 ∂g∂ʳposb(joint::Joint, statea::State, stateb::State) = ∂g∂ʳposb(joint, posargsk(statea)..., posargsk(stateb)...)
@@ -88,3 +95,8 @@ g(joint::Joint, stateb::State, Δt) = g(joint, posargsnext(stateb, Δt)...)
 ∂g∂ʳvela(joint::Joint, statea::State, stateb::State, Δt) = ∂g∂ʳvela(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)..., fullargssol(statea)..., Δt)
 ∂g∂ʳvelb(joint::Joint, statea::State, stateb::State, Δt) = ∂g∂ʳvelb(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)..., fullargssol(stateb)..., Δt)
 ∂g∂ʳvelb(joint::Joint, stateb::State, Δt) = ∂g∂ʳvelb(joint, posargsnext(stateb, Δt)..., fullargssol(stateb)..., Δt)
+
+# Calls for constraints solver
+∂g∂posac(joint::Joint, statea::State, stateb::State) = hcat(∂g∂posa(joint, posargsc(statea)..., posargsc(stateb)...)...)
+∂g∂posbc(joint::Joint, statea::State, stateb::State) = hcat(∂g∂posb(joint, posargsc(statea)..., posargsc(stateb)...)...)
+∂g∂posbc(joint::Joint, stateb::State) = hcat(∂g∂posb(joint, posargsc(stateb)...)...)

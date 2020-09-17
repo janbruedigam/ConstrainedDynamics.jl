@@ -127,6 +127,10 @@ end
     vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[$i]), mechanism.Δt)) for i = 1:Nc]
     return :(svcat($(vec...)))
 end
+@generated function gc(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
+    vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
+    return :(svcat($(vec...)))
+end
 
 @inline function ∂g∂ʳpos(mechanism, eqc::EqualityConstraint, id::Integer)
     id == eqc.parentid ? (return ∂g∂ʳposa(mechanism, eqc, id)) : (return ∂g∂ʳposb(mechanism, eqc, id))
@@ -161,4 +165,19 @@ end
 @generated function ∂Fτ∂ub(mechanism, eqc::EqualityConstraint{T,N,Nc}, id) where {T,N,Nc}
     vec = [:(∂Fτ∂ub(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
     return :(hcat($(vec...)))
+end
+
+# Derivatives NOT accounting for quaternion specialness
+
+function ∂g∂posc(mechanism, eqc::EqualityConstraint, id::Integer)
+    id == eqc.parentid ? (return ∂g∂posac(mechanism, eqc, id)) : (return ∂g∂posbc(mechanism, eqc, id))
+end
+
+function ∂g∂posac(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
+    vec = [hcat(∂g∂posac(eqc.constraints[i], getbody(mechanism, id), getbody(mechanism, eqc.childids[i]))) for i = 1:Nc]
+    return vcat(vec...)
+end
+function ∂g∂posbc(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
+    vec = [hcat(∂g∂posbc(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
+    return vcat(vec...)
 end

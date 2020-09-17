@@ -68,6 +68,8 @@ end
 
 @inline g(joint::Joint1, body1::Body, body2::Body, Δt) = joint.V3 * g(joint, body1.state, body2.state, Δt)
 @inline g(joint::Joint1, body1::Origin, body2::Body, Δt) = joint.V3 * g(joint, body2.state, Δt)
+@inline g(joint::Joint1, body1::Body, body2::Body) = joint.V3 * g(joint, body1.state, body2.state)
+@inline g(joint::Joint1, body1::Origin, body2::Body) = joint.V3 * g(joint, body2.state)
 
 @inline function ∂g∂ʳposa(joint::Joint1, body1::Body, body2::Body)
     if body2.id == joint.childid
@@ -88,6 +90,28 @@ end
         return joint.V3 * ∂g∂ʳposb(joint, body2.state)
     else
         return ∂g∂ʳposb(joint)
+    end
+end
+
+@inline function ∂g∂posac(joint::Joint1, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return joint.V3 * ∂g∂posac(joint, body1.state, body2.state)
+    else
+        return ∂g∂posac(joint)
+    end
+end
+@inline function ∂g∂posbc(joint::Joint1, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return joint.V3 * ∂g∂posbc(joint, body1.state, body2.state)
+    else
+        return ∂g∂posbc(joint)
+    end
+end
+@inline function ∂g∂posbc(joint::Joint1, body1::Origin, body2::Body)
+    if body2.id == joint.childid
+        return joint.V3 * ∂g∂posbc(joint, body2.state)
+    else
+        return ∂g∂posbc(joint)
     end
 end
 

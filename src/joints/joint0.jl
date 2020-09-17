@@ -78,10 +78,16 @@ end
 end
 
 @inline g(joint::Joint0, body1::AbstractBody, body2::AbstractBody, Δt) = g(joint)
+@inline gc(joint::Joint0, body1::AbstractBody, body2::AbstractBody, Δt) = g(joint)
 
 @inline ∂g∂ʳposa(joint::Joint0, body1::AbstractBody, body2::AbstractBody) = ∂g∂ʳposa(joint)
 @inline ∂g∂ʳposb(joint::Joint0, body1::AbstractBody, body2::AbstractBody) = ∂g∂ʳposb(joint)
 @inline ∂g∂ʳvela(joint::Joint0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂ʳvela(joint)
 @inline ∂g∂ʳvelb(joint::Joint0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂ʳvelb(joint)
+
+@inline ∂g∂posac(joint::Joint0, body1::AbstractBody, body2::AbstractBody) = ∂g∂posac(joint)
+@inline ∂g∂posbc(joint::Joint0, body1::AbstractBody, body2::AbstractBody) = ∂g∂posbc(joint)
+@inline ∂g∂velac(joint::Joint0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂velac(joint)
+@inline ∂g∂velbc(joint::Joint0, body1::AbstractBody, body2::AbstractBody, Δt) = ∂g∂velbc(joint)
 
 @inline reductionmat(joint::Joint0{T}) where T = szeros(T,0,3)
