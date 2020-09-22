@@ -2,6 +2,9 @@ using ConstrainedDynamics
 using ConstrainedDynamicsVis
 
 
+include("C:\\Users\\zeine\\OneDrive\\Bureau\\ConstrainedDynamics.jl\\src\\solver\\Solve_test.jl")
+
+
 # Parameters
 joint_axis = [1.0;0.0;0.0]
 
@@ -28,7 +31,12 @@ shapes = [box]
 
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(origin,link1,p2 = p2,Δq = q1)
+setPosition!(origin,link1,p2=[5;6;7],Δq = q1)
 
+println(link1.state.xc,link1.state.qc)
+
+solve_Eqc(mech,1e-10,10) 
+
+println(link1.state.xc,link1.state.qc)
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)
