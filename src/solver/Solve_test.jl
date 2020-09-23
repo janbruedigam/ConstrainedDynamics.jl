@@ -1,6 +1,3 @@
-using ConstrainedDynamics
-using ConstrainedDynamics: EqualityConstraint, params,Mechanism, offsetrange,gc,∂g∂posc
-using LinearAlgebra
 
 
 function Liniensuche(xold,qold,sx,sq,j)
@@ -8,7 +5,7 @@ function Liniensuche(xold,qold,sx,sq,j)
     sqtemp = sq/(2^(j-1)) 
     sxtemp = sx/(2^(j-1))
     w = sqrt(1-norm(sqtemp)^2) 
-    sqexpanded = [w;sq]
+    sqexpanded = [w;sqtemp]
     qnew=Lmat(qold)*sqexpanded 
     xnew=xold+sxtemp 
     return xnew,qnew    
@@ -41,22 +38,19 @@ end
         end 
         return G
     end   
-    
-    function pushDerivative(mech,eqc,id,j,D)
-        if (id==eqc.parentid)||(id in eqc.childids)
-            d=∂g∂posc(mech, eqc, id)
-            jd=size(d,1)
-            D[j:j+jd-1,offsetrange(id,7)]=d
-            j=j+jd
-        end
-    end
+
     # Derivatives
     function derivative(mech::Mechanism{T,N,Nb,Ne,Ni},Nc) where {T,N,Nb,Ne,Ni}
         D=zeros(Nc,Nb*7)
         j=1
         for eqc in mech.eqconstraints
             for bd in mech.bodies
-             pushDerivative(mech,eqc,bd.id,j,D)
+                if (bd.id==eqc.parentid)||(bd.id in eqc.childids)
+                    d=∂g∂posc(mech, eqc, bd.id)
+                    jd=size(d,1)
+                    D[j:j+jd-1,offsetrange(bd.id,7)]=d
+                    j=j+jd
+                end
             end
         end
             return D
@@ -74,6 +68,7 @@ end
             for bd in mech.bodies  
                 Xold[offsetrange(bd.id,3)]=bd.state.xc
                 qold[offsetrange(bd.id,4)]=params(bd.state.qc)
+                println("[xold,qold] ",[Xold;qold])
             end
 
             if (norm(g(mech)) <= epsilon)
@@ -87,10 +82,13 @@ end
                 Mi=[Matrix{Float64}(I, 3, 3) zeros(3,4); zeros(3,3) VLᵀmat(qold[offsetrange(bd.id,4)])]
                 M[offsetrange(bd.id,6),offsetrange(bd.id,7)]=Mi
             end 
+            #println("M :",M)
             G=g(mech)
             n=size(G,1)
             invderiv=pinv(derivative(mech,n))
+            #println("invderiv :",invderiv)
             Δs=-M*invderiv*G 
+            #println("Δs",Δs)
             for j=1:Nmax
                 normold=norm(g(mech))
                 for bd in mech.bodies 
@@ -98,6 +96,7 @@ end
                     sqi=Δs[6*bd.id-2:6*bd.id]
                     xnewi,qnewi = Liniensuche(Xold[offsetrange(bd.id,3)],qold[offsetrange(bd.id,4)],sxi,sqi,j)
                     #update (bd.state.xc,bd.state.qc)
+                    println("[xnew,qnew] ",[xnewi;qnewi])
                     setPosition!(bd,x=xnewi,q=UnitQuaternion(qnewi...,false))
                 end
 
@@ -108,7 +107,7 @@ end
 
         
         end
-        
+        println("[xfinal,qfinal] ",[Xold;qold])
         return conv
     end
 

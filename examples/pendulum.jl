@@ -1,8 +1,8 @@
 using ConstrainedDynamics
 using ConstrainedDynamicsVis
+using ConstrainedDynamics:g
 
 
-include("C:\\Users\\zeine\\OneDrive\\Bureau\\ConstrainedDynamics.jl\\src\\solver\\Solve_test.jl")
 
 
 # Parameters
@@ -31,12 +31,9 @@ shapes = [box]
 
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(origin,link1,p2=[5;6;7],Δq = q1)
-
-println(link1.state.xc,link1.state.qc)
+setPosition!(origin,link1,p2=[0;0;0],Δq = q1)
 
 solve_Eqc(mech,1e-10,10) 
 
-println(link1.state.xc,link1.state.qc)
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)
