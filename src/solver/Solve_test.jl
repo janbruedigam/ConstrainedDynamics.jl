@@ -4,14 +4,11 @@ function Liniensuche(xold,qold,sx,sq,j)
     
     sqtemp = sq/(2^(j-1)) 
     sxtemp = sx/(2^(j-1))
-    if (norm(sqtemp)^2>1)
-        return false,xold,qold
-    end
     w = sqrt(1-norm(sqtemp)^2) 
     sqexpanded = [w;sqtemp]
     qnew=Lmat(UnitQuaternion(qold...,false))*sqexpanded 
     xnew=xold+sxtemp 
-    return true,xnew,qnew    
+    return xnew,qnew    
 
 end
 
@@ -31,15 +28,16 @@ end
     function derivative(mech::Mechanism{T,N,Nb,Ne,Ni},Nc) where {T,N,Nb,Ne,Ni}
         D=zeros(Nc,Nb*7)
         j=1
+        jd=0
         for eqc in mech.eqconstraints
             for bd in mech.bodies
                 if (bd.id==eqc.parentid)||(bd.id in eqc.childids)
                     d=∂g∂posc(mech, eqc, bd.id)
                     jd=size(d,1)
                     D[j:j+jd-1,offsetrange(bd.id,7)]=d
-                    j=j+jd
                 end
             end
+            j=j+jd
         end
             return D
     end
@@ -54,10 +52,12 @@ end
 
         for k=1:Nmax 
             for bd in mech.bodies  
+
                 Xold[offsetrange(bd.id,3)]=bd.state.xc
                 qold[offsetrange(bd.id,4)]=params(bd.state.qc)
+
             end
-            println("[xold,qold] ",[Xold;qold])
+            #println("[xold,qold] ",[Xold;qold])
 
             if (norm(g(mech)) <= epsilon)
                 conv=true;
@@ -67,33 +67,32 @@ end
             #step calculation 
             M=zeros(6*Nb,7*Nb)
             for bd in mech.bodies 
+
                 Mi=[Matrix{Float64}(I, 3, 3) zeros(3,4); zeros(3,3) VLᵀmat(UnitQuaternion(qold[offsetrange(bd.id,4)]...,false))]
                 M[offsetrange(bd.id,6),offsetrange(bd.id,7)]=Mi
+
             end 
-            #println("M :",M)
+    
             G=g(mech)
             n=size(G,1)
             invderiv=pinv(derivative(mech,n))
-            #println("invderiv :",invderiv)
             Δs=-M*invderiv*G 
-            #println("Δs",Δs)
-            for k=1:Nb
-                if norm(Δs[6*k-2:6*k])>1
-                    Δs[6*k-2:6*k] = Δs[6*k-2:6*k]/norm(Δs[6*k-2:6*k])
+            for l=1:Nb
+                if norm(Δs[6*l-2:6*l])>1
+                    Δs[6*l-2:6*l] = Δs[6*l-2:6*l]/norm(Δs[6*l-2:6*l])
                 end
             end
 
             for j=1:Nmax
                 normold=norm(g(mech))
                 for bd in mech.bodies 
+
                     sxi=Δs[6*bd.id-5:6*bd.id-3]
                     sqi=Δs[6*bd.id-2:6*bd.id]
-                    test,xnewi,qnewi = Liniensuche(Xold[offsetrange(bd.id,3)],qold[offsetrange(bd.id,4)],sxi,sqi,j)
-                    if !test 
-                        break 
-                    end
-                    println("[xnew,qnew] ",[xnewi;qnewi])
+                    xnewi,qnewi = Liniensuche(Xold[offsetrange(bd.id,3)],qold[offsetrange(bd.id,4)],sxi,sqi,j)
+                    #println("[xnew,qnew] ",[xnewi;qnewi])
                     setPosition!(bd,x=xnewi,q=UnitQuaternion(qnewi...,false))
+
                 end
 
                 if norm(g(mech)) < normold 
@@ -103,8 +102,8 @@ end
 
         
         end
+
         println("[xfinal,qfinal] ",[Xold;qold])
-        
         return conv
         
     end

@@ -38,7 +38,7 @@ mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(origin,link1,p2 = vert11,Δq = q1)
 setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = inv(q1)*UnitQuaternion(RotY(0.2)))
 
-solve_Eqc(mech,1e-10,10) 
+solve_Eqc(mech,1e-10,30) 
 
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)

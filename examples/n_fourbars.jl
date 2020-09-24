@@ -21,7 +21,7 @@ q1 = UnitQuaternion(RotX(phi1))
 qoff1 = UnitQuaternion(RotX(offset1))
 qoff2 = UnitQuaternion(RotX(offset2))
 
-N = 10
+N = 1
 
 # Links
 origin = Origin{Float64}()
@@ -70,6 +70,6 @@ if N > 1
     initfourbar!(mech, links[(N - 1) * 4:N * 4], [[vert12];verts], inv(qoff1) * qoff2, q1)
 end
 
-
+solve_Eqc(mech,1e-10,30) 
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)
