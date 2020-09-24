@@ -89,6 +89,12 @@ end
             #println("invderiv :",invderiv)
             Δs=-M*invderiv*G 
             #println("Δs",Δs)
+            for k=1:Nb
+                if norm(Δs[6*k-2:6*k])>1
+                    Δs[6*k-2:6*k] = Δs[6*k-2:6*k]/norm(Δs[6*k-2:6*k])
+                end
+            end
+
             for j=1:Nmax
                 normold=norm(g(mech))
                 for bd in mech.bodies 
