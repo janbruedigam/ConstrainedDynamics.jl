@@ -4,30 +4,15 @@ function Liniensuche(xold,qold,sx,sq,j)
     
     sqtemp = sq/(2^(j-1)) 
     sxtemp = sx/(2^(j-1))
-    while (norm(sqtemp)^2>1)
-        sqtemp=sqtemp/2
+    if (norm(sqtemp)^2>1)
+        return false,xold,qold
     end
     w = sqrt(1-norm(sqtemp)^2) 
     sqexpanded = [w;sqtemp]
-    qnew=Lmat(qold)*sqexpanded 
+    qnew=Lmat(UnitQuaternion(qold...,false))*sqexpanded 
     xnew=xold+sxtemp 
-    return xnew,qnew    
+    return true,xnew,qnew    
 
-end
-function VLᵀmat(q)
-    [
-        -q[2]  q[1]  q[4] -q[3];
-        -q[3] -q[4]  q[1]  q[2];
-        -q[4]  q[3] -q[2]  q[1];
-    ]
-end
-function Lmat(q)
-    [
-        q[1]  -q[2]  -q[3] -q[4];
-        q[2]   q[1]  -q[4]  q[3];
-        q[3]   q[4]   q[1] -q[2];
-        q[4]  -q[3]   q[2]  q[1]
-    ]
 end
 
     # Constraint functions
@@ -82,7 +67,7 @@ end
             #step calculation 
             M=zeros(6*Nb,7*Nb)
             for bd in mech.bodies 
-                Mi=[Matrix{Float64}(I, 3, 3) zeros(3,4); zeros(3,3) VLᵀmat(qold[offsetrange(bd.id,4)])]
+                Mi=[Matrix{Float64}(I, 3, 3) zeros(3,4); zeros(3,3) VLᵀmat(UnitQuaternion(qold[offsetrange(bd.id,4)]...,false))]
                 M[offsetrange(bd.id,6),offsetrange(bd.id,7)]=Mi
             end 
             #println("M :",M)
@@ -97,8 +82,10 @@ end
                 for bd in mech.bodies 
                     sxi=Δs[6*bd.id-5:6*bd.id-3]
                     sqi=Δs[6*bd.id-2:6*bd.id]
-                    xnewi,qnewi = Liniensuche(Xold[offsetrange(bd.id,3)],qold[offsetrange(bd.id,4)],sxi,sqi,j)
-                    #update (bd.state.xc,bd.state.qc)
+                    test,xnewi,qnewi = Liniensuche(Xold[offsetrange(bd.id,3)],qold[offsetrange(bd.id,4)],sxi,sqi,j)
+                    if !test 
+                        break 
+                    end
                     println("[xnew,qnew] ",[xnewi;qnewi])
                     setPosition!(bd,x=xnewi,q=UnitQuaternion(qnewi...,false))
                 end
@@ -111,7 +98,7 @@ end
         
         end
         println("[xfinal,qfinal] ",[Xold;qold])
-        println("End")
+        
         return conv
         
     end
