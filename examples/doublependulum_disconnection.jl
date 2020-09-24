@@ -37,5 +37,7 @@ function control!(mechanism,k)
     end
 end
 
+#solve_Eqc(mech,1e-10,10) 
+
 storage = simulate!(mech, 10., control!,record = true)
 visualize(mech, storage, shapes)

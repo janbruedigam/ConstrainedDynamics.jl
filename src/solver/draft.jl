@@ -3,6 +3,17 @@ using ConstrainedDynamics: Translational, g, params,Rotational,Joint,Translation
 using LinearAlgebra
 
 
+function Liniensuche(xold,qold,sx,sq,j)
+    
+    sqtemp = sq/(2^(j-1)) 
+    sxtemp = sx/(2^(j-1))
+    w = sqrt(1-norm(sqtemp)^2) 
+    sqexpanded = [w;sq]
+    qnew=Lmat(qold)*sqexpanded 
+    xnew=xold+sxtemp 
+    return xnew,qnew    
+
+end
 function VLᵀmat(q)
     [
         -q[2]  q[1]  q[4] -q[3];
@@ -104,11 +115,8 @@ function newton(f,link,joint,epsilon,Nmax)
         for j=1:10
             sqtemp = sq/(2^(j-1)) 
             sxtemp = sx/(2^(j-1))
-            while (norm(sqtemp)^2>1)
-                sqtemp=sqtemp/2
-            end
             w = sqrt(1-norm(sqtemp)^2) 
-            sqexpanded = [w;sqtemp]
+            sqexpanded = [w;sq]
             qnew=Lmat(qold)*sqexpanded 
             xnew=xold+sxtemp 
             if norm(f([xnew;qnew],joint)) <= norm(f([xold;qold],joint)) 
@@ -121,7 +129,7 @@ function newton(f,link,joint,epsilon,Nmax)
         qold = qnew
 
     end
-    println("xfinal,qfinal",[xnew;qnew])
+    println("xnew,qnew",[xnew;qnew])
     return conv,[xnew;qnew]
 end
 
@@ -137,7 +145,7 @@ link2 = Body(box)
 t,_,_, =Translational3{Float64}(origin, link1, p2 =[0.0;0.0;length1 / 2])
 r,_,_, =Rotational2{Float64}(origin, link1, axis = [1.0;0.0;0.0])
 
-setPosition!(origin,link1,p2 = [5;6;7],Δq = UnitQuaternion(RotX(π/2)))
+setPosition!(origin,link1,p2 = [0;0;length1 / 2],Δq = UnitQuaternion(RotX(π/2)))
 (conv,x)= newton(my_gTR,link1,[t r] ,1e-10,10) 
 
 

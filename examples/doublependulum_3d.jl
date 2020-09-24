@@ -1,6 +1,6 @@
 using ConstrainedDynamics
 using ConstrainedDynamicsVis
-include("C:\\Users\\zeine\\OneDrive\\Bureau\\ConstrainedDynamics.jl\\src\\solver\\Solve_test.jl")
+
 
 # Parameters
 ex = [1.;0.;0.]
@@ -35,8 +35,8 @@ shapes = [b1,b2]
 
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(origin,link1,p2 = [0;0;0],Δq = q1)
-setPosition!(link1,link2,p1 = [1;2;3],p2 = vert21,Δq = inv(q1)*UnitQuaternion(RotY(0.2)))
+setPosition!(origin,link1,p2 = vert11,Δq = q1)
+setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = inv(q1)*UnitQuaternion(RotY(0.2)))
 
 solve_Eqc(mech,1e-10,10) 
 

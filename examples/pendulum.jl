@@ -31,7 +31,7 @@ shapes = [box]
 
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(origin,link1,p2=[0;0;0],Δq = q1)
+setPosition!(origin,link1,p2=[5;6;7],Δq = q1)
 
 solve_Eqc(mech,1e-10,10) 
 

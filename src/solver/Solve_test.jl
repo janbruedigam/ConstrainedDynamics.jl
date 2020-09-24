@@ -1,9 +1,12 @@
-
+using ConstrainedDynamics:offsetrange 
 
 function Liniensuche(xold,qold,sx,sq,j)
     
     sqtemp = sq/(2^(j-1)) 
     sxtemp = sx/(2^(j-1))
+    while (norm(sqtemp)^2>1)
+        sqtemp=sqtemp/2
+    end
     w = sqrt(1-norm(sqtemp)^2) 
     sqexpanded = [w;sqtemp]
     qnew=Lmat(qold)*sqexpanded 
@@ -68,8 +71,8 @@ end
             for bd in mech.bodies  
                 Xold[offsetrange(bd.id,3)]=bd.state.xc
                 qold[offsetrange(bd.id,4)]=params(bd.state.qc)
-                println("[xold,qold] ",[Xold;qold])
             end
+            println("[xold,qold] ",[Xold;qold])
 
             if (norm(g(mech)) <= epsilon)
                 conv=true;
@@ -108,7 +111,9 @@ end
         
         end
         println("[xfinal,qfinal] ",[Xold;qold])
+        println("End")
         return conv
+        
     end
 
     
