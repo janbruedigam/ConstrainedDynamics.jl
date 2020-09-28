@@ -1,6 +1,7 @@
 abstract type Component{T} end
 abstract type AbstractBody{T} <: Component{T} end
 abstract type AbstractConstraint{T,N} <: Component{T} end
+abstract type AbstractJoint{T,N} end
 
 # TODO do id differently?
 CURRENTID = -1
