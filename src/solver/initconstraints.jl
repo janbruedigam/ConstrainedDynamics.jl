@@ -5,8 +5,8 @@ function Liniensuche(xold,qold,sx,sq,j)
     sqtemp = sq/(2^(j-1)) 
     sxtemp = sx/(2^(j-1))
     w = sqrt(1-norm(sqtemp)^2) 
-    sqexpanded = [w;sqtemp]
-    qnew=Lmat(UnitQuaternion(qold...,false))*sqexpanded 
+    sqexpanded = UnitQuaternion([w;sqtemp]...,false)
+    qnew=qold*sqexpanded 
     xnew=xold+sxtemp 
     return xnew,qnew    
 
@@ -61,68 +61,60 @@ function ∂g∂posc(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
 end
 
 
+function constraintstep!(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+    bodies = mechanism.bodies
 
-function initializeConstraints!(mech::Mechanism{T,N,Nb,Ne,Ni},epsilon,Nmax) where {T,N,Nb,Ne,Ni}
-    
-    Xold=zeros(3*Nb,1)
-    qold=zeros(4*Nb,1)
+    gval=gc(mechanism)
+    pinv∂g∂posc=pinv(∂g∂posc(mechanism))
+    stepvec = -pinv∂g∂posc*gval
+
+    for (i,body) in enumerate(mechanism.bodies)
+        body.state.vsol[1] = stepvec[offsetrange(i, 3, 7, 1)]
+
+        # Limit quaternion step to feasible length
+        range = offsetrange(i, 3, 7, 2)
+        Δstemp = VLᵀmat(bodies[i].state.qk[1]) * stepvec[first(range):(last(range)+1)]
+        if norm(Δstemp) > 1
+            Δstemp = Δstemp/norm(Δstemp)
+        end
+        body.state.ωsol[1] = Δstemp
+    end
+
+    return
+end
+
+function initializeConstraints!(mechanism::Mechanism{T,N,Nb,Ne}; ε = 1e-5, newtonIter = 100, lineIter = 10) where {T,N,Nb,Ne}
+    bodies = mechanism.bodies
     conv=false
 
-    for k=1:Nmax 
-        for bd in mech.bodies  
-
-            Xold[offsetrange(bd.id,3)]=bd.state.xc
-            qold[offsetrange(bd.id,4)]=params(bd.state.qc)
-
-        end
-        #println("[xold,qold] ",[Xold;qold])
-
-        if (norm(gc(mech)) <= epsilon)
-            conv=true;
-            break
+    for n = Base.OneTo(newtonIter)
+        for body in bodies  
+            body.state.xk[1] = body.state.xc
+            body.state.qk[1] = body.state.qc
         end
 
-        #step calculation 
-        M=zeros(6*Nb,7*Nb)
-        for bd in mech.bodies 
+        constraintstep!(mechanism) 
 
-            Mi=[Matrix{Float64}(I, 3, 3) zeros(3,4); zeros(3,3) VLᵀmat(UnitQuaternion(qold[offsetrange(bd.id,4)]...,false))]
-            M[offsetrange(bd.id,6),offsetrange(bd.id,7)]=Mi
-
-        end 
-
-        G=gc(mech)
-        invderiv=pinv(∂g∂posc(mech))
-        Δs=-M*invderiv*G 
-        for l=1:Nb
-            if norm(Δs[6*l-2:6*l])>1
-                Δs[6*l-2:6*l] = Δs[6*l-2:6*l]/norm(Δs[6*l-2:6*l])
-            end
-        end
-
-        for j=1:Nmax
-            normold=norm(gc(mech))
-            for bd in mech.bodies 
-
-                sxi=Δs[6*bd.id-5:6*bd.id-3]
-                sqi=Δs[6*bd.id-2:6*bd.id]
-                xnewi,qnewi = Liniensuche(Xold[offsetrange(bd.id,3)],qold[offsetrange(bd.id,4)],sxi,sqi,j)
-                #println("[xnew,qnew] ",[xnewi;qnewi])
-                setPosition!(bd,x=xnewi,q=UnitQuaternion(qnewi...,false))
-
+        normold = norm(gc(mechanism))
+        for j = Base.OneTo(newtonIter)
+            for body in bodies
+                body.state.xc = body.state.xk[1] + body.state.vsol[1]
+                w = sqrt(1-norm(body.state.ωsol[1])^2)
+                body.state.qc = body.state.qk[1] * UnitQuaternion(w,body.state.ωsol[1]...,false)
             end
 
-            if norm(gc(mech)) < normold 
+            if norm(gc(mechanism)) < normold 
                 break
             end
+        end
+
+        if norm(gc(mechanism)) < ε
+            return
         end
 
     
     end
 
-    println("[xfinal,qfinal] ",[Xold;qold])
-    return conv
-    
+    display("Constraint initialization did not converge!")
+    return 
 end
-
-    
