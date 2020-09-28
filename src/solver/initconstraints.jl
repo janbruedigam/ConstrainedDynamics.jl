@@ -1,6 +1,3 @@
-using ConstrainedDynamics:offsetrange 
-
-# Constraint functions
 function gc(mechanism::Mechanism{T}) where T
     rangeDict = Dict{Int64,UnitRange}()
     ind1 = 1

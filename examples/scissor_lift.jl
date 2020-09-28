@@ -1,6 +1,6 @@
 using ConstrainedDynamics
 using ConstrainedDynamicsVis
-include("C:\\Users\\zeine\\OneDrive\\Bureau\\ConstrainedDynamics.jl\\src\\solver\\Solve_test.jl")
+
 
 # Parameters
 ex = [1.;0.;0.]
@@ -35,14 +35,6 @@ shapes = [b1]
 mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(origin,link1,p1 = [0;-0.5 * sqrt(2);0],p2 = vert11,Δq = q1)
 setPosition!(origin,link2,p2 = vert11,Δq = q2)
-G=Float64[]
-for eqc in mech.eqconstraints
-   gi=gc(mech,eqc)
-   for z in gi
-        push!(G,z)
-   end
-end 
-#Gfinal=SVector(flatten(G, Float64)) 
-println(G)
+
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)
