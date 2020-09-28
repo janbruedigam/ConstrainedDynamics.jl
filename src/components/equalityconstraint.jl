@@ -11,9 +11,9 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     λsol::Vector{SVector{N,T}}
 
     function EqualityConstraint(data...; name::String="")
-        jointdata = Tuple{Joint,Int64,Int64}[]
+        jointdata = Tuple{AbstractJoint,Int64,Int64}[]
         for info in data
-            if info[1] isa Joint
+            if info[1] isa AbstractJoint
                 push!(jointdata, info)
             else
                 for subinfo in info
@@ -26,7 +26,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
 
         parentid = jointdata[1][2]
         childids = Int64[]
-        constraints = Joint{T}[]
+        constraints = AbstractJoint{T}[]
         inds = Vector{Int64}[]
         N = 0
         for set in jointdata

@@ -1,0 +1,1 @@
+abstract type GenericJoint{T,N} <: AbstractJoint{T,N} end

@@ -1,4 +1,4 @@
-abstract type Joint{T,N} end
+abstract type Joint{T,N} <: AbstractJoint{T,N} end
 
 Joint0 = Joint{T,0} where T
 Joint1 = Joint{T,1} where T
