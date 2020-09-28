@@ -42,6 +42,7 @@ export Box,
     setVelocity!,
     setForce!,
     simulate!,
+    initializeConstraints!,
 
     disassemble,
     getid,
@@ -103,6 +104,7 @@ include(joinpath("components", "simulate.jl"))
 include(joinpath("components", "initialize.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 include(joinpath("solver", "system.jl"))
+include(joinpath("solver", "initconstraints.jl"))
 
 include(joinpath("util", "urdf.jl"))
 

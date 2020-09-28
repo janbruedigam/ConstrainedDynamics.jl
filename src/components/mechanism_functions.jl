@@ -72,8 +72,8 @@ end
     return dot(f, f)
 end
 
-@inline function normf(mechanism::Mechanism, c::EqualityConstraint)
-    f = g(mechanism, c)
+@inline function normf(mechanism::Mechanism, eqc::EqualityConstraint)
+    f = g(mechanism, eqc)
     return dot(f, f)
 end
 
