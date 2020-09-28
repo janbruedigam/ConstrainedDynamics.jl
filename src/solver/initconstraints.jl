@@ -1,17 +1,5 @@
 using ConstrainedDynamics:offsetrange 
 
-function Liniensuche(xold,qold,sx,sq,j)
-    
-    sqtemp = sq/(2^(j-1)) 
-    sxtemp = sx/(2^(j-1))
-    w = sqrt(1-norm(sqtemp)^2) 
-    sqexpanded = UnitQuaternion([w;sqtemp]...,false)
-    qnew=qold*sqexpanded 
-    xnew=xold+sxtemp 
-    return xnew,qnew    
-
-end
-
 # Constraint functions
 function gc(mechanism::Mechanism{T}) where T
     rangeDict = Dict{Int64,UnitRange}()
@@ -85,8 +73,9 @@ end
 
 function initializeConstraints!(mechanism::Mechanism{T,N,Nb,Ne}; ε = 1e-5, newtonIter = 100, lineIter = 10) where {T,N,Nb,Ne}
     bodies = mechanism.bodies
-    conv=false
 
+    norm0 = norm(gc(mechanism))
+    norm1 = norm0
     for n = Base.OneTo(newtonIter)
         for body in bodies  
             body.state.xk[1] = body.state.xc
@@ -95,24 +84,25 @@ function initializeConstraints!(mechanism::Mechanism{T,N,Nb,Ne}; ε = 1e-5, newt
 
         constraintstep!(mechanism) 
 
-        normold = norm(gc(mechanism))
         for j = Base.OneTo(newtonIter)
             for body in bodies
-                body.state.xc = body.state.xk[1] + body.state.vsol[1]
-                w = sqrt(1-norm(body.state.ωsol[1])^2)
-                body.state.qc = body.state.qk[1] * UnitQuaternion(w,body.state.ωsol[1]...,false)
+                body.state.xc = body.state.xk[1] + body.state.vsol[1]/(2^(j-1))
+                w = sqrt(1-norm(body.state.ωsol[1]/(2^(j-1)))^2)
+                body.state.qc = body.state.qk[1] * UnitQuaternion(w,body.state.ωsol[1]/(2^(j-1))...,false)
             end
 
-            if norm(gc(mechanism)) < normold 
+            norm1 = norm(gc(mechanism))
+
+            if norm1 < norm0 
                 break
             end
         end
 
-        if norm(gc(mechanism)) < ε
+        if norm1 < ε
             return
+        else
+            norm0 = norm1
         end
-
-    
     end
 
     display("Constraint initialization did not converge!")
