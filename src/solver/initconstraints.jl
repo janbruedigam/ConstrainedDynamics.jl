@@ -13,33 +13,51 @@ function Liniensuche(xold,qold,sx,sq,j)
 end
 
 # Constraint functions
-function g(mech)
-    G=Float64[]
-    for eqc in mech.eqconstraints
-        gi=gc(mech,eqc)
-        for z in gi
-            push!(G,z)
-        end
+function gc(mechanism::Mechanism{T}) where T
+    rangeDict = Dict{Int64,UnitRange}()
+    ind1 = 1
+    ind2 = 0
+
+    for (i,eqc) in enumerate(mechanism.eqconstraints)
+        ind2 += length(eqc)
+        range = ind1:ind2
+        rangeDict[i] = range
+
+        ind1 = ind2+1
+    end
+
+    gval = zeros(T,ind2)
+    
+    for (i,eqc) in enumerate(mechanism.eqconstraints)
+        gval[rangeDict[i]] = gc(mechanism, eqc)
     end 
-    return G
+
+    return gval
 end   
 
 # Derivatives
-function derivative(mech::Mechanism{T,N,Nb,Ne,Ni},Nc) where {T,N,Nb,Ne,Ni}
-    D=zeros(Nc,Nb*7)
-    j=1
-    jd=0
-    for eqc in mech.eqconstraints
-        for bd in mech.bodies
-            if (bd.id==eqc.parentid)||(bd.id in eqc.childids)
-                d=∂g∂posc(mech, eqc, bd.id)
-                jd=size(d,1)
-                D[j:j+jd-1,offsetrange(bd.id,7)]=d
-            end
-        end
-        j=j+jd
+function ∂g∂posc(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+    rangeDict = Dict{Int64,UnitRange}()
+    ind1 = 1
+    ind2 = 0
+
+    for (i,eqc) in enumerate(mechanism.eqconstraints)
+        ind2 += length(eqc)
+        range = ind1:ind2
+        rangeDict[i] = range
+
+        ind1 = ind2+1
     end
-        return D
+
+    G = zeros(ind2,Nb*7)
+    
+    for (i,eqc) in enumerate(mechanism.eqconstraints)
+        for (j,body) in enumerate(mechanism.bodies)
+            G[rangeDict[i],offsetrange(j,7)] = ∂g∂posc(mechanism, eqc, body.id)
+        end
+    end
+        
+    return G
 end
 
 
@@ -59,7 +77,7 @@ function initializeConstraints!(mech::Mechanism{T,N,Nb,Ne,Ni},epsilon,Nmax) wher
         end
         #println("[xold,qold] ",[Xold;qold])
 
-        if (norm(g(mech)) <= epsilon)
+        if (norm(gc(mech)) <= epsilon)
             conv=true;
             break
         end
@@ -73,9 +91,8 @@ function initializeConstraints!(mech::Mechanism{T,N,Nb,Ne,Ni},epsilon,Nmax) wher
 
         end 
 
-        G=g(mech)
-        n=size(G,1)
-        invderiv=pinv(derivative(mech,n))
+        G=gc(mech)
+        invderiv=pinv(∂g∂posc(mech))
         Δs=-M*invderiv*G 
         for l=1:Nb
             if norm(Δs[6*l-2:6*l])>1
@@ -84,7 +101,7 @@ function initializeConstraints!(mech::Mechanism{T,N,Nb,Ne,Ni},epsilon,Nmax) wher
         end
 
         for j=1:Nmax
-            normold=norm(g(mech))
+            normold=norm(gc(mech))
             for bd in mech.bodies 
 
                 sxi=Δs[6*bd.id-5:6*bd.id-3]
@@ -95,7 +112,7 @@ function initializeConstraints!(mech::Mechanism{T,N,Nb,Ne,Ni},epsilon,Nmax) wher
 
             end
 
-            if norm(g(mech)) < normold 
+            if norm(gc(mech)) < normold 
                 break
             end
         end
