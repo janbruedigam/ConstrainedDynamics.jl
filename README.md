@@ -2,5 +2,14 @@
 [![Build Status](https://github.com/janbruedigam/ConstrainedDynamics.jl/workflows/CI/badge.svg)](https://github.com/janbruedigam/ConstrainedDynamics.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/janbruedigam/ConstrainedDynamics.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/janbruedigam/ConstrainedDynamics.jl)
 
+**ConstrainedDynamics** is a rigid body dynamics package written in Julia. In contrast to the RigidBodyDynamics package, it uses maximal coordinates instead of minimal coordinates to represent the states of a mechanism. This parametrization can be advantageous when simulating structures with additional explicit constraints. In terms of speed, ConstrainedDynamics and RigidBodyDynamics are roughly comparable, so for normal applications, both are valid options.
 
-Related paper: https://arxiv.org/abs/2002.11245
+The package is largely built on StaticArrays and avoids allocations for improved performance. Convenience methods for setting up mechanical structures in maximal or minimal coordinates are provided and URDF parsing is also available. At the moment, the code is not yet documented, but the provided examples should help with getting started with the package. 
+
+## Related Packages
+* [RigidBodyDynamics](https://github.com/JuliaRobotics/RigidBodyDynamics.jl): Especially efficient for simulating unconstrained systems with single-degree-of-freedom joints
+* [ConstrainedDynamicsVis](https://github.com/janbruedigam/ConstrainedDynamicsVis.jl): A package built on top of ConstrainedDynamics and MeshCat for visualization of simulations
+* [ConstrainedControl](https://github.com/janbruedigam/ConstrainedControl.jl): Experimental implementation of Linear-Quadratic Regulation (LQR) in maximal coordinates
+
+## Related Publications
+[Linear-Time Variational Integrators in Maximal Coordinates](https://arxiv.org/abs/2002.11245) (accepted to WAFR 2020)
