@@ -63,7 +63,9 @@ export Box,
     szeros,
     sones,
     srand,
-    solve_Eqc
+    solve_Eqc,
+    AbstractBo
+    
 
 
 include(joinpath("util", "util.jl"))
@@ -115,4 +117,5 @@ include(joinpath("discretization", "SymplecticEuler.jl"))
 # include(joinpath("discretization", "ImplicitTrapezoid.jl"))
 
 include(joinpath("solver", "Solve_test.jl"))
+include(joinpath("joints", "myconstraint.jl"))
 end

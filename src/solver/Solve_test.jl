@@ -1,9 +1,10 @@
-using ConstrainedDynamics:offsetrange 
+using ConstrainedDynamics:Mechanism
 
 function Liniensuche(xold,qold,sx,sq,j)
     
     sqtemp = sq/(2^(j-1)) 
     sxtemp = sx/(2^(j-1))
+
     w = sqrt(1-norm(sqtemp)^2) 
     sqexpanded = [w;sqtemp]
     qnew=Lmat(UnitQuaternion(qold...,false))*sqexpanded 
