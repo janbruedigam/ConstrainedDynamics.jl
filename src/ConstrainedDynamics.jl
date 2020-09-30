@@ -65,7 +65,10 @@ export Box,
     sones,
     srand,
     solve_Eqc,
-    AbstractBo
+    AbstractBody,
+    #GenericJoint,
+    AbstractJoint,
+    UnitDict
     
 
 
@@ -120,4 +123,7 @@ include(joinpath("discretization", "SymplecticEuler.jl"))
 
 include(joinpath("solver", "Solve_test.jl"))
 include(joinpath("joints", "myconstraint.jl"))
+include(joinpath("joints", "genericjoint.jl"))
+include(joinpath("components", "component.jl"))
+include(joinpath("util", "customdict.jl"))
 end
