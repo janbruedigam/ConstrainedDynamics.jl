@@ -1,5 +1,7 @@
 using ConstrainedDynamics
 using ConstrainedDynamicsVis
+using ConstrainedDynamics: my_constraint
+using StaticArrays
 
 
 # Parameters
@@ -14,14 +16,14 @@ link1 = Body(box)
 @inline function g(joint::my_constraint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     a=10
     b=15
-    G= [xb[1]-xa[1]; ((xb[2]-xa[2])^2/a^2)+((xb[3]-xa[3])^2/b^2)-1]
+    G= SA[xb[1]-xa[1]; ((xb[2]-xa[2])^2/a^2)+((xb[3]-xa[3])^2/b^2)-1]
     return G
 end
 
 @inline function g(joint::my_constraint, xb::AbstractVector, qb::UnitQuaternion)
     a=10
     b=15
-    G= [xb[1]; (xb[2]^2/a^2)+(xb[3]^2/b^2)-1]
+    G= SA[xb[1]; (xb[2]^2/a^2)+(xb[3]^2/b^2)-1]
     return G  
 end
 
