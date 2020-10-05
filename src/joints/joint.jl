@@ -187,10 +187,10 @@ end
 
 
 # Calls for dynamics
-g(joint::AbstractJoint, statea::State, stateb::State, Δt) = g(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)...)
-g(joint::AbstractJoint, stateb::State, Δt) = g(joint, posargsnext(stateb, Δt)...)
-g(joint::AbstractJoint, statea::State, stateb::State) = g(joint, posargsc(statea)..., posargsc(stateb)...)
-g(joint::AbstractJoint, stateb::State) = g(joint, posargsc(stateb)...)
+g(joint::Joint, statea::State, stateb::State, Δt) = g(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)...)
+g(joint::Joint, stateb::State, Δt) = g(joint, posargsnext(stateb, Δt)...)
+g(joint::Joint, statea::State, stateb::State) = g(joint, posargsc(statea)..., posargsc(stateb)...)
+g(joint::Joint, stateb::State) = g(joint, posargsc(stateb)...)
 
 ∂g∂ʳposa(joint::AbstractJoint, statea::State, stateb::State) = ∂g∂ʳposa(joint, posargsk(statea)..., posargsk(stateb)...)
 ∂g∂ʳposb(joint::AbstractJoint, statea::State, stateb::State) = ∂g∂ʳposb(joint, posargsk(statea)..., posargsk(stateb)...)

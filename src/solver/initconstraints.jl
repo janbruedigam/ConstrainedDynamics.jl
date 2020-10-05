@@ -7,16 +7,20 @@ function gc(mechanism::Mechanism{T}) where T
         ind2 += length(eqc)
         range = ind1:ind2
         rangeDict[i] = range
-
         ind1 = ind2+1
     end
 
     gval = zeros(T,ind2)
     
     for (i,eqc) in enumerate(mechanism.eqconstraints)
+        println("here")
+        println(gc(mechanism, eqc))
+        println(gval)
+        println(rangeDict[i])
         gval[rangeDict[i]] = gc(mechanism, eqc)
+        println(gval)
     end 
-
+    println(gval)
     return gval
 end   
 

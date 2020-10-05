@@ -2,6 +2,7 @@ module ConstrainedDynamics
 
 using LinearAlgebra
 using StaticArrays
+using ForwardDiff 
 using StaticArrays: SUnitRange
 using Rotations
 using Rotations: RotationError, pure_quaternion, params, lmult, rmult, tmat, vmat, hmat, skew
@@ -66,9 +67,13 @@ export Box,
     srand,
     solve_Eqc,
     AbstractBody,
-    #GenericJoint,
+    GenericJoint,
     AbstractJoint,
-    UnitDict
+    UnitDict,
+    my_Joint,
+    my_constraint,
+    orthogonalrows
+    
     
 
 
@@ -111,6 +116,7 @@ include(joinpath("components", "initialize.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 include(joinpath("solver", "system.jl"))
 include(joinpath("solver", "initconstraints.jl"))
+include(joinpath("solver", "Solve_test.jl"))
 
 include(joinpath("util", "urdf.jl"))
 
@@ -119,11 +125,10 @@ include(joinpath("solver", "linesearch.jl"))
 
 
 include(joinpath("discretization", "SymplecticEuler.jl"))
-# include(joinpath("discretization", "ImplicitTrapezoid.jl"))
 
-include(joinpath("solver", "Solve_test.jl"))
-include(joinpath("joints", "myconstraint.jl"))
+
+
 include(joinpath("joints", "genericjoint.jl"))
-include(joinpath("components", "component.jl"))
-include(joinpath("util", "customdict.jl"))
+include(joinpath("joints", "myconstraint.jl"))
+
 end
