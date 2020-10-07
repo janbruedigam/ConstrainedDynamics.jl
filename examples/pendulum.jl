@@ -1,6 +1,6 @@
 using ConstrainedDynamics
 using ConstrainedDynamicsVis
-using ConstrainedDynamics: g, solve_Eqc,∂g∂posb
+using ConstrainedDynamics: g, solve_Eqc
 
 
 # Parameters
@@ -21,20 +21,19 @@ origin = Origin{Float64}()
 link1 = Body(box)
 
 # Constraints
-#t,r= Revolute(origin, link1, joint_axis; p2=p2)
+
 joint_between_origin_and_link1 = EqualityConstraint(Revolute(origin, link1, joint_axis; p2=p2))
-#println(∂g∂posb(t[1],link1.state.xc,link1.state.qc))
-#X,Q=∂g∂posb(r[1],link1.state.xc,link1.state.qc)
-#println(X,r[1].V12*Q)
+
 links = [link1]
 constraints = [joint_between_origin_and_link1]
 shapes = [box]
 
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(origin,link1,p2=[5;6;7],Δq = UnitQuaternion(RotX(0.1)))
+setPosition!(origin,link1,p2=[5;6;7],Δq = UnitQuaternion(RotX(0.5)))
 
 solve_Eqc(mech,1e-10,30) 
 
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)
+θ

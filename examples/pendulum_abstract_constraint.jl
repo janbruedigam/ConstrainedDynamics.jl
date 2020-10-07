@@ -1,7 +1,7 @@
 using ConstrainedDynamics
 using ConstrainedDynamicsVis
 using ConstrainedDynamics: vrotate,orthogonalrows,Vmat
-
+using StaticArrays
 
 # Parameters
 joint_axis = [1.0;0.0;0.0]

@@ -1,6 +1,6 @@
 using ConstrainedDynamics
 using ConstrainedDynamicsVis
-include("C:\\Users\\zeine\\OneDrive\\Bureau\\ConstrainedDynamics.jl\\src\\solver\\Solve_test.jl")
+using ConstrainedDynamics: gc
 
 # Parameters
 ex = [1.;0.;0.]
