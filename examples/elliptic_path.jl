@@ -14,8 +14,8 @@ origin = Origin{Float64}()
 link1 = Body(box)
 
 @inline function g(joint::my_constraint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
-    a=15
-    b=10
+    a=5
+    b=2
     function f()
         if (xb[2]==xa[2]) 
             θ=0
@@ -35,8 +35,8 @@ link1 = Body(box)
 end
 
 @inline function g(joint::my_constraint, xb::AbstractVector, qb::UnitQuaternion)
-    a=15
-    b=10
+    a=5
+    b=2
     function f()
         if (xb[2]==0) 
             θ=0
@@ -64,9 +64,12 @@ shapes = [box]
 
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(origin,link1,p2=[5;6;7],Δq = UnitQuaternion(RotX(0.1)))
+setPosition!(origin,link1,p2=[5;6;-2],Δq = UnitQuaternion(RotX(0.1)))
 
-initializeConstraints!(mech)
+initializeConstraints!(mech,newtonIter = 200)
 
-storage = simulate!(mech, 10., record = true)
+steps = Base.OneTo(1000)
+storage = Storage{Float64}(steps,1)
+
+simulate!(mech, storage, record = true)
 visualize(mech, storage, shapes)
