@@ -30,10 +30,10 @@ shapes = [box]
 
 
 mech = Mechanism(origin, links, constraints, shapes = shapes)
-setPosition!(origin,link1,p2=[5;6;7],Δq = UnitQuaternion(RotX(0.5)))
+setPosition!(origin,link1,p2=[2;3;4],Δq = UnitQuaternion(RotX(0.5)))
 
-solve_Eqc(mech,1e-10,30) 
+#solve_Eqc(mech,1e-10,30) 
+initializeConstraints!(mech,newtonIter = 200)
 
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)
-θ
