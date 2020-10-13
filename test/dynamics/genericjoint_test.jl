@@ -1,7 +1,5 @@
 using ConstrainedDynamics
-using ConstrainedDynamicsVis
 using ConstrainedDynamics: vrotate, Vmat
-using Test
 using LinearAlgebra
 
 joint_axis = [1.0;0.0;0.0]
@@ -76,41 +74,29 @@ shapes = [b1,b2]
 mech = Mechanism(origin, links, constraints, shapes=shapes)
 mech_abstract= Mechanism(origin_abstract, links_abstract, constraints_abstract, shapes=shapes)
 
-setPosition!(origin,link1,p2 = vert11,Δq = UnitQuaternion(RotX(pi/4)))
-setPosition!(origin_abstract,link1_abstract,p2 = vert11,Δq = UnitQuaternion(RotX(pi/4)))
-
-setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = inv(UnitQuaternion(RotX(pi/4)))*UnitQuaternion(RotY(pi/4)))
-setPosition!(link1_abstract,link2_abstract,p1 = vert12,p2 = vert21,Δq = inv(UnitQuaternion(RotX(pi/4)))*UnitQuaternion(RotY(pi/4)))
-
-
-initializeConstraints!(mech) 
-initializeConstraints!(mech_abstract)
-
-
-storage = simulate!(mech, 0.01, record = true)
-visualize(mech, storage, shapes)
-storage_abstract = simulate!(mech_abstract, 0.01, record = true)
-visualize(mech_abstract, storage_abstract, shapes)
-
-
-
+setPosition!(origin,link1,p2 = vert11)
+setPosition!(origin_abstract,link1_abstract,p2 = vert11)
 
 function compare(s1::Storage{T,N1},s2::Storage{T,N2}) where {T,N1,N2}
     for i=Base.OneTo(N1)
-        println(norm(s1.x[1][i]-s2.x[1][i]),"  ",norm(s1.q[1][i]-s2.q[1][i]),"  ",norm(s1.x[2][i]-s2.x[2][i]),"  ",norm(s1.q[2][i]-s2.q[2][i]),"  ",norm(s1.ω[1][i]-s2.ω[1][i])
-,"  ",norm(s1.v[1][i]-s2.v[1][i]),"  ",norm(s1.ω[2][i]-s2.ω[2][i]),"  ",norm(s1.v[2][i]-s2.v[2][i]))
-
-        @test isapprox(norm(s1.x[1][i]-s2.x[1][i]), 0.0; atol = 1e-9) &&
-        isapprox(norm(s1.q[1][i]-s2.q[1][i]), 0.0; atol = 1e-9)  &&
-        isapprox(norm(s1.x[2][i]-s2.x[2][i]), 0.0; atol = 1e-9)  &&
-        isapprox(norm(s1.q[2][i]-s2.q[2][i]), 0.0; atol = 1e-9)  &&
-        isapprox(norm(s1.ω[1][i]-s2.ω[1][i]), 0.0; atol = 1e-9)  &&
-        isapprox(norm(s1.v[1][i]-s2.v[1][i]), 0.0; atol = 1e-9)  &&
-        isapprox(norm(s1.ω[2][i]-s2.ω[2][i]), 0.0; atol = 1e-9)  &&
-        isapprox(norm(s1.v[2][i]-s2.v[2][i]), 0.0; atol = 1e-9) 
+        @test isapprox(norm(s1.x[1][i]-s2.x[1][i]), 0.0; atol = 1e-10) &&
+        isapprox(norm(s1.q[1][i]-s2.q[1][i]), 0.0; atol = 1e-10)  &&
+        isapprox(norm(s1.x[2][i]-s2.x[2][i]), 0.0; atol = 1e-10)  &&
+        isapprox(norm(s1.q[2][i]-s2.q[2][i]), 0.0; atol = 1e-10)  &&
+        isapprox(norm(s1.ω[1][i]-s2.ω[1][i]), 0.0; atol = 1e-10)  &&
+        isapprox(norm(s1.v[1][i]-s2.v[1][i]), 0.0; atol = 1e-10)  &&
+        isapprox(norm(s1.ω[2][i]-s2.ω[2][i]), 0.0; atol = 1e-10)  &&
+        isapprox(norm(s1.v[2][i]-s2.v[2][i]), 0.0; atol = 1e-10)
 
     end
-
 end
 
-compare(storage,storage_abstract)
+for i=1:10
+    randang = 2pi*rand()
+    setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = UnitQuaternion(RotX(randang)))
+    setPosition!(link1_abstract,link2_abstract,p1 = vert12,p2 = vert21,Δq = UnitQuaternion(RotX(randang)))
+    storage = simulate!(mech, 0.01, record = true)
+    storage_abstract = simulate!(mech_abstract, 0.01, record = true)
+
+    compare(storage,storage_abstract)
+end
