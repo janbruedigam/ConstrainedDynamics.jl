@@ -43,20 +43,3 @@ end
 
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)
-
-function get_free_bodies(mechanism::Mechanism{T},fixedbodies) where T
-    freebodies = Body{T}[]
-    for (j,body) in enumerate(mechanism.bodies)
-        if !(body.id in fixedbodies)
-        push!(freebodies,body)
-        end
-        
-    end 
-    return UnitDict(freebodies)  
-end
-for (j,body) in enumerate(get_free_bodies(mech,[2;5;6;10;12;17;20]))
-    println(j,"   ",body.id)
-end
-for body in get_free_bodies(mech,[2;5;6;10;12;17;20])
-    println(body.state.xc)
-end

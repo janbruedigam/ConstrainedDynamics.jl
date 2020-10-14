@@ -30,8 +30,5 @@ setPosition!(link2,x = [0.;-1.;0.])
 setVelocity!(link1,v = [-5.;-5;5])
 setVelocity!(link2,v = [-2.5;2.5;5],ω = [2;4;10.])
 
-for (j,body) in enumerate(mech.bodies)
-    println(j,body.id)
-end
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)

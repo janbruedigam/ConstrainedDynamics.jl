@@ -13,6 +13,7 @@ b2 = Box(x, y, l2, l2, color = RGBA(1., 1., 0.))
 
 vert11 = [0.;0.;l1 / 2]
 vert12 = -vert11
+
 vert21 = [0.;0.;l2 / 2]
 
 # Initial orientation
@@ -37,8 +38,6 @@ shapes = [b1,b2]
 mech = Mechanism(origin, links, constraints, shapes = shapes)
 setPosition!(origin,link1,p2 = vert11,Δq = q1)
 setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = inv(q1)*UnitQuaternion(RotY(0.2)))
-
-solve_Eqc(mech,1e-10,30) 
 
 storage = simulate!(mech, 10., record = true)
 visualize(mech, storage, shapes)
