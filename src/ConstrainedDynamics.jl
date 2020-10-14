@@ -65,8 +65,6 @@ export Box,
     szeros,
     sones,
     srand
-    
-    
 
 
 include(joinpath("util", "util.jl"))
@@ -84,6 +82,7 @@ include(joinpath("bounds", "bound.jl"))
 
 include(joinpath("joints", "translational.jl"))
 include(joinpath("joints", "rotational.jl"))
+include(joinpath("joints", "genericjoint.jl"))
 include(joinpath("joints", "prototypes.jl"))
 
 include(joinpath("bounds", "contact.jl"))
@@ -118,7 +117,5 @@ include(joinpath("solver", "linesearch.jl"))
 include(joinpath("discretization", "SymplecticEuler.jl"))
 # include(joinpath("discretization", "ImplicitTrapezoid.jl"))
 
-
-include(joinpath("joints", "genericjoint.jl"))
 
 end
