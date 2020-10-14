@@ -64,15 +64,7 @@ export Box,
 
     szeros,
     sones,
-    srand,
-    solve_Eqc,
-    AbstractBody,
-    GenericJoint,
-    AbstractJoint,
-    UnitDict,
-    my_Joint,
-    my_constraint,
-    orthogonalrows
+    srand
     
     
 
@@ -128,6 +120,5 @@ include(joinpath("discretization", "SymplecticEuler.jl"))
 
 
 include(joinpath("joints", "genericjoint.jl"))
-include(joinpath("joints", "myconstraint.jl"))
 
 end

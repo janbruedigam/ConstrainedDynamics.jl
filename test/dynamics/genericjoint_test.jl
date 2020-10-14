@@ -1,5 +1,5 @@
 using ConstrainedDynamics
-using ConstrainedDynamics: vrotate, Vmat
+using ConstrainedDynamics: vrotate, Vmat, GenericJoint, AbstractBody, orthogonalrows
 using LinearAlgebra
 
 joint_axis = [1.0;0.0;0.0]
@@ -22,20 +22,20 @@ link2_abstract=Base.deepcopy(link2)
 
 @inline function abstract_Fixed(body1::AbstractBody{T}, body2; p1 = szeros(T, 3), p2 = szeros(T, 3), qoffset = one(UnitQuaternion{T})) where T  
      vertices = (p1, p2)
-     @inline function g1(joint::my_constraint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+     @inline function g1(joint::GenericJoint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
 
         G= [vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa));
             Vmat(qa \ qb / qoffset)]
         return G
         
     end
-    @inline function g1(joint::my_constraint, xb::AbstractVector, qb::UnitQuaternion)
+    @inline function g1(joint::GenericJoint, xb::AbstractVector, qb::UnitQuaternion)
         G= [ xb + vrotate(vertices[2], qb) - vertices[1];
             Vmat(qb / qoffset)]
         return G
         
     end
-    return my_constraint{T,6}(body1, body2,g1)
+    return GenericJoint{6}(body1, body2,g1)
      
 end
 @inline function abstract_Revolute(body1::AbstractBody{T}, body2, axis; p1 = szeros(T, 3), p2 = szeros(T, 3), qoffset = one(UnitQuaternion{T})) where T  
@@ -43,21 +43,21 @@ end
      V1, V2, V3 = orthogonalrows(axis)  
      V12 = [V1;V2]
      
-     @inline function g2(joint::my_constraint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+     @inline function g2(joint::GenericJoint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
        
         G= [vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa));
         V12*Vmat(qa \ qb / qoffset)]
         return G
         
     end
-    @inline function g2(joint::my_constraint, xb::AbstractVector, qb::UnitQuaternion)
+    @inline function g2(joint::GenericJoint, xb::AbstractVector, qb::UnitQuaternion)
         
         G= [ xb + vrotate(vertices[2], qb) - vertices[1];
         V12*Vmat(qb / qoffset)]
         return G
         
     end
-    return my_constraint{T,5}(body1, body2,g2)
+    return GenericJoint{5}(body1, body2,g2)
     
 end
 joint0to1 = EqualityConstraint(Fixed(origin, link1; p2=vert11))
