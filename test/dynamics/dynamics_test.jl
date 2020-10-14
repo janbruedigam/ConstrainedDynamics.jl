@@ -9,3 +9,7 @@ end
 @safetestset "Linearization Test" begin
     include("linearization_test.jl")
 end
+
+@safetestset "Generic Joint Test" begin
+    include("genericjoint_test.jl")
+end
