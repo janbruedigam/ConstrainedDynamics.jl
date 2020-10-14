@@ -97,10 +97,10 @@ function compare(s1,s2)
 end
 
 for i=1:10
-    randang = 2pi*rand()
+    randang = pi/4*rand()
     setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = UnitQuaternion(RotX(randang)))
     setPosition!(link1_abstract,link2_abstract,p1 = vert12,p2 = vert21,Δq = UnitQuaternion(RotX(randang)))
-    storage = simulate!(mech, 5, record = true)
+    storage = simulate!(mech, 1, record = true)
     storage_abstract = simulate!(mech_abstract, 5, record = true)
 
     compare(storage,storage_abstract)
