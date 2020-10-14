@@ -32,7 +32,7 @@ getN(joint::AbstractJoint{T,N}) where {T,N} = N
 @inline ∂g∂posac(joint::AbstractJoint{T,N}) where {T,N} = szeros(T, N, 7)
 @inline ∂g∂posbc(joint::AbstractJoint{T,N}) where {T,N} = szeros(T, N, 7)
 
-@inline ∂Fτ∂ub(joint::AbstractJoint{T,N}) where {T,N} = szeros(T, 6, 3 - N)
+@inline ∂Fτ∂ub(joint::Joint{T,N}) where {T,N} = szeros(T, 6, 3 - N)
 
 @inline function setForce!(joint::Joint, body1::Body, body2::Body, Fτ::SVector)
     setForce!(joint, body1.state, body2.state, zerodimstaticadjoint(nullspacemat(joint)) * Fτ)
@@ -43,26 +43,26 @@ end
     return
 end
 
-@inline g(joint::Joint, body1::Body, body2::Body, Δt) = constraintmat(joint) * g(joint, body1.state, body2.state, Δt)
-@inline g(joint::Joint, body1::Origin, body2::Body, Δt) = constraintmat(joint) * g(joint, body2.state, Δt)
-@inline g(joint::Joint, body1::Body, body2::Body) = constraintmat(joint) * g(joint, body1.state, body2.state)
-@inline g(joint::Joint, body1::Origin, body2::Body) = constraintmat(joint) * g(joint, body2.state)
+@inline g(joint::AbstractJoint, body1::Body, body2::Body, Δt) = constraintmat(joint) * g(joint, body1.state, body2.state, Δt)
+@inline g(joint::AbstractJoint, body1::Origin, body2::Body, Δt) = constraintmat(joint) * g(joint, body2.state, Δt)
+@inline g(joint::AbstractJoint, body1::Body, body2::Body) = constraintmat(joint) * g(joint, body1.state, body2.state)
+@inline g(joint::AbstractJoint, body1::Origin, body2::Body) = constraintmat(joint) * g(joint, body2.state)
 
-@inline function ∂g∂ʳposa(joint::Joint, body1::Body, body2::Body)
+@inline function ∂g∂ʳposa(joint::AbstractJoint, body1::Body, body2::Body)
     if body2.id == joint.childid
         return constraintmat(joint) * ∂g∂ʳposa(joint, body1.state, body2.state)
     else
         return ∂g∂ʳposa(joint)
     end
 end
-@inline function ∂g∂ʳposb(joint::Joint, body1::Body, body2::Body)
+@inline function ∂g∂ʳposb(joint::AbstractJoint, body1::Body, body2::Body)
     if body2.id == joint.childid
         return constraintmat(joint) * ∂g∂ʳposb(joint, body1.state, body2.state)
     else
         return ∂g∂ʳposb(joint)
     end
 end
-@inline function ∂g∂ʳposb(joint::Joint, body1::Origin, body2::Body)
+@inline function ∂g∂ʳposb(joint::AbstractJoint, body1::Origin, body2::Body)
     if body2.id == joint.childid
         return constraintmat(joint) * ∂g∂ʳposb(joint, body2.state)
     else
@@ -70,21 +70,21 @@ end
     end
 end
 
-@inline function ∂g∂posac(joint::Joint, body1::Body, body2::Body)
+@inline function ∂g∂posac(joint::AbstractJoint, body1::Body, body2::Body)
     if body2.id == joint.childid
         return constraintmat(joint) * ∂g∂posac(joint, body1.state, body2.state)
     else
         return ∂g∂posac(joint)
     end
 end
-@inline function ∂g∂posbc(joint::Joint, body1::Body, body2::Body)
+@inline function ∂g∂posbc(joint::AbstractJoint, body1::Body, body2::Body)
     if body2.id == joint.childid
         return constraintmat(joint) * ∂g∂posbc(joint, body1.state, body2.state)
     else
         return ∂g∂posbc(joint)
     end
 end
-@inline function ∂g∂posbc(joint::Joint, body1::Origin, body2::Body)
+@inline function ∂g∂posbc(joint::AbstractJoint, body1::Origin, body2::Body)
     if body2.id == joint.childid
         return constraintmat(joint) * ∂g∂posbc(joint, body2.state)
     else
@@ -92,21 +92,21 @@ end
     end
 end
 
-@inline function ∂g∂ʳvela(joint::Joint, body1::Body, body2::Body, Δt)
+@inline function ∂g∂ʳvela(joint::AbstractJoint, body1::Body, body2::Body, Δt)
     if body2.id == joint.childid
         return constraintmat(joint) * ∂g∂ʳvela(joint, body1.state, body2.state, Δt)
     else
         return ∂g∂ʳvela(joint)
     end
 end
-@inline function ∂g∂ʳvelb(joint::Joint, body1::Body, body2::Body, Δt)
+@inline function ∂g∂ʳvelb(joint::AbstractJoint, body1::Body, body2::Body, Δt)
     if body2.id == joint.childid
         return constraintmat(joint) * ∂g∂ʳvelb(joint, body1.state, body2.state, Δt)
     else
         return ∂g∂ʳvelb(joint)
     end
 end
-@inline function ∂g∂ʳvelb(joint::Joint, body1::Origin, body2::Body, Δt)
+@inline function ∂g∂ʳvelb(joint::AbstractJoint, body1::Origin, body2::Body, Δt)
     if body2.id == joint.childid
         return constraintmat(joint) * ∂g∂ʳvelb(joint, body2.state, Δt)
     else
