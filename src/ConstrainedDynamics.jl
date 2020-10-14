@@ -116,7 +116,6 @@ include(joinpath("components", "initialize.jl"))
 include(joinpath("solver", "solverfunctions.jl"))
 include(joinpath("solver", "system.jl"))
 include(joinpath("solver", "initconstraints.jl"))
-include(joinpath("solver", "Solve_test.jl"))
 
 include(joinpath("util", "urdf.jl"))
 
@@ -125,7 +124,7 @@ include(joinpath("solver", "linesearch.jl"))
 
 
 include(joinpath("discretization", "SymplecticEuler.jl"))
-
+# include(joinpath("discretization", "ImplicitTrapezoid.jl"))
 
 
 include(joinpath("joints", "genericjoint.jl"))
