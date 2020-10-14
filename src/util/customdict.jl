@@ -29,6 +29,10 @@ end
 
 @inline Base.getindex(dict::UnitDict{Base.OneTo{K},T}, key::K) where {T,K} = dict.values[key]
 @inline Base.getindex(dict::UnitDict{UnitRange{K},T}, key::K) where {T,K} = dict.values[key - first(dict.keys) + 1]
+@inline Base.getindex(dict::UnitDict{Base.OneTo{K},T}, key::AbstractVector{K}) where {T,K} = dict.values[key]
+@inline Base.getindex(dict::UnitDict{UnitRange{K},T}, key::AbstractVector{K}) where {T,K} = dict.values[key .- (first(dict.keys) + 1)]
+@inline Base.getindex(dict::UnitDict{Base.OneTo{K},T}, key::UnitRange{K}) where {T,K} = dict.values[key]
+@inline Base.getindex(dict::UnitDict{UnitRange{K},T}, key::UnitRange{K}) where {T,K} = dict.values[key .- (first(dict.keys) + 1)]
 @inline Base.setindex!(dict::UnitDict{Base.OneTo{K},T}, value::T, key::K) where {T,K} = setindex!(dict.values, value, key)
 @inline Base.setindex!(dict::UnitDict{UnitRange{K},T}, value::T, key::K) where {T,K} = setindex!(dict.values, value, key - first(dict.keys) + 1)
 

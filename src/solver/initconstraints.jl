@@ -1,14 +1,3 @@
-
-
-function get_free_bodies(mechanism::Mechanism{T},fixedbodies) where T
-    freebodies = Body{T}[]
-    for (j,body) in enumerate(mechanism.bodies)
-        if !(body.id in fixedbodies)
-        push!(freebodies,body)
-        end  
-    end  
-    return UnitDict(freebodies) 
-end
 function gc(mechanism::Mechanism{T}) where T
     rangeDict = Dict{Int64,UnitRange}()
     ind1 = 1
@@ -33,7 +22,9 @@ function gc(mechanism::Mechanism{T}) where T
 end   
 
 # Derivatives
-function ∂g∂posc(mechanism::Mechanism{T,N,Nb},fixedbodies) where {T,N,Nb}
+function ∂g∂posc(mechanism::Mechanism{T,N,Nb},freeids) where {T,N,Nb}
+    freebodies = mechanism.bodies[freeids]
+
     rangeDict = Dict{Int64,UnitRange}()
     ind1 = 1
     ind2 = 0
@@ -45,11 +36,11 @@ function ∂g∂posc(mechanism::Mechanism{T,N,Nb},fixedbodies) where {T,N,Nb}
 
         ind1 = ind2+1
     end
-    Nfb=length(fixedbodies)
-    G = zeros(ind2,(Nb-Nfb)*7)
+    Nfb=length(freebodies)
+    G = zeros(ind2,Nfb*7)
     
     for (i,eqc) in enumerate(mechanism.eqconstraints)
-        for (j,body) in enumerate(get_free_bodies(mechanism,fixedbodies))
+        for (j,body) in enumerate(freebodies)
              G[rangeDict[i],offsetrange(j,7)] = ∂g∂posc(mechanism, eqc, body.id)
         end
     end
@@ -58,15 +49,16 @@ function ∂g∂posc(mechanism::Mechanism{T,N,Nb},fixedbodies) where {T,N,Nb}
 end
 
 
-function constraintstep!(mechanism::Mechanism{T,N,Nb},fixedbodies) where {T,N,Nb}
-    
+function constraintstep!(mechanism::Mechanism{T,N,Nb},freeids) where {T,N,Nb}
+    freebodies = mechanism.bodies[freeids]
+
     gval=gc(mechanism)
-    pinv∂g∂posc=pinv(∂g∂posc(mechanism,fixedbodies))
+    pinv∂g∂posc=pinv(∂g∂posc(mechanism,freeids))
     stepvec = -pinv∂g∂posc*gval
 
-    for (i,body) in enumerate(get_free_bodies(mechanism,fixedbodies))
-
+    for (i,body) in enumerate(freebodies)
             body.state.vsol[1] = stepvec[offsetrange(i, 3, 7, 1)]
+
             # Limit quaternion step to feasible length
             range = offsetrange(i, 3, 7, 2)
             Δstemp = VLᵀmat(body.state.qk[1]) * stepvec[first(range):(last(range)+1)]
@@ -80,22 +72,36 @@ function constraintstep!(mechanism::Mechanism{T,N,Nb},fixedbodies) where {T,N,Nb
     return
 end
 
-function initializeConstraints!(mechanism::Mechanism{T,N,Nb,Ne},fixedbodies; ε = 1e-5, newtonIter = 100, lineIter = 10) where {T,N,Nb,Ne}
+function initializeConstraints!(mechanism::Mechanism{T,N,Nb,Ne}; fixedids = Int64[], freeids = Int64[], ε = 1e-5, newtonIter = 100, lineIter = 10) where {T,N,Nb,Ne}
+    freebodies = Body[]
+    if !isempty(fixedids) && !isempty(freeids)
+        error("Specify either free or fixed bodies, not both.")
+    elseif !isempty(fixedids)
+        freeids = setdiff(getid.(mechanism.bodies),fixedids)
+        freebodies = mechanism.bodies[freeids]
+    elseif !isempty(freeids)
+        freebodies = mechanism.bodies[freeids]
+    else
+        freeids = getid.(mechanism.bodies)
+        freebodies = mechanism.bodies[freeids]
+    end
     
+
     norm0 = norm(gc(mechanism))
     norm1 = norm0
     for n = Base.OneTo(newtonIter)
 
-        for body in get_free_bodies(mechanism,fixedbodies)  
+        for body in freebodies
             body.state.xk[1] = body.state.xc
             body.state.qk[1] = body.state.qc
         end
 
-        constraintstep!(mechanism,fixedbodies) 
+        constraintstep!(mechanism,freeids) 
     
+        # Line search
         for j = Base.OneTo(lineIter)
 
-            for body in get_free_bodies(mechanism,fixedbodies)
+            for body in freebodies
                 
                 body.state.xc = body.state.xk[1] + body.state.vsol[1]/(2^(j-1))
                 
@@ -117,6 +123,6 @@ function initializeConstraints!(mechanism::Mechanism{T,N,Nb,Ne},fixedbodies; ε 
         end
     end
 
-    display("Constraint initialization did not converge!")
+    display("Constraint initialization did not converge! Tolerance: "*string(norm1))
     return 
 end
