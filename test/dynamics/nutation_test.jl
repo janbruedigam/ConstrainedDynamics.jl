@@ -23,7 +23,7 @@ constraints = [joint1]
 shapes = [b1]
 
 
-mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
+mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes,Δt=0.005)
 
 axis = [0;0;1.]
 speed = 50pi #*0
