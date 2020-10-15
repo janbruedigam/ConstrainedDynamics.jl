@@ -44,6 +44,7 @@ end
 
 # with control function 
 function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Storage, control!::Function;
+        ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = false,debug::Bool = false
     )
 
@@ -54,13 +55,14 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, k)
-        newton!(mechanism, warning = debug)
+        newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         foreachactive(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
 
 function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage::Storage, control!::Function;
+        ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = false,debug::Bool = false
     )
 
@@ -69,7 +71,7 @@ function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, k)
-        newton!(mechanism, warning = debug)
+        newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         mechanism.z = mechanism.zsol[2]
         mechanism.λ = mechanism.λsol[2]
     end
@@ -78,6 +80,7 @@ end
 
 # with controller
 function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Storage, controller::Controller;
+        ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = false,debug::Bool = false
     )
 
@@ -90,7 +93,7 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, controller, k)
-        newton!(mechanism, warning = debug)
+        newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         foreachactive(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
@@ -98,6 +101,7 @@ end
 
 # without control
 function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Storage;
+        ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = false,debug::Bool = false
     )
 
@@ -107,13 +111,14 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
    
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
-        newton!(mechanism, warning = debug)
+        newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         foreachactive(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
 
 function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage::Storage;
+        ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = false,debug::Bool = false
     )
 
@@ -121,7 +126,7 @@ function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage
 
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
-        newton!(mechanism, warning = debug)
+        newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         mechanism.z = mechanism.zsol[2]
         mechanism.λ = mechanism.λsol[2]
     end
@@ -129,20 +134,22 @@ function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage
 end
 
 function simulate!(mechanism::AbstractMechanism{T}, tend::Real, args...;
+        ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = false,debug::Bool = false
     ) where T
 
     steps = Base.OneTo(Int64(ceil(tend / mechanism.Δt)))
     record ? storage = Storage{T}(steps,length(mechanism.bodies)) : storage = Storage{T}()        
-    storage = simulate!(mechanism, steps, storage, args...;record=record,debug=debug)
+    storage = simulate!(mechanism, steps, storage, args...; ε = ε, newtonIter = newtonIter, lineIter = lineIter, record = record, debug = debug)
     return storage # can be "nothing"
 end
 
 function simulate!(mechanism::AbstractMechanism, storage::Storage{T,N}, args...;
-        record::Bool = true,debug::Bool = false
+        ε = 1e-10, newtonIter = 100, lineIter = 10,
+        record::Bool = true, debug::Bool = false
     ) where {T,N}
     
     steps = Base.OneTo(N)
-    storage = simulate!(mechanism, steps, storage, args...;record=record,debug=debug)
+    storage = simulate!(mechanism, steps, storage, args...; ε = ε, newtonIter = newtonIter, lineIter = lineIter, record = record, debug = debug)
     return storage
 end
