@@ -1,11 +1,11 @@
-mutable struct LinearMechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
+mutable struct LinearMechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     ## Mechanism attributes
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
     eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
     ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
-    graph::Graph{N}
+    graph::Graph{Nn}
     ldu::SparseLDU{T}
 
     # TODO remove once EqualityConstraint is homogenous
@@ -39,7 +39,7 @@ mutable struct LinearMechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
     u::Vector{T}
 
 
-    function LinearMechanism(mechanism::Mechanism{T,N,Nb,Ne,Ni}, xd, vd, qd, ωd, Fτd, eqcids) where {T,N,Nb,Ne,Ni}
+    function LinearMechanism(mechanism::Mechanism{T,Nn,Nb,Ne,Ni}, xd, vd, qd, ωd, Fτd, eqcids) where {T,Nn,Nb,Ne,Ni}
 
         A, Bu, Bλ, G = linearsystem(mechanism, xd, vd, qd, ωd, Fτd, getid.(mechanism.bodies), eqcids)
 
@@ -57,17 +57,17 @@ mutable struct LinearMechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
         
         u = zeros(T,size(Bu)[2])
 
-        new{T,N,Nb,Ne,Ni}([getfield(mechanism,i) for i=1:getfieldnumber(mechanism)]..., A, Bu, Bλ, G, xd, vd, qd, ωd, z, zsol, Δz, λ, λsol, Δλ, u)
+        new{T,Nn,Nb,Ne,Ni}([getfield(mechanism,i) for i=1:getfieldnumber(mechanism)]..., A, Bu, Bλ, G, xd, vd, qd, ωd, z, zsol, Δz, λ, λsol, Δλ, u)
     end
 
-    function LinearMechanism(mechanism::Mechanism{T,N,Nb,Ne,Ni}; 
+    function LinearMechanism(mechanism::Mechanism{T,Nn,Nb,Ne,Ni}; 
         xd = [mechanism.bodies[i].state.xc for i=1:Nb],
         vd = [mechanism.bodies[i].state.vc for i=1:Nb],
         qd = [mechanism.bodies[i].state.qc for i=1:Nb],
         ωd = [mechanism.bodies[i].state.ωc for i=1:Nb],
         eqcids = [],
         Fτd = []
-    ) where {T,N,Nb,Ne,Ni}
+    ) where {T,Nn,Nb,Ne,Ni}
 
         return LinearMechanism(mechanism, xd, vd, qd, ωd, Fτd, eqcids)
     end

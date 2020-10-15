@@ -1,4 +1,4 @@
-function lineSearch!(mechanism::Mechanism{T,N,Nb,Ne,0}, normf0;iter = 10, warning::Bool = false) where {T,N,Nb,Ne}
+function lineSearch!(mechanism::Mechanism{T,Nn,Nb,Ne,0}, normf0;iter = 10, warning::Bool = false) where {T,Nn,Nb,Ne}
     normf1 = normf0
     scale = 0
     ldu = mechanism.ldu
@@ -71,7 +71,7 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     return meritf1
 end
 
-function lineSearch!(mechanism::LinearMechanism{T,N,Nb,Ne,0}, normf0;iter = 10, warning::Bool = false) where {T,N,Nb,Ne}
+function lineSearch!(mechanism::LinearMechanism{T,Nn,Nb,Ne,0}, normf0;iter = 10, warning::Bool = false) where {T,Nn,Nb,Ne}
     normf1 = normf0
     scale = 0
 

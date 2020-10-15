@@ -1,4 +1,4 @@
-function densesystem(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     graph = mechanism.graph
@@ -57,7 +57,7 @@ end
 
 # TODO only works for 1DOF active constaints (eqcids)
 # Maximal Coordinates
-function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,N,Nb}
+function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,Nn,Nb}
     statesold = [State{T}() for i=1:Nb]
 
     # store old state and set new initial state
@@ -80,7 +80,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xd, vd, qd, ωd, Fτd, bodyi
     return A, Bu, Bλ, G
 end
 # Minimal Coordinates
-function linearsystem(mechanism::Mechanism{T,N,Nb}, xθd, vωd, Fτd, controlledids, controlids) where {T,N,Nb}
+function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xθd, vωd, Fτd, controlledids, controlids) where {T,Nn,Nb}
     statesold = [State{T}() for i=1:Nb]
     xd = [szeros(T,3) for i=1:Nb]
     vd = [szeros(T,3) for i=1:Nb]
@@ -116,7 +116,7 @@ function linearsystem(mechanism::Mechanism{T,N,Nb}, xθd, vωd, Fτd, controlled
 end
 
 
-function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
+function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
     Δt = mechanism.Δt
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
@@ -206,7 +206,7 @@ function lineardynamics(mechanism::Mechanism{T,N,Nb}, eqcids) where {T,N,Nb}
     return A, Bu, Bλ, G
 end
 
-function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+function linearconstraints(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
     Δt = mechanism.Δt
     eqcs = mechanism.eqconstraints
 
@@ -234,7 +234,7 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cbody = getbody(mechanism,childid)
                 cstate = cbody.state
 
-                ind2 += getN(eqc.constraints[i])
+                ind2 += length(eqc.constraints[i])
                 range = oneindc+ind1:oneindc+ind2
 
                 pcol3a12 = offsetrange(parentid,3,12,1)
@@ -293,7 +293,7 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 cbody = getbody(mechanism,childid)
                 cstate = cbody.state
 
-                ind2 += getN(eqc.constraints[i])
+                ind2 += length(eqc.constraints[i])
                 range = oneindc+ind1:oneindc+ind2
 
                 ccol3a12 = offsetrange(childid,3,12,1)
@@ -333,7 +333,7 @@ function linearconstraints(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
     return Gl, -Gr'
 end
 
-function linearconstraintmapping(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
+function linearconstraintmapping(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
     FfzG = zeros(T,Nb*13,Nb*13)
 
     K = zeros(T,9,9)
@@ -357,10 +357,10 @@ function linearconstraintmapping(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 n1 = 1
                 n2 = 0
                 for j=1:i-1
-                    n1 += getN(eqc.constraints[j])
-                    n2 += getN(eqc.constraints[j])
+                    n1 += length(eqc.constraints[j])
+                    n2 += length(eqc.constraints[j])
                 end
-                n2 += getN(eqc.constraints[i])
+                n2 += length(eqc.constraints[i])
                 λ = eqc.λsol[2][n1:n2]
 
                 Aaa = zeros(T,13,13)
@@ -409,10 +409,10 @@ function linearconstraintmapping(mechanism::Mechanism{T,N,Nb}) where {T,N,Nb}
                 n1 = 1
                 n2 = 0
                 for i=1:i-1
-                    n1 += getN(eqc.constraints[i])
-                    n2 += getN(eqc.constraints[i])
+                    n1 += length(eqc.constraints[i])
+                    n2 += length(eqc.constraints[i])
                 end
-                n2 += getN(eqc.constraints[i])
+                n2 += length(eqc.constraints[i])
                 λ = eqc.λsol[2][n1:n2]
 
                 Abb = zeros(T,13,13)

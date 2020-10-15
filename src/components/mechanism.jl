@@ -1,12 +1,12 @@
-abstract type AbstractMechanism{T,N,Nb,Ne,Ni} end
+abstract type AbstractMechanism{T,Nn,Nb,Ne,Ni} end
 
-mutable struct Mechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
+mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
     eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
     ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
-    graph::Graph{N}
+    graph::Graph{Nn}
     ldu::SparseLDU{T}
 
     # TODO remove once EqualityConstraint is homogenous
@@ -37,7 +37,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
         Nb = length(bodies)
         Ne = length(eqcs)
         Ni = length(ineqcs)
-        N = Nb + Ne
+        Nn = Nb + Ne
         # steps = Int64(ceil(tend / Δt))
 
         currentid = 1
@@ -107,7 +107,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
         α = 1
         μ = 1
 
-        new{T,N,Nb,Ne,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, α, μ)
+        new{T,Nn,Nb,Ne,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, α, μ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
@@ -302,10 +302,10 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape} = Shape{T}
     return origin, bodies, eqconstraints, ineqconstraints, shapes
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::AbstractMechanism{T,N,Nb,Ne,0}) where {T,N,Nb,Ne}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::AbstractMechanism{T,Nn,Nb,Ne,0}) where {T,Nn,Nb,Ne}
     summary(io, M); println(io, " with ", Nb, " bodies and ", Ne, " constraints")
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::AbstractMechanism{T,N,Nb,Ne,Ni}) where {T,N,Nb,Ne,Ni}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::AbstractMechanism{T,Nn,Nb,Ne,Ni}) where {T,Nn,Nb,Ne,Ni}
     summary(io, M); println(io, " with ", Nb, " bodies, ", Ne, " equality constraints, and ", Ni, " inequality constraints")
 end

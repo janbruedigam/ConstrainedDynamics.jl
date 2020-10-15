@@ -34,7 +34,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
             @assert set[2] == parentid
             push!(childids, set[3])
 
-            Nset = getN(set[1])
+            Nset = length(set[1])
             if isempty(inds)
                 push!(inds, [1;3-Nset])
             else

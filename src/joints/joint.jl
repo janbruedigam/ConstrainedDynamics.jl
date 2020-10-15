@@ -8,7 +8,7 @@ Joint3 = Joint{T,3} where T
 Base.show(io::IO, joint::Joint) = summary(io, joint)
 
 getT(joint::AbstractJoint{T}) where T = T
-getN(joint::AbstractJoint{T,N}) where {T,N} = N
+Base.length(joint::AbstractJoint{T,N}) where {T,N} = N
 
 @inline constraintmat(::Joint0{T}) where T = szeros(T,0,3)
 @inline nullspacemat(::Joint0{T}) where T = SMatrix{3,3,T,9}(I)
