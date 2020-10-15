@@ -22,7 +22,7 @@ link5 = Body(b1)
 # Constraints
 joint1 = EqualityConstraint(Fixed(link2, link1; p1=-[0;0;0.03], p2=[0;0;0.03]))
 joint2 = EqualityConstraint(Fixed(link3, link2; p1=-[0;0;0.03], p2=[0;0;0.03]))
-joint3 = EqualityConstraint(OriginConnection(origin, link3))
+joint3 = EqualityConstraint(Floating(origin, link3))
 joint4 = EqualityConstraint(Fixed(link3, link4; p1=[0;0;0.03], p2=-[0;0;0.03]))
 joint5 = EqualityConstraint(Fixed(link4, link5; p1=[0;0;0.03], p2=-[0;0;0.03]))
 fr1 = InequalityConstraint(Friction(link1, [0;0;1.0], 0.6))

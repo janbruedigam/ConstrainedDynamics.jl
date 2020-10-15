@@ -29,7 +29,7 @@ links = [link1;[Body(b1) for i = 1:8]]
 # Constraints
 ineqcs = [InequalityConstraint(Impact(links[i + 1], [0;0;1.0])) for i = 1:8]
 
-joint0to1 = EqualityConstraint(OriginConnection(origin, link1))
+joint0to1 = EqualityConstraint(Floating(origin, link1))
 eqcs = [joint0to1;[EqualityConstraint(Fixed(link1, links[i + 1]; p1=corners[i])) for i = 1:8]]
 
 shapes = [box1;b1]

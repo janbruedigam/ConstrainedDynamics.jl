@@ -124,7 +124,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
-            push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
+            push!(eqc, EqualityConstraint(Floating(origin, body)))
         end
         return Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, shapes = shapes)
     end
@@ -135,7 +135,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
-            push!(eqc, EqualityConstraint(OriginConnection(origin, body)))
+            push!(eqc, EqualityConstraint(Floating(origin, body)))
         end
         return Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
     end

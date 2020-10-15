@@ -32,8 +32,8 @@ function transtest3()
     body1 = Body(Box(1., 1., 1., 1.))
     body2 = Body(Box(1., 1., 1., 1.))
 
-    oc1 = EqualityConstraint(OriginConnection(origin, body1))
-    oc2 = EqualityConstraint(OriginConnection(origin, body2))
+    oc1 = EqualityConstraint(Floating(origin, body1))
+    oc2 = EqualityConstraint(Floating(origin, body2))
     joint1 = EqualityConstraint(ConstrainedDynamics.Translational3{Float64}(body1, body2, p1=pa, p2=pb))
 
     mech = Mechanism(origin, [body1;body2], [oc1;oc2;joint1])
@@ -123,8 +123,8 @@ function transtest2()
     body1 = Body(Box(1., 1., 1., 1.))
     body2 = Body(Box(1., 1., 1., 1.))
 
-    oc1 = EqualityConstraint(OriginConnection(origin, body1))
-    oc2 = EqualityConstraint(OriginConnection(origin, body2))
+    oc1 = EqualityConstraint(Floating(origin, body1))
+    oc2 = EqualityConstraint(Floating(origin, body2))
     joint1 = EqualityConstraint(ConstrainedDynamics.Translational2{Float64}(body1, body2, p1=pa, p2=pb, axis=v))
     V12 = joint1.constraints[1].V12
 
@@ -187,8 +187,8 @@ function transtest1()
     body1 = Body(Box(1., 1., 1., 1.))
     body2 = Body(Box(1., 1., 1., 1.))
 
-    oc1 = EqualityConstraint(OriginConnection(origin, body1))
-    oc2 = EqualityConstraint(OriginConnection(origin, body2))
+    oc1 = EqualityConstraint(Floating(origin, body1))
+    oc2 = EqualityConstraint(Floating(origin, body2))
     joint1 = EqualityConstraint(ConstrainedDynamics.Translational1{Float64}(body1, body2, p1=pa, p2=pb, axis=v))
     v = joint1.constraints[1].V3'
 
@@ -249,8 +249,8 @@ function rottest3()
     body1 = Body(Box(1., 1., 1., 1.))
     body2 = Body(Box(1., 1., 1., 1.))
 
-    oc1 = EqualityConstraint(OriginConnection(origin, body1))
-    oc2 = EqualityConstraint(OriginConnection(origin, body2))
+    oc1 = EqualityConstraint(Floating(origin, body1))
+    oc2 = EqualityConstraint(Floating(origin, body2))
     joint1 = EqualityConstraint(ConstrainedDynamics.Rotational3{Float64}(body1, body2, qoffset = qoffset))
 
     mech = Mechanism(origin, [body1;body2], [oc1;oc2;joint1])
@@ -311,8 +311,8 @@ function rottest2()
     body1 = Body(Box(1., 1., 1., 1.))
     body2 = Body(Box(1., 1., 1., 1.))
 
-    oc1 = EqualityConstraint(OriginConnection(origin, body1))
-    oc2 = EqualityConstraint(OriginConnection(origin, body2))
+    oc1 = EqualityConstraint(Floating(origin, body1))
+    oc2 = EqualityConstraint(Floating(origin, body2))
     joint1 = EqualityConstraint(ConstrainedDynamics.Rotational2{Float64}(body1, body2, axis = v, qoffset = qoffset))
     V12 = joint1.constraints[1].V12
 
@@ -374,8 +374,8 @@ function rottest1()
     body1 = Body(Box(1., 1., 1., 1.))
     body2 = Body(Box(1., 1., 1., 1.))
 
-    oc1 = EqualityConstraint(OriginConnection(origin, body1))
-    oc2 = EqualityConstraint(OriginConnection(origin, body2))
+    oc1 = EqualityConstraint(Floating(origin, body1))
+    oc2 = EqualityConstraint(Floating(origin, body2))
     joint1 = EqualityConstraint(ConstrainedDynamics.Rotational1{Float64}(body1, body2, axis = v, qoffset = qoffset))
     V3 = joint1.constraints[1].V3'
 

@@ -206,9 +206,8 @@ function parse_joint(xjoint, origin, plink, clink, T)
         joint = EqualityConstraint(Planar(plink, clink, axis; p1=p1, p2=p2, qoffset = q), name=name)
     elseif jointtype == "fixed"
         joint = EqualityConstraint(Fixed(plink, clink; p1=p1, p2=p2, qoffset = q), name=name)
-    elseif jointtype == "floating" # Floating relative to non-origin link not supported
-        @assert origin == plink
-        joint = EqualityConstraint(OriginConnection(origin, clink), name=name)
+    elseif jointtype == "floating"
+        joint = EqualityConstraint(Floating(plink, clink), name=name)
     end
 
     return joint
@@ -262,7 +261,7 @@ function parse_joints(xjoints, ldict, floating, T)
     end
 
     if floating
-        originjoint = EqualityConstraint(OriginConnection(origin, ldict[floatingname]),name="autoorigincon")
+        originjoint = EqualityConstraint(Floating(origin, ldict[floatingname]),name="autoorigincon")
         push!(joints, originjoint)
     end
 

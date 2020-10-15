@@ -25,7 +25,7 @@ export Box,
     Storage,
     Controller,
 
-    OriginConnection,
+    Floating,
     Prismatic,
     Spherical,
     Cylindrical,

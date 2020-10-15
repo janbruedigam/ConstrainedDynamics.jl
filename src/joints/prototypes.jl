@@ -52,5 +52,5 @@ PlanarFree(body1::AbstractBody{T}, body2, axis; p1 = szeros(T, 3), p2 = szeros(T
     Translational1{T}(body1, body2, p1 = p1, p2 = p2, axis = axis), Rotational0{T}(body1, body2)
 
 # t0r0: Free
-OriginConnection(body1::AbstractBody{T}, body2) where T = 
+Floating(body1::AbstractBody{T}, body2) where T = 
     Translational0{T}(body1, body2), Rotational0{T}(body1, body2)
