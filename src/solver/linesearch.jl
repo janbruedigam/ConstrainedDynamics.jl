@@ -10,6 +10,9 @@ function lineSearch!(mechanism::Mechanism{T,N,Nb,Ne,0}, normf0;iter = 10, warnin
         for body in bodies
             isinactive(body) && continue
             lineStep!(body, getentry(ldu, body.id), scale)
+            if norm(body.state.ωsol[2]) > 1/mechanism.Δt
+                error("Excessive angular velocity. Body-ID: "*string(body.id)*", ω: "*string(body.state.ωsol[2])*".")
+            end
         end
         for eqc in eqcs
             isinactive(eqc) && continue
@@ -43,6 +46,9 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
         for body in bodies
             isinactive(body) && continue
             lineStep!(body, getentry(ldu, body.id), scale, mechanism)
+            if norm(body.state.ωsol[2]) > 1/mechanism.Δt
+                error("Excessive angular velocity. Body-ID: "*string(body.id)*", ω: "*string(body.state.ωsol[2])*".")
+            end
         end
         for eqc in eqcs
             isinactive(eqc) && continue
@@ -112,4 +118,8 @@ end
     ineqc.ssol[2] = ineqc.ssol[1] - 1 / (2^scale) * mechanism.α * entry.Δs
     ineqc.γsol[2] = ineqc.γsol[1] - 1 / (2^scale) * mechanism.α * -entry.Δγ
     return
+end
+
+@inline function checkangularvelocity(body)
+
 end
