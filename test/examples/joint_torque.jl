@@ -21,7 +21,7 @@ link1 = Body(b1)
 link2 = Body(b2)
 
 # Constraints
-joint0to1 = EqualityConstraint(OriginConnection(origin, link1))
+joint0to1 = EqualityConstraint(Floating(origin, link1))
 # joint0to1 = EqualityConstraint(Fixed(origin,link1))
 joint1to2 = EqualityConstraint(Revolute(link1, link2, ex; p1=vert12, p2=vert11))
 

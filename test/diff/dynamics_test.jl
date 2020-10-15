@@ -24,7 +24,7 @@ function dyntestT()
     body1.J = diagm(ones(3))
 
 
-    oc1 = EqualityConstraint(OriginConnection(origin, body1))
+    oc1 = EqualityConstraint(Floating(origin, body1))
 
     mech = Mechanism(origin, [body1], [oc1])
     discretizestate!(body1,x1,q1,v1,v2,ω1,ω2,Δt)
@@ -57,7 +57,7 @@ function dyntestR()
     body1.J = diagm(ones(3))
 
 
-    oc1 = EqualityConstraint(OriginConnection(origin, body1))
+    oc1 = EqualityConstraint(Floating(origin, body1))
 
     mech = Mechanism(origin, [body1], [oc1])
     discretizestate!(body1,x1,q1,v1,v2,ω1,ω2,Δt)

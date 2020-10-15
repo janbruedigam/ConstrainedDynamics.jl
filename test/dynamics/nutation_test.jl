@@ -16,7 +16,7 @@ origin = Origin{Float64}()
 link1 = Body(b1)
 
 # Constraints
-joint1 = EqualityConstraint(OriginConnection(origin, link1))
+joint1 = EqualityConstraint(Floating(origin, link1))
 
 links = [link1]
 constraints = [joint1]
