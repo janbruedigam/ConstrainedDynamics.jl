@@ -108,7 +108,7 @@ end
 end
 
 
-# vec(G) Jacobian (also NOT accounting for quaternion specialness)
+# vec(G) Jacobian (also NOT accounting for quaternion specialness in the second derivative: ∂(∂ʳg∂posx)∂y)
 
 @inline function ∂2g∂posaa(joint::Rotational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
     XX = szeros(T, 9, 3)
