@@ -10,20 +10,21 @@ using Rotations: RotationError, pure_quaternion, params, lmult, rmult, tmat, vma
 using Colors: RGBA, RGB
 using LightXML
 
-export Box,
-    Cylinder,
-    Sphere,
-    Mesh,
 
-    UnitQuaternion,
-    Origin,
+export Origin,
     Body,
     EqualityConstraint,
     InequalityConstraint,
     Mechanism,
     LinearMechanism,
-    Storage,
     Controller,
+    Storage,
+    UnitQuaternion,
+
+    Box,
+    Cylinder,
+    Sphere,
+    Mesh,
 
     Floating,
     Prismatic,
@@ -38,24 +39,22 @@ export Box,
 
     Impact,
     Friction,
+    UnitQuaternion,
 
     setPosition!,
     setVelocity!,
     setForce!,
-    simulate!,
-    initializeConstraints!,
-
-    disassemble,
     getid,
     getcomponent,
     getbody,
     geteqconstraint,
     getineqconstraint,
+    simulate!,
+    initializeConstraints!,
+    disassemble,
     minimalCoordinates,
     activate!,
     deactivate!,
-
-    linearsystem,
 
     RotX,
     RotY,
@@ -65,7 +64,6 @@ export Box,
     szeros,
     sones,
     srand
-
 
 include(joinpath("util", "util.jl"))
 include(joinpath("util", "custom_static.jl"))
