@@ -29,6 +29,15 @@ Rotational1 = Rotational{T,1} where T
 Rotational2 = Rotational{T,2} where T
 Rotational3 = Rotational{T,3} where T
 
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, constraint::Rotational{T,N}) where {T,N}
+    summary(io, constraint)
+    println(io,"")
+    println(io, " V3:      "*string(constraint.V3))
+    println(io, " V12:     "*string(constraint.V12))
+    println(io, " qoffset: "*string(constraint.qoffset))
+end
+
+
 @inline function getPositionDelta(joint::Rotational, body1::AbstractBody, body2::Body, θ::SVector{N,T}) where {T,N}
     # axis angle representation
     θ = zerodimstaticadjoint(nullspacemat(joint)) * θ

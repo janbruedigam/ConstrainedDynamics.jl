@@ -91,3 +91,14 @@ mutable struct Sphere{T} <: Shape{T}
     end
 end
 
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, shape::Shape{T}) where {T}
+    summary(io, shape)
+    println(io,"")
+    println(io," bodyids: "*string(shape.bodyids))
+    println(io," m:       "*string(shape.m))
+    println(io," J:       "*string(shape.J))
+    println(io," xoffset: "*string(shape.xoffset))
+    println(io," qoffset: "*string(shape.qoffset))
+    println(io," color:   "*string(shape.color))
+end
+

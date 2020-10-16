@@ -1,6 +1,8 @@
 abstract type Bound{T} end
 
-Base.show(io::IO, bound::Bound) = summary(io, bound)
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, bound::Bound{T}) where {T}
+    summary(io, bound)
+end
 
 @inline getT(bound::Bound{T}) where T = T
 

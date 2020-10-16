@@ -304,10 +304,16 @@ mutable struct LinearMechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni
 end
 
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::AbstractMechanism{T,Nn,Nb,Ne,0}) where {T,Nn,Nb,Ne}
-    summary(io, M); println(io, " with ", Nb, " bodies and ", Ne, " constraints")
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Nb,Ne,0}) where {T,Nn,Nb,Ne}
+    summary(io, mechanism)
+    println(io, " with ", Nb, " bodies and ", Ne, " constraints")
+    println(io, " Δt: "*string(mechanism.Δt))
+    println(io, " g:  "*string(mechanism.g))
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::AbstractMechanism{T,Nn,Nb,Ne,Ni}) where {T,Nn,Nb,Ne,Ni}
-    summary(io, M); println(io, " with ", Nb, " bodies, ", Ne, " equality constraints, and ", Ni, " inequality constraints")
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Nb,Ne,Ni}) where {T,Nn,Nb,Ne,Ni}
+    summary(io, mechanism)
+    println(io, " with ", Nb, " bodies, ", Ne, " equality constraints, and ", Ni, " inequality constraints")
+    println(io, " Δt: "*string(mechanism.Δt))
+    println(io, " g:  "*string(mechanism.g))
 end

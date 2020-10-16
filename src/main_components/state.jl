@@ -44,6 +44,24 @@ mutable struct State{T}
     end
 end
 
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, state::State{T}) where {T}
+    summary(io, state)
+    println(io,"")
+    println(io,"xc:   "*string(state.xc))
+    println(io,"qc:   "*string(state.qc))
+    println(io,"ωc:   "*string(state.ωc))
+    println(io,"xk:   "*string(state.xk))
+    println(io,"qk:   "*string(state.qk))
+    println(io,"Fk:   "*string(state.Fk))
+    println(io,"τk:   "*string(state.τk))
+    println(io,"xsol: "*string(state.xsol))
+    println(io,"qsol: "*string(state.qsol))
+    println(io,"vsol: "*string(state.vsol))
+    println(io,"ωsol: "*string(state.ωsol))
+    println(io,"d:    "*string(state.d))
+end
+
+
 function initknotpoints!(state::State, order)
     state.order = order
 

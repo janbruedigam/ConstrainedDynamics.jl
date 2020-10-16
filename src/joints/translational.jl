@@ -30,6 +30,14 @@ Translational1 = Translational{T,1} where T
 Translational2 = Translational{T,2} where T
 Translational3 = Translational{T,3} where T
 
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, constraint::Translational{T,N}) where {T,N}
+    summary(io, constraint)
+    println(io,"")
+    println(io, " V3:       "*string(constraint.V3))
+    println(io, " V12:      "*string(constraint.V12))
+    println(io, " vertices: "*string(constraint.vertices))
+end
+
 
 @inline function getPositionDelta(joint::Translational, body1::AbstractBody, body2::Body, x::SVector)
     Δx = zerodimstaticadjoint(nullspacemat(joint)) * x # in body1 frame
