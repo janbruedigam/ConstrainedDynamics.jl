@@ -38,6 +38,22 @@ mutable struct Origin{T} <: AbstractBody{T}
     end
 end
 
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, body::Body{T}) where {T}
+    summary(io, body)
+    println(io,"")
+    println(io, " id:     "*string(body.id))
+    println(io, " name:   "*string(body.name))
+    println(io, " active: "*string(body.active))
+    println(io, " m:      "*string(body.m))
+    println(io, " J:      "*string(body.J))
+end
+
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, origin::Origin{T}) where {T}
+    summary(io, origin)
+    println(io, " id:   "*string(origin.id))
+    println(io, " name: "*string(origin.name))
+end
+
 function Base.deepcopy(b::Body{T}) where T
     contents = []
     for i = 2:getfieldnumber(b)

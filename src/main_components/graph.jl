@@ -73,6 +73,11 @@ struct Graph{N}
     end
 end
 
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, graph::Graph{N}) where {N}
+    summary(io, graph)
+end
+
+
 function adjacencyMatrix(eqconstraints::Vector{<:EqualityConstraint}, bodies::Vector{<:Body})
     A = zeros(Bool, 0, 0)
     dict = Dict{Int64,Int64}()

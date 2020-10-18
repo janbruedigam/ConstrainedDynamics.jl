@@ -87,3 +87,7 @@ end
 @inline getentry(ldu::SparseLDU, id::Integer) = ldu.diagonals[id]
 @inline getentry(ldu::SparseLDU, ids::Tuple{Integer,Integer}) = ldu.offdiagonals[ids]
 @inline getineqentry(ldu::SparseLDU, id::Integer) = ldu.inequalities[id]
+
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, sparseldu::SparseLDU{T}) where {T}
+    summary(io, sparseldu)
+end

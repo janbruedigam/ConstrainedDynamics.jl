@@ -14,3 +14,7 @@ struct Storage{T,N}
 
     Storage{T}() where T = Storage{T}(Base.OneTo(0),0)
 end
+
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, storage::Storage{T,N}) where {T,N}
+    summary(io, storage)
+end

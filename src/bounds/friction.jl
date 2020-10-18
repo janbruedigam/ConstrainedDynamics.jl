@@ -2,9 +2,9 @@ mutable struct Friction{T} <: Contact{T}
     Nx::Adjoint{T,SVector{6,T}}
     D::SMatrix{2,6,T,12}
     cf::T
-    b::SVector{2,T}
     offset::SVector{6,T}
-
+    b::SVector{2,T}
+    
 
     function Friction(body::Body{T}, normal::AbstractVector, cf::Real; offset::AbstractVector = zeros(3)) where T
         @assert cf>0
@@ -18,8 +18,17 @@ mutable struct Friction{T} <: Contact{T}
         D = [[V1 V2];szeros(3,2)]'
         offset = [offset;0.0;0.0;0.0]
 
-        new{T}(Nx, D, cf, zeros(2),offset), body.id
+        new{T}(Nx, D, cf, offset, zeros(2)), body.id
     end
+end
+
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, constraint::Friction{T}) where {T}
+    summary(io, constraint)
+    println(io,"")
+    println(io, " Nx:     "*string(constraint.Nx))
+    println(io, " D:      "*string(constraint.D))
+    println(io, " cf:     "*string(constraint.cf))
+    println(io, " offset: "*string(constraint.offset))
 end
 
 

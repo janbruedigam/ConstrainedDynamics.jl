@@ -17,6 +17,7 @@ mutable struct GenericJoint{T,N} <: AbstractJoint{T,N}
 
 end 
 
+
 @inline constraintmat(::GenericJoint) = I
 
 g(joint::GenericJoint, statea::State, stateb::State, Δt) = joint.g(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)...)

@@ -182,3 +182,77 @@ end
 
     return G*z1
 end
+
+function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape} = Shape{T}[]) where T
+    origin = mechanism.origin
+    bodies = mechanism.bodies.values
+    eqconstraints = mechanism.eqconstraints.values
+    ineqconstraints = mechanism.ineqconstraints.values
+
+    # Flip component ids
+    for body in bodies
+        body.id *= -1
+    end
+    for eqc in eqconstraints
+        eqc.id *= -1
+        if eqc.parentid !== nothing
+            eqc.parentid *= -1
+        end
+        eqc.childids *= -1
+    end
+    for ineqc in ineqconstraints
+        ineqc.id *= -1
+        if ineqc.parentid !== nothing
+            ineqc.parentid *= -1
+        end
+        ineqc.childids *= -1
+    end
+    for shape in shapes
+        for (i,bodyid) in enumerate(shape.bodyids)
+            if bodyid != origin.id 
+                shape.bodyids[i] *= -1
+            end
+        end
+    end
+
+    # Set CURRENTID
+    global CURRENTID = -1
+    for body in bodies
+        if body.id <= CURRENTID
+            CURRENTID = body.id-1
+        end
+    end
+    for eqc in eqconstraints
+        if eqc.id <= CURRENTID
+            CURRENTID = eqc.id-1
+        end
+    end
+    for ineqc in ineqconstraints
+        if ineqc.id <= CURRENTID
+            CURRENTID = ineqc.id-1
+        end
+    end
+
+    # Set origin to next id
+    oldoid = origin.id
+    origin.id = getGlobalID()
+    for eqc in eqconstraints
+        if eqc.parentid === nothing
+            eqc.parentid = origin.id
+        end
+    end
+    for ineqc in ineqconstraints
+        if ineqc.parentid === nothing
+            ineqc.parentid = origin.id
+        end
+    end
+    for shape in shapes
+        for (i,bodyid) in enumerate(shape.bodyids)
+            if bodyid == oldoid 
+                shape.bodyids[i] = origin.id
+            end
+        end
+    end
+
+    return origin, bodies, eqconstraints, ineqconstraints, shapes
+end

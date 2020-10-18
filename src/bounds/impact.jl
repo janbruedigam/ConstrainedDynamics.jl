@@ -15,3 +15,10 @@ mutable struct Impact{T} <: Contact{T}
         new{T}(Nx, offset), body.id
     end
 end
+
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, constraint::Impact{T}) where {T}
+    summary(io, constraint)
+    println(io,"")
+    println(io, " Nx:     "*string(constraint.Nx))
+    println(io, " offset: "*string(constraint.offset))
+end

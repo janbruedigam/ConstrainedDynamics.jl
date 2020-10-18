@@ -1,12 +1,12 @@
-abstract type AbstractMechanism{T,N,Nb,Ne,Ni} end
+abstract type AbstractMechanism{T,Nn,Nb,Ne,Ni} end
 
-mutable struct Mechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
+mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
     eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
     ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
-    graph::Graph{N}
+    graph::Graph{Nn}
     ldu::SparseLDU{T}
 
     # TODO remove once EqualityConstraint is homogenous
@@ -37,7 +37,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
         Nb = length(bodies)
         Ne = length(eqcs)
         Ni = length(ineqcs)
-        N = Nb + Ne
+        Nn = Nb + Ne
         # steps = Int64(ceil(tend / Δt))
 
         currentid = 1
@@ -107,7 +107,7 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
         α = 1
         μ = 1
 
-        new{T,N,Nb,Ne,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, α, μ)
+        new{T,Nn,Nb,Ne,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, α, μ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
@@ -228,84 +228,92 @@ mutable struct Mechanism{T,N,Nb,Ne,Ni} <: AbstractMechanism{T,N,Nb,Ne,Ni}
     end
 end
 
-function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape} = Shape{T}[]) where T
-    origin = mechanism.origin
-    bodies = mechanism.bodies.values
-    eqconstraints = mechanism.eqconstraints.values
-    ineqconstraints = mechanism.ineqconstraints.values
+mutable struct LinearMechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
+    ## Mechanism attributes
+    origin::Origin{T}
+    bodies::UnitDict{Base.OneTo{Int64},Body{T}}
+    eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
+    ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
-    # Flip component ids
-    for body in bodies
-        body.id *= -1
-    end
-    for eqc in eqconstraints
-        eqc.id *= -1
-        if eqc.parentid !== nothing
-            eqc.parentid *= -1
-        end
-        eqc.childids *= -1
-    end
-    for ineqc in ineqconstraints
-        ineqc.id *= -1
-        if ineqc.parentid !== nothing
-            ineqc.parentid *= -1
-        end
-        ineqc.childids *= -1
-    end
-    for shape in shapes
-        for (i,bodyid) in enumerate(shape.bodyids)
-            if bodyid != origin.id 
-                shape.bodyids[i] *= -1
-            end
-        end
-    end
+    graph::Graph{Nn}
+    ldu::SparseLDU{T}
 
-    # Set CURRENTID
-    global CURRENTID = -1
-    for body in bodies
-        if body.id <= CURRENTID
-            CURRENTID = body.id-1
-        end
-    end
-    for eqc in eqconstraints
-        if eqc.id <= CURRENTID
-            CURRENTID = eqc.id-1
-        end
-    end
-    for ineqc in ineqconstraints
-        if ineqc.id <= CURRENTID
-            CURRENTID = ineqc.id-1
-        end
-    end
+    # TODO remove once EqualityConstraint is homogenous
+    normf::T
+    normΔs::T
 
-    # Set origin to next id
-    oldoid = origin.id
-    origin.id = getGlobalID()
-    for eqc in eqconstraints
-        if eqc.parentid === nothing
-            eqc.parentid = origin.id
+    Δt::T
+    g::T
+
+    α::T
+    μ::T
+    
+    ## LinearMechanism attributes
+    A::AbstractMatrix{T}
+    Bu::AbstractMatrix{T}
+    Bλ::AbstractMatrix{T}
+    G::AbstractMatrix{T}
+
+    xd::Vector{SVector{3,T}}
+    vd::Vector{SVector{3,T}}
+    qd::Vector{UnitQuaternion{T}}
+    ωd::Vector{SVector{3,T}}
+    # Fτd::Vector{SVector{3,T}}
+
+    z::Vector{T}
+    zsol::Vector{Vector{T}}
+    Δz::Vector{T}
+    λ::Vector{T}
+    λsol::Vector{Vector{T}}
+    Δλ::Vector{T}
+    u::Vector{T}
+
+
+    function LinearMechanism(mechanism::Mechanism{T,Nn,Nb,Ne,Ni}, xd, vd, qd, ωd, Fτd, eqcids) where {T,Nn,Nb,Ne,Ni}
+
+        A, Bu, Bλ, G = linearsystem(mechanism, xd, vd, qd, ωd, Fτd, getid.(mechanism.bodies), eqcids)
+
+        z = zeros(T,Nb*12)
+        zsol = [zeros(T,Nb*12) for i=1:2]
+        Δz = zeros(T,Nb*12)
+
+        nc = 0
+        for eqc in mechanism.eqconstraints
+            nc += length(eqc)
         end
-    end
-    for ineqc in ineqconstraints
-        if ineqc.parentid === nothing
-            ineqc.parentid = origin.id
-        end
-    end
-    for shape in shapes
-        for (i,bodyid) in enumerate(shape.bodyids)
-            if bodyid == oldoid 
-                shape.bodyids[i] = origin.id
-            end
-        end
+        λ = zeros(T,nc)
+        λsol = [zeros(T,nc) for i=1:2]
+        Δλ = zeros(T,nc)
+        
+        u = zeros(T,size(Bu)[2])
+
+        new{T,Nn,Nb,Ne,Ni}([getfield(mechanism,i) for i=1:getfieldnumber(mechanism)]..., A, Bu, Bλ, G, xd, vd, qd, ωd, z, zsol, Δz, λ, λsol, Δλ, u)
     end
 
-    return origin, bodies, eqconstraints, ineqconstraints, shapes
+    function LinearMechanism(mechanism::Mechanism{T,Nn,Nb,Ne,Ni}; 
+        xd = [mechanism.bodies[i].state.xc for i=1:Nb],
+        vd = [mechanism.bodies[i].state.vc for i=1:Nb],
+        qd = [mechanism.bodies[i].state.qc for i=1:Nb],
+        ωd = [mechanism.bodies[i].state.ωc for i=1:Nb],
+        eqcids = [],
+        Fτd = []
+    ) where {T,Nn,Nb,Ne,Ni}
+
+        return LinearMechanism(mechanism, xd, vd, qd, ωd, Fτd, eqcids)
+    end
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::AbstractMechanism{T,N,Nb,Ne,0}) where {T,N,Nb,Ne}
-    summary(io, M); println(io, " with ", Nb, " bodies and ", Ne, " constraints")
+
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Nb,Ne,0}) where {T,Nn,Nb,Ne}
+    summary(io, mechanism)
+    println(io, " with ", Nb, " bodies and ", Ne, " constraints")
+    println(io, " Δt: "*string(mechanism.Δt))
+    println(io, " g:  "*string(mechanism.g))
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, M::AbstractMechanism{T,N,Nb,Ne,Ni}) where {T,N,Nb,Ne,Ni}
-    summary(io, M); println(io, " with ", Nb, " bodies, ", Ne, " equality constraints, and ", Ni, " inequality constraints")
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Nb,Ne,Ni}) where {T,Nn,Nb,Ne,Ni}
+    summary(io, mechanism)
+    println(io, " with ", Nb, " bodies, ", Ne, " equality constraints, and ", Ni, " inequality constraints")
+    println(io, " Δt: "*string(mechanism.Δt))
+    println(io, " g:  "*string(mechanism.g))
 end
