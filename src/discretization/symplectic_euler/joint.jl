@@ -1,6 +1,6 @@
 # Forcing
-
-@inline function setForce!(joint::Translational, statea::State, stateb::State, F)
+@inline function applyFτ!(joint::Translational, statea::State, stateb::State)
+    F = joint.Fτ
     vertices = joint.vertices
     qa = statea.qk[1]
     qb = stateb.qk[1]
@@ -17,7 +17,8 @@
     stateb.τk[1] += τb
     return
 end
-@inline function setForce!(joint::Translational, stateb::State, F)
+@inline function applyFτ!(joint::Translational, stateb::State)
+    F = joint.Fτ
     vertices = joint.vertices
     qb = stateb.qk[1]
 
@@ -29,7 +30,8 @@ end
     return
 end
 
-@inline function setForce!(joint::Rotational, statea::State, stateb::State, τ)
+@inline function applyFτ!(joint::Rotational, statea::State, stateb::State)
+    τ = joint.Fτ
     qa = statea.qk[1]
     qb = stateb.qk[1]    
 
@@ -43,7 +45,8 @@ end
     stateb.τk[1] += τb
     return
 end
-@inline function setForce!(joint::Rotational, stateb::State, τ)
+@inline function applyFτ!(joint::Rotational, stateb::State)
+    τ = joint.Fτ
     qb = stateb.qk[1]
 
     τa = -τ # in world coordinates

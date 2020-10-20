@@ -3,8 +3,7 @@ mutable struct Translational{T,N} <: Joint{T,N}
     V12::SMatrix{2,3,T,6} # in body1's frame
     vertices::NTuple{2,SVector{3,T}} # in body1's & body2's frames
     
-    F::SVector{3,T}
-    τ::SVector{3,T}
+    Fτ::SVector{3,T}
 
     childid::Int64
 
@@ -16,12 +15,11 @@ mutable struct Translational{T,N} <: Joint{T,N}
         V1, V2, V3 = orthogonalrows(axis)
         V12 = [V1;V2]
 
-        F = zeros(T,3)
-        τ = zeros(T,3)
+        Fτ = zeros(T,3)
 
         childid = body2.id
 
-        new{T,N}(V3, V12, vertices, F, τ, childid), body1.id, body2.id
+        new{T,N}(V3, V12, vertices, Fτ, childid), body1.id, body2.id
     end
 end
 

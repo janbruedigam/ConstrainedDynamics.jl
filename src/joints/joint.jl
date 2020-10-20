@@ -23,12 +23,8 @@ Base.show(io::IO, joint::Joint) = summary(io, joint)
 
 @inline ∂Fτ∂ub(joint::Joint{T,N}) where {T,N} = szeros(T, 6, 3 - N)
 
-@inline function setForce!(joint::Joint, body1::Body, body2::Body, Fτ::SVector)
-    setForce!(joint, body1.state, body2.state, zerodimstaticadjoint(nullspacemat(joint)) * Fτ)
-    return
-end
-@inline function setForce!(joint::Joint, body1::Origin, body2::Body, Fτ::SVector)
-    setForce!(joint, body2.state, zerodimstaticadjoint(nullspacemat(joint)) * Fτ)
+@inline function setForce!(joint::Joint, Fτ::SVector)
+    joint.Fτ = zerodimstaticadjoint(nullspacemat(joint)) * Fτ
     return
 end
 

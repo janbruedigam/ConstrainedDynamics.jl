@@ -55,6 +55,7 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, k)
+        applyFτ!(mechanism)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         foreachactive(updatestate!, bodies, Δt)
     end
@@ -71,6 +72,7 @@ function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, k)
+        applyFτ!(mechanism)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         mechanism.z = mechanism.zsol[2]
         mechanism.λ = mechanism.λsol[2]
@@ -93,6 +95,7 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, controller, k)
+        applyFτ!(mechanism)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         foreachactive(updatestate!, bodies, Δt)
     end

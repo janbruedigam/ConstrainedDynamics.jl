@@ -7,6 +7,15 @@ end
 getT(joint::AbstractJoint{T}) where T = T
 Base.length(joint::AbstractJoint{T,N}) where {T,N} = N
 
+@inline function applyFτ!(joint::AbstractJoint, body1::Body, body2::Body)
+    applyFτ!(joint, body1.state, body2.state)
+    return
+end
+@inline function applyFτ!(joint::AbstractJoint, ::Origin, body2::Body)
+    applyFτ!(joint, body2.state)
+    return
+end
+
 @inline ∂g∂ʳposa(joint::AbstractJoint{T,N}) where {T,N} = szeros(T, N, 6)
 @inline ∂g∂ʳposb(joint::AbstractJoint{T,N}) where {T,N} = szeros(T, N, 6)
 @inline ∂g∂ʳvela(joint::AbstractJoint{T,N}) where {T,N} = szeros(T, N, 6)
