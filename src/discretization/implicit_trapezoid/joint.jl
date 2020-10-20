@@ -58,7 +58,7 @@ end
 
 # Control derivatives
 
-@inline function ∂Fτ∂ua(joint::Translational, statea::State)
+@inline function ∂Fτ∂ua(joint::Translational, statea::State, stateb::State)
     vertices = joint.vertices
     qa = statea.qk[2]
 
@@ -87,7 +87,7 @@ end
     return [BFb; Bτb]
 end
 
-@inline function ∂Fτ∂ua(joint::Rotational{T}, statea::State) where T
+@inline function ∂Fτ∂ua(joint::Rotational{T}, statea::State, stateb::State) where T
     BFa = (szeros(T, 3, 3))
     Bτa = -I
 

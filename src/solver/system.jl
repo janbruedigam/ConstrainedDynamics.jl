@@ -55,7 +55,7 @@ function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
 end
 
 
-# TODO only works for 1DOF active constaints (eqcids)
+# TODO only works for 1DOF active constraints (eqcids)
 # Maximal Coordinates
 function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,Nn,Nb}
     statesold = [State{T}() for i=1:Nb]
@@ -138,6 +138,7 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
     # calculate next state
     discretizestate!(mechanism)
     foreach(setsolution!, mechanism.bodies)
+    applyFτ!(mechanism, clear=false)
     newton!(mechanism)
 
     # get state linearization 
@@ -165,7 +166,7 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
     end
 
     Ffz += linearconstraintmapping(mechanism)
-
+    Fz += linearforcemapping(mechanism)
 
     n1 = 1
     n2 = 0
@@ -187,21 +188,12 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
         n1 = n2+1
     end
 
-    # display(round.(Ffz,digits=5))
-    # display(round.(invFfzquat * inv(Ffz),digits=5))
-
-    
-
     G, Fλ = linearconstraints(mechanism)
 
     invFfz = invFfzquat * inv(Ffz)
     A = -invFfz * Fz
     Bu = -invFfz * Fu * Bcontrol
     Bλ = -invFfz * Fλ
-
-    # display(round.(Ffz,digits=5))
-    # display(round.(invFfz,digits=5))
-    # display(round.(Fz,digits=5))
 
     return A, Bu, Bλ, G
 end
@@ -431,4 +423,47 @@ function linearconstraintmapping(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
     end
 
     return FfzG
+end
+
+function linearforcemapping(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
+    Fzu = zeros(T,Nb*13,Nb*12)
+
+    for eqc in mechanism.eqconstraints
+        parentid = eqc.parentid
+        for (i,childid) in enumerate(eqc.childids)
+            if parentid !== nothing
+                FaXa, FaQa, τaXa, τaQa, FbXa, FbQa, τbXa, τbQa = ∂Fτ∂posa(eqc.constraints[i], getbody(mechanism, parentid).state, getbody(mechanism, childid).state)
+                FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb = ∂Fτ∂posb(eqc.constraints[i], getbody(mechanism, parentid).state, getbody(mechanism, childid).state)
+
+                cola6 = offsetrange(parentid,6)
+                colb6 = offsetrange(childid,6)
+                rowav = offsetrange(parentid,3,13,2)
+                rowaω = offsetrange(parentid,3,13,4).+1
+                rowbv = offsetrange(childid,3,13,2)
+                rowbω = offsetrange(childid,3,13,4).+1
+
+                Fzu[rowav,cola6] = [FaXa FaQa]
+                Fzu[rowaω,cola6] = [τaXa τaQa]
+                Fzu[rowbv,cola6] = [FbXa FbQa]
+                Fzu[rowbω,cola6] = [τbXa τbQa]
+
+                Fzu[rowav,colb6] = [FaXb FaQb]
+                Fzu[rowaω,colb6] = [τaXb τaQb]
+                Fzu[rowbv,colb6] = [FbXb FbQb]
+                Fzu[rowbω,colb6] = [τbXb τbQb]
+            else
+                FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb = ∂Fτ∂posb(eqc.constraints[i], getbody(mechanism, childid).state)
+
+                colb6 = offsetrange(childid,6)
+                rowbv = offsetrange(childid,3,13,2)
+                rowbω = offsetrange(childid,3,13,4).+1
+                
+                Fzu[rowbv,colb6] = [FbXb FbQb]
+                Fzu[rowbω,colb6] = [τbXb τbQb]
+            end
+
+        end
+    end
+
+    return Fzu
 end

@@ -61,7 +61,7 @@ end
 
 # Control derivatives
 
-@inline function ∂Fτ∂ua(joint::Translational, statea::State)
+@inline function ∂Fτ∂ua(joint::Translational, statea::State, stateb::State)
     vertices = joint.vertices
     qa = statea.qk[1]
 
@@ -90,7 +90,7 @@ end
     return [BFb; Bτb]
 end
 
-@inline function ∂Fτ∂ua(joint::Rotational{T}, statea::State) where T
+@inline function ∂Fτ∂ua(joint::Rotational{T}, statea::State, stateb::State) where T
     BFa = (szeros(T, 3, 3))
     Bτa = -I
 
@@ -113,4 +113,104 @@ end
     Bτb = VLᵀmat(qb) * RVᵀmat(qb)
 
     return [BFb; Bτb]
+end
+
+
+@inline function ∂Fτ∂posa(joint::Translational{T}, statea::State, stateb::State) where T
+    qa = statea.qk[1]
+    qb = stateb.qk[1]
+    F = joint.Fτ
+    vertices = joint.vertices
+
+    FaXa = szeros(T,3,3)
+    FaQa = -2*VRᵀmat(qa)*Rmat(UnitQuaternion(F))*LVᵀmat(qa)
+    τaXa = szeros(T,3,3)
+    τaQa = szeros(T,3,3)
+    FbXa = szeros(T,3,3)
+    FbQa = 2*VRᵀmat(qa)*Rmat(UnitQuaternion(F))*LVᵀmat(qa)
+    τbXa = szeros(T,3,3)
+    τbQa = 2*skew(vertices[2])*VLᵀmat(qb)*Rmat(qb)*Rᵀmat(qa)*Rmat(UnitQuaternion(F))*LVᵀmat(qa)
+
+    return FaXa, FaQa, τaXa, τaQa, FbXa, FbQa, τbXa, τbQa
+end
+@inline function ∂Fτ∂posb(joint::Translational{T}, statea::State, stateb::State) where T
+    qa = statea.qk[1]
+    qb = stateb.qk[1]
+    F = joint.Fτ
+    vertices = joint.vertices
+
+    FaXb = szeros(T,3,3)
+    FaQb = szeros(T,3,3)
+    τaXb = szeros(T,3,3)
+    τaQb = szeros(T,3,3)
+    FbXb = szeros(T,3,3)
+    FbQb = szeros(T,3,3)
+    τbXb = szeros(T,3,3)
+    τbQb = 2*skew(vertices[2])*VRᵀmat(qb)*Rᵀmat(qa)*Rmat(UnitQuaternion(F))*Rmat(qa)*LVᵀmat(qb)
+
+    return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
+end
+@inline function ∂Fτ∂posb(joint::Translational{T}, stateb::State) where T
+    qb = stateb.qk[1]
+    F = joint.Fτ
+    vertices = joint.vertices
+    
+    FaXb = szeros(T,3,3)
+    FaQb = szeros(T,3,3)
+    τaXb = szeros(T,3,3)
+    τaQb = szeros(T,3,3)
+    FbXb = szeros(T,3,3)
+    FbQb = szeros(T,3,3)
+    τbXb = szeros(T,3,3)
+    τbQb = 2*skew(vertices[2])*VRᵀmat(qb)*Rmat(UnitQuaternion(F))*LVᵀmat(qb)
+
+    return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
+end
+
+@inline function ∂Fτ∂posa(joint::Rotational{T}, statea::State, stateb::State) where T
+    qa = statea.qk[1]
+    qb = stateb.qk[1]
+    τ = joint.Fτ
+
+    FaXa = szeros(T,3,3)
+    FaQa = szeros(T,3,3)
+    τaXa = szeros(T,3,3)
+    τaQa = szeros(T,3,3)
+    FbXa = szeros(T,3,3)
+    FbQa = szeros(T,3,3)
+    τbXa = szeros(T,3,3)
+    τbQa = 2*VLᵀmat(qb)*Rmat(qb)*Rᵀmat(qa)*Rmat(UnitQuaternion(τ))*LVᵀmat(qa)
+
+    return FaXa, FaQa, τaXa, τaQa, FbXa, FbQa, τbXa, τbQa
+end
+@inline function ∂Fτ∂posb(joint::Rotational{T}, statea::State, stateb::State) where T
+    qa = statea.qk[1]
+    qb = stateb.qk[1]
+    τ = joint.Fτ
+
+    FaXb = szeros(T,3,3)
+    FaQb = szeros(T,3,3)
+    τaXb = szeros(T,3,3)
+    τaQb = szeros(T,3,3)
+    FbXb = szeros(T,3,3)
+    FbQb = szeros(T,3,3)
+    τbXb = szeros(T,3,3)
+    τbQb = 2*VRᵀmat(qb)*Rᵀmat(qa)*Rmat(UnitQuaternion(τ))*Rmat(qa)*LVᵀmat(qb)
+
+    return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
+end
+@inline function ∂Fτ∂posb(joint::Rotational{T}, stateb::State) where T
+    qb = stateb.qk[1]
+    τ = joint.Fτ
+
+    FaXb = szeros(T,3,3)
+    FaQb = szeros(T,3,3)
+    τaXb = szeros(T,3,3)
+    τaQb = szeros(T,3,3)
+    FbXb = szeros(T,3,3)
+    FbQb = szeros(T,3,3)
+    τbXb = szeros(T,3,3)
+    τbQb = 2*VRᵀmat(qb)*Rmat(UnitQuaternion(τ))*LVᵀmat(qb)
+
+    return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
 end

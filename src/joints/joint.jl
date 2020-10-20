@@ -28,8 +28,8 @@ Base.show(io::IO, joint::Joint) = summary(io, joint)
     return
 end
 
-@inline function ∂Fτ∂ua(joint::Joint, body1::Body)
-    return ∂Fτ∂ua(joint, body1.state) * zerodimstaticadjoint(nullspacemat(joint))
+@inline function ∂Fτ∂ua(joint::Joint, body1::Body, body2::Body)
+    return ∂Fτ∂ua(joint, body1.state, body2.state) * zerodimstaticadjoint(nullspacemat(joint))
 end
 @inline function ∂Fτ∂ub(joint::Joint, body1::Body, body2::Body)
     if body2.id == joint.childid
