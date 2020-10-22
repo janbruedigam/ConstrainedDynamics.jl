@@ -138,7 +138,7 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
     # calculate next state
     discretizestate!(mechanism)
     foreach(setsolution!, mechanism.bodies)
-    applyFτ!(mechanism, clear=false)
+    foreach(applyFτ!, eqcs, mechanism, false)
     newton!(mechanism)
 
     # get state linearization 

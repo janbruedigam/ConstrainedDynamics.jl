@@ -7,12 +7,12 @@ end
 getT(joint::AbstractJoint{T}) where T = T
 Base.length(joint::AbstractJoint{T,N}) where {T,N} = N
 
-@inline function applyFτ!(joint::AbstractJoint, body1::Body, body2::Body)
-    applyFτ!(joint, body1.state, body2.state)
+@inline function applyFτ!(joint::AbstractJoint, body1::Body, body2::Body, clear::Bool)
+    applyFτ!(joint, body1.state, body2.state, clear)
     return
 end
-@inline function applyFτ!(joint::AbstractJoint, ::Origin, body2::Body)
-    applyFτ!(joint, body2.state)
+@inline function applyFτ!(joint::AbstractJoint, ::Origin, body2::Body, clear::Bool)
+    applyFτ!(joint, body2.state, clear)
     return
 end
 

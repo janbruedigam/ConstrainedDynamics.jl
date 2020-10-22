@@ -256,15 +256,3 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape} = Shape{T}
 
     return origin, bodies, eqconstraints, ineqconstraints, shapes
 end
-
-@inline function applyFτ!(mechanism::Mechanism{T}; clear::Bool = true) where T
-    for eqc in mechanism.eqconstraints
-        parentid = eqc.parentid
-        for (i,cid) in enumerate(eqc.childids)
-            applyFτ!(eqc.constraints[i],getbody(mechanism,parentid),getbody(mechanism,cid))
-            clear && (eqc.constraints[i].Fτ = szeros(T,3))
-        end
-    end
-
-    return
-end

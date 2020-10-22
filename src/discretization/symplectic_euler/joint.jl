@@ -1,5 +1,5 @@
 # Forcing
-@inline function applyFτ!(joint::Translational, statea::State, stateb::State)
+@inline function applyFτ!(joint::Translational{T}, statea::State, stateb::State, clear::Bool) where T
     F = joint.Fτ
     vertices = joint.vertices
     qa = statea.qk[1]
@@ -15,9 +15,10 @@
     statea.τk[1] += τa
     stateb.Fk[1] += Fb
     stateb.τk[1] += τb
+    clear && (joint.Fτ = szeros(T,3))
     return
 end
-@inline function applyFτ!(joint::Translational, stateb::State)
+@inline function applyFτ!(joint::Translational{T}, stateb::State, clear::Bool) where T
     F = joint.Fτ
     vertices = joint.vertices
     qb = stateb.qk[1]
@@ -27,10 +28,11 @@ end
 
     stateb.Fk[1] += Fb
     stateb.τk[1] += τb
+    clear && (joint.Fτ = szeros(T,3))
     return
 end
 
-@inline function applyFτ!(joint::Rotational, statea::State, stateb::State)
+@inline function applyFτ!(joint::Rotational{T}, statea::State, stateb::State, clear::Bool) where T
     τ = joint.Fτ
     qa = statea.qk[1]
     qb = stateb.qk[1]    
@@ -43,9 +45,10 @@ end
 
     statea.τk[1] += τa
     stateb.τk[1] += τb
+    clear && (joint.Fτ = szeros(T,3))
     return
 end
-@inline function applyFτ!(joint::Rotational, stateb::State)
+@inline function applyFτ!(joint::Rotational{T}, stateb::State, clear::Bool) where T
     τ = joint.Fτ
     qb = stateb.qk[1]
 
@@ -55,6 +58,7 @@ end
     τb = vrotate(τb,inv(qb)) # in local coordinates
 
     stateb.τk[1] += τb
+    clear && (joint.Fτ = szeros(T,3))
     return
 end
 

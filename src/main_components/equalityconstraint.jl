@@ -167,6 +167,13 @@ end
     return :(hcat($(vec...)))
 end
 
+@inline function applyFτ!(eqc::EqualityConstraint{T,N,Nc}, mechanism, clear::Bool) where {T,N,Nc}
+    for i=1:Nc
+        applyFτ!(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[i]), clear)
+    end
+    return
+end
+
 # Derivatives NOT accounting for quaternion specialness
 
 function ∂g∂posc(mechanism, eqc::EqualityConstraint, id::Integer)

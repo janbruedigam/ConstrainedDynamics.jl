@@ -51,11 +51,12 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
     bodies = mechanism.bodies
+    eqcs = mechanism.eqconstraints
 
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, k)
-        applyFτ!(mechanism)
+        foreach(applyFτ!, eqcs, mechanism, true)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         foreachactive(updatestate!, bodies, Δt)
     end
@@ -68,11 +69,12 @@ function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage
     )
 
     initializeSimulation!(mechanism, debug)
+    eqcs = mechanism.eqconstraints
 
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, k)
-        applyFτ!(mechanism)
+        foreach(applyFτ!, eqcs, mechanism, true)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         mechanism.z = mechanism.zsol[2]
         mechanism.λ = mechanism.λsol[2]
@@ -89,13 +91,14 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
     initializeSimulation!(mechanism, debug)
     Δt = mechanism.Δt
     bodies = mechanism.bodies
+    eqcs = mechanism.eqconstraints
 
     control! = controller.control!
 
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         control!(mechanism, controller, k)
-        applyFτ!(mechanism)
+        foreach(applyFτ!, eqcs, mechanism, true)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
         foreachactive(updatestate!, bodies, Δt)
     end
