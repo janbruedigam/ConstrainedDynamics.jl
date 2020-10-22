@@ -21,22 +21,22 @@ link1 = Body(b1)
 link2 = Body(b2)
 
 # Constraints
-joint0to1 = EqualityConstraint(Floating(origin, link1))
+joint0to1e = EqualityConstraint(Floating(origin, link1))
 # joint0to1 = EqualityConstraint(Fixed(origin,link1))
-joint1to2 = EqualityConstraint(Revolute(link1, link2, ex; p1=vert12, p2=vert11))
+joint1to2e = EqualityConstraint(Revolute(link1, link2, ex; p1=vert12, p2=vert11))
 
 
 links = [link1; link2]
-constraints = [joint0to1;joint1to2]
+constraints = [joint0to1e;joint1to2e]
 shapes = [b1;b2]
 
 function joint_torque_control!(mechanism, k)
     τ = SA[0.05]
-    setForce!(mechanism, joint1to2, τ * 0)
+    setForce!(mechanism, joint1to2e, τ * 0)
     return
 end
 
 mech = Mechanism(origin, links, constraints, shapes = shapes, g = 0.)
 setPosition!(link1,link2,p1 = vert12,p2 = vert11)
 
-# setForce!(mech, joint1to2, [0.05])
+# setForce!(mech, joint1to2e, [0.05])
