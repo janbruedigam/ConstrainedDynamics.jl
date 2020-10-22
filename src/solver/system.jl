@@ -69,7 +69,7 @@ function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xd, vd, qd, ωd, Fτd, body
         setForce!(mechanism, geteqconstraint(mechanism, id), Fτd[i])
     end
 
-    A, Bu, Bλ, G = lineardynamics(mechanism, eqcids) # TODO check again for Fk , τk
+    A, Bu, Bλ, G = lineardynamics(mechanism, eqcids)
 
     # restore old state
     for (i,id) in enumerate(bodyids)
@@ -105,7 +105,7 @@ function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xθd, vωd, Fτd, controlle
         setForce!(mechanism, geteqconstraint(mechanism, id), [Fτd[i]])
     end
 
-    A, Bu, Bλ, G = lineardynamics(mechanism, controlids) # TODO check again for Fk , τk
+    A, Bu, Bλ, G = lineardynamics(mechanism, controlids)
 
     # restore old state
     for (id,body) in pairs(mechanism.bodies)

@@ -36,28 +36,8 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, constraint::Transla
     println(io, " vertices: "*string(constraint.vertices))
 end
 
-
-@inline function getPositionDelta(joint::Translational, body1::AbstractBody, body2::Body, x::SVector)
-    Δx = zerodimstaticadjoint(nullspacemat(joint)) * x # in body1 frame
-    return Δx
-end
-@inline function getVelocityDelta(joint::Translational, body1::AbstractBody, body2::Body, v::SVector)
-    Δv = zerodimstaticadjoint(nullspacemat(joint)) * v # in body1 frame
-    return Δv
-end
-
-@inline function minimalCoordinates(joint::Translational, body1::Body, body2::Body)
-    statea = body1.state
-    stateb = body2.state
-    return nullspacemat(joint) * g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
-end
-@inline function minimalCoordinates(joint::Translational, body1::Origin, body2::Body)
-    stateb = body2.state
-    return nullspacemat(joint) * g(joint, stateb.xc, stateb.qc)
-end
-
-# Position level constraints
-
+### Constraints and derivatives
+## Position level constraints (for dynamics)
 @inline function g(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     vertices = joint.vertices
     return vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa))
@@ -67,9 +47,7 @@ end
     return xb + vrotate(vertices[2], qb) - vertices[1]
 end
 
-
-# Derivatives NOT accounting for quaternion specialness
-
+## Derivatives NOT accounting for quaternion specialness
 @inline function ∂g∂posa(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     point2 = xb + vrotate(joint.vertices[2], qb)
 
@@ -91,9 +69,7 @@ end
     return X, Q
 end
 
-
-# vec(G) Jacobian (also NOT accounting for quaternion specialness)
-
+## vec(G) Jacobian (also NOT accounting for quaternion specialness in the second derivative: ∂(∂ʳg∂posx)∂y)
 @inline function ∂2g∂posaa(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
     Lpos = Lmat(UnitQuaternion(xb + vrotate(joint.vertices[2], qb) - xa))
     Ltpos = Lᵀmat(UnitQuaternion(xb + vrotate(joint.vertices[2], qb) - xa))
@@ -136,4 +112,146 @@ end
     QQ = kron(Vmat(T),2*VRᵀmat(qb)*Rmat(UnitQuaternion(joint.vertices[2])))*∂L∂qsplit(T) + kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2])),2*Vmat(T))*∂Rᵀ∂qsplit(T)
 
     return XX, XQ, QX, QQ
+end
+
+
+### Forcing
+## Application of joint forces (for dynamics)
+@inline function applyFτ!(joint::Translational{T}, statea::State, stateb::State, clear::Bool) where T
+    F = joint.Fτ
+    vertices = joint.vertices
+    xa, qa = posargsk(statea)
+    xb, qb = posargsk(stateb)
+
+    Fa = vrotate(-F, qa)
+    Fb = -Fa
+
+    τa = vrotate(torqueFromForce(Fa, vrotate(vertices[1], qa)),inv(qa)) # in local coordinates
+    τb = vrotate(torqueFromForce(Fb, vrotate(vertices[2], qb)),inv(qb)) # in local coordinates
+
+    statea.Fk[end] += Fa
+    statea.τk[end] += τa
+    stateb.Fk[end] += Fb
+    stateb.τk[end] += τb
+    clear && (joint.Fτ = szeros(T,3))
+    return
+end
+@inline function applyFτ!(joint::Translational{T}, stateb::State, clear::Bool) where T
+    F = joint.Fτ
+    vertices = joint.vertices
+    xb, qb = posargsk(stateb)
+
+    Fb = F
+    τb = vrotate(torqueFromForce(Fb, vrotate(vertices[2], qb)),inv(qb)) # in local coordinates
+
+    stateb.Fk[end] += Fb
+    stateb.τk[end] += τb
+    clear && (joint.Fτ = szeros(T,3))
+    return
+end
+
+## Forcing derivatives (for linearization)
+# Control derivatives
+@inline function ∂Fτ∂ua(joint::Translational, statea::State, stateb::State)
+    vertices = joint.vertices
+    xa, qa = posargsk(statea)
+
+    BFa = -VLmat(qa) * RᵀVᵀmat(qa)
+    Bτa = VLᵀmat(qa) * RVᵀmat(qa) * skew(BFa*vertices[1])
+
+    return [BFa; Bτa]
+end
+@inline function ∂Fτ∂ub(joint::Translational, statea::State, stateb::State)
+    vertices = joint.vertices
+    xa, qa = posargsk(statea)
+    xb, qb = posargsk(stateb)
+
+    BFb = VLmat(qa) * RᵀVᵀmat(qa)
+    Bτb = VLᵀmat(qb) * RVᵀmat(qb) * skew(BFb*vertices[2])
+
+    return [BFb; Bτb]
+end
+@inline function ∂Fτ∂ub(joint::Translational, stateb::State)
+    vertices = joint.vertices
+    xb, qb = posargsk(stateb)
+
+    BFb = I
+    Bτb = VLᵀmat(qb) * RVᵀmat(qb) * skew(vertices[2])
+
+    return [BFb; Bτb]
+end
+
+# Position derivatives 
+@inline function ∂Fτ∂posa(joint::Translational{T}, statea::State, stateb::State) where T
+    xa, qa = posargsk(statea)
+    xb, qb = posargsk(stateb)
+    F = joint.Fτ
+    vertices = joint.vertices
+
+    FaXa = szeros(T,3,3)
+    FaQa = -2*VRᵀmat(qa)*Rmat(UnitQuaternion(F))*LVᵀmat(qa)
+    τaXa = szeros(T,3,3)
+    τaQa = szeros(T,3,3)
+    FbXa = szeros(T,3,3)
+    FbQa = 2*VRᵀmat(qa)*Rmat(UnitQuaternion(F))*LVᵀmat(qa)
+    τbXa = szeros(T,3,3)
+    τbQa = 2*skew(vertices[2])*VLᵀmat(qb)*Rmat(qb)*Rᵀmat(qa)*Rmat(UnitQuaternion(F))*LVᵀmat(qa)
+
+    return FaXa, FaQa, τaXa, τaQa, FbXa, FbQa, τbXa, τbQa
+end
+@inline function ∂Fτ∂posb(joint::Translational{T}, statea::State, stateb::State) where T
+    xa, qa = posargsk(statea)
+    xb, qb = posargsk(stateb)
+    F = joint.Fτ
+    vertices = joint.vertices
+
+    FaXb = szeros(T,3,3)
+    FaQb = szeros(T,3,3)
+    τaXb = szeros(T,3,3)
+    τaQb = szeros(T,3,3)
+    FbXb = szeros(T,3,3)
+    FbQb = szeros(T,3,3)
+    τbXb = szeros(T,3,3)
+    τbQb = 2*skew(vertices[2])*VRᵀmat(qb)*Rᵀmat(qa)*Rmat(UnitQuaternion(F))*Rmat(qa)*LVᵀmat(qb)
+
+    return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
+end
+@inline function ∂Fτ∂posb(joint::Translational{T}, stateb::State) where T
+    xb, qb = posargsk(stateb)
+    F = joint.Fτ
+    vertices = joint.vertices
+    
+    FaXb = szeros(T,3,3)
+    FaQb = szeros(T,3,3)
+    τaXb = szeros(T,3,3)
+    τaQb = szeros(T,3,3)
+    FbXb = szeros(T,3,3)
+    FbQb = szeros(T,3,3)
+    τbXb = szeros(T,3,3)
+    τbQb = 2*skew(vertices[2])*VRᵀmat(qb)*Rmat(UnitQuaternion(F))*LVᵀmat(qb)
+
+    return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
+end
+
+
+### Minimal coordinates
+## Position and velocity offsets 
+@inline function getPositionDelta(joint::Translational, body1::AbstractBody, body2::Body, x::SVector)
+    Δx = zerodimstaticadjoint(nullspacemat(joint)) * x # in body1 frame
+    return Δx
+end
+@inline function getVelocityDelta(joint::Translational, body1::AbstractBody, body2::Body, v::SVector)
+    Δv = zerodimstaticadjoint(nullspacemat(joint)) * v # in body1 frame
+    return Δv
+end
+
+## Minimal coordinate calculation
+@inline function minimalCoordinates(joint::Translational, body1::Body, body2::Body)
+    statea = body1.state
+    stateb = body2.state
+    return nullspacemat(joint) * g(joint, statea.xc, statea.qc, stateb.xc, stateb.qc)
+end
+@inline function minimalCoordinates(joint::Translational, body1::Origin, body2::Body)
+    stateb = body2.state
+    return nullspacemat(joint) * g(joint, stateb.xc, stateb.qc)
 end

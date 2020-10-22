@@ -18,14 +18,18 @@ mutable struct GenericJoint{T,N} <: AbstractJoint{T,N}
 end 
 
 
+### General functions
 @inline constraintmat(::GenericJoint) = I
 
+
+### Constraints and derivatives
+## Discrete-time position wrappers (for dynamics)
 g(joint::GenericJoint, statea::State, stateb::State, Δt) = joint.g(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)...)
 g(joint::GenericJoint, stateb::State, Δt) = joint.g(joint, posargsnext(stateb, Δt)...)
 g(joint::GenericJoint, statea::State, stateb::State) = joint.g(joint, posargsc(statea)..., posargsc(stateb)...)
 g(joint::GenericJoint, stateb::State) = joint.g(joint, posargsc(stateb)...)
 
-
+## Derivatives NOT accounting for quaternion specialness
 @inline function ∂g∂posa(joint::GenericJoint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     z = [xa;params(qa);xb;params(qb)]
 
@@ -35,7 +39,6 @@ g(joint::GenericJoint, stateb::State) = joint.g(joint, posargsc(stateb)...)
 
     return X, Q
 end
-
 @inline function ∂g∂posb(joint::GenericJoint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     z = [xa;params(qa);xb;params(qb)]
     
@@ -45,7 +48,6 @@ end
 
     return X, Q
 end
-
 @inline function ∂g∂posb(joint::GenericJoint, xb::AbstractVector, qb::UnitQuaternion)
     z = [xb;params(qb)]
     
