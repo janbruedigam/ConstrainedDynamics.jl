@@ -167,7 +167,7 @@ end
     return :(hcat($(vec...)))
 end
 
-@inline function applyFτ!(eqc::EqualityConstraint{T,N,Nc}, mechanism, clear::Bool) where {T,N,Nc}
+@inline function applyFτ!(eqc::EqualityConstraint{T,N,Nc}, mechanism, clear::Bool=true) where {T,N,Nc}
     for i=1:Nc
         applyFτ!(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[i]), clear)
     end
