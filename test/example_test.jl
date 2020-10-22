@@ -11,6 +11,7 @@ files = [
     "doublependulum_3d"
     "doublependulum_disconnection"
     "doublependulum_urdf"
+    "elliptic_joint"
     "football"
     "fourbar_disconnection"
     "inverted_pyramid_plane"
@@ -41,7 +42,6 @@ controlled = [
 ]
 
 for file in files
-    # println(file)
     include("examples/"*file*".jl")
     if file in controlled
         storage = simulate!(mech, 10., eval(Meta.parse(file*"_control!")), record = true)

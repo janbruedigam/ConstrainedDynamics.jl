@@ -55,6 +55,7 @@ export Origin,
     minimalCoordinates,
     activate!,
     deactivate!,
+    linearsystem,
 
     RotX,
     RotY,

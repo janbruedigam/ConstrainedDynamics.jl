@@ -108,7 +108,7 @@ end
 function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ::AbstractVector) where {T,N,Nc}
     @assert length(Fτ)==3*Nc-N
     for i = 1:Nc
-        setForce!(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[i]),  Fτ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])])
+        setForce!(eqc.constraints[i], Fτ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])])
     end
     return
 end
@@ -159,12 +159,19 @@ end
 end
 
 @generated function ∂Fτ∂ua(mechanism, eqc::EqualityConstraint{T,N,Nc}, id) where {T,N,Nc}
-    vec = [:(∂Fτ∂ua(eqc.constraints[$i], getbody(mechanism, id))) for i = 1:Nc]
+    vec = [:(∂Fτ∂ua(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
     return :(hcat($(vec...)))
 end
 @generated function ∂Fτ∂ub(mechanism, eqc::EqualityConstraint{T,N,Nc}, id) where {T,N,Nc}
     vec = [:(∂Fτ∂ub(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
     return :(hcat($(vec...)))
+end
+
+@inline function applyFτ!(eqc::EqualityConstraint{T,N,Nc}, mechanism, clear::Bool=true) where {T,N,Nc}
+    for i=1:Nc
+        applyFτ!(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[i]), clear)
+    end
+    return
 end
 
 # Derivatives NOT accounting for quaternion specialness
