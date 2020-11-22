@@ -118,6 +118,11 @@ end
     return :(svcat($(vec...)))
 end
 
+@generated function minimalVelocities(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
+    vec = [:(minimalVelocities(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
+    return :(svcat($(vec...)))
+end
+
 @inline function GtλTof!(mechanism, body::Body, eqc::EqualityConstraint)
     isactive(eqc) && (body.state.d -= zerodimstaticadjoint(∂g∂ʳpos(mechanism, eqc, body.id)) * eqc.λsol[2])
     return

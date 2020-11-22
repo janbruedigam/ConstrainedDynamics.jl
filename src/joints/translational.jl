@@ -255,3 +255,12 @@ end
     stateb = body2.state
     return nullspacemat(joint) * g(joint, stateb.xc, stateb.qc)
 end
+@inline function minimalVelocities(joint::Translational, body1::Body, body2::Body)
+    statea = body1.state
+    stateb = body2.state
+    return nullspacemat(joint) * (stateb.vc - statea.vc)
+end
+@inline function minimalVelocities(joint::Translational, body1::Origin, body2::Body)
+    stateb = body2.state
+    return nullspacemat(joint) * stateb.vc
+end
