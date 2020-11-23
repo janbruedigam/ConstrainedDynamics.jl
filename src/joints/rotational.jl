@@ -256,3 +256,12 @@ end
     q = stateb.qc / joint.qoffset
     return nullspacemat(joint) * rotation_vector(q)
 end
+@inline function minimalVelocities(joint::Rotational, body1::Body, body2::Body)
+    statea = body1.state
+    stateb = body2.state
+    return nullspacemat(joint) * (vrotate(stateb.ωc,statea.qc\stateb.qc) - statea.ωc) # in body1's frame
+end
+@inline function minimalVelocities(joint::Rotational, body1::Origin, body2::Body)
+    stateb = body2.state
+    return nullspacemat(joint) * vrotate(stateb.ωc,stateb.qc) # in body1's frame
+end
