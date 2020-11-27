@@ -193,3 +193,22 @@ function ∂g∂posbc(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) w
     vec = [hcat(∂g∂posbc(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
     return vcat(vec...)
 end
+
+function Base.cat(eqc1::EqualityConstraint{T,N1,Nc1}, eqc2::EqualityConstraint{T,N2,Nc2}) where {T,N1,N2,Nc1,Nc2}
+    @assert eqc1.parentid == eqc2.parentid "Can only concatenate constraints with the same parentid"
+    parentid = eqc1.parentid
+    if parentid === nothing 
+        parentid = -1
+        nothingflag = true
+    else
+        nothingflag = false
+    end
+
+    constraints = [[eqc1.constraints[i] for i=1:Nc1];[eqc2.constraints[i] for i=1:Nc2]]
+    childids = [[eqc1.childids[i] for i=1:Nc1];[eqc2.childids[i] for i=1:Nc2]]
+
+    eqc = EqualityConstraint([(constraints[i],parentid,childids[i]) for i=1:Nc1+Nc2]..., name="combined_"*eqc1.name*eqc2.name)
+    nothingflag && (eqc.parentid = nothing)
+
+    return eqc
+end
