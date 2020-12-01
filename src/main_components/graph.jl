@@ -1,16 +1,16 @@
 struct Graph{N}
-    directchildren::Vector{Vector{Int64}}
-    loopchildren::Vector{Vector{Int64}}
+    directchildren::Vector{Vector{Int64}} # direct successor nodes
+    loopchildren::Vector{Vector{Int64}} # successor nodes excluding direct successors
     ineqchildren::Vector{Vector{Int64}}
-    successors::Vector{Vector{Int64}} # contains direct and loop children
-    predecessors::Vector{Vector{Int64}}
-    connections::Vector{Vector{Int64}}
+    successors::Vector{Vector{Int64}} # direct and loop children
+    predecessors::Vector{Vector{Int64}} # direct parent and loop-opening predecessor(s?) (for numerics?)
+    connections::Vector{Vector{Int64}} # direct connections
 
-    dfslist::SVector{N,Int64}
-    rdfslist::SVector{N,Int64}
+    dfslist::SVector{N,Int64} # depth-first-seach list (dfslist[end] = root)
+    rdfslist::SVector{N,Int64} # reverse dfslist
 
-    dict::UnitDict{Base.OneTo{Int64},Int64}
-    rdict::UnitDict{Base.OneTo{Int64},Int64}
+    dict::UnitDict{Base.OneTo{Int64},Int64} # maps ids to the graph-interal numbering (not dfs order) 
+    rdict::UnitDict{Base.OneTo{Int64},Int64} # reverse mapping
     activedict::UnitDict{Base.OneTo{Int64},Bool}
 
     function Graph(origin::Origin,bodies::Vector{<:Body},
@@ -78,6 +78,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, graph::Graph{N}) wh
 end
 
 
+### Construction functions
 function adjacencyMatrix(eqconstraints::Vector{<:EqualityConstraint}, bodies::Vector{<:Body})
     A = zeros(Bool, 0, 0)
     dict = Dict{Int64,Int64}()
@@ -182,6 +183,9 @@ function parent(dfsgraph::Matrix, dict::Dict, childid::Integer)
     end
     return -1
 end
+
+
+### Graph functions
 
 # this is done in order!
 function successors(dfslist, pattern, dict::Dict)

@@ -43,7 +43,7 @@ controlled = [
 
 for file in files
     include("examples/"*file*".jl")
-    if file in controlled
+    if file ∈ controlled
         storage = simulate!(mech, 10., eval(Meta.parse(file*"_control!")), record = true)
     else
         storage = simulate!(mech, 10., record = true)

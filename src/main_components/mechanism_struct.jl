@@ -38,7 +38,11 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         Ne = length(eqcs)
         Ni = length(ineqcs)
         Nn = Nb + Ne
-        # steps = Int64(ceil(tend / Δt))
+
+        if Nb < Ne
+            @info "More constraints than bodies. Potentially bad behavior."
+        end
+
 
         currentid = 1
 
@@ -141,88 +145,9 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     end
 
     function Mechanism(filename::AbstractString; floating::Bool=false, type::Type{T} = Float64, Δt::Real = .01, g::Real = -9.81) where T
-        origin, links, joints, shapes = parse_urdf(filename, floating, T)
-
-        mechanism = Mechanism(origin, links, joints, shapes = shapes, Δt = Δt, g = g)
-
-        graph = mechanism.graph
-        xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
-        qjointlist = Dict{Int64,UnitQuaternion{T}}() # stores id, q in world frame
-
-        for id in graph.rdfslist # from root to leaves
-            component = getcomponent(mechanism, id)
-            if component isa Body
-                body = component
-                xbodylocal = body.state.xc
-                qbodylocal = body.state.qc
-                shape = getshape(shapes, id)
-
-                preds = predecessors(graph, id);                    @assert length(preds) == 1
-                parentid = preds[1]
-                constraint = geteqconstraint(mechanism, parentid);  @assert length(constraint.constraints) == 2
-                grandpreds = predecessors(graph, parentid);         @assert length(grandpreds) ∈ [0;1]
-
-                if length(grandpreds) == 1 # predecessor is link
-                    grandparentid = grandpreds[1]
-
-                    parentbody = getbody(mechanism, grandparentid)
-                    grandgrandpreds = predecessors(graph, grandparentid);               @assert length(grandgrandpreds) == 1
-                    grandgrandparentid = grandgrandpreds[1]
-                    parentconstraint = geteqconstraint(mechanism, grandgrandparentid);  @assert length(parentconstraint.constraints) == 2
-
-                    xparentbody = parentbody.state.xc # in world frame
-                    qparentbody = parentbody.state.qc # in world frame
-
-                    xparentjoint = xjointlist[parentconstraint.id] # in world frame
-                    qparentjoint = qjointlist[parentconstraint.id] # in world frame
-                else # predecessor is origin
-                    parentbody = origin
-
-                    xparentbody = SA{T}[0; 0; 0]
-                    qparentbody = one(UnitQuaternion{T})
-
-                    xparentjoint = SA{T}[0; 0; 0]
-                    qparentjoint = one(UnitQuaternion{T})
-                end
-
-                # urdf joint's x and q in parent's (parentbody) frame
-                xjointlocal = vrotate(xparentjoint + vrotate(constraint.constraints[1].vertices[1], qparentjoint) - xparentbody, inv(qparentbody))
-                qjointlocal = qparentbody \ qparentjoint * constraint.constraints[2].qoffset
-
-                # store joint's x and q in world frame
-                xjoint = xparentbody + vrotate(xjointlocal, qparentbody)
-                qjoint = qparentbody * qjointlocal
-                xjointlist[constraint.id] = xjoint
-                qjointlist[constraint.id] = qjoint
-
-                # difference to parent body (parentbody)
-                qoffset = qjointlocal * qbodylocal
-
-                # actual joint properties
-                p1 = xjointlocal # in parent's (parentbody) frame
-                p2 = vrotate(-xbodylocal, inv(qbodylocal)) # in body frame (xbodylocal and qbodylocal are both relative to the same (joint) frame -> rotationg by inv(body.q) gives body frame)
-                constraint.constraints[1].vertices = (p1, p2)
-
-                V3 = vrotate(constraint.constraints[2].V3', qjointlocal) # in parent's (parentbody) frame
-                V12 = (svd(skew(V3)).Vt)[1:2,:]
-                constraint.constraints[2].V3 = V3'
-                constraint.constraints[2].V12 = V12
-                constraint.constraints[2].qoffset = qoffset # in parent's (parentbody) frame
-
-                # actual body properties
-                setPosition!(body) # set everything to zero
-                setPosition!(parentbody, body, p1 = p1, p2 = p2, Δq = qoffset)
-                xbody = body.state.xc
-                qbody = body.state.qc
-
-
-                # shape relative
-                if shape !== nothing
-                    shape.xoffset = vrotate(xjoint + vrotate(shape.xoffset, qjoint) - xbody, inv(qbody))
-                    shape.qoffset = qoffset \ qjointlocal * shape.qoffset
-                end
-            end
-        end
+        origin, links, joints, loopjoints, x2q2list, shapes = parse_urdf(filename, floating, T)
+        mechanism = Mechanism(origin, links, [joints;loopjoints], shapes = shapes, Δt = Δt, g = g)
+        set_parsed_values!(mechanism, loopjoints, shapes)
 
         return mechanism, shapes
     end

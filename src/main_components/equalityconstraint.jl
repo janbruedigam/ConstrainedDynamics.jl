@@ -207,7 +207,7 @@ function Base.cat(eqc1::EqualityConstraint{T,N1,Nc1}, eqc2::EqualityConstraint{T
     constraints = [[eqc1.constraints[i] for i=1:Nc1];[eqc2.constraints[i] for i=1:Nc2]]
     childids = [[eqc1.childids[i] for i=1:Nc1];[eqc2.childids[i] for i=1:Nc2]]
 
-    eqc = EqualityConstraint([(constraints[i],parentid,childids[i]) for i=1:Nc1+Nc2]..., name="combined_"*eqc1.name*eqc2.name)
+    eqc = EqualityConstraint([(constraints[i],parentid,childids[i]) for i=1:Nc1+Nc2]..., name="combined_"*eqc1.name*"_and_"*eqc2.name)
     nothingflag && (eqc.parentid = nothing)
 
     return eqc
