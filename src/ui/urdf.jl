@@ -301,7 +301,8 @@ function parse_joints(xjoints, ldict, floating, T)
     return origin, links, joints
 end
 
-# TODO This might be missing the detection of a direct loop, i.e. only two links connected by two joints  
+# TODO This might be missing the detection of a direct loop, i.e. only two links connected by two joints
+# TODO Also only works for a single loop closure in a cycle (so no ladders)
 function parse_loop_joints(xloopjoints, origin, joints, ldict, T)
     loopjoints = EqualityConstraint{T}[]
 
@@ -336,7 +337,7 @@ function parse_loop_joints(xloopjoints, origin, joints, ldict, T)
         joint2id = 0
         foundflag = false
 
-        while true # check which predecessor of link2 is also a predecessor of link1
+        while true # check which predecessor link of link2 is also a predecessor link of link1
             for (i,jointdata) in enumerate(jointlist)
                 if linkid ∈ jointdata[3]
                     joint2id = jointdata[1]
@@ -365,6 +366,8 @@ function parse_loop_joints(xloopjoints, origin, joints, ldict, T)
                 break
             end
         end
+        # if joint1id == joint2id # already combined joint
+        #     joint2 = joint
         for (i,joint) in enumerate(joints)
             if joint.id == joint2id
                 joint2 = joint
@@ -373,8 +376,6 @@ function parse_loop_joints(xloopjoints, origin, joints, ldict, T)
             end
         end
         
-        display(joint1)
-        display(joint2)
         joint = cat(joint1,joint2)
         push!(joints,joint)
         loopjoint = parse_loop_joint(xloopjoint, link1, link2, T)
