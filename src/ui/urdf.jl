@@ -216,7 +216,6 @@ function parse_joint(xjoint, plink, clink, T)
     return joint
 end
 
-# TODO currently assuming q2 = 0. There is no convention, but having both q doesn't make sense anyways because.
 function parse_loop_joint(xjoint, link1, link2, T)
     find_element(xjoint, "link1")
     find_element(xjoint, "link2")
@@ -224,27 +223,27 @@ function parse_loop_joint(xjoint, link1, link2, T)
     jointtype = attribute(xjoint, "type")
     axis = parse_vector(find_element(xjoint, "axis"), "xyz", T, default = "1 0 0")
     x1, q1 = parse_pose(find_element(xjoint, "link1"), T)
-    x2, q2 = parse_pose(find_element(xjoint, "link2"), T)
+    x2, q2 = parse_pose(find_element(xjoint, "link2"), T) # The orientation q2 of the second body is ignored because it is determined by the mechanism's structure
     p1 = x1
-    x2q2 = (x2,q2)
+    p2 = x2
     name = attribute(xjoint, "name")
     
     # TODO limits for revolute joint?
     if jointtype == "revolute" || jointtype == "continuous"
-        joint = EqualityConstraint(Revolute(link1, link2, axis; p1=p1, qoffset = q1), name=name)
+        joint = EqualityConstraint(Revolute(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
     elseif jointtype == "prismatic"
-        joint = EqualityConstraint(Prismatic(link1, link2, axis; p1=p1, qoffset = q1), name=name)
+        joint = EqualityConstraint(Prismatic(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
     elseif jointtype == "planar"
-        joint = EqualityConstraint(Planar(link1, link2, axis; p1=p1, qoffset = q1), name=name)
+        joint = EqualityConstraint(Planar(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
     elseif jointtype == "fixed"
-        joint = EqualityConstraint(Fixed(link1, link2; p1=p1, qoffset = q1), name=name)
+        joint = EqualityConstraint(Fixed(link1, link2; p1=p1, p2=p2, qoffset = q1), name=name)
     elseif jointtype == "floating"
         joint = EqualityConstraint(Floating(link1, link2), name=name)
     else
         @error "Unknown joint type"
     end
 
-    return joint, x2q2
+    return joint
 end
 
 function parse_joints(xjoints, ldict, floating, T)
@@ -305,7 +304,6 @@ end
 # TODO This might be missing the detection of a direct loop, i.e. only two links connected by two joints  
 function parse_loop_joints(xloopjoints, origin, joints, ldict, T)
     loopjoints = EqualityConstraint{T}[]
-    x2q2list = Tuple{AbstractVector,UnitQuaternion}[]
 
 
     for xloopjoint in xloopjoints
@@ -379,12 +377,11 @@ function parse_loop_joints(xloopjoints, origin, joints, ldict, T)
         display(joint2)
         joint = cat(joint1,joint2)
         push!(joints,joint)
-        loopjoint, x2q2 = parse_loop_joint(xloopjoint, link1, link2, T)
+        loopjoint = parse_loop_joint(xloopjoint, link1, link2, T)
         push!(loopjoints, loopjoint)
-        push!(x2q2list, x2q2)
     end
 
-    return joints, loopjoints, x2q2list
+    return joints, loopjoints
 end 
 
 function parse_urdf(filename, floating, ::Type{T}) where T
@@ -400,11 +397,11 @@ function parse_urdf(filename, floating, ::Type{T}) where T
     ldict, shapes = parse_links(xlinks, materialdict, T)
     origin, links, joints = parse_joints(xjoints, ldict, floating, T)
 
-    joints, loopjoints, x2q2list = parse_loop_joints(xloopjoints, origin, joints, ldict, T)
+    joints, loopjoints = parse_loop_joints(xloopjoints, origin, joints, ldict, T)
 
     free(xdoc)
 
-    return origin, links, joints, loopjoints, x2q2list, shapes
+    return origin, links, joints, loopjoints, shapes
 end
 
 
@@ -488,8 +485,65 @@ function set_parsed_values!(mechanism::Mechanism{T}, loopjoints, shapes) where T
             shape.qoffset = qoffset \ qjointlocal * shape.qoffset
         end
     end
-    for constraint in loopjoints
+    for (i,constraint) in enumerate(loopjoints)
+        @assert length(constraint.childids) == 2 # Loop joint connects only two bodies
 
+        parentid1 = constraint.parentid
+        parentid2 = constraint.childids[1]
+        if parentid1 === nothing # predecessor is origin
+            parentbody1 = mechanism.origin
+
+            xparentbody1 = SA{T}[0; 0; 0]
+            qparentbody1 = one(UnitQuaternion{T})
+
+            xparentjoint1 = SA{T}[0; 0; 0]
+            qparentjoint1 = one(UnitQuaternion{T})
+        else
+            parentbody1 = getbody(mechanism, parentid1)
+
+            grandparentid1 = get_parentid(mechanism, parentid1, loopjoints)
+            parentconstraint1 = geteqconstraint(mechanism, grandparentid1)
+
+            xparentbody1 = parentbody1.state.xc # in world frame
+            qparentbody1 = parentbody1.state.qc # in world frame
+
+            xparentjoint1 = xjointlist[parentconstraint1.id] # in world frame
+            qparentjoint1 = qjointlist[parentconstraint1.id] # in world frame
+        end
+        parentbody2 = getbody(mechanism, parentid2)
+
+        grandparentid2 = get_parentid(mechanism, parentid2, loopjoints)
+        parentconstraint2 = geteqconstraint(mechanism, grandparentid2)
+
+        xparentbody2 = parentbody2.state.xc # in world frame
+        qparentbody2 = parentbody2.state.qc # in world frame
+
+        xparentjoint2 = xjointlist[parentconstraint2.id] # in world frame
+        qparentjoint2 = qjointlist[parentconstraint2.id] # in world frame
+
+
+        ind1 = 1
+        ind2 = ind1+1
+
+
+        # urdf joint's x and q in parent's (parentbody) frame
+        xjointlocal1 = vrotate(xparentjoint1 + vrotate(constraint.constraints[ind1].vertices[1], qparentjoint1) - xparentbody1, inv(qparentbody1))
+        xjointlocal2 = vrotate(xparentjoint2 + vrotate(constraint.constraints[ind1].vertices[2], qparentjoint2) - xparentbody2, inv(qparentbody2))
+        qjointlocal1 = qparentbody1 \ qparentjoint1 * constraint.constraints[ind2].qoffset
+
+        # difference to parent body (parentbody)
+        qoffset1 = qjointlocal1 * qparentbody2 #  qparentbody2 = body in for loop above
+
+        # actual joint properties
+        p1 = xjointlocal1 # in parent's (parentbody1) frame
+        p2 = xjointlocal2 # in parent's (parentbody2) frame
+        constraint.constraints[ind1].vertices = (p1, p2)
+
+        V3 = vrotate(constraint.constraints[ind2].V3', qjointlocal1) # in parent's (parentbody1) frame
+        V12 = (svd(skew(V3)).Vt)[1:2,:]
+        constraint.constraints[ind2].V3 = V3'
+        constraint.constraints[ind2].V12 = V12
+        constraint.constraints[ind2].qoffset = qoffset1 # in parent's (parentbody1) frame
     end
 end
 

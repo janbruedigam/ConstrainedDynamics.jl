@@ -145,7 +145,7 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     end
 
     function Mechanism(filename::AbstractString; floating::Bool=false, type::Type{T} = Float64, Δt::Real = .01, g::Real = -9.81) where T
-        origin, links, joints, loopjoints, x2q2list, shapes = parse_urdf(filename, floating, T)
+        origin, links, joints, loopjoints, shapes = parse_urdf(filename, floating, T)
         mechanism = Mechanism(origin, links, [joints;loopjoints], shapes = shapes, Δt = Δt, g = g)
         set_parsed_values!(mechanism, loopjoints, shapes)
 
