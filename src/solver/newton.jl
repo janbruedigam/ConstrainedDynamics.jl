@@ -48,7 +48,7 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,Ni};
 
     meritf0 = meritf(mechanism)
     for n = Base.OneTo(newtonIter)
-        setentries!(mechanism)
+        setentries!(mechanism) #wo mein Matrix steht da, da ist auch extendDanddeltas (rechte Seite)
         factor!(graph, ldu)
         solve!(mechanism) # x̂1 for each body and constraint
 

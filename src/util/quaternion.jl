@@ -11,6 +11,8 @@ vrotate(v::StaticVector,q::UnitQuaternion) = q*v
 
 rotation_vector(q::UnitQuaternion) = rotation_angle(q) * rotation_axis(q)
 
+
+
 Lmat(q) = lmult(q)
 Lᵀmat(q) = lmult(q)'
 Rmat(q) = rmult(q)
@@ -21,6 +23,7 @@ Tᵀmat(::Type{T}=Float64) where T = tmat(T)
 Vmat(::Type{T}=Float64) where T = vmat(T)
 Vᵀmat(::Type{T}=Float64) where T = hmat(T)
 Vmat(q::UnitQuaternion) = imag(q)
+
 
 function VLmat(q::UnitQuaternion)
     SA[

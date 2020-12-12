@@ -1,5 +1,5 @@
 mutable struct Friction{T} <: Contact{T}
-    Nx::Adjoint{T,SVector{6,T}}
+    Nx::Adjoint{T,SVector{3,T}}
     D::SMatrix{2,6,T,12}
     cf::T
     offset::SVector{6,T}
@@ -14,7 +14,7 @@ mutable struct Friction{T} <: Contact{T}
         A = [V1 V2 V3]
         Ainv = inv(A)
         ainv3 = Ainv[3,SA[1; 2; 3]]
-        Nx = [ainv3;0.0;0.0;0.0]'
+        Nx = ainv3'
         D = [[V1 V2];szeros(3,2)]'
         offset = [offset;0.0;0.0;0.0]
 

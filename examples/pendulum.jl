@@ -9,7 +9,7 @@ length1 = 1.0
 width, depth = 0.1, 0.1
 box = Box(width, depth, length1, length1)
 
-p2 = [0.0;0.0;length1 / 2] # joint connection point
+p2 = [0.0;0.0;length1/2] # joint connection point
 
 # Initial orientation
 ϕ1 = π / 2

@@ -5,7 +5,7 @@
 end
 
 @inline function extendDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
-    diagonal.D += schurD(ineqc, body, mechanism.Δt) # + SMatrix{6,6,Float64,36}(1e-5*I)
+    diagonal.D += schurD(ineqc, body, mechanism.Δt) # + SMatrix{6,6,Float64,36}(1e-5*I) #BODY UM DIE POSITION ZU HABEN 
     diagonal.Δs += schurf(mechanism, ineqc, body)
     return
 end
@@ -118,9 +118,9 @@ function setentries!(mechanism::Mechanism)
 
         diagonal = getentry(ldu, id)
         setDandΔs!(mechanism, diagonal, body)
-        for childid in ineqchildren(graph, id)
+        for childid in ineqchildren(graph, id) 
             ineqc = getineqconstraint(mechanism, childid)
-            calcFrictionForce!(mechanism, ineqc)
+            calcFrictionForce!(mechanism, ineqc) #OB ES FRICTION ODER IMPACT IST !
             extendDandΔs!(mechanism, diagonal, body, ineqc)
         end
     end
@@ -218,8 +218,8 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
 
     φ = g(mechanism, ineqc)
 
-    Nx = ∂g∂pos(mechanism, ineqc, body)
-    Nv = ∂g∂vel(mechanism, ineqc, body)
+    Nx = ∂g∂ʳpos(mechanism, ineqc, body)
+    Nv = ∂g∂ʳvel(mechanism, ineqc, body)
 
     γ1 = ineqc.γsol[2]
     s1 = ineqc.ssol[2]
