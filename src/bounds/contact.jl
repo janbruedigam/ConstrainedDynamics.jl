@@ -1,13 +1,24 @@
 abstract type Contact{T} <: Bound{T} end
 
-###Constraints and Derivatives
-##Position level constraint wrappers
-g(contact::Contact, body::Body, Δt) = g(contact, body.state, Δt)
-@inline g(contact::Contact{T}) where {T} = szeros(T,6)
+### Constraints and derivatives
+## Discrete-time position wrappers (for dynamics)
+@inline g(contact::Contact, state::State, Δt) = g(contact, posargsnext(state, Δt)...)
+
+## Position level constraints (for dynamics)
+# @inline g(contact::Contact{T}) where {T} = szeros(T,6)
+@inline g(contact::Contact, x::AbstractVector, q::UnitQuaternion) = contact.Nx * (x + vrotate(contact.p,q) - contact.offset)
 
 
-##Discrete Time Position Derivatives (for dynamics)
-#Wrappers 1
+## Derivatives NOT accounting for quaternion specialness
+@inline function ∂g∂pos(contact::Contact, x::AbstractVector, q::UnitQuaternion)
+    p = contact.p
+    X = contact.Nx
+    Q = contact.Nx * (VLmat(q) * Lmat(UnitQuaternion(p)) * Tmat() + VRᵀmat(q) * Rmat(UnitQuaternion(p)))
+    return X, Q
+end
+
+## Discrete-time position derivatives (for dynamics)
+# Wrappers 1
 @inline function ∂g∂ʳpos(contact::Contact, body::Body)
     return ∂g∂ʳpos(contact, body.state)
 end
@@ -24,8 +35,8 @@ end
     return [X Q]
 end
 
-##Discrete Time Velocity Derivatives 
-#Wrappers 1
+## Discrete-time velocity derivatives (for dynamics)
+# Wrappers 1
 @inline function ∂g∂ʳvel(contact::Contact, body::Body, Δt)
     return ∂g∂ʳvel(contact, body.state, Δt)
 end
@@ -42,15 +53,20 @@ end
     return [V Ω]
 end
 
-
+##Schurf und SchurD
 #Schurf
 @inline function schurf(ineqc, contact::Contact, i, body::Body, μ, Δt)
     return schurf(contact, body.state, ineqc.γsol[2][i], ineqc.ssol[2][i], μ, Δt)[1:6]
 end
-
+@inline function schurf(contact::Contact, state::State, γ, s, μ, Δt)
+    φ = g(contact, posargsnext(state, Δt)...)
+    return ∂g∂ʳpos(contact, state)' * (γ / s * φ - μ / s)
+end
 
 #SchurD
 @inline function schurD(ineqc, contact::Contact, i, body::Body, Δt)
     return schurD(contact, body.state, ineqc.γsol[2][i], ineqc.ssol[2][i], Δt)
 end
-
+@inline function schurD(contact::Contact,state::State, γ, s, Δt)
+    return ∂g∂ʳpos(contact, state)' * γ/s * ∂g∂ʳvel(contact, state, Δt)
+end

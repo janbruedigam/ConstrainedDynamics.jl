@@ -37,3 +37,29 @@ end
     calcFrictionForce!(mechanism, friction, body, ineqc.γsol[2][i])
     return
 end
+
+##Friction
+@inline function calcFrictionForce!(mechanism::Mechanism{T}, friction::Contact, body::Body, γ) where T
+    cf = friction.cf
+    D = friction.D
+    state = body.state
+
+    d = state.d
+    v = state.vsol[2]
+    ω = state.ωsol[2]
+    state.vsol[2] = szeros(T, 3)
+    state.ωsol[2] = szeros(T, 3)
+    dyn = dynamics(mechanism, body)
+    state.vsol[2] = v
+    ω = state.ωsol[2] = ω
+    state.d = d
+
+    b0 = D*dyn + friction.b # remove old friction force
+
+    if norm(b0) > cf*γ
+        friction.b = b0/norm(b0)*cf*γ
+    else
+        friction.b = b0
+    end    
+    return
+end

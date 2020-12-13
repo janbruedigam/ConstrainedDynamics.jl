@@ -1,3 +1,4 @@
+# User-defined joint
 mutable struct GenericJoint{T,N} <: AbstractJoint{T,N}
     F::SVector{3,T}
     τ::SVector{3,T}
