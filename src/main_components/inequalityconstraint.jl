@@ -59,7 +59,7 @@ end
         state = body.state
         state.d -= ∂g∂ʳpos(mechanism, ineqc, body.id)' * ineqc.γsol[2]
         for i=1:N
-            state.d -= additionalforce(ineqc.constraints[i])
+            state.d -= additionalforce(ineqc.constraints[i], body)
         end
     end
     return

@@ -6,14 +6,14 @@ abstract type Contact{T} <: Bound{T} end
 
 ## Position level constraints (for dynamics)
 # @inline g(contact::Contact{T}) where {T} = szeros(T,6)
-@inline g(contact::Contact, x::AbstractVector, q::UnitQuaternion) = contact.Nx * (x + vrotate(contact.p,q) - contact.offset)
+@inline g(contact::Contact, x::AbstractVector, q::UnitQuaternion) = contact.ainv3 * (x + vrotate(contact.p,q) - contact.offset)
 
 
 ## Derivatives NOT accounting for quaternion specialness
 @inline function ∂g∂pos(contact::Contact, x::AbstractVector, q::UnitQuaternion)
     p = contact.p
-    X = contact.Nx
-    Q = contact.Nx * (VLmat(q) * Lmat(UnitQuaternion(p)) * Tmat() + VRᵀmat(q) * Rmat(UnitQuaternion(p)))
+    X = contact.ainv3
+    Q = contact.ainv3 * (VLmat(q) * Lmat(UnitQuaternion(p)) * Tmat() + VRᵀmat(q) * Rmat(UnitQuaternion(p)))
     return X, Q
 end
 
@@ -56,7 +56,7 @@ end
 ##Schurf und SchurD
 #Schurf
 @inline function schurf(ineqc, contact::Contact, i, body::Body, μ, Δt)
-    return schurf(contact, body.state, ineqc.γsol[2][i], ineqc.ssol[2][i], μ, Δt)[1:6]
+    return schurf(contact, body.state, ineqc.γsol[2][i], ineqc.ssol[2][i], μ, Δt)[SA[1; 2; 3; 4; 5; 6]]
 end
 @inline function schurf(contact::Contact, state::State, γ, s, μ, Δt)
     φ = g(contact, posargsnext(state, Δt)...)
@@ -70,3 +70,8 @@ end
 @inline function schurD(contact::Contact,state::State, γ, s, Δt)
     return ∂g∂ʳpos(contact, state)' * γ/s * ∂g∂ʳvel(contact, state, Δt)
 end
+
+
+## Additional force for friction
+@inline additionalforce(bound::Contact, state::State) = additionalforce(bound, posargsk(state)...)
+@inline additionalforce(bound::Contact, body::Body) = additionalforce(bound, body.state)

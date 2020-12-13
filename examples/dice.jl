@@ -31,16 +31,17 @@ origin = Origin{Float64}()
 link1 = Body(box1)
 
 # Constraints
-impacts = [InequalityConstraint(Impact(link1,[0;0;1.0]; p = corners[i])) for i=1:8]
+impacts = [InequalityConstraint(Friction(link1,[0;0;1.0], 0.2; p = corners[i])) for i=1:8]
 
 joint0to1 = EqualityConstraint(Floating(origin, link1))
 
+links = [link1]
 eqcs = [joint0to1]
 ineqcs = impacts
 shapes = [box1]
 
 
-mech = Mechanism(origin, [link1], eqcs, ineqcs, shapes = shapes)
+mech = Mechanism(origin, links, eqcs, ineqcs, shapes = shapes)
 
 setPosition!(link1,x = [0.;-2;1.5])
 ωtemp = (rand(3) .- 0.5) * 100

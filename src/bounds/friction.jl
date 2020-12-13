@@ -1,7 +1,7 @@
 mutable struct Friction{T} <: Contact{T}
-    Nx::Adjoint{T,SVector{3,T}}
+    ainv3::Adjoint{T,SVector{3,T}}
     p::SVector{3,T}
-    D::SMatrix{2,6,T,12}
+    D::SMatrix{2,3,T,6}
     cf::T
     offset::SVector{3,T}
     b::SVector{2,T}
@@ -14,25 +14,32 @@ mutable struct Friction{T} <: Contact{T}
         V1, V2, V3 = orthogonalcols(normal) # gives two plane vectors and the original normal axis
         A = [V1 V2 V3]
         Ainv = inv(A)
-        ainv3 = Ainv[3,SA[1; 2; 3]]
-        Nx = ainv3'
-        D = [[V1 V2];szeros(3,2)]'
+        ainv3 = Ainv[3,SA[1; 2; 3]]'
+        D = [V1 V2]'
 
-        new{T}(Nx, p, D, cf, offset, zeros(2)), body.id
+        new{T}(ainv3, p, D, cf, offset, zeros(2)), body.id
     end
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, constraint::Friction{T}) where {T}
     summary(io, constraint)
     println(io,"")
-    println(io, " Nx:     "*string(constraint.Nx))
+    println(io, " ainv3:  "*string(constraint.ainv3))
     println(io, " D:      "*string(constraint.D))
     println(io, " cf:     "*string(constraint.cf))
     println(io, " offset: "*string(constraint.offset))
 end
 
 
-@inline additionalforce(friction::Friction) = friction.D'*friction.b
+@inline function frictionmap(friction::Friction, x::AbstractVector, q::UnitQuaternion)
+    return [I;VLᵀmat(q)*RVᵀmat(q)*skew(friction.p)] * friction.D'
+end
+@inline function invfrictionmap(friction::Friction, x::AbstractVector, q::UnitQuaternion)
+    return friction.D * [I [friction.p';friction.p';friction.p']*VRᵀmat(q)*LVᵀmat(q)]
+end
+
+@inline additionalforce(friction::Friction, x::AbstractVector, q::UnitQuaternion) = frictionmap(friction, x, q)*friction.b
+
 @inline function calcFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
     calcFrictionForce!(mechanism, friction, body, ineqc.γsol[2][i])
     return
@@ -51,10 +58,10 @@ end
     state.ωsol[2] = szeros(T, 3)
     dyn = dynamics(mechanism, body)
     state.vsol[2] = v
-    ω = state.ωsol[2] = ω
+    state.ωsol[2] = ω
     state.d = d
 
-    b0 = D*dyn + friction.b # remove old friction force
+    b0 = invfrictionmap(friction, posargsk(body.state)...)*dyn + friction.b # remove old friction force
 
     if norm(b0) > cf*γ
         friction.b = b0/norm(b0)*cf*γ

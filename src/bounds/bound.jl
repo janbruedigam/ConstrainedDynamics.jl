@@ -12,9 +12,6 @@ end
 ## Position level constraint wrappers
 g(contact::Bound, body::Body, Δt) = g(contact, body.state, Δt)
 
-## Additional force for friction default
-@inline additionalforce(bound::Bound{T}) where T = szeros(T, 6)
-
 
 # @inline g(bound::Bound{T}) where T = zero(T)
 
