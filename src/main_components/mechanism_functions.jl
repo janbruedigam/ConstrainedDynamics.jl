@@ -235,7 +235,7 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape} = Shape{T}
 
     # Set origin to next id
     oldoid = origin.id
-    origin.id = getGlobalID()b 
+    origin.id = getGlobalID()
     for eqc in eqconstraints
         if eqc.parentid === nothing
             eqc.parentid = origin.id
