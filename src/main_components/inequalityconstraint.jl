@@ -57,7 +57,7 @@ end
 @inline function NtγTof!(mechanism, body::Body, ineqc::InequalityConstraint{T,N}) where {T,N}
     if isactive(ineqc)
         state = body.state
-        state.d -= ∂g∂ʳpos(mechanism, ineqc, body)' * ineqc.γsol[2]
+        state.d -= ∂g∂ʳpos(mechanism, ineqc, body.id)' * ineqc.γsol[2]
         for i=1:N
             state.d -= additionalforce(ineqc.constraints[i])
         end
@@ -108,13 +108,13 @@ function schurD(ineqc::InequalityConstraint{T,N}, body, Δt) where {T,N}
     return val
 end
 
-@generated function ∂g∂ʳpos(mechanism, ineqc::InequalityConstraint{T,N}, body) where {T,N}
-    vec = [:(∂g∂ʳpos(ineqc.constraints[$i], body)) for i = 1:N]
+@generated function ∂g∂ʳpos(mechanism, ineqc::InequalityConstraint{T,N}, id::Integer) where {T,N}
+    vec = [:(∂g∂ʳpos(ineqc.constraints[$i], getbody(mechanism, id))) for i = 1:N]
     return :(vcat($(vec...)))
 end
 
-@generated function ∂g∂ʳvel(mechanism, ineqc::InequalityConstraint{T,N}, body) where {T,N}
-    vec = [:(∂g∂ʳvel(ineqc.constraints[$i], body, mechanism.Δt)) for i = 1:N]
+@generated function ∂g∂ʳvel(mechanism, ineqc::InequalityConstraint{T,N}, id::Integer) where {T,N}
+    vec = [:(∂g∂ʳvel(ineqc.constraints[$i], getbody(mechanism, id), mechanism.Δt)) for i = 1:N]
     return :(vcat($(vec...)))
 end
 

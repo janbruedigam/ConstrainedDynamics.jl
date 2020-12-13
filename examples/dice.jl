@@ -11,7 +11,16 @@ box1 = Box(width, depth, length1, 1., color = RGBA(1., 1., 0.))
 b1 = Box(0.1, 0.1, .1, .1, color = RGBA(1., 0., 0.))
 
 #Corner Vector v
-v = [length1 / 2; length1 / 2; -length1 / 2]
+corners = [
+    [[length1 / 2;length1 / 2;-length1 / 2]]
+    [[length1 / 2;-length1 / 2;-length1 / 2]]
+    [[-length1 / 2;length1 / 2;-length1 / 2]]
+    [[-length1 / 2;-length1 / 2;-length1 / 2]]
+    [[length1 / 2;length1 / 2;length1 / 2]]
+    [[length1 / 2;-length1 / 2;length1 / 2]]
+    [[-length1 / 2;length1 / 2;length1 / 2]]
+    [[-length1 / 2;-length1 / 2;length1 / 2]]
+]
 
 # Initial orientation
 ϕ1 = 0;
@@ -22,12 +31,12 @@ origin = Origin{Float64}()
 link1 = Body(box1)
 
 # Constraints
-impact = InequalityConstraint(Impact(link1,[0;0;1.0]; p = v))
+impacts = [InequalityConstraint(Impact(link1,[0;0;1.0]; p = corners[i])) for i=1:8]
 
 joint0to1 = EqualityConstraint(Floating(origin, link1))
 
 eqcs = [joint0to1]
-ineqcs = [impact]
+ineqcs = impacts
 shapes = [box1]
 
 

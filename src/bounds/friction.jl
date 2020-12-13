@@ -1,12 +1,13 @@
 mutable struct Friction{T} <: Contact{T}
     Nx::Adjoint{T,SVector{3,T}}
+    p::SVector{3,T}
     D::SMatrix{2,6,T,12}
     cf::T
-    offset::SVector{6,T}
+    offset::SVector{3,T}
     b::SVector{2,T}
     
 
-    function Friction(body::Body{T}, normal::AbstractVector, cf::Real; offset::AbstractVector = zeros(3)) where T
+    function Friction(body::Body{T}, normal::AbstractVector, cf::Real; p::AbstractVector = zeros(3), offset::AbstractVector = zeros(3)) where T
         @assert cf>0
 
         # Derived from plane equation a*v1 + b*v2 + distance*v3 = p - offset
@@ -16,9 +17,8 @@ mutable struct Friction{T} <: Contact{T}
         ainv3 = Ainv[3,SA[1; 2; 3]]
         Nx = ainv3'
         D = [[V1 V2];szeros(3,2)]'
-        offset = [offset;0.0;0.0;0.0]
 
-        new{T}(Nx, D, cf, offset, zeros(2)), body.id
+        new{T}(Nx, p, D, cf, offset, zeros(2)), body.id
     end
 end
 

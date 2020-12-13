@@ -2,7 +2,7 @@
 mutable struct Impact{T} <: Contact{T}
     Nx::Adjoint{T,SVector{3,T}}
     p::SVector{3,T}
-    offset::SVector{6,T}
+    offset::SVector{3,T}
     
 
     function Impact(body::Body{T}, normal::AbstractVector; p::AbstractVector = zeros(3),  offset::AbstractVector = zeros(3)) where T
@@ -12,7 +12,6 @@ mutable struct Impact{T} <: Contact{T}
         Ainv = inv(A)
         ainv3 = Ainv[3,SA[1; 2; 3]]
         Nx = ainv3'
-        offset = [offset;0.0;0.0;0.0]
 
         new{T}(Nx, p, offset), body.id
     end

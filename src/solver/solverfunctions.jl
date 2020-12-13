@@ -205,21 +205,21 @@ function solve!(mechanism::Mechanism)
 
         for childid in ineqchildren(graph, id)
             isinactive(graph, childid) && continue
-            eliminatedsolve!(mechanism, getineqentry(ldu, childid), diagonal, getbody(mechanism, id), getineqconstraint(mechanism, childid))
+            eliminatedsolve!(mechanism, getineqentry(ldu, childid), diagonal, id, getineqconstraint(mechanism, childid))
         end
     end
 
     return 
 end
 
-function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
+function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, bodyid::Integer, ineqc::InequalityConstraint)
     Δt = mechanism.Δt
     μ = mechanism.μ
 
     φ = g(mechanism, ineqc)
 
-    Nx = ∂g∂ʳpos(mechanism, ineqc, body)
-    Nv = ∂g∂ʳvel(mechanism, ineqc, body)
+    Nx = ∂g∂ʳpos(mechanism, ineqc, bodyid)
+    Nv = ∂g∂ʳvel(mechanism, ineqc, bodyid)
 
     γ1 = ineqc.γsol[2]
     s1 = ineqc.ssol[2]

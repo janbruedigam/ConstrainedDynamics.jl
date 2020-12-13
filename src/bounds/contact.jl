@@ -6,7 +6,7 @@ g(contact::Contact, body::Body, Δt) = g(contact, body.state, Δt)
 @inline g(contact::Contact{T}) where {T} = szeros(T,6)
 
 
-##Descrete Time Position Derivatives (for dynamics)
+##Discrete Time Position Derivatives (for dynamics)
 #Wrappers 1
 @inline function ∂g∂ʳpos(contact::Contact, body::Body)
     return ∂g∂ʳpos(contact, body.state)
@@ -24,7 +24,7 @@ end
     return [X Q]
 end
 
-##Descrete Time Velocity Derivatives 
+##Discrete Time Velocity Derivatives 
 #Wrappers 1
 @inline function ∂g∂ʳvel(contact::Contact, body::Body, Δt)
     return ∂g∂ʳvel(contact, body.state, Δt)
@@ -34,7 +34,7 @@ end
 @inline ∂g∂ʳvel(contact::Contact{T}) where {T} = szeros(T, 6)
 ∂g∂ʳvel(contact::Contact, state::State, Δt) = ∂g∂ʳvel(contact, posargsnext(state, Δt)..., fullargssol(state)..., Δt)
 
-#Derivatives sccounting for quaternion specialness
+#Derivatives accounting for quaternion specialness
 @inline function ∂g∂ʳvel(contact::Contact,x2::AbstractVector, q2::UnitQuaternion, x1::AbstractVector,v1::AbstractVector, q1::UnitQuaternion,w1::AbstractVector, Δt)
     X, Q = ∂g∂pos(contact, x2, q2)
     V = X * Δt
@@ -43,13 +43,13 @@ end
 end
 
 
-#ShurF
+#Schurf
 @inline function schurf(ineqc, contact::Contact, i, body::Body, μ, Δt)
     return schurf(contact, body.state, ineqc.γsol[2][i], ineqc.ssol[2][i], μ, Δt)[1:6]
 end
 
 
-#ShurD
+#SchurD
 @inline function schurD(ineqc, contact::Contact, i, body::Body, Δt)
     return schurD(contact, body.state, ineqc.γsol[2][i], ineqc.ssol[2][i], Δt)
 end

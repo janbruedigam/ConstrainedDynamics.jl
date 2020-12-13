@@ -1,27 +1,29 @@
-@inline g(contact::Contact, x, q) = contact.Nx[SA[1; 2; 3]]' * (x + vrotate(contact.p,q) - contact.offset[SA[1; 2; 3]]) #c entfernung mit orientierung
+@inline g(contact::Contact, x, q) = contact.Nx * (x + vrotate(contact.p,q) - contact.offset)
 @inline g(contact::Contact, state::State, Δt) = g(contact, getx3(state, Δt), getq3(state, Δt))
 
-##Descrete Time Position Derivatives
+##Discrete Time Position Derivatives
 @inline function ∂g∂pos(contact::Contact, x::AbstractVector, q::UnitQuaternion)
-    X = contact.Nx                                                     #∂g∂x
-    Q = contact.Nx * ((VLmat(q) * Lmat(UnitQuaternion(contact.p)) * Tmat()) + (VRᵀmat(q) * Rmat(UnitQuaternion(contact.p))))  #∂g∂q
-    return X, Q                                                        #[∂g∂x ∂g∂q]
+    p = contact.p
+    X = contact.Nx
+    Q = contact.Nx * (VLmat(q) * Lmat(UnitQuaternion(p)) * Tmat() + VRᵀmat(q) * Rmat(UnitQuaternion(p)))
+    return X, Q
 end
 
 
-
-##Shurf und ShurD
-#Shurf
+##Schurf und SchurD
+#Schurf
 @inline function schurf(contact::Contact, state::State, γ, s, μ, Δt)
     φ = g(contact, getx3(state, Δt), getq3(state, Δt))
     return ∂g∂ʳpos(contact, state)' * (γ / s * φ - μ / s)
 end
-#ShurD
+
+#SchurD
 @inline function schurD(contact::Contact,state::State, γ, s, Δt)
     return ∂g∂ʳpos(contact, state)' * γ/s * ∂g∂ʳvel(contact, state, Δt)
 end
 
-#Friction
+
+##Friction
 @inline function calcFrictionForce!(mechanism::Mechanism{T}, friction::Contact, body::Body, γ) where T
     cf = friction.cf
     D = friction.D
