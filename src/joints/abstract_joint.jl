@@ -172,18 +172,3 @@ end
     applyFτ!(joint, body2.state, clear)
     return
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

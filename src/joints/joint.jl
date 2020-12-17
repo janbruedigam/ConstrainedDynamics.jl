@@ -1,3 +1,4 @@
+# Standard translational or rotational joint
 abstract type Joint{T,N} <: AbstractJoint{T,N} end
 
 Joint0 = Joint{T,0} where T

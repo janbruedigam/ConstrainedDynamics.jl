@@ -10,7 +10,6 @@ files = [
     "doublependulum_disconnection"
     "doublependulum_urdf"
     "elliptic_joint"
-    "football"
     "fourbar_disconnection"
     "inverted_pyramid_plane"
     "joint_force"
@@ -34,7 +33,6 @@ controlled = [
     "joint_torque"
     "pendulum_forced"
     "nutation"
-    "football"
     "fourbar_disconnection"
     "slider_crank"
 ]
