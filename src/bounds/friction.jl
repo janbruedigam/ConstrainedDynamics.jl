@@ -30,15 +30,25 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, constraint::Frictio
     println(io, " offset: "*string(constraint.offset))
 end
 
+@inline function calcb0(friction::Friction, m, Δt, x::AbstractVector, q::UnitQuaternion, vc, ωc, dyn)
+    p = friction.p
+    np2 = norm(p)^2
+    vp = vc + vrotate(cross(ωc,p),q)
+    if np2 > 0
+        return friction.D * (I*m*(-vp)/Δt + dyn[SA[1;2;3]] + vrotate(cross(dyn[SA[4;5;6]]/2,p),q)/np2)
+    else
+        return friction.D * (I*m*(-vp)/Δt + dyn[SA[1;2;3]])
+    end
+end
 
 @inline function frictionmap(friction::Friction, x::AbstractVector, q::UnitQuaternion)
-    return [I;VLᵀmat(q)*RVᵀmat(q)*skew(friction.p)] * friction.D'
-end
-@inline function invfrictionmap(friction::Friction, x::AbstractVector, q::UnitQuaternion)
-    return friction.D * [I [friction.p';friction.p';friction.p']*VRᵀmat(q)*LVᵀmat(q)]
+    Fp = friction.D' * friction.b
+    Fc = Fp
+    τc = torqueFromForce(vrotate(Fp,inv(q)), friction.p) # in local coordinates
+    return [Fc;2*τc]
 end
 
-@inline additionalforce(friction::Friction, x::AbstractVector, q::UnitQuaternion) = frictionmap(friction, x, q)*friction.b
+@inline additionalforce(friction::Friction, x::AbstractVector, q::UnitQuaternion) = frictionmap(friction, x, q)
 
 @inline function calcFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
     calcFrictionForce!(mechanism, friction, body, ineqc.γsol[2][i])
@@ -46,6 +56,7 @@ end
 end
 
 ##Friction
+# TODO this might be wrong, will be done differently in future anyways
 @inline function calcFrictionForce!(mechanism::Mechanism{T}, friction::Contact, body::Body, γ) where T
     cf = friction.cf
     D = friction.D
@@ -54,15 +65,15 @@ end
     d = state.d
     v = state.vsol[2]
     ω = state.ωsol[2]
-    state.vsol[2] = szeros(T, 3)
-    state.ωsol[2] = szeros(T, 3)
-    dyn = dynamics(mechanism, body)
+    state.vsol[2] = state.vc
+    state.ωsol[2] = state.ωc
+    dyn = dynamics(mechanism, body) + frictionmap(friction, posargsk(body.state)...)
     state.vsol[2] = v
     state.ωsol[2] = ω
     state.d = d
 
-    b0 = invfrictionmap(friction, posargsk(body.state)...)*dyn + friction.b # remove old friction force
-
+    b0 = calcb0(friction, body.m, mechanism.Δt, posargsk(body.state)..., state.vc, state.ωc, dyn)
+    
     if norm(b0) > cf*γ
         friction.b = b0/norm(b0)*cf*γ
     else

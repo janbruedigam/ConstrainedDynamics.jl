@@ -10,7 +10,7 @@ width, depth = 0.5, 0.5
 box1 = Box(width, depth, length1, 1., color = RGBA(1., 1., 0.))
 b1 = Box(0.1, 0.1, .1, .1, color = RGBA(1., 0., 0.))
 
-#Corner Vector v
+# Corner vectors
 corners = [
     [[length1 / 2;length1 / 2;-length1 / 2]]
     [[length1 / 2;-length1 / 2;-length1 / 2]]
@@ -48,5 +48,5 @@ setPosition!(link1,x = [0.;-2;1.5])
 
 setVelocity!(link1,v = [0;3;7.],ω = ωtemp)
 
-storage = simulate!(mech, 10., record = true)
+storage = simulate!(mech, 10, record = true)
 visualize(mech, storage, shapes)
