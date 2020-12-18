@@ -12,4 +12,4 @@ ConstrainedDynamics.solve!(mech)
 
 A2, x2, b2 = ConstrainedDynamics.densesystem(mech)
 
-@test isapprox(norm(x1-x2), 0.0; atol = 1e-5)
+@test isapprox(norm(x1-x2), 0.0; atol = 2e-5)
