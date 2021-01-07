@@ -12,10 +12,10 @@ Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
-Colors = "<0.12.4, 0.12.4"
+Colors = "<0.12.6, 0.12.6"
 ForwardDiff = "<0.10.14,0.10.14"
 LightXML = "<0.9.0, 0.9.0"
-Rotations = "1.0.0, 1.0.2"
+Rotations = "1.0"
 StaticArrays = "0.12.0, 1.0"
 julia = "1.2, 1.5"
 
