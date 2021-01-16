@@ -269,8 +269,7 @@ function parse_joints(xjoints, ldict, floating, T)
                 push!(links, ldict[name])
                 floatingname = name
             else # make current link origin
-                origin.id = ldict[name].id
-                origin.name = name
+                origin = Origin(ldict[name])
             end
             push!(origins, origin)
         end
