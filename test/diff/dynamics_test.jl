@@ -19,7 +19,7 @@ function dyntestT()
 
 
     origin = Origin{Float64}()
-    body1 = Body(Box(1., 1., 1., 1.))
+    body1 = Box(1., 1., 1., 1.)
     body1.m = 1.0
     body1.J = diagm(ones(3))
 
@@ -52,7 +52,7 @@ function dyntestR()
 
 
     origin = Origin{Float64}()
-    body1 = Body(Box(1., 1., 1., 1.))
+    body1 = Box(1., 1., 1., 1.)
     body1.m = 1.0
     body1.J = diagm(ones(3))
 

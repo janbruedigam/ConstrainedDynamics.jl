@@ -29,8 +29,8 @@ function transtest3()
 
 
     origin = Origin{Float64}()
-    body1 = Body(Box(1., 1., 1., 1.))
-    body2 = Body(Box(1., 1., 1., 1.))
+    body1 = Box(1., 1., 1., 1.)
+    body2 = Box(1., 1., 1., 1.)
 
     oc1 = EqualityConstraint(Floating(origin, body1))
     oc2 = EqualityConstraint(Floating(origin, body2))
@@ -92,8 +92,8 @@ function transtest2()
 
 
     origin = Origin{Float64}()
-    body1 = Body(Box(1., 1., 1., 1.))
-    body2 = Body(Box(1., 1., 1., 1.))
+    body1 = Box(1., 1., 1., 1.)
+    body2 = Box(1., 1., 1., 1.)
 
     oc1 = EqualityConstraint(Floating(origin, body1))
     oc2 = EqualityConstraint(Floating(origin, body2))
@@ -156,8 +156,8 @@ function transtest1()
 
 
     origin = Origin{Float64}()
-    body1 = Body(Box(1., 1., 1., 1.))
-    body2 = Body(Box(1., 1., 1., 1.))
+    body1 = Box(1., 1., 1., 1.)
+    body2 = Box(1., 1., 1., 1.)
 
     oc1 = EqualityConstraint(Floating(origin, body1))
     oc2 = EqualityConstraint(Floating(origin, body2))
@@ -218,8 +218,8 @@ function rottest3()
 
 
     origin = Origin{Float64}()
-    body1 = Body(Box(1., 1., 1., 1.))
-    body2 = Body(Box(1., 1., 1., 1.))
+    body1 = Box(1., 1., 1., 1.)
+    body2 = Box(1., 1., 1., 1.)
 
     oc1 = EqualityConstraint(Floating(origin, body1))
     oc2 = EqualityConstraint(Floating(origin, body2))
@@ -280,8 +280,8 @@ function rottest2()
 
 
     origin = Origin{Float64}()
-    body1 = Body(Box(1., 1., 1., 1.))
-    body2 = Body(Box(1., 1., 1., 1.))
+    body1 = Box(1., 1., 1., 1.)
+    body2 = Box(1., 1., 1., 1.)
 
     oc1 = EqualityConstraint(Floating(origin, body1))
     oc2 = EqualityConstraint(Floating(origin, body2))
@@ -343,8 +343,8 @@ function rottest1()
 
 
     origin = Origin{Float64}()
-    body1 = Body(Box(1., 1., 1., 1.))
-    body2 = Body(Box(1., 1., 1., 1.))
+    body1 = Box(1., 1., 1., 1.)
+    body2 = Box(1., 1., 1., 1.)
 
     oc1 = EqualityConstraint(Floating(origin, body1))
     oc2 = EqualityConstraint(Floating(origin, body2))

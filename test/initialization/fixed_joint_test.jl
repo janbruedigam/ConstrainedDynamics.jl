@@ -8,12 +8,11 @@ using LinearAlgebra
 Δt = 0.01
 length1 = 1.0
 width, depth = 1.0, 1.0
-box1 = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
 
 for i=1:10
     # Links
     origin = Origin{Float64}()
-    link1 = Body(box1)
+    link1 = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
     link1.m = 1.0
     link1.J = diagm(ones(3))
 
@@ -27,9 +26,8 @@ for i=1:10
 
     links = [link1]
     constraints = [joint1]
-    shapes = [box1]
 
-    mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
+    mech = Mechanism(origin, links, constraints, g = 0.)
 
     setPosition!(mech,joint1,SA_F64[]; iter=false)
     setVelocity!(mech,joint1,SA_F64[])

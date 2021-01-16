@@ -55,18 +55,6 @@ function getcomponent(mechanism::Mechanism, name::String)
     return component
 end
 
-function getshape(shapes::Vector{<:Shape}, id)
-    for shape in shapes
-        for bodyid in shape.bodyids
-            if bodyid == id
-                return shape
-            end
-        end
-    end
-
-    return
-end
-
 @inline function normf(mechanism::Mechanism, body::Body)
     f = dynamics(mechanism, body)
     return dot(f, f)
@@ -183,7 +171,7 @@ end
     return G*z1
 end
 
-function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape} = Shape{T}[]) where T
+function disassemble(mechanism::Mechanism{T}) where T
     origin = mechanism.origin
     bodies = mechanism.bodies.values
     eqconstraints = mechanism.eqconstraints.values
@@ -206,13 +194,6 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape} = Shape{T}
             ineqc.parentid *= -1
         end
         ineqc.childids *= -1
-    end
-    for shape in shapes
-        for (i,bodyid) in enumerate(shape.bodyids)
-            if bodyid != origin.id 
-                shape.bodyids[i] *= -1
-            end
-        end
     end
 
     # Set CURRENTID
@@ -246,13 +227,6 @@ function disassemble(mechanism::Mechanism{T}; shapes::Vector{<:Shape} = Shape{T}
             ineqc.parentid = origin.id
         end
     end
-    for shape in shapes
-        for (i,bodyid) in enumerate(shape.bodyids)
-            if bodyid == oldoid 
-                shape.bodyids[i] = origin.id
-            end
-        end
-    end
 
-    return origin, bodies, eqconstraints, ineqconstraints, shapes
+    return origin, bodies, eqconstraints, ineqconstraints
 end

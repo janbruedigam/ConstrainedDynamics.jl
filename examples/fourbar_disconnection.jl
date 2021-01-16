@@ -7,7 +7,6 @@ ex = [1.;0.;0.]
 
 l1 = 1.0
 x, y = .1, .1
-b1 = Box(x, y, l1, l1, color = RGBA(1., 1., 0.))
 
 vert11 = [0.;0.;l1 / 2]
 vert12 = -vert11
@@ -23,7 +22,7 @@ qoff2 = UnitQuaternion(RotX(offset2))
 
 # Links
 origin = Origin{Float64}()
-links = [Body(b1) for i = 1:4]
+links = [Box(x, y, l1, l1, color = RGBA(1., 1., 0.)) for i = 1:4]
 
 
 function fourbar(links, vertices, axis)
@@ -47,9 +46,7 @@ end
 # Constraints
 constraints = [fourbar([origin;links[1:4]], [[zeros(3)];verts], ex)...]
 
-shapes = [b1]
-
-mech = Mechanism(origin, links, constraints, shapes = shapes)
+mech = Mechanism(origin, links, constraints)
 
 initfourbar!(mech, [origin;links[1:4]], [[zeros(3)];verts], q1 * qoff2, q1)
 
@@ -60,4 +57,4 @@ function control!(mechanism,k)
 end
 
 storage = simulate!(mech, 10., control!, record = true)
-visualize(mech, storage, shapes)
+visualize(mech, storage)
