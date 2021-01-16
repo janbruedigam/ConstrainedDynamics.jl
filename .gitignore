@@ -5,3 +5,5 @@
 /benchmark/*.json
 /notes
 /testscripts
+/examples/strandbeest.jl
+/examples/examples_files/strandbeest.urdf
