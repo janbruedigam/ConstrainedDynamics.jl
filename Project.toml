@@ -13,11 +13,11 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 Colors = "<0.12.6, 0.12.6"
-ForwardDiff = "<0.10.14,0.10.14"
+ForwardDiff = "<0.10.14, 0.10.14"
 LightXML = "<0.9.0, 0.9.0"
 Rotations = "1.0"
-StaticArrays = "0.12.0, 1.0"
-julia = "1.2, 1.5"
+StaticArrays = "0.12, 1.0"
+julia = "1.4 - 1.5, 1.6"
 
 [extras]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
