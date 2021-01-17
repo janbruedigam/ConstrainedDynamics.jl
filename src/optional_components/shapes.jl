@@ -40,7 +40,7 @@ mutable struct Box{T} <: Shape{T}
     function Box(x::Real, y::Real, z::Real;
             color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
         )
-        T = promote_type(eltype.((x, y, z, m, xoffset, qoffset))...)
+        T = promote_type(eltype.((x, y, z, xoffset, qoffset))...)
 
         new{T}(xoffset, qoffset, [x;y;z], color)
     end
@@ -66,7 +66,7 @@ mutable struct Cylinder{T} <: Shape{T}
     function Cylinder(r::Real, h::Real;
             color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
         )
-        T = promote_type(eltype.((r, h, m, xoffset, qoffset))...)
+        T = promote_type(eltype.((r, h, xoffset, qoffset))...)
 
         new{T}(xoffset, qoffset, [r;h], color)
     end
@@ -91,7 +91,7 @@ mutable struct Sphere{T} <: Shape{T}
     function Sphere(r::Real;
             color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
         )
-        T = promote_type(eltype.((r, m, xoffset, qoffset))...)
+        T = promote_type(eltype.((r, xoffset, qoffset))...)
 
         new{T}(xoffset, qoffset, r, color)
     end
@@ -103,6 +103,32 @@ mutable struct Sphere{T} <: Shape{T}
         J = 2 / 5 * m * diagm([r^2 for i = 1:3])
 
         return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, r, color))
+    end
+end
+
+mutable struct Pyramid{T} <: Shape{T}
+    xoffset::SVector{3,T}
+    qoffset::UnitQuaternion{T}
+
+    wh::SVector{2,T}
+    color::RGBA
+
+    # Pyramid points in the z direction, Center of mass at 1/4 h
+    function Pyramid(w::Real, h::Real;
+            color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+        )
+        T = promote_type(eltype.((w, h, xoffset, qoffset))...)
+
+        new{T}(xoffset, qoffset, [w;h], color)
+    end
+
+    function Pyramid(w::Real, h::Real, m::Real;
+            name::String="", color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+        )
+        T = promote_type(eltype.((w, h, m, xoffset, qoffset))...)
+        J = 1/80 * m * diagm([4*w^2+3*h^2;4*w^2+3*h^2;8*w^2])
+
+        return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, [w;h], color))
     end
 end
 
