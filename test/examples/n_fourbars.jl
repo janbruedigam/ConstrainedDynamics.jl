@@ -6,7 +6,6 @@ ex = [1.;0.;0.]
 
 l1 = 1.0
 x, y = .1, .1
-b1 = Box(x, y, l1, l1, color = RGBA(1., 1., 0.))
 
 vert11 = [0.;0.;l1 / 2]
 vert12 = -vert11
@@ -24,7 +23,7 @@ N = 10
 
 # Links
 origin = Origin{Float64}()
-links = [Body(b1) for i = 1:4 * N]
+links = [Box(x, y, l1, l1, color = RGBA(1., 1., 0.)) for i = 1:4 * N]
 
 
 function fourbar(links, vertices, axis)
@@ -52,9 +51,7 @@ for i = 2:N
 end
 
 
-shapes = [b1]
-
-mech = Mechanism(origin, links, constraints, shapes = shapes)
+mech = Mechanism(origin, links, constraints)
 if N > 1
     initfourbar!(mech, [origin;links[1:4]], [[zeros(3)];verts], q1 * qoff1, q1)
 else

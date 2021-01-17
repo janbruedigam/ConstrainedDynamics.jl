@@ -8,16 +8,12 @@ mutable struct Body{T} <: AbstractBody{T}
 
     state::State{T}
 
+    shape::Shape{T}
 
-    function Body(m::Real, J::AbstractArray; name::String="")
+
+    function Body(m::Real, J::AbstractArray; name::String="", shape::Shape=EmptyShape())
         T = promote_type(eltype.((m, J))...)
-        new{T}(getGlobalID(), name, true, m, J, State{T}())
-    end
-
-    function Body(shape::Shape; name::String="")
-        body = Body(shape.m, shape.J; name=name)
-        push!(shape.bodyids, body.id)
-        return body
+        new{T}(getGlobalID(), name, true, m, J, State{T}(), shape)
     end
 
     function Body{T}(contents...) where T
@@ -29,12 +25,15 @@ mutable struct Origin{T} <: AbstractBody{T}
     id::Int64
     name::String
 
-    Origin{T}(; name::String="") where T = new{T}(getGlobalID(), name)
+    shape::Shape{T}
 
-    function Origin(shape::Shape{T}; name::String="") where T
-        origin = Origin{T}(name=name)
-        push!(shape.bodyids, origin.id)
-        return origin
+
+    function Origin{T}(; name::String="", shape::Shape=EmptyShape()) where T
+        new{T}(getGlobalID(), name, shape)
+    end
+
+    function Origin(body::Body{T}) where T
+        new{T}(body.id, body.name, body.shape)
     end
 end
 
@@ -61,19 +60,6 @@ function Base.deepcopy(b::Body{T}) where T
     end
 
     return Body{T}(contents...)
-end
-
-function Base.deepcopy(b::Body{T}, shape::Shape) where T
-    contents = []
-    
-    for i = 2:getfieldnumber(b)
-        push!(contents, deepcopy(getfield(b, i)))
-    end
-
-    body = Body{T}(contents...)
-    @assert (body.m == shape.m && body.J == shape.J)
-    push!(shape.bodyids, body.id)
-    return body
 end
 
 Base.length(::Body) = 6

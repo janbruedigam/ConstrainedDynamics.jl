@@ -16,8 +16,8 @@ function transtest()
     axis = srand(3)
     vert = (srand(3),srand(3))
 
-    body1 = Body(Box(1., 1., 1., 1.))
-    body2 = Body(Box(1., 1., 1., 1.))
+    body1 = Box(1., 1., 1., 1.)
+    body2 = Box(1., 1., 1., 1.)
     trans = Translational{Float64,2}(body1, body2; axis = axis, p1 = vert[1], p2 = vert[2])[1]
 
     XXaa, XQaa, QXaa, QQaa = ∂2g∂posaa(trans, xa, qa, xb, qb)
@@ -60,8 +60,8 @@ function rottest()
     axis = srand(3)
     qoffset = rand(UnitQuaternion)
 
-    body1 = Body(Box(1., 1., 1., 1.))
-    body2 = Body(Box(1., 1., 1., 1.))
+    body1 = Box(1., 1., 1., 1.)
+    body2 = Box(1., 1., 1., 1.)
     rot = Rotational{Float64,2}(body1, body2; axis = axis, qoffset = qoffset)[1]
 
     XXaa, XQaa, QXaa, QQaa = ∂2g∂posaa(rot, xa, qa, xb, qb)

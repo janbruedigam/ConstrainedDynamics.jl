@@ -22,7 +22,7 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
             eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
-            Δt::Real = .01, g::Real = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+            Δt::Real = .01, g::Real = -9.81
         ) where T
 
         resetGlobalID()
@@ -62,12 +62,6 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
 
             for ineqc in ineqcs
                 ineqc.parentid == body.id && (ineqc.parentid = currentid)
-            end
-
-            for shape in shapes
-                for (i, id) in enumerate(shape.bodyids)
-                    id == body.id && (shape.bodyids[i] = currentid)
-                end
             end
 
             body.id = currentid
@@ -115,41 +109,41 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
-            Δt::Real = .01, g::Real = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+            Δt::Real = .01, g::Real = -9.81
         ) where T
 
         ineqcs = InequalityConstraint{T}[]
-        return Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g, shapes = shapes)
+        return Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
-            Δt::Real = .01, g::Real = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+            Δt::Real = .01, g::Real = -9.81
         ) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(Floating(origin, body)))
         end
-        return Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g, shapes = shapes)
+        return Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
-            Δt::Real = .01, g::Real = -9.81, shapes::Vector{<:Shape{T}} = Shape{T}[]
+            Δt::Real = .01, g::Real = -9.81
         ) where T
 
         eqc = EqualityConstraint{T}[]
         for body in bodies
             push!(eqc, EqualityConstraint(Floating(origin, body)))
         end
-        return Mechanism(origin, bodies, eqc, Δt = Δt, g = g, shapes = shapes)
+        return Mechanism(origin, bodies, eqc, Δt = Δt, g = g)
     end
 
     function Mechanism(filename::AbstractString; floating::Bool=false, type::Type{T} = Float64, Δt::Real = .01, g::Real = -9.81) where T
-        origin, links, joints, loopjoints, shapes = parse_urdf(filename, floating, T)
-        mechanism = Mechanism(origin, links, [joints;loopjoints], shapes = shapes, Δt = Δt, g = g)
-        set_parsed_values!(mechanism, loopjoints, shapes)
+        origin, links, joints, loopjoints = parse_urdf(filename, floating, T)
+        mechanism = Mechanism(origin, links, [joints;loopjoints], Δt = Δt, g = g)
+        set_parsed_values!(mechanism, loopjoints)
 
-        return mechanism, shapes
+        return mechanism
     end
 end
 

@@ -54,8 +54,6 @@ end
 joint_axis = [1.0;0.0;0.0]
 l = 1.0
 w, d = .1, .1
-b1 = Box(w, d, l, l)
-b2 = Box(w, d, l, l)
 
 vert11 = [0.;0.;l / 2]
 vert12 = -vert11
@@ -63,10 +61,10 @@ vert21 = [0.;0.;l / 2]
 
 origin = Origin{Float64}()
 origin_abstract = deepcopy(origin)
-link1 = Body(b1)
+link1 = Box(w, d, l, l)
 link1_abstract = deepcopy(link1)
-link2 = Body(b2)
-link2_abstract = deepcopy(link2)
+link2 = deepcopy(link1)
+link2_abstract = deepcopy(link1)
 
 joint0to1 = EqualityConstraint(Fixed(origin, link1; p2=vert11))
 joint1to2 = EqualityConstraint(Revolute(link1, link2,joint_axis; p1=vert12, p2=vert21))
@@ -77,10 +75,9 @@ links = [link1;link2]
 links_abstract = [link1_abstract;link2_abstract]
 constraints = [joint0to1;joint1to2]
 constraints_abstract = [joint0to1_abstract;joint1to2_abstract]
-shapes = [b1,b2]
 
-mech = Mechanism(origin, links, constraints, shapes=shapes)
-mech_abstract= Mechanism(origin_abstract, links_abstract, constraints_abstract, shapes=shapes)
+mech = Mechanism(origin, links, constraints)
+mech_abstract= Mechanism(origin_abstract, links_abstract, constraints_abstract)
 
 setPosition!(origin,link1,p2 = vert11)
 setPosition!(origin_abstract,link1_abstract,p2 = vert11)

@@ -6,21 +6,19 @@ using LinearAlgebra
 # Parameters
 h = .1
 r = 1.
-b1 = Cylinder(r, h, h*r, color = RGBA(1., 0., 0.))
 
 # Links
 origin = Origin{Float64}()
-link1 = Body(b1)
+link1 = Cylinder(r, h, h*r, color = RGBA(1., 0., 0.))
 
 # Constraints
 joint1 = EqualityConstraint(Floating(origin, link1))
 
 links = [link1]
 constraints = [joint1]
-shapes = [b1]
 
 
-mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
+mech = Mechanism(origin, links, constraints, g = 0.)
 
 axis = [0;0;1.]
 speed = 20pi #*0
@@ -36,4 +34,4 @@ function controller!(mechanism, k)
 end
 
 storage = simulate!(mech, 10., controller!, record = true)
-visualize(mech, storage, shapes)
+visualize(mech, storage)

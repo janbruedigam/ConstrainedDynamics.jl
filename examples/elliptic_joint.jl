@@ -7,11 +7,10 @@ using StaticArrays
 # Parameters
 length1 = 1.0
 width, depth = 0.1, 0.1
-box = Box(width, depth, length1, length1)
 
 # Links
 origin = Origin{Float64}()
-link1 = Body(box)
+link1 = Box(width, depth, length1, length1)
 
 
 @inline function g(joint::GenericJoint, xb::AbstractVector, qb::UnitQuaternion)
@@ -40,10 +39,9 @@ joint_between_origin_and_link1 = EqualityConstraint(GenericJoint{5}(origin,link1
 
 links = [link1]
 constraints = [joint_between_origin_and_link1]
-shapes = [box]
 
 
-mech = Mechanism(origin, links, constraints, shapes = shapes)
+mech = Mechanism(origin, links, constraints)
 setPosition!(link1,x=[0;0.0;2],q = UnitQuaternion(RotX(0)))
 setVelocity!(link1,v=[0;2.0;0])
 
@@ -51,5 +49,5 @@ steps = Base.OneTo(1000)
 storage = Storage{Float64}(steps,1)
 
 simulate!(mech, storage, record = true)
-visualize(mech, storage, shapes)
+visualize(mech, storage)
 

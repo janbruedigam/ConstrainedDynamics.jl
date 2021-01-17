@@ -24,6 +24,7 @@ export Origin,
     Box,
     Cylinder,
     Sphere,
+    Pyramid,
     Mesh,
 
     Floating,

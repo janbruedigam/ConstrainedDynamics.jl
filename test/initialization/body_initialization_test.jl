@@ -8,15 +8,13 @@ using LinearAlgebra
 Δt = 0.01
 length1 = 1.0
 width, depth = 1.0, 1.0
-box1 = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
-box2 = Box(width, depth, length1, length1, color = RGBA(1., 0., 0.))
 
 # Links
 origin = Origin{Float64}()
-link1 = Body(box1)
+link1 = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
 link1.m = 1.0
 link1.J = diagm(ones(3))
-link2 = Body(box2)
+link2 = Box(width, depth, length1, length1, color = RGBA(1., 0., 0.))
 link2.m = 1.0
 link2.J = diagm(ones(3))
 
@@ -26,10 +24,9 @@ joint2 = EqualityConstraint(Floating(origin, link2))
 
 links = [link1;link2]
 constraints = [joint1;joint2]
-shapes = [box1;box2]
 
 
-mech = Mechanism(origin, links, constraints, g = 0., shapes = shapes)
+mech = Mechanism(origin, links, constraints, g = 0.)
 
 
 for i=1:3
@@ -93,9 +90,9 @@ for i=1:3
 end
 
 
-origin, bodies, eqconstraints, ineqconstraints, shapes = disassemble(mech, shapes=shapes)
+origin, bodies, eqconstraints, ineqconstraints = disassemble(mech)
 
-mech = Mechanism(origin, [links[1]], [eqconstraints[1]], g = 0., shapes = shapes)
+mech = Mechanism(origin, [links[1]], [eqconstraints[1]], g = 0.)
 
 for i=1:3
     axis1 = zeros(3)

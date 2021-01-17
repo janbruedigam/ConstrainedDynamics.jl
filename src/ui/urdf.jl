@@ -166,29 +166,28 @@ function parse_link(xlink, materialdict, T)
     if shape === nothing
         link = Body(m, J, name=name)
     else
-        shape.m = m
-        shape.J = J
-        link = Body(shape, name=name)
+        link = shape
+        link.m = m
+        link.J = J
+        link.name = name
     end
 
     link.state.xc = x 
     link.state.qc = q
     
 
-    return link, shape
+    return link
 end
 
 function parse_links(xlinks, materialdict, T)
     ldict = Dict{String,AbstractBody{T}}()
-    shapes = Shape{T}[]
 
     for xlink in xlinks
-        link, shape = parse_link(xlink, materialdict, T)
+        link = parse_link(xlink, materialdict, T)
         ldict[link.name] = link
-        shape !== nothing && push!(shapes, shape)
     end
 
-    return ldict, shapes
+    return ldict
 end
 
 function parse_joint(xjoint, plink, clink, T)
@@ -270,8 +269,7 @@ function parse_joints(xjoints, ldict, floating, T)
                 push!(links, ldict[name])
                 floatingname = name
             else # make current link origin
-                origin.id = ldict[name].id
-                origin.name = name
+                origin = Origin(ldict[name])
             end
             push!(origins, origin)
         end
@@ -395,20 +393,20 @@ function parse_urdf(filename, floating, ::Type{T}) where T
     xloopjoints = get_elements_by_tagname(xroot, "loop_joint")
 
     materialdict = parse_robotmaterials(xroot, T)
-    ldict, shapes = parse_links(xlinks, materialdict, T)
+    ldict = parse_links(xlinks, materialdict, T)
     origin, links, joints = parse_joints(xjoints, ldict, floating, T)
 
     joints, loopjoints = parse_loop_joints(xloopjoints, origin, joints, ldict, T)
 
     free(xdoc)
 
-    return origin, links, joints, loopjoints, shapes
+    return origin, links, joints, loopjoints
 end
 
 
 ### After parsing
 
-function set_parsed_values!(mechanism::Mechanism{T}, loopjoints, shapes) where T
+function set_parsed_values!(mechanism::Mechanism{T}, loopjoints) where T
     graph = mechanism.graph
     xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
     qjointlist = Dict{Int64,UnitQuaternion{T}}() # stores id, q in world frame
@@ -420,7 +418,7 @@ function set_parsed_values!(mechanism::Mechanism{T}, loopjoints, shapes) where T
         body = component
         xbodylocal = body.state.xc
         qbodylocal = body.state.qc
-        shape = getshape(shapes, id)
+        shape = body.shape
 
         parentid = get_parentid(mechanism, id, loopjoints)
         constraint = geteqconstraint(mechanism, parentid)
@@ -481,7 +479,7 @@ function set_parsed_values!(mechanism::Mechanism{T}, loopjoints, shapes) where T
         qbody = body.state.qc
 
         # shape relative
-        if shape !== nothing
+        if !(typeof(shape) <: EmptyShape)
             shape.xoffset = vrotate(xjoint + vrotate(shape.xoffset, qjoint) - xbody, inv(qbody))
             shape.qoffset = qoffset \ qjointlocal * shape.qoffset
         end

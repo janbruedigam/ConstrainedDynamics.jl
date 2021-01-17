@@ -7,10 +7,6 @@ ex = [1.;0.;0.]
 l1 = 1.0
 l2 = 1.0# sqrt(2)/2
 x, y = .1, .1
-b1 = Box(x, y, l1, l1, color = RGBA(1., 1., 0.))
-b2 = Box(x, y, l2, l2, color = RGBA(1., 1., 0.))
-b3 = Box(x, y, l1, l1, color = RGBA(1., 0., 0.))
-b4 = Box(x, y, l2, l2, color = RGBA(1., 0., 0.))
 
 vert11 = [0.;0.;l1 / 2]
 vert12 = -vert11
@@ -32,15 +28,15 @@ q1 = UnitQuaternion(RotX(phi1))
 # Links
 origin = Origin{Float64}()
 
-link1 = Body(b1)
-link2 = Body(b2)
-link3 = Body(b3)
-link4 = Body(b4)
+link1 = Box(x, y, l1, l1, color = RGBA(1., 1., 0.))
+link2 = Box(x, y, l2, l2, color = RGBA(1., 1., 0.))
+link3 = Box(x, y, l1, l1, color = RGBA(1., 0., 0.))
+link4 = Box(x, y, l2, l2, color = RGBA(1., 0., 0.))
 
-link5 = Body(b1)
-link6 = Body(b2)
-link7 = Body(b3)
-link8 = Body(b4)
+link5 = deepcopy(link1)
+link6 = deepcopy(link2)
+link7 = deepcopy(link3)
+link8 = deepcopy(link4)
 
 # Constraints
 function fourbar(links, vertices, axis)
@@ -63,9 +59,8 @@ end
 
 links = [link1; link2; link3; link4; link5; link6; link7; link8]
 constraints = [fourbar([origin;links[1:4]], verts, ex)...,fourbar([links[4];links[5:8]], verts, ex)...]
-shapes = [b1,b2,b3,b4]
 
-mech = Mechanism(origin, links, constraints, InequalityConstraint{Float64}[], shapes = shapes)
+mech = Mechanism(origin, links, constraints, InequalityConstraint{Float64}[])
 
 initfourbar!(mech,[origin;links[1:4]],verts,q1,q1)
 initfourbar!(mech,[links[4];links[5:8]],verts,q1 / q1,q1)

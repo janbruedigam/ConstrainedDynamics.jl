@@ -19,8 +19,8 @@ q1, q2, q3 = UnitQuaternion(RotX(phi1)), UnitQuaternion(RotX(phi2)), UnitQuatern
 
 # Links
 origin = Origin{Float64}()
-link1 = Body(b1)
-link2 = Body(b1)
+link1 = Box(x, y, l1, l1, color = RGBA(1., 1., 0.))
+link2 = deepcopy(link1)
 
 # Constraints
 joint0to12 = EqualityConstraint(CylindricalFree(origin, link1, ey; p2=vert11), Spherical(origin, link2; p2=vert11))
@@ -29,8 +29,7 @@ joint1to2 = EqualityConstraint(CylindricalFree(link1, link2, ex))
 
 links = [link1; link2]
 constraints = [joint0to12;joint1to2]
-shapes = [b1]
 
-mech = Mechanism(origin, links, constraints, shapes = shapes)
+mech = Mechanism(origin, links, constraints)
 setPosition!(origin,link1,p1 = [0;-0.5 * sqrt(2);0],p2 = vert11,Δq = q1)
 setPosition!(origin,link2,p2 = vert11,Δq = q2)
