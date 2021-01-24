@@ -2,6 +2,10 @@ using Test
 using SafeTestsets
 
 
+@safetestset "Quaternion Tests" begin
+    include("quaternion_test.jl")
+end
+
 include("diff/diff_test.jl")
 
 @safetestset "Factorization Test" begin
@@ -10,8 +14,12 @@ end
 
 include("initialization/initialization_test.jl")
 
-@safetestset "Shape Tests" begin
-    include("shape_test.jl")
+@safetestset "UI Test" begin
+    include("ui_test.jl")
+end
+
+@safetestset "Optionals Tests" begin
+    include("optionals_test.jl")
 end
 
 @safetestset "Dynamics Tests" begin

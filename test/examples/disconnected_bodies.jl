@@ -12,15 +12,11 @@ origin = Origin{Float64}()
 link1 = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
 link2 = Box(width, depth, length1, length1, color = RGBA(1., 0., 0.))
 
-# Constraints
-joint1 = EqualityConstraint(Floating(origin, link1))
-joint2 = EqualityConstraint(Floating(origin, link2))
-
 links = [link1;link2]
 constraints = [joint1;joint2]
 
 
-mech = Mechanism(origin, links, constraints, g = -5.)
+mech = Mechanism(origin, links, g = -5.)
 setPosition!(link1,x = [0.;1.;0.])
 setPosition!(link2,x = [0.;-1.;0.])
 setVelocity!(link1,v = [-5.;-5;5])

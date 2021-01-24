@@ -16,11 +16,11 @@ q1 = UnitQuaternion(RotX(phi))
 
 # Links
 origin = Origin{Float64}()
-links = [Cylinder(r, h, h, color = RGBA(1., 0., 0.)) for i = 1:2]
+links = [Cylinder(r, h, h, color = RGBA(1., 0., 0.), name="body"*string(i)) for i = 1:2]
 
 # Constraints
-jointb1 = EqualityConstraint(Revolute(origin, links[1], ex; p2=vert11))
-joint12 = EqualityConstraint(Revolute(links[1], links[2], ex; p1=vert12, p2=vert11))
+jointb1 = EqualityConstraint(Revolute(origin, links[1], ex; p2=vert11), name="jointb1")
+joint12 = EqualityConstraint(Revolute(links[1], links[2], ex; p1=vert12, p2=vert11), name="joint12")
 constraints = [jointb1;joint12]
 
 
