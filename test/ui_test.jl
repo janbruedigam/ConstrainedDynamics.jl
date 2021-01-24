@@ -20,8 +20,8 @@ eqc1 = geteqconstraint(mech, "jointb1")
 eqc2 = geteqconstraint(mech, "joint12")
 @test body1 === mech.bodies[1]
 @test body2 === mech.bodies[2]
-@test eqc1 === mech.eqconstraints[1]
-@test eqc2 === mech.eqconstraints[2]
+@test eqc1 === mech.eqconstraints[3]
+@test eqc2 === mech.eqconstraints[4]
 
 body1 = getcomponent(mech, "body1")
 body2 = getcomponent(mech, "body2")
@@ -29,5 +29,5 @@ eqc1 = getcomponent(mech, "jointb1")
 eqc2 = getcomponent(mech, "joint12")
 @test body1 === mech.bodies[1]
 @test body2 === mech.bodies[2]
-@test eqc1 === mech.eqconstraints[1]
-@test eqc2 === mech.eqconstraints[2]
+@test eqc1 === mech.eqconstraints[3]
+@test eqc2 === mech.eqconstraints[4]
