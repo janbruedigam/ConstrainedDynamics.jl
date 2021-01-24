@@ -1,5 +1,7 @@
 include("examples/doublependulum_disconnection.jl")
 
+using ConstrainedDynamics: currentasknot!, getbody, geteqconstraint, getcomponent
+
 dq = minimalCoordinates(mech)
 @test true
 setPosition!(mech,dq)
