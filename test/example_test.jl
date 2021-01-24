@@ -54,3 +54,13 @@ for file in files
         @test !any(ConstrainedDynamics.sisnan.(storage.ω[i]))
     end
 end
+
+include("examples/dummycontroller.jl")
+storage = simulate!(mech, 10., dummycontroller_controller, record = true, debug = true)
+n = length(storage.x)
+for i=1:n
+    @test !any(ConstrainedDynamics.sisnan.(storage.x[i]))
+    @test !any(ConstrainedDynamics.sisnan.(storage.q[i]))
+    @test !any(ConstrainedDynamics.sisnan.(storage.v[i]))
+    @test !any(ConstrainedDynamics.sisnan.(storage.ω[i]))
+end
