@@ -133,11 +133,6 @@ end
     return
 end
 
-@inline function currentasknot!(mechanism::Mechanism)
-    foreach(currentasknot!, mechanism.bodies)
-    return
-end
-
 @inline function activate!(mechanism::Mechanism, id::Integer)
     component = getcomponent(mechanism, id)
     activate!(component)

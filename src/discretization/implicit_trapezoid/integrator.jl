@@ -1,7 +1,8 @@
+## This turns out to be exactly the same as the symplectit Euler method
 # L(xck,vck) -> 1/2 Δt (Ld(xdk,(xdk+1-xdk)/Δt) + Ld(xdk+1,(xdk+1-xdk)/Δt))
 # L(qck,ωck) -> 1/2 Δt (Ld(qdk,2 V qdk† (qdk+1-qdk)/Δt) + Ld(qdk+1,2 V qdk† (qdk+1-qdk)/Δt)
 # ωckw = sqrt((2/Δt)^2 - ωckᵀωck) - 2/Δt
-# 1/2 (Fdk + Fdk+1)
+# Fckᵀxck -> 1/2 (Fdkᵀxdk + Fdk+1ᵀxdk)
 
 METHODORDER = 2
 getGlobalOrder() = (global METHODORDER; return METHODORDER)

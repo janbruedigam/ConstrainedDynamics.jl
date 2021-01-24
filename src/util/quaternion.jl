@@ -185,9 +185,10 @@ function slerp(q1,q2,h)
     end
 
     qdiff = q1\q2
-    φdiff, udiff = rotation_vector(qdiff)
+    φdiff = rotation_angle(qdiff) 
+    udiff = rotation_axis(qdiff)
     φint = φdiff*h
-    qint = UnitQuaternion(cos(φint/2),(udiff*sin(φint/2))...,false)
+    qint = UnitQuaternion(cos(φint/2),udiff*sin(φint/2),false)
     
     return q1*qint
 end

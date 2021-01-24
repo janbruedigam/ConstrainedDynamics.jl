@@ -88,8 +88,13 @@ end
 
 function setForce!(mechanism::Mechanism, dict::UnitDict)
     for (id,eqc) in pairs(mechanism.eqconstraints)
-        setVelocity!(mechanism, eqc, dict[id])
+        setForce!(mechanism, eqc, dict[id])
     end
 
+    return
+end
+
+@inline function currentasknot!(mechanism::Mechanism)
+    foreach(currentasknot!, mechanism.bodies)
     return
 end

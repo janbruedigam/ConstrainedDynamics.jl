@@ -119,7 +119,3 @@ end
     ineqc.γsol[2] = ineqc.γsol[1] - 1 / (2^scale) * mechanism.α * -entry.Δγ
     return
 end
-
-@inline function checkangularvelocity(body)
-
-end
