@@ -1,7 +1,7 @@
 # L(xck,vck) -> Δt Ld(xdk+1,(xdk+1-xdk)/Δt)
 # L(qck,ωck) -> Δt Ld(qdk+1,2 V qdk† (qdk+1-qdk)/Δt)
 # ωckw = sqrt((2/Δt)^2 - ωckᵀωck) - 2/Δt
-# Fdk+1
+# Fckᵀxck -> Fdk
 
 METHODORDER = 1
 getGlobalOrder() = (global METHODORDER; return METHODORDER)
