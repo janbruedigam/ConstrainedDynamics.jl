@@ -39,11 +39,10 @@ for i=1:10
     setVelocity!(mech,joint1,vω)
     function control!(mechanism, k)
         if k==1
-            setForce!(mech,joint1,Fτ) 
+            setForce!(mechanism,joint1,Fτ) 
         end
         return
     end
-    # setForce!(mech,joint1,Fτ)    
 
     storage = simulate!(mech, 10., control!, record = true)
 
