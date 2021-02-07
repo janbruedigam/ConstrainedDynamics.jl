@@ -78,9 +78,9 @@ end
 function setForce!(body::Body; 
         F::AbstractVector = SA[0;0;0], τ::AbstractVector = SA[0;0;0], p::AbstractVector = SA[0;0;0]
     )
-    
-    τ += vrotate(torqueFromForce(F, p),inv(body.state.qc)) # in local coordinates
-    setForce!(body.state, F, τ)
+    # F and p in local coordinates
+    τ += torqueFromForce(F, p) # in local coordinates
+    setForce!(body.state, vrotate(F,body.state.qc), τ)
     return 
 end
 

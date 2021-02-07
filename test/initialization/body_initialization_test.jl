@@ -120,8 +120,8 @@ for i=1:3
     truex10 = zeros(3)
     trueq10 = q1
 
-    trueF0 = F 
-    trueτ0 = τ + vrotate(cross(p, F),inv(q1))
+    trueF0 = vrotate(F,q1)
+    trueτ0 = τ + cross(p, F)
 
     truev1 = trueF0*Δt
     trueω1 = vrotate(trueτ0*Δt,q1)
