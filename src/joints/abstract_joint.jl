@@ -105,7 +105,7 @@ end
 
     X, Q = ∂g∂posa(joint, x2a, q2a, x2b, q2b)
     V = X * Δt
-    Ω = Q * Lmat(q1a) * derivωbar(ω1a, Δt)
+    Ω = Q * Lmat(q1a) * derivωbar(ω1a, Δt) * Δt / 2
 
     return [V Ω]
 end
@@ -115,7 +115,7 @@ end
 
     X, Q = ∂g∂posb(joint, x2a, q2a, x2b, q2b)
     V = X * Δt
-    Ω = Q * Lmat(q1b) * derivωbar(ω1b, Δt)
+    Ω = Q * Lmat(q1b) * derivωbar(ω1b, Δt) * Δt / 2
 
     return [V Ω]
 end
@@ -125,7 +125,7 @@ end
 
     X, Q = ∂g∂posb(joint, x2b, q2b)
     V = X * Δt
-    Ω = Q * Lmat(q1b) * derivωbar(ω1b, Δt)
+    Ω = Q * Lmat(q1b) * derivωbar(ω1b, Δt) * Δt / 2
 
     return [V Ω]
 end

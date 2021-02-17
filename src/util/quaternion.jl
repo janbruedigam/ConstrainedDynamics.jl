@@ -16,6 +16,11 @@ Lᵀmat(q) = lmult(q)'
 Rmat(q) = rmult(q)
 Rᵀmat(q) = rmult(q)'
 
+# Remove once added to Rotations.jl
+function Base.:/(q::UnitQuaternion, w::Real)
+    return UnitQuaternion(q.w/w, q.x/w, q.y/w, q.z/w, false)
+end
+
 Tmat(::Type{T}=Float64) where T = tmat(T)
 Tᵀmat(::Type{T}=Float64) where T = tmat(T)
 Vmat(::Type{T}=Float64) where T = vmat(T)
