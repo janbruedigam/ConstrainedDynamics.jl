@@ -266,15 +266,15 @@ function linearconstraints(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
 
                 Gl[range,pcol3a12] = pGlx
                 Gl[range,pcol3b12] = pGlx*Δt
-                Gl[range,pcol3c12] = pGlq*Rmat(ωbar(pstate.ωsol[2],Δt))*LVᵀmat(pstate.qsol[2])
-                Gl[range,pcol3d12] = pGlq*Lmat(pstate.qsol[2])*derivωbar(pstate.ωsol[2],Δt)
+                Gl[range,pcol3c12] = pGlq*Rmat(ωbar(pstate.ωsol[2],Δt)*Δt/2)*LVᵀmat(pstate.qsol[2])
+                Gl[range,pcol3d12] = pGlq*Lmat(pstate.qsol[2])*derivωbar(pstate.ωsol[2],Δt)*Δt/2
                 Gr[range,pcol3b] = pGrx
                 Gr[range,pcol3d] = pGrq
 
                 Gl[range,ccol3a12] = cGlx
                 Gl[range,ccol3b12] = cGlx*Δt
-                Gl[range,ccol3c12] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt))*LVᵀmat(cstate.qsol[2])
-                Gl[range,ccol3d12] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)
+                Gl[range,ccol3c12] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt)*Δt/2)*LVᵀmat(cstate.qsol[2])
+                Gl[range,ccol3d12] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)*Δt/2
                 Gr[range,ccol3b] = cGrx
                 Gr[range,ccol3d] = cGrq
 
@@ -310,8 +310,8 @@ function linearconstraints(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
 
                 Gl[range,ccol3a12] = cGlx
                 Gl[range,ccol3b12] = cGlx*Δt
-                Gl[range,ccol3c12] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt))*LVᵀmat(cstate.qsol[2])
-                Gl[range,ccol3d12] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)
+                Gl[range,ccol3c12] = cGlq*Rmat(ωbar(cstate.ωsol[2],Δt)*Δt/2)*LVᵀmat(cstate.qsol[2])
+                Gl[range,ccol3d12] = cGlq*Lmat(cstate.qsol[2])*derivωbar(cstate.ωsol[2],Δt)*Δt/2
                 Gr[range,ccol3b] = cGrx
                 Gr[range,ccol3d] = cGrq
 

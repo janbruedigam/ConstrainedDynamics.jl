@@ -74,10 +74,10 @@ function transfuncvel(vars)
     ωb1 = vars[24:26]
 
     xa2 = xa1 + va1 * Δt
-    qa2 = qa1 * ωbar(ωa1, Δt)
+    qa2 = qa1 * ωbar(ωa1, Δt) * Δt / 2
 
     xb2 = xb1 + vb1 * Δt
-    qb2 = qb1 * ωbar(ωb1, Δt)
+    qb2 = qb1 * ωbar(ωb1, Δt) * Δt / 2
 
     pa = vars[27:29]
     pb = vars[30:32]
@@ -157,10 +157,10 @@ function rotfuncvel(vars)
     ωb1 = vars[24:26]
 
     xa2 = xa1 + va1 * Δt
-    qa2 = qa1 * ωbar(ωa1, Δt)
+    qa2 = qa1 * ωbar(ωa1, Δt) * Δt / 2
 
     xb2 = xb1 + vb1 * Δt
-    qb2 = qb1 * ωbar(ωb1, Δt)
+    qb2 = qb1 * ωbar(ωb1, Δt) * Δt / 2
 
     offset = UnitQuaternion(SA[vars[27:30]...], false)
 
