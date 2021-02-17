@@ -11,7 +11,7 @@ getGlobalOrder() = (global METHODORDER; return METHODORDER)
 
 # Convenience functions
 @inline getx3(state::State, Δt) = state.xk[1] + state.vsol[2]*Δt
-@inline getq3(state::State, Δt) = state.qk[1] * ωbar(state.ωsol[2],Δt)
+@inline getq3(state::State, Δt) = state.qk[1] * ωbar(state.ωsol[2],Δt) * Δt / 2
 
 @inline posargsc(state::State) = (state.xc, state.qc)
 @inline fullargsc(state::State) = (state.xc, state.vc, state.qc, state.ωc)
@@ -23,11 +23,11 @@ getGlobalOrder() = (global METHODORDER; return METHODORDER)
 
 @inline function derivωbar(ω::SVector{3}, Δt)
     msq = -sqrt(4 / Δt^2 - dot(ω, ω))
-    return Δt / 2 * [ω' / msq; I]
+    return [ω' / msq; I]
 end
 
 @inline function ωbar(ω, Δt)
-    return Δt / 2 * UnitQuaternion(sqrt(4 / Δt^2 - dot(ω, ω)), ω, false)
+    return UnitQuaternion(sqrt(4 / Δt^2 - dot(ω, ω)), ω, false)
 end
 
 @inline function setForce!(state::State, F, τ)
@@ -45,7 +45,7 @@ end
     ωc = state.ωc
 
     state.xk[1] = xc + vc*Δt
-    state.qk[1] = qc * ωbar(ωc,Δt)
+    state.qk[1] = qc * ωbar(ωc,Δt) * Δt / 2
 
     state.Fk[1] = szeros(T,3)
     state.τk[1] = szeros(T,3)
@@ -71,7 +71,7 @@ end
     state.ωc = state.ωsol[2]
 
     state.xk[1] = state.xk[1] + state.vsol[2]*Δt
-    state.qk[1] = state.qk[1] * ωbar(state.ωsol[2],Δt)
+    state.qk[1] = state.qk[1] * ωbar(state.ωsol[2],Δt) * Δt / 2
 
     state.xsol[2] = state.xk[1]
     state.qsol[2] = state.qk[1]

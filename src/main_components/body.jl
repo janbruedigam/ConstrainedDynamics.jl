@@ -95,7 +95,7 @@ function ∂F∂z(body::Body{T}, Δt) where T
 
     AvelT = [Z3 -I*body.m/Δt]
 
-    AposR = [-Rmat(ωbar(state.ωc, Δt))*LVᵀmat(state.qc) -Lmat(state.qc)*derivωbar(state.ωc, Δt)]
+    AposR = [-Rmat(ωbar(state.ωc, Δt)*Δt/2)*LVᵀmat(state.qc) -Lmat(state.qc)*derivωbar(state.ωc, Δt)*Δt/2]
 
     J = body.J
     ω1 = state.ωc

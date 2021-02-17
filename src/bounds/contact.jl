@@ -49,7 +49,7 @@ end
 @inline function ∂g∂ʳvel(contact::Contact,x2::AbstractVector, q2::UnitQuaternion, x1::AbstractVector,v1::AbstractVector, q1::UnitQuaternion,w1::AbstractVector, Δt)
     X, Q = ∂g∂pos(contact, x2, q2)
     V = X * Δt
-    Ω = Q * Lmat(q1) * derivωbar(w1, Δt)
+    Ω = Q * Lmat(q1) * derivωbar(w1, Δt) * Δt / 2
     return [V Ω]
 end
 

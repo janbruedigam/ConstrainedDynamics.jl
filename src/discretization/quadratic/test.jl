@@ -9,7 +9,7 @@
     state.ωsol[2] = ω2
 
     state.xk[1] = x1 + v1*Δt
-    state.qk[1] = q1 * ωbar(ω1,Δt)
+    state.qk[1] = q1 * ωbar(ω1,Δt) * Δt / 2
 
     state.xsol[2] = state.xk[1]
     state.qsol[2] = state.qk[1]
