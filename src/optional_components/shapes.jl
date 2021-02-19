@@ -9,7 +9,7 @@ mutable struct Mesh{T} <: Shape{T}
     qoffset::UnitQuaternion{T}
 
     path::String
-    scale::AbstractArray{3,T}
+    scale::Array{T,1}
     color::RGBA
 
     function Mesh(path::String;
@@ -17,10 +17,10 @@ mutable struct Mesh{T} <: Shape{T}
     )
     T = promote_type(eltype.((xoffset, qoffset))...)
 
-    new{T}(xoffset, qoffset, path, [1.;1.;1.], color)
+    new{T}(xoffset, qoffset, path, ones(3), color)
     end
 
-    function Mesh(path::String, scale::AbstractArray{3,T};
+    function Mesh(path::String, scale;
             color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
         )
         T = promote_type(eltype.((xoffset, qoffset))...)
@@ -28,7 +28,7 @@ mutable struct Mesh{T} <: Shape{T}
         new{T}(xoffset, qoffset, path, scale, color)
     end
 
-    function Mesh(path::String, scale::AbstractArray{3,T}, m::Real, J::AbstractMatrix;
+    function Mesh(path::String, scale, m::Real, J::AbstractMatrix;
             name::String="", color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
         )
         T = promote_type(eltype.((m, J, xoffset, qoffset))...)
