@@ -143,7 +143,8 @@ function parse_shape(xvisual, materialdict, T)
                 shape = Sphere(r, zero(T), color = color, xoffset = x, qoffset = q)
             elseif name(shapenode) == "mesh"
                 path = attribute(shapenode, "filename")
-                shape = Mesh(path, zero(T), zeros(T, 3, 3), color = color, xoffset = x, qoffset = q)
+                scale = parse_vector(shapenode, "scale", T, default = "1 1 1")
+                shape = Mesh(path, scale, zero(T), zeros(T, 3, 3), color = color, xoffset = x, qoffset = q)
             else
                 @info "Unkown geometry."
                 shape = nothing
