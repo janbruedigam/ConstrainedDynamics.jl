@@ -13,7 +13,7 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 Colors = "<0.12.6, 0.12.6"
-ForwardDiff = "<0.10.14, 0.10.14"
+ForwardDiff = "<0.10.16, 0.10.16"
 LightXML = "<0.9.0, 0.9.0"
 Rotations = "1.0"
 StaticArrays = "0.12, 1.0"
