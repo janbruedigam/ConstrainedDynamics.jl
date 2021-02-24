@@ -13,7 +13,6 @@ link1 = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
 link2 = Box(width, depth, length1, length1, color = RGBA(1., 0., 0.))
 
 links = [link1;link2]
-constraints = [joint1;joint2]
 
 
 mech = Mechanism(origin, links, g = -5.)
