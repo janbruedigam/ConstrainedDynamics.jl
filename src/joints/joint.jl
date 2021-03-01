@@ -37,6 +37,13 @@ g(joint::Joint, stateb::State) = g(joint, posargsc(stateb)...)
 end
 @inline setForce!(joint::Joint) = return
 
+
+@inline function addForce!(joint::Joint, Fτ::SVector)
+    joint.Fτ += zerodimstaticadjoint(nullspacemat(joint)) * Fτ
+    return
+end
+@inline addForce!(joint::Joint) = return
+
 ## Derivative wrappers
 @inline function ∂Fτ∂ua(joint::Joint, body1::Body, body2::Body)
     return ∂Fτ∂ua(joint, body1.state, body2.state) * zerodimstaticadjoint(nullspacemat(joint))
