@@ -4,7 +4,7 @@ using ConstrainedDynamics
 makedocs(;
     modules = [ConstrainedDynamics],
     format = Documenter.HTML(
-        canonical = "https://janbruedigam.github.io/ConstrainedDynamics.jl/latest/",
+        canonical = "https://janbruedigam.github.io/ConstrainedDynamics.jl/stable/",
         assets = ["assets/favicon.ico"],
     ),
     pages = [
