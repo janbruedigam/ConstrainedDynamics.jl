@@ -9,6 +9,10 @@ makedocs(;
     ),
     pages = [
         "Home" => "index.md",
+        "Getting started" => [
+            "From URDF" => "gettingstarted/urdf.md",
+            "From Code" => "gettingstarted/code.md"
+        ],
         "Library" => [
             "Body" => "library/body.md",
             "Shape" => "library/shape.md",
