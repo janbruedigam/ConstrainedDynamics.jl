@@ -1,3 +1,9 @@
+"""
+$(TYPEDEF)
+
+A `Body` is described by a mass `m` and inertia `J`. For referencing, each `Body` gets assigned a unique `id` once added to a [`Mechanism`](@ref). Additionally, a `name` can be assigned for referencing as well.
+The `state` of a `Body` contains position, orientation, and velocity information (stored as a [`State`](@ref)).
+"""
 mutable struct Body{T} <: AbstractBody{T}
     id::Int64
     name::String

@@ -1,6 +1,7 @@
 # ConstrainedDynamics
 [![Build Status](https://github.com/janbruedigam/ConstrainedDynamics.jl/workflows/CI/badge.svg)](https://github.com/janbruedigam/ConstrainedDynamics.jl/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/janbruedigam/ConstrainedDynamics.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/janbruedigam/ConstrainedDynamics.jl)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://www.ei.tum.de/itr/software/ConstrainedDynamics.jl/stable/)
 
 **ConstrainedDynamics** is a rigid body dynamics package written in Julia. In contrast to the RigidBodyDynamics package, it uses maximal coordinates instead of minimal coordinates to represent the states of a mechanism. This parametrization can be advantageous when simulating structures with additional explicit constraints. In terms of speed, ConstrainedDynamics and RigidBodyDynamics are roughly comparable, so for normal applications, both are valid options.
 
