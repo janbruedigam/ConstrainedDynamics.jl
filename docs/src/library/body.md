@@ -1,4 +1,4 @@
-# Bodies
+# Body and Origin
 
 ## Index
 
@@ -7,10 +7,14 @@ Pages   = ["library/body.md"]
 Order   = [:type, :function]
 ```
 
-## The `Body` type
+## The `Body` and `Origin` types
 
 ```@docs
 Body
+```
+
+```@docs
+Origin
 ```
 
 ## Functions

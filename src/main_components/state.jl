@@ -1,3 +1,8 @@
+"""
+$(TYPEDEF)
+
+A `State` contains the position and velocity information of a [`Body`](@ref).
+"""
 mutable struct State{T}
     order::Integer
 

@@ -9,15 +9,17 @@ makedocs(;
     ),
     pages = [
         "Home" => "index.md",
-        "Library" => "library/library.md",
-        "Body" => "library/body.md",
-        "Constraint" => "library/constraint.md",
-        "Mechanism" => "library/mechanism.md",
-        "Interface" => "library/interface.md",
-        "Simulation" => "library/simulation.md",
-        "State" => "library/state.md",
-        ],
-    sitename = "ConstrainedDynamics.jl",
+        "Library" => [
+            "Body" => "library/body.md",
+            "Shape" => "library/shape.md",
+            "Constraint" => "library/equalityconstraint.md",
+            "Mechanism" => "library/mechanism.md",
+            "Interface" => "library/interface.md",
+            "Simulation" => "library/simulation.md",
+            "State" => "library/state.md"
+        ]
+    ],
+    sitename = "ConstrainedDynamics.jl"
 )
 
 deploydocs(; repo = "github.com/janbruedigam/ConstrainedDynamics.jl")

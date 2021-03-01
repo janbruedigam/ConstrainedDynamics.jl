@@ -1,9 +1,20 @@
+"""
+$(TYPEDEF)
+
+A `Shape` is used for the visualization of a [`Mechanism`](@ref). All `Shape`s have an `xoffset` and a `qoffset` parameter to specify the position and orientation offset between the actual [`Body`](@ref) and the visualized `Shape`.
+Depending on the constructor called, either a stand-alone `Shape` is returned, or a `Body` containing the `Shape` as an attribute.
+"""
 abstract type Shape{T} end
 
 struct EmptyShape{T} <: Shape{T}
     EmptyShape() = new{Float64}()
 end
 
+"""
+$(TYPEDEF)
+
+A `Mesh` can be used to visualize arbitrary geometries in a set `color` with a specification file at `path`. For `.obj`-files, the `scale` can be set (default `= [1;1;1]`).
+"""
 mutable struct Mesh{T} <: Shape{T}
     xoffset::SVector{3,T}
     qoffset::UnitQuaternion{T}
@@ -29,6 +40,11 @@ mutable struct Mesh{T} <: Shape{T}
     end
 end
 
+"""
+$(TYPEDEF)
+
+A `Box` can be used to visualize boxes of size `xyz` in a set `color`.
+"""
 mutable struct Box{T} <: Shape{T}
     xoffset::SVector{3,T}
     qoffset::UnitQuaternion{T}
@@ -55,6 +71,11 @@ mutable struct Box{T} <: Shape{T}
     end
 end
 
+"""
+$(TYPEDEF)
+
+A `Cylinder` can be used to visualize cylinders of size `rh` in a set `color`.
+"""
 mutable struct Cylinder{T} <: Shape{T}
     xoffset::SVector{3,T}
     qoffset::UnitQuaternion{T}
@@ -81,6 +102,11 @@ mutable struct Cylinder{T} <: Shape{T}
     end
 end
 
+"""
+$(TYPEDEF)
+
+A `Sphere` can be used to visualize spheres of radius `r` in a set `color`.
+"""
 mutable struct Sphere{T} <: Shape{T}
     xoffset::SVector{3,T}
     qoffset::UnitQuaternion{T}
@@ -106,6 +132,11 @@ mutable struct Sphere{T} <: Shape{T}
     end
 end
 
+"""
+$(TYPEDEF)
+
+A `Pyramid` can be used to visualize pyramids of size `wh` in a set `color`.
+"""
 mutable struct Pyramid{T} <: Shape{T}
     xoffset::SVector{3,T}
     qoffset::UnitQuaternion{T}

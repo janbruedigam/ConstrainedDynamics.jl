@@ -1,3 +1,9 @@
+"""
+$(TYPEDEF)
+
+An `EqualityConstraint` is used to describe the kinematic relation between two or more [`Body`](@ref)s. For referencing, each `EqualityConstraint` is assigned a unique `id` when added to a [`Mechanism`](@ref). A `name` can also be set.
+Typically, an `EqualityConstraint` should not be created directly, but as a joint (see [`Joint`](@ref)).
+"""
 mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     id::Int64
     name::String

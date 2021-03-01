@@ -1,8 +1,9 @@
 """
 $(TYPEDEF)
 
-A `Body` is described by a mass `m` and inertia `J`. For referencing, each `Body` gets assigned a unique `id` once added to a [`Mechanism`](@ref). Additionally, a `name` can be assigned for referencing as well.
+A `Body` is described by a mass `m` and inertia `J`. For referencing, each `Body` is assigned a unique `id` when added to a [`Mechanism`](@ref). A `name` can also be set.
 The `state` of a `Body` contains position, orientation, and velocity information (stored as a [`State`](@ref)).
+For Visualization, a `shape` can be assigned to a `Body` or a `Body` can be directly created from a [`Shape`](@ref). 
 """
 mutable struct Body{T} <: AbstractBody{T}
     id::Int64
@@ -27,6 +28,12 @@ mutable struct Body{T} <: AbstractBody{T}
     end
 end
 
+"""
+$(TYPEDEF)
+
+The `Origin` is the root of a mechanism. For referencing, the `Origin` is assigned a unique `id` when added to a [`Mechanism`](@ref). A `name` can also be set.
+For Visualization, a `shape` can be assigned to the `Origin`. 
+"""
 mutable struct Origin{T} <: AbstractBody{T}
     id::Int64
     name::String

@@ -1,16 +1,16 @@
-# State
+# EqualityConstraint
 
 ## Index
 
 ```@index
-Pages   = ["library/state.md"]
+Pages   = ["library/equalityconstraint.md"]
 Order   = [:type, :function]
 ```
 
-## The `State` type
+## The `EqualityConstraint` type
 
 ```@docs
-State
+EqualityConstraint
 ```
 
 ## Functions
@@ -18,5 +18,5 @@ State
 ```@autodocs
 Modules = [ConstrainedDynamics]
 Order   = [:function]
-Pages   = ["state.jl"]
+Pages   = ["equalityconstraint.jl"]
 ```

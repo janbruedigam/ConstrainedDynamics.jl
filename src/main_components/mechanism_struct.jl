@@ -1,5 +1,11 @@
 abstract type AbstractMechanism{T,Nn,Nb,Ne,Ni} end
 
+"""
+$(TYPEDEF)
+
+A `Mechanism` contains the [`Origin`](@ref), [`Body`](@ref)s, and [`EqualityConstraint`](@ref)s of a system and can be used for simulation.
+The time step `Δt` and gravity `g` can be specified.
+"""
 mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     origin::Origin{T}
     bodies::UnitDict{Base.OneTo{Int64},Body{T}}
