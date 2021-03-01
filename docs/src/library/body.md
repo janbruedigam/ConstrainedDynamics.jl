@@ -3,7 +3,7 @@
 ## Index
 
 ```@index
-Pages   = ["body.md"]
+Pages   = ["library/body.md"]
 Order   = [:type, :function]
 ```
 
