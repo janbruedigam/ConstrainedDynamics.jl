@@ -1,9 +1,19 @@
+"""
+    setPosition!(body; x, q)
+
+Set the position and orientation of a body.
+"""
 function setPosition!(body::Body; x::AbstractVector = SA[0;0;0], q::UnitQuaternion = one(UnitQuaternion))
     body.state.xc = x
     body.state.qc = q
     return
 end
 
+"""
+    setPosition!(body1, body2; p1, p2, Δx, Δq)
+    
+Set the position and orientation of body2 relative to body1 at the connection points p1 and p2.
+"""
 function setPosition!(body1::Body, body2::Body;
         p1::AbstractVector = SA[0;0;0], p2::AbstractVector = SA[0;0;0], 
         Δx::AbstractVector = SA[0;0;0], Δq::UnitQuaternion = one(UnitQuaternion)
@@ -16,6 +26,11 @@ function setPosition!(body1::Body, body2::Body;
     return
 end
 
+"""
+    setPosition!(origin, body2; p1, p2, Δx, Δq)
+    
+Set the position and orientation of body2 relative to the origin at the connection points p1 and p2.
+"""
 function setPosition!(body1::Origin, body2::Body;
         p1::AbstractVector = SA[0;0;0], p2::AbstractVector = SA[0;0;0],
         Δx::AbstractVector = SA[0;0;0], Δq::UnitQuaternion = one(UnitQuaternion)
@@ -28,12 +43,22 @@ function setPosition!(body1::Origin, body2::Body;
 end
 
 
+"""
+    setVelocity!(body; v, ω)
+    
+Set the translational and angular velocity of a body.
+"""
 function setVelocity!(body::Body; v::AbstractVector = SA[0;0;0], ω::AbstractVector = SA[0;0;0])
     body.state.vc = v
     body.state.ωc = ω
     return
 end
 
+"""
+    setVelocity!(body1, body2; p1, p2 Δv, Δω)
+    
+Set the translational and angular velocity of body2 relative to body1 at the connection points p1 and p2.
+"""
 function setVelocity!(body1::Body, body2::Body;
         p1::AbstractVector = SA[0;0;0], p2::AbstractVector = SA[0;0;0],
         Δv::AbstractVector = SA[0;0;0], Δω::AbstractVector = SA[0;0;0]
@@ -58,6 +83,11 @@ function setVelocity!(body1::Body, body2::Body;
     return
 end
 
+"""
+    setVelocity!(origin, body2; p1, p2 Δv, Δω)
+    
+Set the translational and angular velocity of body2 relative to the origin at the connection points p1 and p2.
+"""
 function setVelocity!(body1::Origin, body2::Body;
         p1::AbstractVector = SA[0;0;0], p2::AbstractVector = SA[0;0;0],
         Δv::AbstractVector = SA[0;0;0], Δω::AbstractVector = SA[0;0;0]
@@ -74,6 +104,7 @@ function setVelocity!(body1::Origin, body2::Body;
     setVelocity!(body2;v = v2,ω = ω2)
     return 
 end
+
 
 function setForce!(body::Body; 
         F::AbstractVector = SA[0;0;0], τ::AbstractVector = SA[0;0;0], p::AbstractVector = SA[0;0;0]

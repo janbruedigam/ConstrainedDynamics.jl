@@ -4,7 +4,17 @@ abstract type AbstractMechanism{T,Nn,Nb,Ne,Ni} end
 $(TYPEDEF)
 
 A `Mechanism` contains the [`Origin`](@ref), [`Body`](@ref)s, and [`EqualityConstraint`](@ref)s of a system and can be used for simulation.
-The time step `Δt` and gravity `g` can be specified.
+# Important attributes
+* `origin`:        The origin of a mechanism.
+* `bodies`:        The bodies of a mechanism (Dict).
+* `eqconstraints`: The equality constraints (joints) of a mechanism (Dict).
+* `Δt`:            The time step of the mechanism.
+* `g`:             The gravitational acceleration in z-direction.
+
+# Constuctors
+    Mechanism(origin, bodies; Δt, g)
+    Mechanism(origin, bodies, eqcs; Δt, g)
+    Mechanism(urdf_filename; floating, Δt, g)
 """
 mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     origin::Origin{T}

@@ -1,8 +1,11 @@
 """
 $(TYPEDEF)
 
-A `Shape` is used for the visualization of a [`Mechanism`](@ref). All `Shape`s have an `xoffset` and a `qoffset` parameter to specify the position and orientation offset between the actual [`Body`](@ref) and the visualized `Shape`.
-Depending on the constructor called, either a stand-alone `Shape` is returned, or a `Body` containing the `Shape` as an attribute.
+A `Shape` is used for visualization of a [`Body`](@ref). All `Shape`s have an `xoffset` and a `qoffset` parameter to specify the position and orientation offset between the actual [`Body`](@ref) and the visualized `Shape`.
+# Important attributes
+* `xoffset`: The relative position offset (vector) between `Body` and `Shape`.  
+* `qoffset`: The relative orientation offset (quaternion) between `Body` and `Shape`.
+* `color`:   The color of the `Shape`.
 """
 abstract type Shape{T} end
 
@@ -13,7 +16,9 @@ end
 """
 $(TYPEDEF)
 
-A `Mesh` can be used to visualize arbitrary geometries in a set `color` with a specification file at `path`. For `.obj`-files, the `scale` can be set (default `= [1;1;1]`).
+A `Mesh` can be used to visualize arbitrary geometries.
+# Important attributes
+* `path`: The path to the geometry file.  
 """
 mutable struct Mesh{T} <: Shape{T}
     xoffset::SVector{3,T}
@@ -43,7 +48,9 @@ end
 """
 $(TYPEDEF)
 
-A `Box` can be used to visualize boxes of size `xyz` in a set `color`.
+A `Box`.
+# Important attributes
+* `xyz`: The box size in x, y, and z direction (vector).  
 """
 mutable struct Box{T} <: Shape{T}
     xoffset::SVector{3,T}
@@ -74,7 +81,9 @@ end
 """
 $(TYPEDEF)
 
-A `Cylinder` can be used to visualize cylinders of size `rh` in a set `color`.
+A `Cylinder` along the z-axis.
+# Important attributes
+* `rh`: The cylinder radius and height (vector).  
 """
 mutable struct Cylinder{T} <: Shape{T}
     xoffset::SVector{3,T}
@@ -105,7 +114,9 @@ end
 """
 $(TYPEDEF)
 
-A `Sphere` can be used to visualize spheres of radius `r` in a set `color`.
+A `Sphere`.
+# Important attributes
+* `r`: The sphere radius.  
 """
 mutable struct Sphere{T} <: Shape{T}
     xoffset::SVector{3,T}
@@ -135,7 +146,8 @@ end
 """
 $(TYPEDEF)
 
-A `Pyramid` can be used to visualize pyramids of size `wh` in a set `color`.
+A square `Pyramid` with a base in the x-y-plane.
+* `wh`: The pyramid width and height (vector). 
 """
 mutable struct Pyramid{T} <: Shape{T}
     xoffset::SVector{3,T}

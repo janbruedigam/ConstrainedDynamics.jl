@@ -1,13 +1,6 @@
-# Body and Origin
+# Bodies and Origin
 
-## Index
-
-```@index
-Pages   = ["library/body.md"]
-Order   = [:type, :function]
-```
-
-## The `Body` and `Origin` types
+## `Body` and `Origin`
 
 ```@docs
 Body
@@ -17,10 +10,34 @@ Body
 Origin
 ```
 
-## Functions
+## `State`
 
-```@autodocs
-Modules = [ConstrainedDynamics]
-Order   = [:function]
-Pages   = ["body.jl"]
+```@docs
+ConstrainedDynamics.State
+```
+
+## `Shape`
+
+```@docs
+ConstrainedDynamics.Shape
+```
+
+```@docs
+Mesh
+```
+
+```@docs
+Box
+```
+
+```@docs
+Cylinder
+```
+
+```@docs
+Sphere
+```
+
+```@docs
+Pyramid
 ```

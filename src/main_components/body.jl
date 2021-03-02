@@ -1,9 +1,22 @@
 """
 $(TYPEDEF)
 
-A `Body` is described by a mass `m` and inertia `J`. For referencing, each `Body` is assigned a unique `id` when added to a [`Mechanism`](@ref). A `name` can also be set.
-The `state` of a `Body` contains position, orientation, and velocity information (stored as a [`State`](@ref)).
-For Visualization, a `shape` can be assigned to a `Body` or a `Body` can be directly created from a [`Shape`](@ref). 
+A `Body` is a component of a [`Mechanism`](@ref).
+# Important attributes
+* `id`:    The unique ID of a body. Assigned when added to a `Mechanism`.  
+* `name`:  The name of a body. The name is taken from a URDF or can be assigned by the user.  
+* `m`:     The mass of a body.  
+* `J`:     The inertia of a body.  
+* `state`: The state of a body. Contains all position and velocity information (see [`State`](@ref)).  
+* `shape`: The visualization shape of a body (see [`Shape`](@ref)).  
+
+# Constructors
+    Body(m, J; name, shape)  
+    Mesh(path, m, J; scale, kwargs...)  
+    Box(x, y, z, m; kwargs...)  
+    Cylinder(r, h, m; kwargs...)  
+    Sphere(r, m; kwargs...)  
+    Pyramid(w, h, m; kwargs...)  
 """
 mutable struct Body{T} <: AbstractBody{T}
     id::Int64
@@ -31,8 +44,16 @@ end
 """
 $(TYPEDEF)
 
-The `Origin` is the root of a mechanism. For referencing, the `Origin` is assigned a unique `id` when added to a [`Mechanism`](@ref). A `name` can also be set.
-For Visualization, a `shape` can be assigned to the `Origin`. 
+The `Origin` is the root of a [`Mechanism`](@ref).
+# Important attributes
+* `id`:    The unique ID of the origin. Assigned when added to a `Mechanism`.  
+* `name`:  The name of the origin. The name is taken from a URDF or can be assigned by the user.  
+* `shape`: The visualization shape of the origin (see [`Shape`](@ref)).  
+
+# Constructors
+    Origin(; name, shape)  
+    Origin{Type}(; name, shape)  
+    Origin(body)  
 """
 mutable struct Origin{T} <: AbstractBody{T}
     id::Int64
@@ -43,6 +64,10 @@ mutable struct Origin{T} <: AbstractBody{T}
 
     function Origin{T}(; name::String="", shape::Shape=EmptyShape()) where T
         new{T}(getGlobalID(), name, shape)
+    end
+
+    function Origin(; name::String="", shape::Shape=EmptyShape())
+        Origin{Float64}(; name = name, shape = shape)
     end
 
     function Origin(body::Body{T}) where T

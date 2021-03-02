@@ -10,9 +10,7 @@ The package is largely built on StaticArrays and avoids allocations for improved
 ```@contents
 Pages = [
   "body.md",
-  "shape.md",
-  "state.md",
-  "equalityconstraint.md",
+  "constraint.md",
   "mechanism.md",
   "interface.md",
   "simulation.md"]

@@ -1,8 +1,16 @@
 """
 $(TYPEDEF)
 
-An `EqualityConstraint` is used to describe the kinematic relation between two or more [`Body`](@ref)s. For referencing, each `EqualityConstraint` is assigned a unique `id` when added to a [`Mechanism`](@ref). A `name` can also be set.
-Typically, an `EqualityConstraint` should not be created directly, but as a joint (see [`Joint`](@ref)).
+An `EqualityConstraint` is a component of a [`Mechanism`](@ref) and is used to describe the kinematic relation between two or more [`Body`](@ref)s. 
+Typically, an `EqualityConstraint` should not be created directly. Use the joint prototypes instead, for example: 
+```julia
+EqualityConstraint(Revolute(body1, body2, rotation_axis)).
+```
+# Important attributes
+* `id`:       The unique ID of a constraint. Assigned when added to a `Mechanism`.  
+* `name`:     The name of a constraint. The name is taken from a URDF or can be assigned by the user.  
+* `parentid`: The ID of the parent body.  
+* `childids`: The IDs of the child bodies.  
 """
 mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     id::Int64
@@ -59,6 +67,14 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
 end
 
 
+"""
+    setPosition!(mechanism, eqconstraint, xθ)
+
+Sets the minimal coordinates (vector) of joint `eqconstraint`. 
+
+Revolute joint example:
+    setPosition!(mechanism, geteqconstraint(mechanism, "joint_name"), [pi/2])
+"""
 function setPosition!(mechanism, eqc::EqualityConstraint, xθ; iter::Bool = true)
     if !iter
         _setPosition!(mechanism, eqc, xθ)
@@ -95,6 +111,14 @@ end
 
 # TODO make zero alloc
 # TODO currently assumed constraints are in order and only joints which is the case unless very low level constraint setting
+"""
+    setVelocity!(mechanism, eqconstraint, vω)
+
+Sets the minimal coordinate velocities (vector) of joint `eqconstraint`. Note that currently this function sets the velocity of the directly connected body.
+
+Planar joint example:
+    setVelocity!(mechanism, geteqconstraint(mechanism, jointid), [0.5;2.0])
+"""
 function setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T,N,Nc}
     @assert length(vω)==3*Nc-N
     n = Int64(Nc/2)
@@ -111,6 +135,14 @@ function setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T,
 end
 
 # TODO make zero alloc
+"""
+    setForce!(mechanism, eqconstraint, Fτ)
+
+Sets the minimal coordinate forces (vector) of joint `eqconstraint`.
+
+Prismatic joint example:
+    setVelocity!(mechanism, geteqconstraint(mechanism, jointid), [-1.0])
+"""
 function setForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ::AbstractVector) where {T,N,Nc}
     @assert length(Fτ)==3*Nc-N
     for i = 1:Nc
@@ -127,11 +159,21 @@ function addForce!(mechanism, eqc::EqualityConstraint{T,N,Nc}, Fτ::AbstractVect
     return
 end
 
+"""
+    minimalCoordinates(mechanism, eqconstraint)
+
+Gets the minimal coordinates of joint `eqconstraint`.
+"""
 @generated function minimalCoordinates(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
     vec = [:(minimalCoordinates(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
     return :(svcat($(vec...)))
 end
 
+"""
+    minimalVelocities(mechanism, eqconstraint)
+
+Gets the minimal coordinate velocities of joint `eqconstraint`.
+"""
 @generated function minimalVelocities(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
     vec = [:(minimalVelocities(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
     return :(svcat($(vec...)))

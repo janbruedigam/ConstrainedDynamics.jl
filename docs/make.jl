@@ -14,13 +14,11 @@ makedocs(;
             "From Code" => "gettingstarted/code.md"
         ],
         "Library" => [
-            "Body" => "library/body.md",
-            "Shape" => "library/shape.md",
-            "Constraint" => "library/equalityconstraint.md",
+            "Bodies and Origin" => "library/body.md",
+            "Constraints" => "library/constraint.md",
             "Mechanism" => "library/mechanism.md",
             "Interface" => "library/interface.md",
             "Simulation" => "library/simulation.md",
-            "State" => "library/state.md"
         ]
     ],
     sitename = "ConstrainedDynamics.jl"
