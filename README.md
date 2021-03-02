@@ -5,7 +5,7 @@
 
 **ConstrainedDynamics** is a rigid body dynamics package written in Julia. In contrast to the RigidBodyDynamics package, it uses maximal coordinates instead of minimal coordinates to represent the states of a mechanism. This parametrization can be advantageous when simulating structures with additional explicit constraints. In terms of speed, ConstrainedDynamics and RigidBodyDynamics are roughly comparable, so for normal applications, both are valid options.
 
-The package is largely built on StaticArrays and avoids allocations for improved performance. Convenience methods for setting up mechanical structures in maximal or minimal coordinates are provided and URDF parsing is also available. At the moment, the code is not yet documented, but the provided examples should help with getting started with the package. 
+The package is largely built on StaticArrays and avoids allocations for improved performance. Convenience methods for setting up mechanical structures in maximal or minimal coordinates are provided and URDF parsing is also available. At the moment, there is a very basic documentation, but the provided examples should help with getting started with the package. 
 
 ## Related Packages
 * [RigidBodyDynamics](https://github.com/JuliaRobotics/RigidBodyDynamics.jl): Especially efficient for simulating unconstrained systems with single-degree-of-freedom joints
