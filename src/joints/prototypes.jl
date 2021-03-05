@@ -80,8 +80,8 @@ PlanarAxis(body1::AbstractBody{T}, body2, axis; p1 = szeros(T, 3), p2 = szeros(T
 
 A spherical joint between two bodies (ball-and-socket joint).
 """
-Spherical(body1::AbstractBody{T}, body2; p1 = szeros(T, 3), p2 = szeros(T, 3)) where T = 
-    Translational3{T}(body1, body2, p1 = p1, p2 = p2), Rotational0{T}(body1, body2)
+Spherical(body1::AbstractBody{T}, body2; p1 = szeros(T, 3), p2 = szeros(T, 3), qoffset = one(UnitQuaternion{T})) where T = 
+    Translational3{T}(body1, body2, p1 = p1, p2 = p2), Rotational0{T}(body1, body2, qoffset = qoffset)
 
 # t2r0
 """

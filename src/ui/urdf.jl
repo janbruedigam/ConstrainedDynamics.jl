@@ -210,7 +210,7 @@ function parse_joint(xjoint, plink, clink, T)
     elseif jointtype == "floating"
         joint = EqualityConstraint(Floating(plink, clink), name=name)
     elseif jointtype == "ball"
-        joint = EqualityConstraint(Spherical(plink, clink; p1=p1), name=name)
+        joint = EqualityConstraint(Spherical(plink, clink; p1=p1, qoffset = q), name=name)
     else
         @error "Unknown joint type"
     end
@@ -242,7 +242,7 @@ function parse_loop_joint(xjoint, link1, link2, T)
     elseif jointtype == "floating"
         joint = EqualityConstraint(Floating(link1, link2), name=name)
     elseif jointtype == "ball"
-        joint = EqualityConstraint(Spherical(plink, clink; p1=p1, p2=p2), name=name)
+        joint = EqualityConstraint(Spherical(plink, clink; p1=p1, p2=p2, qoffset = q), name=name)
     else
         @error "Unknown joint type"
     end
