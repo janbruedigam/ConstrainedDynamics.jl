@@ -29,7 +29,8 @@ mutable struct Mesh{T} <: Shape{T}
     color::RGBA
 
     function Mesh(path::String;
-            scale::AbstractVector = ones(3), color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((xoffset, qoffset))...)
 
@@ -37,7 +38,8 @@ mutable struct Mesh{T} <: Shape{T}
     end
 
     function Mesh(path::String, m::Real, J::AbstractMatrix;
-            scale::AbstractVector = ones(3), name::String="", color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((m, J, xoffset, qoffset))...)
 
@@ -57,11 +59,13 @@ mutable struct Box{T} <: Shape{T}
     qoffset::UnitQuaternion{T}
 
     xyz::SVector{3,T}
+    scale::SVector{3,T}
     color::RGBA
 
 
     function Box(x::Real, y::Real, z::Real;
-            color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((x, y, z, xoffset, qoffset))...)
 
@@ -69,7 +73,8 @@ mutable struct Box{T} <: Shape{T}
     end
 
     function Box(x::Real, y::Real, z::Real, m::Real;
-            name::String="", color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((x, y, z, m, xoffset, qoffset))...)
         J = 1 / 12 * m * diagm([y^2 + z^2;x^2 + z^2;x^2 + y^2])
@@ -90,11 +95,13 @@ mutable struct Cylinder{T} <: Shape{T}
     qoffset::UnitQuaternion{T}
 
     rh::SVector{2,T}
+    scale::SVector{3,T}
     color::RGBA
 
     # Cylinder points in the z direction
     function Cylinder(r::Real, h::Real;
-            color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((r, h, xoffset, qoffset))...)
 
@@ -102,7 +109,8 @@ mutable struct Cylinder{T} <: Shape{T}
     end
 
     function Cylinder(r::Real, h::Real, m::Real;
-            name::String="", color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((r, h, m, xoffset, qoffset))...)
         J = 1 / 2 * m * diagm([r^2 + 1 / 6 * h^2;r^2 + 1 / 6 * h^2;r^2])
@@ -123,10 +131,12 @@ mutable struct Sphere{T} <: Shape{T}
     qoffset::UnitQuaternion{T}
 
     r::T
+    scale::SVector{3,T}
     color::RGBA
 
     function Sphere(r::Real;
-            color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((r, xoffset, qoffset))...)
 
@@ -134,7 +144,8 @@ mutable struct Sphere{T} <: Shape{T}
     end
 
     function Sphere(r::Real, m::Real;
-            name::String="", color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((r, m, xoffset, qoffset))...)
         J = 2 / 5 * m * diagm([r^2 for i = 1:3])
@@ -154,11 +165,13 @@ mutable struct Pyramid{T} <: Shape{T}
     qoffset::UnitQuaternion{T}
 
     wh::SVector{2,T}
+    scale::SVector{3,T}
     color::RGBA
 
     # Pyramid points in the z direction, Center of mass at 1/4 h
     function Pyramid(w::Real, h::Real;
-            color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((w, h, xoffset, qoffset))...)
 
@@ -166,7 +179,8 @@ mutable struct Pyramid{T} <: Shape{T}
     end
 
     function Pyramid(w::Real, h::Real, m::Real;
-            name::String="", color = RGBA(0.75, 0.75, 0.75), xoffset::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((w, h, m, xoffset, qoffset))...)
         J = 1/80 * m * diagm([4*w^2+3*h^2;4*w^2+3*h^2;8*w^2])
@@ -181,6 +195,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, shape::Shape{T}) wh
     println(io," xoffset: "*string(shape.xoffset))
     println(io," qoffset: "*string(shape.qoffset))
     println(io," color:   "*string(shape.color))
+    println(io," scale:   "*string(shape.scale))
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, shape::EmptyShape{T}) where {T}
