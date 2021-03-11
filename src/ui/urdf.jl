@@ -201,27 +201,27 @@ function joint_selector(jointtype, link1, link2, T;
 
     # TODO limits for revolute joint?
     if jointtype == "revolute" || jointtype == "continuous"
-        joint = EqualityConstraint(Revolute(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
+        joint = EqualityConstraint(Revolute(link1, link2, axis; p1=p1, p2=p2, qoffset = qoffset), name=name)
     elseif jointtype == "prismatic"
-        joint = EqualityConstraint(Prismatic(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
+        joint = EqualityConstraint(Prismatic(link1, link2, axis; p1=p1, p2=p2, qoffset = qoffset), name=name)
     elseif jointtype == "planar"
-        joint = EqualityConstraint(Planar(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
+        joint = EqualityConstraint(Planar(link1, link2, axis; p1=p1, p2=p2, qoffset = qoffset), name=name)
     elseif jointtype == "planarfree"
         joint = EqualityConstraint(PlanarFree(link1, link2, axis; p1=p1, p2=p2), name=name)
     elseif jointtype == "fixed"
-        joint = EqualityConstraint(Fixed(link1, link2; p1=p1, p2=p2, qoffset = q1), name=name)
+        joint = EqualityConstraint(Fixed(link1, link2; p1=p1, p2=p2, qoffset = qoffset), name=name)
     elseif jointtype == "floating"
         joint = EqualityConstraint(Floating(link1, link2), name=name)
     elseif jointtype == "ball"
-        joint = EqualityConstraint(Spherical(plink, clink; p1=p1, p2=p2, qoffset = q1), name=name)
+        joint = EqualityConstraint(Spherical(plink, clink; p1=p1, p2=p2, qoffset = qoffset), name=name)
     elseif jointtype == "fixedorientation"
-        joint = EqualityConstraint(FixedOrientation(plink, clink; qoffset = q1), name=name)
+        joint = EqualityConstraint(FixedOrientation(plink, clink; qoffset = qoffset), name=name)
     elseif jointtype == "cylindrical"
-        joint = EqualityConstraint(Cylindrical(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
+        joint = EqualityConstraint(Cylindrical(link1, link2, axis; p1=p1, p2=p2, qoffset = qoffset), name=name)
     elseif jointtype == "cylindricalfree"
         joint = EqualityConstraint(CylindricalFree(link1, link2, axis; p1=p1, p2=p2), name=name)
     elseif jointtype == "planaraxis"
-        joint = EqualityConstraint(PlanarAxis(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
+        joint = EqualityConstraint(PlanarAxis(link1, link2, axis; p1=p1, p2=p2, qoffset = qoffset), name=name)
     else
         @error "Unknown joint type"
     end

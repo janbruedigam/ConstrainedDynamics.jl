@@ -69,7 +69,7 @@ mutable struct Box{T} <: Shape{T}
         )
         T = promote_type(eltype.((x, y, z, xoffset, qoffset))...)
 
-        new{T}(xoffset, qoffset, [x;y;z], color)
+        new{T}(xoffset, qoffset, [x;y;z], scale, color)
     end
 
     function Box(x::Real, y::Real, z::Real, m::Real;
@@ -79,7 +79,7 @@ mutable struct Box{T} <: Shape{T}
         T = promote_type(eltype.((x, y, z, m, xoffset, qoffset))...)
         J = 1 / 12 * m * diagm([y^2 + z^2;x^2 + z^2;x^2 + y^2])
 
-        return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, [x;y;z], color))
+        return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, [x;y;z], scale, color))
     end
 end
 
@@ -105,7 +105,7 @@ mutable struct Cylinder{T} <: Shape{T}
         )
         T = promote_type(eltype.((r, h, xoffset, qoffset))...)
 
-        new{T}(xoffset, qoffset, [r;h], color)
+        new{T}(xoffset, qoffset, [r;h], scale, color)
     end
 
     function Cylinder(r::Real, h::Real, m::Real;
@@ -115,7 +115,7 @@ mutable struct Cylinder{T} <: Shape{T}
         T = promote_type(eltype.((r, h, m, xoffset, qoffset))...)
         J = 1 / 2 * m * diagm([r^2 + 1 / 6 * h^2;r^2 + 1 / 6 * h^2;r^2])
 
-        return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, [r;h], color))
+        return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, [r;h], scale, color))
     end
 end
 
@@ -140,7 +140,7 @@ mutable struct Sphere{T} <: Shape{T}
         )
         T = promote_type(eltype.((r, xoffset, qoffset))...)
 
-        new{T}(xoffset, qoffset, r, color)
+        new{T}(xoffset, qoffset, r, scale, color)
     end
 
     function Sphere(r::Real, m::Real;
@@ -150,7 +150,7 @@ mutable struct Sphere{T} <: Shape{T}
         T = promote_type(eltype.((r, m, xoffset, qoffset))...)
         J = 2 / 5 * m * diagm([r^2 for i = 1:3])
 
-        return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, r, color))
+        return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, r, scale, color))
     end
 end
 
@@ -175,7 +175,7 @@ mutable struct Pyramid{T} <: Shape{T}
         )
         T = promote_type(eltype.((w, h, xoffset, qoffset))...)
 
-        new{T}(xoffset, qoffset, [w;h], color)
+        new{T}(xoffset, qoffset, [w;h], scale, color)
     end
 
     function Pyramid(w::Real, h::Real, m::Real;
@@ -185,7 +185,7 @@ mutable struct Pyramid{T} <: Shape{T}
         T = promote_type(eltype.((w, h, m, xoffset, qoffset))...)
         J = 1/80 * m * diagm([4*w^2+3*h^2;4*w^2+3*h^2;8*w^2])
 
-        return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, [w;h], color))
+        return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, [w;h], scale, color))
     end
 end
 
