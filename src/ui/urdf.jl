@@ -138,6 +138,10 @@ function parse_shape(xvisual, materialdict, T)
                 r = parse_scalar(shapenode, "radius", T, default = "0.5")
                 l = parse_scalar(shapenode, "length", T, default = "1")
                 shape = Cylinder(r, l, zero(T), color = color, xoffset = x, qoffset = q)
+            elseif name(shapenode) == "pyramid"
+                w = parse_scalar(shapenode, "width", T, default = "1")
+                h = parse_scalar(shapenode, "height", T, default = "1")
+                shape = Cylinder(w, h, zero(T), color = color, xoffset = x, qoffset = q)
             elseif name(shapenode) == "sphere"
                 r = parse_scalar(shapenode, "radius", T, default = "0.5")
                 shape = Sphere(r, zero(T), color = color, xoffset = x, qoffset = q)
@@ -191,31 +195,48 @@ function parse_links(xlinks, materialdict, T)
     return ldict
 end
 
+function joint_selector(jointtype, link1, link2, T; 
+        axis = SA{T}[1;0;0], p1 = szeros(T,3), p2 = szeros(T,3), qoffset = one(UnitQuaternion{T}), name = ""
+    )
+
+    # TODO limits for revolute joint?
+    if jointtype == "revolute" || jointtype == "continuous"
+        joint = EqualityConstraint(Revolute(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
+    elseif jointtype == "prismatic"
+        joint = EqualityConstraint(Prismatic(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
+    elseif jointtype == "planar"
+        joint = EqualityConstraint(Planar(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
+    elseif jointtype == "planarfree"
+        joint = EqualityConstraint(PlanarFree(link1, link2, axis; p1=p1, p2=p2), name=name)
+    elseif jointtype == "fixed"
+        joint = EqualityConstraint(Fixed(link1, link2; p1=p1, p2=p2, qoffset = q1), name=name)
+    elseif jointtype == "floating"
+        joint = EqualityConstraint(Floating(link1, link2), name=name)
+    elseif jointtype == "ball"
+        joint = EqualityConstraint(Spherical(plink, clink; p1=p1, p2=p2, qoffset = q1), name=name)
+    elseif jointtype == "fixedorientation"
+        joint = EqualityConstraint(FixedOrientation(plink, clink; qoffset = q1), name=name)
+    elseif jointtype == "cylindrical"
+        joint = EqualityConstraint(Cylindrical(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
+    elseif jointtype == "cylindricalfree"
+        joint = EqualityConstraint(CylindricalFree(link1, link2, axis; p1=p1, p2=p2), name=name)
+    elseif jointtype == "planaraxis"
+        joint = EqualityConstraint(PlanarAxis(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
+    else
+        @error "Unknown joint type"
+    end
+
+    return joint
+end
+
 function parse_joint(xjoint, plink, clink, T)
     jointtype = attribute(xjoint, "type")
     x, q = parse_pose(find_element(xjoint, "origin"), T)
     axis = parse_vector(find_element(xjoint, "axis"), "xyz", T, default = "1 0 0")
     p1 = x
     name = attribute(xjoint, "name")
-    
-    # TODO limits for revolute joint?
-    if jointtype == "revolute" || jointtype == "continuous"
-        joint = EqualityConstraint(Revolute(plink, clink, axis; p1=p1, qoffset = q), name=name)
-    elseif jointtype == "prismatic"
-        joint = EqualityConstraint(Prismatic(plink, clink, axis; p1=p1, qoffset = q), name=name)
-    elseif jointtype == "planar"
-        joint = EqualityConstraint(Planar(plink, clink, axis; p1=p1, qoffset = q), name=name)
-    elseif jointtype == "fixed"
-        joint = EqualityConstraint(Fixed(plink, clink; p1=p1, qoffset = q), name=name)
-    elseif jointtype == "floating"
-        joint = EqualityConstraint(Floating(plink, clink), name=name)
-    elseif jointtype == "ball"
-        joint = EqualityConstraint(Spherical(plink, clink; p1=p1, qoffset = q), name=name)
-    else
-        @error "Unknown joint type"
-    end
 
-    return joint
+    return joint_selector(jointtype, plink, clink, T, axis = axis, p1 = p1, qoffset = q, name = name)
 end
 
 function parse_loop_joint(xjoint, link1, link2, T)
@@ -230,24 +251,7 @@ function parse_loop_joint(xjoint, link1, link2, T)
     p2 = x2
     name = attribute(xjoint, "name")
     
-    # TODO limits for revolute joint?
-    if jointtype == "revolute" || jointtype == "continuous"
-        joint = EqualityConstraint(Revolute(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
-    elseif jointtype == "prismatic"
-        joint = EqualityConstraint(Prismatic(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
-    elseif jointtype == "planar"
-        joint = EqualityConstraint(Planar(link1, link2, axis; p1=p1, p2=p2, qoffset = q1), name=name)
-    elseif jointtype == "fixed"
-        joint = EqualityConstraint(Fixed(link1, link2; p1=p1, p2=p2, qoffset = q1), name=name)
-    elseif jointtype == "floating"
-        joint = EqualityConstraint(Floating(link1, link2), name=name)
-    elseif jointtype == "ball"
-        joint = EqualityConstraint(Spherical(plink, clink; p1=p1, p2=p2, qoffset = q), name=name)
-    else
-        @error "Unknown joint type"
-    end
-
-    return joint
+    return joint_selector(jointtype, link1, link2, T, axis = axis, p1 = p1, p2 = p2, qoffset = q1, name = name)
 end
 
 function parse_joints(xjoints, ldict, floating, T)
