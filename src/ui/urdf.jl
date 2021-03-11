@@ -213,9 +213,9 @@ function joint_selector(jointtype, link1, link2, T;
     elseif jointtype == "floating"
         joint = EqualityConstraint(Floating(link1, link2), name=name)
     elseif jointtype == "ball"
-        joint = EqualityConstraint(Spherical(plink, clink; p1=p1, p2=p2, qoffset = qoffset), name=name)
+        joint = EqualityConstraint(Spherical(link1, link2; p1=p1, p2=p2, qoffset = qoffset), name=name)
     elseif jointtype == "fixedorientation"
-        joint = EqualityConstraint(FixedOrientation(plink, clink; qoffset = qoffset), name=name)
+        joint = EqualityConstraint(FixedOrientation(link1, link2; qoffset = qoffset), name=name)
     elseif jointtype == "cylindrical"
         joint = EqualityConstraint(Cylindrical(link1, link2, axis; p1=p1, p2=p2, qoffset = qoffset), name=name)
     elseif jointtype == "cylindricalfree"
