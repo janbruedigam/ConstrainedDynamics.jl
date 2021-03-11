@@ -18,6 +18,10 @@ include("initialization/initialization_test.jl")
     include("ui_test.jl")
 end
 
+@safetestset "URDF Tests" begin
+    include("urdf_test.jl")
+end
+
 @safetestset "Optionals Tests" begin
     include("optionals_test.jl")
 end
