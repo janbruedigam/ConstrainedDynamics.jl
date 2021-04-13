@@ -166,7 +166,7 @@ function factor!(graph::Graph, ldu::SparseLDU)
 
         diagonal = getentry(ldu, id)
 
-        for childid in successors(graph, id)
+        for childid in sucs
             isinactive(graph, childid) && continue
             updateD!(diagonal, getentry(ldu, childid), getentry(ldu, (id, childid)))
         end
