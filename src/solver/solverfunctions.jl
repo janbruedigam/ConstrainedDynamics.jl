@@ -148,6 +148,7 @@ function factor!(graph::Graph, ldu::SparseLDU)
     for id in graph.dfslist
         isinactive(graph, id) && continue
 
+        diagonal = getentry(ldu, id)
         sucs = successors(graph, id)
         for childid in sucs
             isinactive(graph, childid) && continue
@@ -162,14 +163,11 @@ function factor!(graph::Graph, ldu::SparseLDU)
                 end
             end
             updateLU2!(offdiagonal, getentry(ldu, childid))
-        end
 
-        diagonal = getentry(ldu, id)
-
-        for childid in sucs
             isinactive(graph, childid) && continue
             updateD!(diagonal, getentry(ldu, childid), getentry(ldu, (id, childid)))
         end
+        
         invertD!(diagonal)
     end
 
