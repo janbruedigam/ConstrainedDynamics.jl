@@ -45,8 +45,3 @@ end
 mech = Mechanism(origin, links, constraints)
 setPosition!(link1,x = -p0)
 setPosition!(link2,x = p3 + p1)
-
-# a = [0;0;0;0;0.3]
-
-# setForce!(mech,joint0to12,a)
-# setForce!(link2,τ=[0;0;0.3])

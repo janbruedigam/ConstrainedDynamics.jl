@@ -1,5 +1,16 @@
+"""
+    getbody!(mechanism, id)
+
+Gets the body with ID `id` from `mechanism` if it exists. If `id = nothing`, the origin will be returned.
+"""
 @inline getbody(mechanism::Mechanism, id::Integer) = mechanism.bodies[id]
 @inline getbody(mechanism::Mechanism, id::Nothing) = mechanism.origin
+
+"""
+    getbody!(mechanism, name)
+
+Gets the body with name `name` from `mechanism` if it exists.
+"""
 function getbody(mechanism::Mechanism, name::String)
     if mechanism.origin.name == name
         return mechanism.origin
@@ -12,7 +23,19 @@ function getbody(mechanism::Mechanism, name::String)
     end
     return
 end
+
+"""
+    geteqconstraint!(mechanism, id)
+
+Gets the equality constraint with ID `id` from `mechanism` if it exists.
+"""
 @inline geteqconstraint(mechanism::Mechanism, id::Integer) = mechanism.eqconstraints[id]
+
+"""
+    geteqconstraint!(mechanism, name)
+
+Gets the equality constraint with name `name` from `mechanism` if it exists.
+"""
 function geteqconstraint(mechanism::Mechanism, name::String)
     for eqc in mechanism.eqconstraints
         if eqc.name == name
@@ -21,6 +44,7 @@ function geteqconstraint(mechanism::Mechanism, name::String)
     end
     return
 end
+
 @inline getineqconstraint(mechanism::Mechanism, id::Integer) = mechanism.ineqconstraints[id]
 function getineqconstraint(mechanism::Mechanism, name::String)
     for ineqc in mechanism.eqconstraints
@@ -31,7 +55,11 @@ function getineqconstraint(mechanism::Mechanism, name::String)
     return
 end
 
-getcomponent(mechanism::Mechanism, id::Nothing) = mechanism.origin
+"""
+    getcomponent!(mechanism, id)
+
+Gets the component (body or equality constraint) with ID `id` from `mechanism` if it exists.
+"""
 function getcomponent(mechanism::Mechanism, id::Integer)
     if haskey(mechanism.bodies, id)
         return getbody(mechanism, id)
@@ -43,7 +71,13 @@ function getcomponent(mechanism::Mechanism, id::Integer)
         return
     end
 end
+getcomponent(mechanism::Mechanism, id::Nothing) = mechanism.origin
 
+"""
+    getcomponent!(mechanism, name)
+
+Gets the component (body or equality constraint) with name `name` from `mechanism` if it exists.
+"""
 function getcomponent(mechanism::Mechanism, name::String)
     component = getbody(mechanism,name)
     if component === nothing

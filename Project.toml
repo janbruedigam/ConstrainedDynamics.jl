@@ -1,10 +1,11 @@
 name = "ConstrainedDynamics"
 uuid = "65b0d8a9-e9fd-4f02-8653-a7163c490b26"
 authors = ["Jan Bruedigam"]
-version = "0.7.0"
+version = "0.7.4"
 
 [deps]
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LightXML = "9c8b4983-aa76-5018-a973-4c85ecc9e179"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -13,7 +14,8 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
 Colors = "<0.12.6, 0.12.6"
-ForwardDiff = "<0.10.14, 0.10.14"
+DocStringExtensions = "<0.8.3, 0.8.3"
+ForwardDiff = "<0.10.16, 0.10.16"
 LightXML = "<0.9.0, 0.9.0"
 Rotations = "1.0"
 StaticArrays = "0.12, 1.0"

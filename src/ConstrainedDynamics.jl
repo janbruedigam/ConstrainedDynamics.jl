@@ -6,9 +6,10 @@ using ForwardDiff
 using StaticArrays: SUnitRange
 using Rotations
 using Rotations: RotationError, pure_quaternion, params, lmult, rmult, tmat, vmat, hmat, skew
-
 using Colors: RGBA, RGB
 using LightXML
+
+using DocStringExtensions
 
 
 export Origin,
@@ -45,6 +46,7 @@ export Origin,
     setPosition!,
     setVelocity!,
     setForce!,
+    addForce!,
     getid,
     getcomponent,
     getbody,
@@ -54,6 +56,7 @@ export Origin,
     initializeConstraints!,
     disassemble,
     minimalCoordinates,
+    minimalVelocities,
     activate!,
     deactivate!,
     linearsystem,

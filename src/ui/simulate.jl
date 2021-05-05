@@ -42,7 +42,7 @@ function initializeSimulation!(mechanism::LinearMechanism, debug::Bool)
 end
 
 
-# with control function 
+## with control function 
 function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Storage, control!::Function;
         ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = false,debug::Bool = false
@@ -82,7 +82,7 @@ function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage
     record ? (return storage) : (return) 
 end
 
-# with controller
+## with controller
 function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Storage, controller::Controller;
         ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = false,debug::Bool = false
@@ -105,7 +105,7 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
     record ? (return storage) : (return) 
 end
 
-# without control
+## without control
 function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Storage;
         ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = false,debug::Bool = false
@@ -139,6 +139,17 @@ function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage
     record ? (return storage) : (return) 
 end
 
+"""
+    simulate!(mechanism, tend, args..., kwargs)
+
+Simulate a mechanism for `tend` seconds. The time step has been set in mechanism.
+
+A controller or control function (see [`Controller`](@ref)) can be passed in with `args`. If no controller is needed, nothing needs to be passed in.
+    
+Available kwargs:
+* `record`:     Specify if the state trajectory should be stored (`true`) or not (`false`).
+* `ε`:          Solver tolerance.
+"""
 function simulate!(mechanism::AbstractMechanism{T}, tend::Real, args...;
         ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = false,debug::Bool = false
@@ -150,6 +161,19 @@ function simulate!(mechanism::AbstractMechanism{T}, tend::Real, args...;
     return storage # can be "nothing"
 end
 
+"""
+    simulate!(mechanism, storage, args..., kwargs)
+
+Simulate a mechanism for the number of time steps specified by `storage` (see [`Storage`](@ref)). The time step has been set in mechanism. 
+    
+This method can be used to debug potentially faulty (instable) controllers: Even if the simulation fails, the results up to the point of failure are stored in `storage` and can be analyzed and visualized.
+
+A controller or control function (see [`Controller`](@ref)) can be passed in with `args`. If no controller is needed, nothing needs to be passed in.
+    
+Available kwargs:
+* `record`:     Specify if the state trajectory should be stored (`true`) or not (`false`).
+* `ε`:          Solver tolerance.
+"""
 function simulate!(mechanism::AbstractMechanism, storage::Storage{T,N}, args...;
         ε = 1e-10, newtonIter = 100, lineIter = 10,
         record::Bool = true, debug::Bool = false

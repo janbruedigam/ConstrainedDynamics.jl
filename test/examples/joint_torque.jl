@@ -35,5 +35,3 @@ end
 
 mech = Mechanism(origin, links, constraints, g = 0.)
 setPosition!(link1,link2,p1 = vert12,p2 = vert11)
-
-# setForce!(mech, joint1to2e, [0.05])

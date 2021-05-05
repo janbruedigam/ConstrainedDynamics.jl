@@ -1,3 +1,15 @@
+"""
+$(TYPEDEF)
+
+The `State` contains the position and velocity information of a [`Body`](@ref).
+# Important attributes
+* `xc`: Continuous-time position (vector)
+* `qc`: Continuous-time oritentation (quaternion)
+* `vc`: Continuous-time velocity (vector)
+* `ωc`: Continuous-time angular velocity (vector)
+* `xk`: Knot-point positions (vector of vectors)
+* `qk`: Knot-point orientations (vector of vectors)
+"""
 mutable struct State{T}
     order::Integer
 

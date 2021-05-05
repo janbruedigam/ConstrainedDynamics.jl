@@ -40,7 +40,3 @@ end
 mech = Mechanism(origin, links, constraints, g = 0.)
 setPosition!(link1,q = UnitQuaternion(RotX(pi / 2)))
 setPosition!(link1,link2,p1 = vert12,p2 = vert21)
-# setVelocity!(link1,ω=[2.;0;0])
-# setVelocity!(link1,link2,p1=vert12,p2=vert21)
-
-# setForce!([[0.1];nothing],joint1to2,mech)
