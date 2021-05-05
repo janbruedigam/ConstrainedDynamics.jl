@@ -108,8 +108,8 @@ include(joinpath("solver", "initconstraints.jl"))
 include(joinpath("solver", "newton.jl"))
 include(joinpath("solver", "linesearch.jl"))
 
-include(joinpath("discretization", "SymplecticEuler.jl"))
-# include(joinpath("discretization", "ImplicitTrapezoid.jl"))
+include(joinpath("discretization", "Linear.jl"))
+# include(joinpath("discretization", "Quadratic.jl"))
 
 include(joinpath("ui", "mechanism_ui.jl"))
 include(joinpath("ui", "simulate.jl"))

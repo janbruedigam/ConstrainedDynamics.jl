@@ -1,9 +1,14 @@
-# L(xck,vck) -> Δt Ld(xdk+1,(xdk+1-xdk)/Δt)
-# L(qck,ωck) -> Δt Ld(qdk+1,2 V qdk† (qdk+1-qdk)/Δt)
+## Uses linear interpolation between the knot points. For a = b = 1/2 the integration follows the trapezoid rule.
+## This results in the Symplectic Euler method or Stoermer-Verlet, depending on how exactly one sets it up.
+# u(t) = a t + b = (xdk+1 - xdk)/Δt t + xdk
+# du(t) = a = (xdk+1 - xdk)/Δt
+# ωc(t) = 2 V L(qc)ᵀ du(t)
+# L(xck,vck) -> Δt (a Ld(u(0),du(0)) + b Ld(u(h),u(h)), where a + b = 1
+# L(qck,ωck) -> Δt (a Ld(u(0),2 V qdk† (qdk+1-qdk)/Δt) + b Ld(qdk+1,2 V qdk† (qdk+1-qdk)/Δt), where a + b = 1
 # ωckw = sqrt((2/Δt)^2 - ωckᵀωck) - 2/Δt
-# Fckᵀxck -> Fdk
+# Fckᵀxck -> a Fdkᵀxdk + b Fdk+1ᵀxdk, where a + b = 1
 
-METHODORDER = 1
+METHODORDER = 1 # This refers to the interpolating spline
 getGlobalOrder() = (global METHODORDER; return METHODORDER)
 
 # Convenience functions
@@ -42,7 +47,7 @@ end
     ωc = state.ωc
 
     state.xk[1] = xc + vc*Δt
-    state.qk[1] = qc * ωbar(ωc,Δt) * Δt / 2
+    state.qk[1] = qc * ωbar(ωc,Δt) * Δt / 2 
 
     state.Fk[1] = szeros(T,3)
     state.τk[1] = szeros(T,3)
