@@ -118,6 +118,30 @@ end
 end
 
 
+### Spring and damper
+@inline function springforcea(joint::Translational, statea::State, stateb::State)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    distance = A * g(joint, statea, stateb)
+    force = Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
+    return [force;szeros(3)]
+end
+@inline function springforceb(joint::Translational, statea::State, stateb::State)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    distance = A * g(joint, statea, stateb)
+    force = - Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
+    return [force;szeros(3)]
+end
+@inline function springforceb(joint::Translational, stateb::State)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    distance = A * g(joint, stateb)
+    force = - Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
+    return [force;szeros(3)]
+end
+
+
 ### Forcing
 ## Application of joint forces (for dynamics)
 @inline function applyFτ!(joint::Translational{T}, statea::State, stateb::State, clear::Bool) where T

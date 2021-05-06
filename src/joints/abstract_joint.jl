@@ -162,6 +162,31 @@ end
 ∂g∂posbc(joint::AbstractJoint, stateb::State) = hcat(∂g∂posb(joint, posargsc(stateb)...)...)
 
 
+### Springs and Dampers (for dynamics)
+## Wrappers
+@inline function springforcea(joint::AbstractJoint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return springforcea(joint, body1.state, body2.state)
+    else
+        return springforce(joint)
+    end
+end
+@inline function springforceb(joint::AbstractJoint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return springforceb(joint, body1.state, body2.state)
+    else
+        return springforce(joint)
+    end
+end
+@inline function springforceb(joint::AbstractJoint, body1::Origin, body2::Body)
+    if body2.id == joint.childid
+        return springforceb(joint, body2.state)
+    else
+        return springforce(joint)
+    end
+end
+
+
 ### Forcing (for dynamics)
 ## Wrappers
 @inline function applyFτ!(joint::AbstractJoint, body1::Body, body2::Body, clear::Bool)

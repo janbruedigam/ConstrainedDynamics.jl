@@ -6,6 +6,7 @@ struct Graph{N}
     successors::Vector{Vector{Int64}} # direct and loop successors
     predecessors::Vector{Vector{Int64}} # direct parent and loop-opening predecessor(s?) (for numerics?)
     connections::Vector{Vector{Int64}} # direct connections
+    springconnections::Vector{Vector{Int64}} # direct connections from bodies to eqconstraints with springs  
     damperconnections::Vector{Vector{Int64}} # direct connections for eqconstraints with damping  
 
     dfslist::SVector{N,Int64} # depth-first-seach list (dfslist[end] = root)
@@ -67,13 +68,14 @@ struct Graph{N}
         succs = successors(dfslist, pat, dict)
         preds = predecessors(dfslist, pat, dict)
         cons = connections(dfslist, adjacency, dict)
+        springcons = springconnections(dfslist, bodies, eqconstraints, dict)
         dampcons = damperconnections(dfslist, eqconstraints, dict)
 
         dict = UnitDict(dict)
         rdict = UnitDict(rdict)
         activedict = UnitDict(activedict)
 
-        new{N}(dirs, ineqs, damps, loops, succs, preds, cons, dampcons, dfslist, reverse(dfslist), dict, rdict, activedict)
+        new{N}(dirs, ineqs, damps, loops, succs, preds, cons, springcons, dampcons, dfslist, reverse(dfslist), dict, rdict, activedict)
     end
 end
 
@@ -282,13 +284,31 @@ function connections(dfslist, adjacency, dict::Dict)
     return cons
 end
 
+function springconnections(dfslist, bodies, eqconstraints, dict::Dict)
+    N = length(dfslist)
+    springs = [Int64[] for i = 1:N]
+    for body in bodies
+        for eqc in eqconstraints
+            !eqc.isspring && continue
+
+            eqc.parentid == body.id && push!(springs[dict[body.id]], eqc.id)
+
+            for childid in unique(eqc.childids)
+                childid == body.id && push!(springs[dict[body.id]], eqc.id)
+            end
+        end
+    end
+
+    return springs
+end
+
 function damperconnections(dfslist, eqconstraints, dict::Dict)
     N = length(dfslist)
     damps = [Int64[] for i = 1:N]
     for eqc in eqconstraints
-        (!eqc.isdamper || eqc.parentid === nothing) && continue
+        !eqc.isdamper && continue
 
-        push!(damps[dict[eqc.id]], eqc.parentid)
+        eqc.parentid !== nothing && push!(damps[dict[eqc.id]], eqc.parentid)
 
         for id in unique(eqc.childids)
             push!(damps[dict[eqc.id]], id)
@@ -314,6 +334,8 @@ end
 @inline successors(graph, id::Integer) = graph.successors[graph.dict[id]]
 @inline predecessors(graph, id::Integer) = graph.predecessors[graph.dict[id]]
 @inline connections(graph, id::Integer) = graph.connections[graph.dict[id]]
+@inline springconnections(graph, id::Integer) = graph.springconnections[graph.dict[id]]
+@inline damperconnections(graph, id::Integer) = graph.damperconnections[graph.dict[id]]
 @inline isactive(graph, id::Integer) = graph.activedict[id]
 @inline isinactive(graph, id::Integer) = !isactive(graph, id)
 

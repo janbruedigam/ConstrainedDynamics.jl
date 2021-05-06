@@ -27,6 +27,7 @@ g(joint::Joint, statea::State, stateb::State) = g(joint, posargsc(statea)..., po
 g(joint::Joint, stateb::State) = g(joint, posargsc(stateb)...)
 
 @inline g(joint::Joint{T,N}) where {T,N} = szeros(T, N)
+@inline springforce(joint::Joint{T}) where {T} = szeros(T, 6)
 
 
 ### Force derivatives (for linearization)

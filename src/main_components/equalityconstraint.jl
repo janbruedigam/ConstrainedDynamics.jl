@@ -191,6 +191,11 @@ end
     return
 end
 
+@inline function springTof!(mechanism, body::Body, eqc::EqualityConstraint)
+    isactive(eqc) && (body.state.d -= springforce(mechanism, eqc, body.id))
+    return
+end
+
 @generated function g(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
     vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[$i]), mechanism.Δt)) for i = 1:Nc]
     return :(svcat($(vec...)))
@@ -206,6 +211,10 @@ end
 
 @inline function ∂g∂ʳvel(mechanism, eqc::EqualityConstraint, id::Integer)
     id == eqc.parentid ? (return ∂g∂ʳvela(mechanism, eqc, id)) : (return ∂g∂ʳvelb(mechanism, eqc, id))
+end
+
+@inline function springforce(mechanism, eqc::EqualityConstraint, id::Integer)
+    id == eqc.parentid ? (return springforcea(mechanism, eqc, id)) : (return springforceb(mechanism, eqc, id))
 end
 
 @generated function ∂g∂ʳposa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
@@ -224,6 +233,21 @@ end
 @generated function ∂g∂ʳvelb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂ʳvelb(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), mechanism.Δt)) for i = 1:Nc]
     return :(vcat($(vec...)))
+end
+
+@inline function springforcea(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
+    vec = szeros(T,6)
+    for i=1:Nc
+        vec += springforcea(eqc.constraints[i], getbody(mechanism, id), getbody(mechanism, eqc.childids[i]))
+    end
+    return vec
+end
+@inline function springforceb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
+    vec = szeros(T,6)
+    for i=1:Nc
+        vec += springforceb(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))
+    end
+    return vec
 end
 
 @generated function ∂Fτ∂ua(mechanism, eqc::EqualityConstraint{T,N,Nc}, id) where {T,N,Nc}

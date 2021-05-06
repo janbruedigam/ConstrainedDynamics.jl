@@ -110,6 +110,44 @@ end
 end
 
 
+### Spring and damper
+@inline function springforcea(joint::Rotational, statea::State, stateb::State)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    _, qa = posargsk(statea)
+    _, qb = posargsk(stateb)
+    qoffset = joint.qoffset
+
+    distance = A * g(joint, statea, stateb)
+
+    force = 4 * VLᵀmat(qb)*Rmat(qoffset)*LVᵀmat(qa) * Aᵀ * A * joint.spring * Aᵀ * distance # Currently assumes same spring constant in all directions
+    return [szeros(3);force]
+end
+@inline function springforceb(joint::Rotational, statea::State, stateb::State)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    _, qa = posargsk(statea)
+    _, qb = posargsk(stateb)
+    qoffset = joint.qoffset
+
+    distance = A * g(joint, statea, stateb)
+
+    force = 4 * VLᵀmat(qa)*Tmat()*Rᵀmat(qb)*RVᵀmat(qoffset) * Aᵀ * A * joint.spring * Aᵀ * distance # Currently assumes same spring constant in all directions
+    return [szeros(3);force]
+end
+@inline function springforceb(joint::Rotational, stateb::State)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    _, qb = posargsk(stateb)
+    qoffset = joint.qoffset
+
+    distance = A * g(joint, stateb)
+
+    force = 4 * Vmat()*Tmat()*Rᵀmat(qb)*RVᵀmat(qoffset) * Aᵀ * A * joint.spring * Aᵀ * distance # Currently assumes same spring constant in all directions
+    return [szeros(3);force]
+end
+
+
 ### Forcing
 ## Application of joint forces (for dynamics)
 @inline function applyFτ!(joint::Rotational{T}, statea::State, stateb::State, clear::Bool) where T
@@ -245,7 +283,7 @@ end
     return Δω
 end
 
-## Minimal coordinate calculation
+## Minimal coordinate calculation (This could be directly calculated from g, but the rotation requires some special treatment)
 @inline function minimalCoordinates(joint::Rotational, body1::Body, body2::Body)
     statea = body1.state
     stateb = body2.state
