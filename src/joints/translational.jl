@@ -2,13 +2,16 @@ mutable struct Translational{T,N} <: Joint{T,N}
     V3::Adjoint{T,SVector{3,T}} # in body1's frame
     V12::SMatrix{2,3,T,6} # in body1's frame
     vertices::NTuple{2,SVector{3,T}} # in body1's & body2's frames
+
+    spring::T
+    damper::T
     
     Fτ::SVector{3,T}
 
     childid::Int64
 
     function Translational{T,N}(body1::AbstractBody, body2::AbstractBody;
-            p1::AbstractVector = zeros(3), p2::AbstractVector = zeros(3), axis::AbstractVector = zeros(3)
+            p1::AbstractVector = zeros(3), p2::AbstractVector = zeros(3), axis::AbstractVector = zeros(3), spring, damper
         ) where {T,N}
         
         vertices = (p1, p2)
@@ -19,7 +22,7 @@ mutable struct Translational{T,N} <: Joint{T,N}
 
         childid = body2.id
 
-        new{T,N}(V3, V12, vertices, Fτ, childid), body1.id, body2.id
+        new{T,N}(V3, V12, vertices, spring, damper, Fτ, childid), body1.id, body2.id
     end
 end
 

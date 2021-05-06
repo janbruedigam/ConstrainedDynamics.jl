@@ -8,7 +8,7 @@ EqualityConstraint(Revolute(body1, body2, rotation_axis)).
 ```
 # Important attributes
 * `id`:       The unique ID of a constraint. Assigned when added to a `Mechanism`.  
-* `name`:     The name of a constraint. The name is taken from a URDF or can be assigned by the user.  
+* `name`:     The name of a constraint. The name is taken from a URDF or can be assigned by the user.
 * `parentid`: The ID of the parent body.  
 * `childids`: The IDs of the child bodies.  
 """
@@ -16,6 +16,8 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     id::Int64
     name::String
     active::Bool
+    isspring::Bool
+    isdamper::Bool
 
     constraints::Cs
     parentid::Union{Int64,Nothing}
@@ -38,12 +40,17 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
 
         T = getT(jointdata[1][1])# .T
 
+        isspring = false
+        isdamper = false
         parentid = jointdata[1][2]
         childids = Int64[]
         constraints = AbstractJoint{T}[]
         inds = Vector{Int64}[]
         N = 0
         for set in jointdata
+            set[1].spring != 0 && (isspring = true)
+            set[1].damper != 0 && (isdamper = true)
+            
             push!(constraints, set[1])
             @assert set[2] == parentid
             push!(childids, set[3])
@@ -62,7 +69,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
 
         λsol = [zeros(T, N) for i=1:2]
 
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, true, constraints, parentid, childids, inds, λsol)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, true, isspring, isdamper, constraints, parentid, childids, inds, λsol)
     end
 end
 

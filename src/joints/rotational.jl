@@ -3,12 +3,15 @@ mutable struct Rotational{T,N} <: Joint{T,N}
     V12::SMatrix{2,3,T,6} # in body1's frame
     qoffset::UnitQuaternion{T} # in body1's frame
 
+    spring::T
+    damper::T
+
     Fτ::SVector{3,T}
 
     childid::Int64
 
     function Rotational{T,N}(body1::AbstractBody, body2::AbstractBody; 
-            axis::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion)
+            axis::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion), spring, damper
         ) where {T,N}
         
         V1, V2, V3 = orthogonalrows(axis)
@@ -18,7 +21,7 @@ mutable struct Rotational{T,N} <: Joint{T,N}
 
         childid = body2.id
 
-        new{T,N}(V3, V12, qoffset, Fτ, childid), body1.id, body2.id
+        new{T,N}(V3, V12, qoffset, spring, damper, Fτ, childid), body1.id, body2.id
     end
 end
 
