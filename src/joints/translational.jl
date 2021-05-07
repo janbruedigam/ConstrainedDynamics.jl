@@ -119,24 +119,24 @@ end
 
 
 ### Spring and damper
-@inline function springforcea(joint::Translational, statea::State, stateb::State)
+@inline function springforcea(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
-    distance = A * g(joint, statea, stateb)
+    distance = A * g(joint, xa, qa, xb, qb)
     force = Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
     return [force;szeros(3)]
 end
-@inline function springforceb(joint::Translational, statea::State, stateb::State)
+@inline function springforceb(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
-    distance = A * g(joint, statea, stateb)
+    distance = A * g(joint, xa, qa, xb, qb)
     force = - Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
     return [force;szeros(3)]
 end
-@inline function springforceb(joint::Translational, stateb::State)
+@inline function springforceb(joint::Translational, xb::AbstractVector, qb::UnitQuaternion)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
-    distance = A * g(joint, stateb)
+    distance = A * g(joint, xb, qb)
     force = - Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
     return [force;szeros(3)]
 end

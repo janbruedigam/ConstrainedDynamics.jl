@@ -111,37 +111,32 @@ end
 
 
 ### Spring and damper
-@inline function springforcea(joint::Rotational, statea::State, stateb::State)
+@inline function springforcea(joint::Rotational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
-    _, qa = posargsk(statea)
-    _, qb = posargsk(stateb)
     qoffset = joint.qoffset
 
-    distance = A * g(joint, statea, stateb)
+    distance = A * g(joint, xa, qa, xb, qb)
 
     force = 4 * VLᵀmat(qb)*Rmat(qoffset)*LVᵀmat(qa) * Aᵀ * A * joint.spring * Aᵀ * distance # Currently assumes same spring constant in all directions
     return [szeros(3);force]
 end
-@inline function springforceb(joint::Rotational, statea::State, stateb::State)
+@inline function springforceb(joint::Rotational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
-    _, qa = posargsk(statea)
-    _, qb = posargsk(stateb)
     qoffset = joint.qoffset
 
-    distance = A * g(joint, statea, stateb)
+    distance = A * g(joint, xa, qa, xb, qb)
 
     force = 4 * VLᵀmat(qa)*Tmat()*Rᵀmat(qb)*RVᵀmat(qoffset) * Aᵀ * A * joint.spring * Aᵀ * distance # Currently assumes same spring constant in all directions
     return [szeros(3);force]
 end
-@inline function springforceb(joint::Rotational, stateb::State)
+@inline function springforceb(joint::Rotational, xb::AbstractVector, qb::UnitQuaternion)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
-    _, qb = posargsk(stateb)
     qoffset = joint.qoffset
 
-    distance = A * g(joint, stateb)
+    distance = A * g(joint, xb, qb)
 
     force = 4 * Vmat()*Tmat()*Rᵀmat(qb)*RVᵀmat(qoffset) * Aᵀ * A * joint.spring * Aᵀ * distance # Currently assumes same spring constant in all directions
     return [szeros(3);force]

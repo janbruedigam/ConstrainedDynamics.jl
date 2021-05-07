@@ -163,7 +163,7 @@ end
 
 
 ### Springs and Dampers (for dynamics)
-## Wrappers
+## Wrappers 1
 @inline function springforcea(joint::AbstractJoint, body1::Body, body2::Body)
     if body2.id == joint.childid
         return springforcea(joint, body1.state, body2.state)
@@ -185,6 +185,12 @@ end
         return springforce(joint)
     end
 end
+
+## Wrappers 2
+@inline springforce(joint::AbstractJoint{T}) where {T} = szeros(T, 6)
+springforcea(joint::AbstractJoint, statea::State, stateb::State) = springforcea(joint, posargsk(statea)..., posargsk(stateb)...)
+springforceb(joint::AbstractJoint, statea::State, stateb::State) = springforceb(joint, posargsk(statea)..., posargsk(stateb)...)
+springforceb(joint::AbstractJoint, stateb::State) = springforceb(joint, posargsk(stateb)...)
 
 
 ### Forcing (for dynamics)
