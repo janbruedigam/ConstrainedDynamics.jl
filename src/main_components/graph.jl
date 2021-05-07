@@ -69,7 +69,7 @@ struct Graph{N}
         preds = predecessors(dfslist, pat, dict)
         cons = connections(dfslist, adjacency, dict)
         springcons = springconnections(dfslist, bodies, eqconstraints, dict)
-        dampcons = damperconnections(dfslist, eqconstraints, dict)
+        dampcons = damperconnections(dfslist, bodies, eqconstraints, dict)
 
         dict = UnitDict(dict)
         rdict = UnitDict(rdict)
@@ -302,16 +302,18 @@ function springconnections(dfslist, bodies, eqconstraints, dict::Dict)
     return springs
 end
 
-function damperconnections(dfslist, eqconstraints, dict::Dict)
+function damperconnections(dfslist, bodies, eqconstraints, dict::Dict)
     N = length(dfslist)
     damps = [Int64[] for i = 1:N]
-    for eqc in eqconstraints
-        !eqc.isdamper && continue
+    for body in bodies
+        for eqc in eqconstraints
+            !eqc.isdamper && continue
 
-        eqc.parentid !== nothing && push!(damps[dict[eqc.id]], eqc.parentid)
+            eqc.parentid == body.id && push!(damps[dict[body.id]], eqc.id)
 
-        for id in unique(eqc.childids)
-            push!(damps[dict[eqc.id]], id)
+            for childid in unique(eqc.childids)
+                childid == body.id && push!(damps[dict[body.id]], eqc.id)
+            end
         end
     end
 

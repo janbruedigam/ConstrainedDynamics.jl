@@ -141,6 +141,30 @@ end
     return [force;szeros(3)]
 end
 
+@inline function damperforcea(joint::Translational, xa::AbstractVector, va::AbstractVector, qa::UnitQuaternion, ωa::AbstractVector,
+        xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    velocity = A * (vb - va)
+    force = Aᵀ * A * joint.damper * Aᵀ * velocity  # Currently assumes same damper constant in all directions
+    return [force;szeros(3)]
+end
+@inline function damperforceb(joint::Translational, xa::AbstractVector, va::AbstractVector, qa::UnitQuaternion, ωa::AbstractVector,
+    xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    velocity = A * (vb - va)
+    force = - Aᵀ * A * joint.damper * Aᵀ * velocity  # Currently assumes same damper constant in all directions
+    return [force;szeros(3)]
+end
+@inline function damperforceb(joint::Translational, xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    velocity = A * vb
+    force = - Aᵀ * A * joint.damper * Aᵀ * velocity  # Currently assumes same damper constant in all directions
+    return [force;szeros(3)]
+end
+
 
 ### Forcing
 ## Application of joint forces (for dynamics)

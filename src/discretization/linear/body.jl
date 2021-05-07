@@ -20,7 +20,6 @@
     end
 
     for connectionid in springconnections(graph, body.id)
-        # display("here")
         springTof!(mechanism, body, geteqconstraint(mechanism, connectionid))
     end
 

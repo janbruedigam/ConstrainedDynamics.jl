@@ -142,6 +142,36 @@ end
     return [szeros(3);force]
 end
 
+@inline function damperforcea(joint::Rotational, xa::AbstractVector, va::AbstractVector, qa::UnitQuaternion, ωa::AbstractVector,
+        xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    velocity = A * (vrotate(ωb,qa\qb) - ωa) # in body1's frame
+    force = 2 * Aᵀ * A * joint.damper * Aᵀ * velocity # Currently assumes same damper constant in all directions
+    return [szeros(3);force]
+end
+@inline function damperforceb(joint::Rotational, xa::AbstractVector, va::AbstractVector, qa::UnitQuaternion, ωa::AbstractVector,
+    xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+
+    velocity = A * (vrotate(ωb,qa\qb) - ωa) # in body1's frame
+
+    force = -2 * Aᵀ * A * joint.damper * Aᵀ * velocity # Currently assumes same damper constant in all directions
+    force = vrotate(force,qb\qa) # in body2's frame
+    return [szeros(3);force]
+end
+@inline function damperforceb(joint::Rotational, xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+
+    velocity = A * vrotate(ωb,qb)  # in world frame
+
+    force = -2 * Aᵀ * A * joint.damper * Aᵀ * velocity # Currently assumes same damper constant in all directions
+    force = vrotate(force,inv(qb)) # in body2's frame
+    return [szeros(3);force]
+end
+
 
 ### Forcing
 ## Application of joint forces (for dynamics)
