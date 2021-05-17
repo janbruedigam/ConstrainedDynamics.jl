@@ -31,7 +31,7 @@ end
 end
 
 @inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, body1id::Integer, body2id::Integer)
-    D = offdiagonal∂damper∂ʳvel(mechanism, eqc, body1id, body2id)
+    D = -offdiagonal∂damper∂ʳvel(mechanism, eqc, body1id, body2id)
     offdiagonal.L = D
     offdiagonal.U = D'
     return

@@ -119,7 +119,7 @@ Base.length(::Body) = 6
     D = [[dynT; Z] [Z; dynR]]
 
     for connectionid in damperconnections(mechanism.graph, body.id)
-        D += diagonal∂damper∂ʳvel(mechanism, geteqconstraint(mechanism, connectionid), body.id)
+        D -= diagonal∂damper∂ʳvel(mechanism, geteqconstraint(mechanism, connectionid), body.id)
     end
 
     return D
