@@ -244,7 +244,7 @@ function disassemble(mechanism::Mechanism{T}) where T
     end
 
     # Set origin to next id
-    oldoid = origin.id
+    # oldoid = origin.id
     origin.id = getGlobalID()
     for eqc in eqconstraints
         if eqc.parentid === nothing

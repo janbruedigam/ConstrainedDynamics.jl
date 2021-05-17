@@ -191,8 +191,8 @@ end
 @inline function applyFτ!(joint::Translational{T}, statea::State, stateb::State, clear::Bool) where T
     F = joint.Fτ
     vertices = joint.vertices
-    xa, qa = posargsk(statea)
-    xb, qb = posargsk(stateb)
+    _, qa = posargsk(statea)
+    _, qb = posargsk(stateb)
 
     Fa = vrotate(-F, qa)
     Fb = -Fa
@@ -210,7 +210,7 @@ end
 @inline function applyFτ!(joint::Translational{T}, stateb::State, clear::Bool) where T
     F = joint.Fτ
     vertices = joint.vertices
-    xb, qb = posargsk(stateb)
+    _, qb = posargsk(stateb)
 
     Fb = F
     τb = vrotate(torqueFromForce(Fb, vrotate(vertices[2], qb)),inv(qb)) # in local coordinates
@@ -225,7 +225,7 @@ end
 # Control derivatives
 @inline function ∂Fτ∂ua(joint::Translational, statea::State, stateb::State)
     vertices = joint.vertices
-    xa, qa = posargsk(statea)
+    _, qa = posargsk(statea)
 
     BFa = -VLmat(qa) * RᵀVᵀmat(qa)
     Bτa = VLᵀmat(qa) * RVᵀmat(qa) * skew(BFa*vertices[1])
@@ -234,8 +234,8 @@ end
 end
 @inline function ∂Fτ∂ub(joint::Translational, statea::State, stateb::State)
     vertices = joint.vertices
-    xa, qa = posargsk(statea)
-    xb, qb = posargsk(stateb)
+    _, qa = posargsk(statea)
+    _, qb = posargsk(stateb)
 
     BFb = VLmat(qa) * RᵀVᵀmat(qa)
     Bτb = VLᵀmat(qb) * RVᵀmat(qb) * skew(BFb*vertices[2])
@@ -244,7 +244,7 @@ end
 end
 @inline function ∂Fτ∂ub(joint::Translational, stateb::State)
     vertices = joint.vertices
-    xb, qb = posargsk(stateb)
+    _, qb = posargsk(stateb)
 
     BFb = I
     Bτb = VLᵀmat(qb) * RVᵀmat(qb) * skew(vertices[2])
@@ -254,8 +254,8 @@ end
 
 # Position derivatives 
 @inline function ∂Fτ∂posa(joint::Translational{T}, statea::State, stateb::State) where T
-    xa, qa = posargsk(statea)
-    xb, qb = posargsk(stateb)
+    _, qa = posargsk(statea)
+    _, qb = posargsk(stateb)
     F = joint.Fτ
     vertices = joint.vertices
 
@@ -271,8 +271,8 @@ end
     return FaXa, FaQa, τaXa, τaQa, FbXa, FbQa, τbXa, τbQa
 end
 @inline function ∂Fτ∂posb(joint::Translational{T}, statea::State, stateb::State) where T
-    xa, qa = posargsk(statea)
-    xb, qb = posargsk(stateb)
+    _, qa = posargsk(statea)
+    _, qb = posargsk(stateb)
     F = joint.Fτ
     vertices = joint.vertices
 

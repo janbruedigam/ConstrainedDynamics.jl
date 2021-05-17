@@ -59,7 +59,6 @@ end
 # TODO this might be wrong, will be done differently in future anyways
 @inline function calcFrictionForce!(mechanism::Mechanism{T}, friction::Contact, body::Body, γ) where T
     cf = friction.cf
-    D = friction.D
     state = body.state
 
     d = state.d

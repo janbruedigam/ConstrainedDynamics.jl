@@ -251,12 +251,10 @@ function solve!(mechanism::Mechanism)
 end
 
 function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, bodyid::Integer, ineqc::InequalityConstraint)
-    Δt = mechanism.Δt
     μ = mechanism.μ
 
     φ = g(mechanism, ineqc)
 
-    Nx = ∂g∂ʳpos(mechanism, ineqc, bodyid)
     Nv = ∂g∂ʳvel(mechanism, ineqc, bodyid)
 
     γ1 = ineqc.γsol[2]

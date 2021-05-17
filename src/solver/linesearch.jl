@@ -2,7 +2,6 @@ function lineSearch!(mechanism::Mechanism{T,Nn,Nb,Ne,0}, normf0;iter = 10, warni
     normf1 = normf0
     scale = 0
     ldu = mechanism.ldu
-    graph = mechanism.graph
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
 
@@ -35,7 +34,6 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     meritf1 = meritf0
     scale = 0
     ldu = mechanism.ldu
-    graph = mechanism.graph
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints

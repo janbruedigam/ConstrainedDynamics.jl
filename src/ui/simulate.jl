@@ -11,7 +11,7 @@ end
 
 function saveToStorage!(mechanism::LinearMechanism, storage::Storage, i)
     qvm = QuatVecMap()
-    for (id, body) in pairs(mechanism.bodies)
+    for id in getid.(mechanism.bodies)
         storage.x[id][i] = mechanism.xd[id] + mechanism.z[offsetrange(id,3,12,1)]
         storage.q[id][i] = Rotations.add_error(mechanism.qd[id],RotationError(SA[mechanism.z[offsetrange(id,3,12,3)]...],qvm))
         storage.v[id][i] = mechanism.vd[id] + mechanism.z[offsetrange(id,3,12,2)]
