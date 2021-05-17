@@ -91,12 +91,33 @@ end
     end
 end
 
+@inline function offdiagonal∂damper∂ʳvel(joint::AbstractJoint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return offdiagonal∂damper∂ʳvel(joint, body1.state, body2.state)
+    else
+        return offdiagonal∂damper∂ʳvel(joint)
+    end
+end
+@inline function offdiagonal∂damper∂ʳvel(joint::AbstractJoint, body1::Origin, body2::Body)
+    if body2.id == joint.childid
+        return offdiagonal∂damper∂ʳvel(joint, body2.state)
+    else
+        return offdiagonal∂damper∂ʳvel(joint)
+    end
+end
+
+
+
+
 # Wrappers 2
 @inline ∂g∂ʳvela(joint::AbstractJoint{T,N}) where {T,N} = szeros(T, N, 6)
 @inline ∂g∂ʳvelb(joint::AbstractJoint{T,N}) where {T,N} = szeros(T, N, 6)
+@inline offdiagonal∂damper∂ʳvel(joint::AbstractJoint{T}) where {T} = szeros(T, 6, 6)
 ∂g∂ʳvela(joint::AbstractJoint, statea::State, stateb::State, Δt) = ∂g∂ʳvela(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)..., fullargssol(statea)..., Δt)
 ∂g∂ʳvelb(joint::AbstractJoint, statea::State, stateb::State, Δt) = ∂g∂ʳvelb(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)..., fullargssol(stateb)..., Δt)
 ∂g∂ʳvelb(joint::AbstractJoint, stateb::State, Δt) = ∂g∂ʳvelb(joint, posargsnext(stateb, Δt)..., fullargssol(stateb)..., Δt)
+offdiagonal∂damper∂ʳvel(joint::AbstractJoint, statea::State, stateb::State) = offdiagonal∂damper∂ʳvel(joint, posargsk(statea)..., posargsk(stateb)...)
+offdiagonal∂damper∂ʳvel(joint::AbstractJoint, stateb::State) = offdiagonal∂damper∂ʳvel(joint, posargsk(stateb)...)
 
 # Derivatives accounting for quaternion specialness
 @inline function ∂g∂ʳvela(joint::AbstractJoint, x2a::AbstractVector, q2a::UnitQuaternion, x2b::AbstractVector, q2b::UnitQuaternion,

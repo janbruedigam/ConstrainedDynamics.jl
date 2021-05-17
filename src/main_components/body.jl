@@ -105,17 +105,24 @@ Base.length(::Body) = 6
 @inline getM(body::Body{T}) where T = [[I*body.m;szeros(T,3,3)] [szeros(T,3,3);body.J]]
 
 
-@inline function ∂dyn∂vel(body::Body{T}, Δt) where T
+@inline function ∂dyn∂vel(mechanism, body::Body{T}) where T
+    Δt = mechanism.Δt
     J = body.J
     ω2 = body.state.ωsol[2]
     sq = sqrt(4 / Δt^2 - ω2' * ω2)
 
-    dynT = I * body.m / Δt
+    dynT = I * body.m / Δt   
     dynR = skewplusdiag(ω2, sq) * J - J * ω2 * (ω2' / sq) - skew(J * ω2)
-
+    
     Z = szeros(T, 3, 3)
 
-    return [[dynT; Z] [Z; dynR]]
+    D = [[dynT; Z] [Z; dynR]]
+
+    for connectionid in damperconnections(mechanism.graph, body.id)
+        D += diagonal∂damper∂ʳvel(mechanism, geteqconstraint(mechanism, connectionid), body.id)
+    end
+
+    return D
 end
 
 

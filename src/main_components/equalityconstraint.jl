@@ -213,15 +213,16 @@ end
 @inline function ∂g∂ʳpos(mechanism, eqc::EqualityConstraint, id::Integer)
     id == eqc.parentid ? (return ∂g∂ʳposa(mechanism, eqc, id)) : (return ∂g∂ʳposb(mechanism, eqc, id))
 end
-
 @inline function ∂g∂ʳvel(mechanism, eqc::EqualityConstraint, id::Integer)
     id == eqc.parentid ? (return ∂g∂ʳvela(mechanism, eqc, id)) : (return ∂g∂ʳvelb(mechanism, eqc, id))
+end
+@inline function ∂damper∂ʳvel(mechanism, eqc::EqualityConstraint, ida::Integer, idb::Integer)
+    ida == eqc.parentid ? (return ∂damper∂ʳvela(mechanism, eqc, ida, idb)) : (return ∂damper∂ʳvelb(mechanism, eqc, ida, idb))
 end
 
 @inline function springforce(mechanism, eqc::EqualityConstraint, id::Integer)
     id == eqc.parentid ? (return springforcea(mechanism, eqc, id)) : (return springforceb(mechanism, eqc, id))
 end
-
 @inline function damperforce(mechanism, eqc::EqualityConstraint, id::Integer)
     id == eqc.parentid ? (return damperforcea(mechanism, eqc, id)) : (return damperforceb(mechanism, eqc, id))
 end
@@ -242,6 +243,26 @@ end
 @generated function ∂g∂ʳvelb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = [:(∂g∂ʳvelb(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), mechanism.Δt)) for i = 1:Nc]
     return :(vcat($(vec...)))
+end
+
+# Currently assumes no coupling between translational and rotational velocities
+@inline function diagonal∂damper∂ʳvel(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
+    D = szeros(T, 6, 6)
+    for i=1:Nc
+        if id == eqc.parentid || id == eqc.childids[i]
+            D += diagonal∂damper∂ʳvel(eqc.constraints[i])
+        end
+    end
+    return D
+end
+@inline function offdiagonal∂damper∂ʳvel(mechanism, eqc::EqualityConstraint{T,N,Nc}, id1::Integer, id2::Integer) where {T,N,Nc}
+    D = szeros(T, 6, 6)
+    body1 = getbody(mechanism, id1)
+    body2 = getbody(mechanism, id2)
+    for i=1:Nc
+        D += offdiagonal∂damper∂ʳvel(eqc.constraints[i], body1, body2)
+    end
+    return D
 end
 
 @inline function springforcea(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}

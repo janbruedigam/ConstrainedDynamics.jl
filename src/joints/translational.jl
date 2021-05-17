@@ -119,6 +119,7 @@ end
 
 
 ### Spring and damper
+## Forces for dynamics
 @inline function springforcea(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
@@ -165,6 +166,25 @@ end
     return [force;szeros(3)]
 end
 
+## Damper velocity derivatives
+@inline function diagonal∂damper∂ʳvel(joint::Translational{T}) where T
+    A = nullspacemat(joint)
+    AᵀA = zerodimstaticadjoint(A) * A
+    Z = szeros(T, 3, 3)
+    return [[-AᵀA * joint.damper * AᵀA; Z] [Z; Z]]
+end
+@inline function offdiagonal∂damper∂ʳvel(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+    A = nullspacemat(joint)
+    AᵀA = zerodimstaticadjoint(A) * A
+    Z = szeros(T, 3, 3)
+    return [[AᵀA * joint.damper * AᵀA; Z] [Z; Z]]
+end
+@inline function offdiagonal∂damper∂ʳvel(joint::Translational{T}, xb::AbstractVector, qb::UnitQuaternion) where T
+    A = nullspacemat(joint)
+    AᵀA = zerodimstaticadjoint(A) * A
+    Z = szeros(T, 3, 3)
+    return [[AᵀA * joint.damper * AᵀA; Z] [Z; Z]]
+end
 
 ### Forcing
 ## Application of joint forces (for dynamics)

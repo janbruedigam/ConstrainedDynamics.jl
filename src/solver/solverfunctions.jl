@@ -1,5 +1,5 @@
 @inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry, body::Body)
-    diagonal.D = ∂dyn∂vel(body, mechanism.Δt)
+    diagonal.D = ∂dyn∂vel(mechanism, body)
     diagonal.Δs = dynamics(mechanism, body)
     return
 end
@@ -27,6 +27,13 @@ end
 @inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, bodyid::Integer)
     offdiagonal.L = ∂g∂ʳvel(mechanism, eqc, bodyid)
     offdiagonal.U = ∂g∂ʳpos(mechanism, eqc, bodyid)'
+    return
+end
+
+@inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, body1id::Integer, body2id::Integer)
+    D = offdiagonal∂damper∂ʳvel(mechanism, eqc, body1id, body2id)
+    offdiagonal.L = D
+    offdiagonal.U = D'
     return
 end
 
@@ -116,6 +123,12 @@ function setentries!(mechanism::Mechanism)
             setLU!(mechanism, getentry(ldu, (id, childid)), id, geteqconstraint(mechanism, childid))
         end
 
+        for grandchildid in dampergrandchildren(graph, id)
+            for parentid in predecessors(graph, grandchildid) # Maybe predecessors works out for loop closure?
+                setLU!(mechanism, getentry(ldu, (id, grandchildid)), geteqconstraint(mechanism, parentid), id, grandchildid)
+            end
+        end 
+
         diagonal = getentry(ldu, id)
         setDandΔs!(mechanism, diagonal, body)
         for childid in ineqchildren(graph, id)
@@ -132,6 +145,10 @@ function setentries!(mechanism::Mechanism)
         for childid in directchildren(graph, id)
             setLU!(mechanism, getentry(ldu, (id, childid)), eqc, childid)
         end
+
+        # for connectionid in damperconnections(graph, id)
+        #     setLU!(mechanism, getentry(ldu, (id, grandchildid)), eqc.id, geteqconstraint(mechanism, childid))
+        # end
 
         for childid in loopchildren(graph, id)
             setLU!(getentry(ldu, (id, childid)))

@@ -284,17 +284,18 @@ function connections(dfslist, adjacency, dict::Dict)
     return cons
 end
 
+# this is done in order so the spring parent is always the first entry (but this is not really important for spring connections)
 function springconnections(dfslist, bodies, eqconstraints, dict::Dict)
     N = length(dfslist)
     springs = [Int64[] for i = 1:N]
-    for body in bodies
+    for bodyid in dfslist
         for eqc in eqconstraints
             !eqc.isspring && continue
 
-            eqc.parentid == body.id && push!(springs[dict[body.id]], eqc.id)
+            eqc.parentid == bodyid && push!(springs[dict[bodyid]], eqc.id)
 
             for childid in unique(eqc.childids)
-                childid == body.id && push!(springs[dict[body.id]], eqc.id)
+                childid == bodyid && push!(springs[dict[bodyid]], eqc.id)
             end
         end
     end
@@ -302,17 +303,18 @@ function springconnections(dfslist, bodies, eqconstraints, dict::Dict)
     return springs
 end
 
+# this is done in order so the damper parent is always the first entry 
 function damperconnections(dfslist, bodies, eqconstraints, dict::Dict)
     N = length(dfslist)
     damps = [Int64[] for i = 1:N]
-    for body in bodies
+    for bodyid in dfslist
         for eqc in eqconstraints
             !eqc.isdamper && continue
 
-            eqc.parentid == body.id && push!(damps[dict[body.id]], eqc.id)
+            eqc.parentid == bodyid && push!(damps[dict[bodyid]], eqc.id)
 
             for childid in unique(eqc.childids)
-                childid == body.id && push!(damps[dict[body.id]], eqc.id)
+                childid == bodyid && push!(damps[dict[bodyid]], eqc.id)
             end
         end
     end
@@ -331,6 +333,7 @@ end
 
 
 @inline directchildren(graph, id::Integer) = graph.directchildren[graph.dict[id]]
+@inline dampergrandchildren(graph, id::Integer) = graph.dampergrandchildren[graph.dict[id]]
 @inline ineqchildren(graph, id::Integer) = graph.ineqchildren[graph.dict[id]]
 @inline loopchildren(graph, id::Integer) = graph.loopchildren[graph.dict[id]]
 @inline successors(graph, id::Integer) = graph.successors[graph.dict[id]]
