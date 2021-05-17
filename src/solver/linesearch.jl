@@ -74,8 +74,8 @@ function lineSearch!(mechanism::LinearMechanism{T,Nn,Nb,Ne,0}, normf0;iter = 10,
     scale = 0
 
     for n = Base.OneTo(iter + 1)
-        mechanism.zsol[2] = mechanism.zsol[1] - 1 / (2^scale) * mechanism.Δz
-        mechanism.λsol[2] = mechanism.λsol[1] - 1 / (2^scale) * mechanism.Δλ
+        mechanism.zsol[2] = mechanism.zsol[1] + 1 / (2^scale) * mechanism.Δz
+        mechanism.λsol[2] = mechanism.λsol[1] + 1 / (2^scale) * mechanism.Δλ
 
         normf1 = normf(mechanism)
         if normf1 >= normf0
@@ -91,29 +91,29 @@ end
 
 
 @inline function lineStep!(body::Body, diagonal::DiagonalEntry, scale)
-    body.state.vsol[2] = body.state.vsol[1] - 1 / (2^scale) * diagonal.Δs[SA[1; 2; 3]]
-    body.state.ωsol[2] = body.state.ωsol[1] - 1 / (2^scale) * diagonal.Δs[SA[4; 5; 6]]
+    body.state.vsol[2] = body.state.vsol[1] + 1 / (2^scale) * diagonal.Δs[SA[1; 2; 3]]
+    body.state.ωsol[2] = body.state.ωsol[1] + 1 / (2^scale) * diagonal.Δs[SA[4; 5; 6]]
     return
 end
 
 @inline function lineStep!(eqc::EqualityConstraint, diagonal::DiagonalEntry, scale)
-    eqc.λsol[2] = eqc.λsol[1] - 1 / (2^scale) * -diagonal.Δs
+    eqc.λsol[2] = eqc.λsol[1] + 1 / (2^scale) * diagonal.Δs
     return
 end
 
 @inline function lineStep!(body::Body, diagonal, scale, mechanism)
-    body.state.vsol[2] = body.state.vsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SA[1; 2; 3]]
-    body.state.ωsol[2] = body.state.ωsol[1] - 1 / (2^scale) * mechanism.α * diagonal.Δs[SA[4; 5; 6]]
+    body.state.vsol[2] = body.state.vsol[1] + 1 / (2^scale) * mechanism.α * diagonal.Δs[SA[1; 2; 3]]
+    body.state.ωsol[2] = body.state.ωsol[1] + 1 / (2^scale) * mechanism.α * diagonal.Δs[SA[4; 5; 6]]
     return
 end
 
 @inline function lineStep!(eqc::EqualityConstraint, diagonal, scale, mechanism)
-    eqc.λsol[2] = eqc.λsol[1] - 1 / (2^scale) * mechanism.α * -diagonal.Δs
+    eqc.λsol[2] = eqc.λsol[1] + 1 / (2^scale) * mechanism.α * diagonal.Δs
     return
 end
 
 @inline function lineStep!(ineqc::InequalityConstraint, entry, scale, mechanism)
-    ineqc.ssol[2] = ineqc.ssol[1] - 1 / (2^scale) * mechanism.α * entry.Δs
-    ineqc.γsol[2] = ineqc.γsol[1] - 1 / (2^scale) * mechanism.α * -entry.Δγ
+    ineqc.ssol[2] = ineqc.ssol[1] + 1 / (2^scale) * mechanism.α * entry.Δs
+    ineqc.γsol[2] = ineqc.γsol[1] + 1 / (2^scale) * mechanism.α * entry.Δγ
     return
 end

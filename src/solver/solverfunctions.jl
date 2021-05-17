@@ -1,32 +1,32 @@
 @inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry, body::Body)
     diagonal.D = ∂dyn∂vel(mechanism, body)
-    diagonal.Δs = dynamics(mechanism, body)
+    diagonal.Δs = -dynamics(mechanism, body)
     return
 end
 
 @inline function extendDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
     diagonal.D += schurD(ineqc, body, mechanism.Δt) # + SMatrix{6,6,Float64,36}(1e-5*I)
-    diagonal.Δs += schurf(mechanism, ineqc, body)
+    diagonal.Δs -= schurf(mechanism, ineqc, body)
     return
 end
 
 @inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry{T,N}, eqc::EqualityConstraint) where {T,N}
-    # diagonal.D = szeros(T, N, N)
-    μ = 1e-10
-    diagonal.D = -I*μ
-    diagonal.Δs = g(mechanism, eqc)
+    diagonal.D = szeros(T, N, N)
+    # μ = 1e-10
+    # diagonal.D = I*μ
+    diagonal.Δs = -g(mechanism, eqc)
     return
 end
 
 @inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, bodyid::Integer, eqc::EqualityConstraint)
-    offdiagonal.L = ∂g∂ʳpos(mechanism, eqc, bodyid)'
+    offdiagonal.L = -∂g∂ʳpos(mechanism, eqc, bodyid)'
     offdiagonal.U = ∂g∂ʳvel(mechanism, eqc, bodyid)
     return
 end
 
 @inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, bodyid::Integer)
     offdiagonal.L = ∂g∂ʳvel(mechanism, eqc, bodyid)
-    offdiagonal.U = ∂g∂ʳpos(mechanism, eqc, bodyid)'
+    offdiagonal.U = -∂g∂ʳpos(mechanism, eqc, bodyid)'
     return
 end
 
@@ -105,7 +105,7 @@ function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, ine
     for i = 1:N
         αmax = τ * s1[i] / Δs[i]
         (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
-        αmax = τ * γ1[i] / -Δγ[i]
+        αmax = τ * γ1[i] / Δγ[i]
         (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
     end
     return
@@ -261,8 +261,8 @@ function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diag
     s1 = ineqc.ssol[2]
 
     Δv = diagonal.Δs
-    ineqentry.Δγ = -γ1 ./ s1 .* φ + μ ./ s1 + γ1 ./ s1 .* (Nv * Δv)
-    ineqentry.Δs = s1 .- μ ./ γ1 + s1 ./ γ1 .* ineqentry.Δγ
+    ineqentry.Δγ = -γ1 ./ s1 .* φ + μ ./ s1 - γ1 ./ s1 .* (Nv * Δv)
+    ineqentry.Δs = -s1 + μ ./ γ1 - s1 ./ γ1 .* ineqentry.Δγ
 
     return
 end
