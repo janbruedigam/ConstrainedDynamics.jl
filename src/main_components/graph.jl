@@ -5,6 +5,7 @@ struct Graph{N}
     loopchildren::Vector{Vector{Int64}} # successor nodes in a loop excluding direct children
     successors::Vector{Vector{Int64}} # direct and loop successors
     predecessors::Vector{Vector{Int64}} # direct parent and loop-opening predecessor(s?) (for numerics?)
+    dampergrandparent::Vector{Vector{Int64}} # direct grandparent node for bodies with damped grandparents. Should only be one
     connections::Vector{Vector{Int64}} # direct connections
     springconnections::Vector{Vector{Int64}} # direct connections from bodies to eqconstraints with springs  
     damperconnections::Vector{Vector{Int64}} # direct connections for eqconstraints with damping  
@@ -12,7 +13,7 @@ struct Graph{N}
     dfslist::SVector{N,Int64} # depth-first-seach list (dfslist[end] = root)
     rdfslist::SVector{N,Int64} # reverse dfslist
 
-    dict::UnitDict{Base.OneTo{Int64},Int64} # maps ids to the graph-interal numbering (not dfs order) 
+    dict::UnitDict{Base.OneTo{Int64},Int64} # maps ids to the graph-interal numbering (not dfs order). Necessary, e.g., if ids don't start at 1. 
     rdict::UnitDict{Base.OneTo{Int64},Int64} # reverse mapping
     activedict::UnitDict{Base.OneTo{Int64},Bool}
 
@@ -32,6 +33,7 @@ struct Graph{N}
         fil = deleteat(fil, dict[oid])
         originals = deleteat(originals, dict[oid])
         dfslist = StaticArrays.deleteat(dfslist, length(dfslist))
+        rdfslist = reverse(dfslist)
 
         for (id, ind) in dict
             ind > dict[oid] && (dict[id] = ind - 1)
@@ -66,7 +68,8 @@ struct Graph{N}
         damps = dampergrandchildren(dfslist, eqconstraints, dict)
         loops = loopchildren(dfslist, fil, dict)
         succs = successors(dfslist, pat, dict)
-        preds = predecessors(dfslist, pat, dict)
+        preds = predecessors(rdfslist, pat, dict)
+        dampgrand = dampergrandparent(rdfslist, damps, dict, rdict)
         cons = connections(dfslist, adjacency, dict)
         springcons = springconnections(dfslist, bodies, eqconstraints, dict)
         dampcons = damperconnections(dfslist, bodies, eqconstraints, dict)
@@ -75,7 +78,7 @@ struct Graph{N}
         rdict = UnitDict(rdict)
         activedict = UnitDict(activedict)
 
-        new{N}(dirs, ineqs, damps, loops, succs, preds, cons, springcons, dampcons, dfslist, reverse(dfslist), dict, rdict, activedict)
+        new{N}(dirs, ineqs, damps, loops, succs, preds, dampgrand, cons, springcons, dampcons, dfslist, rdfslist, dict, rdict, activedict)
     end
 end
 
@@ -259,16 +262,29 @@ function successors(dfslist, pattern, dict::Dict)
 end
 
 # this is done in reverse order (but this is not really important for predecessors)
-function predecessors(dfslist, pattern, dict::Dict)
-    N = length(dfslist)
+function predecessors(rdfslist, pattern, dict::Dict)
+    N = length(rdfslist)
     preds = [Int64[] for i = 1:N]
     for i = 1:N
-        for childid in reverse(dfslist)
+        for childid in rdfslist
             pattern[dict[childid]][i] && push!(preds[i], childid)
         end
     end
 
     return preds
+end
+
+# this is done in reverse order (but this is not really important for dampergrandparent, should only be one)
+function dampergrandparent(rdfslist, dampergrandchildren, dict::Dict, rdict::Dict)
+    N = length(rdfslist)
+    dampgrand = [Int64[] for i = 1:N]
+    for i = 1:N
+        for grandparentid in rdfslist
+            rdict[i] ∈ dampergrandchildren[dict[grandparentid]] && push!(dampgrand[i], grandparentid)
+        end
+    end
+
+    return dampgrand
 end
 
 # this is done in order (but this is not really important for connections)
@@ -338,6 +354,7 @@ end
 @inline loopchildren(graph, id::Integer) = graph.loopchildren[graph.dict[id]]
 @inline successors(graph, id::Integer) = graph.successors[graph.dict[id]]
 @inline predecessors(graph, id::Integer) = graph.predecessors[graph.dict[id]]
+@inline dampergrandparent(graph, id::Integer) = graph.dampergrandparent[graph.dict[id]]
 @inline connections(graph, id::Integer) = graph.connections[graph.dict[id]]
 @inline springconnections(graph, id::Integer) = graph.springconnections[graph.dict[id]]
 @inline damperconnections(graph, id::Integer) = graph.damperconnections[graph.dict[id]]

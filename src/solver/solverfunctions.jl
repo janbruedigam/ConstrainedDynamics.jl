@@ -146,10 +146,6 @@ function setentries!(mechanism::Mechanism)
             setLU!(mechanism, getentry(ldu, (id, childid)), eqc, childid)
         end
 
-        # for connectionid in damperconnections(graph, id)
-        #     setLU!(mechanism, getentry(ldu, (id, grandchildid)), eqc.id, geteqconstraint(mechanism, childid))
-        # end
-
         for childid in loopchildren(graph, id)
             setLU!(getentry(ldu, (id, childid)))
         end
@@ -166,11 +162,28 @@ function factor!(graph::Graph, ldu::SparseLDU)
         isinactive(graph, id) && continue
 
         diagonal = getentry(ldu, id)
+
+        for grandchildid in dampergrandchildren(graph, id)
+            isinactive(graph, grandchildid) && continue
+
+            offdiagonal = getentry(ldu, (id, grandchildid))
+            updateLU2!(offdiagonal, getentry(ldu, grandchildid))
+            updateD!(diagonal, getentry(ldu, grandchildid), offdiagonal)
+        end
+
         sucs = successors(graph, id)
         for childid in sucs
             isinactive(graph, childid) && continue
-            
+
             offdiagonal = getentry(ldu, (id, childid))
+
+            for grandchildid in dampergrandchildren(graph, id)
+                grandchildid == childid && break
+                isinactive(graph, grandchildid) && continue
+
+                updateLU1!(offdiagonal, getentry(ldu, grandchildid), getentry(ldu, (id, grandchildid)), getentry(ldu, (childid, grandchildid)))
+            end
+            
             for grandchildid in sucs
                 grandchildid == childid && break
                 isinactive(graph, grandchildid) && continue
@@ -201,6 +214,11 @@ function solve!(mechanism::Mechanism)
 
         diagonal = getentry(ldu, id)
 
+        for grandchildid in dampergrandchildren(graph, id)
+            isinactive(graph, grandchildid) && continue
+            LSol!(diagonal, getentry(ldu, grandchildid), getentry(ldu, (id, grandchildid)))
+        end
+
         for childid in successors(graph, id)
             isinactive(graph, childid) && continue
             LSol!(diagonal, getentry(ldu, childid), getentry(ldu, (id, childid)))
@@ -218,6 +236,11 @@ function solve!(mechanism::Mechanism)
             USol!(diagonal, getentry(ldu, parentid), getentry(ldu, (parentid, id)))
         end
 
+        for grandparentid in dampergrandparent(graph, id)
+            isinactive(graph, grandparentid) && continue
+            USol!(diagonal, getentry(ldu, grandparentid), getentry(ldu, (grandparentid, id)))
+        end
+        
         for childid in ineqchildren(graph, id)
             isinactive(graph, childid) && continue
             eliminatedsolve!(mechanism, getineqentry(ldu, childid), diagonal, id, getineqconstraint(mechanism, childid))
