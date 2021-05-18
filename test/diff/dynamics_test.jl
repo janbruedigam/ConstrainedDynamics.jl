@@ -33,7 +33,7 @@ function dyntestT()
     res = ForwardDiff.jacobian(dynTvel, [body1.state.vc;body1.state.vsol[2]])
     V2 = res[1:3,4:6]
 
-    n = norm(V2 - ∂dyn∂vel(body1, Δt)[1:3,1:3])
+    n = norm(V2 - ∂dyn∂vel(mech, body1)[1:3,1:3])
 
     # display(n)
     return n
@@ -66,7 +66,7 @@ function dyntestR()
     res = ForwardDiff.jacobian(dynRvel, [body1.state.ωc;body1.state.ωsol[2]])
     W2 = res[1:3,4:6]
 
-    n = norm(W2 - ∂dyn∂vel(body1, Δt)[4:6,4:6])
+    n = norm(W2 - ∂dyn∂vel(mech, body1)[4:6,4:6])
 
     # display(n)
     return n

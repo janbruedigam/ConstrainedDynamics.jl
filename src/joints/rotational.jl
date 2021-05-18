@@ -11,7 +11,7 @@ mutable struct Rotational{T,N} <: Joint{T,N}
     childid::Int64
 
     function Rotational{T,N}(body1::AbstractBody, body2::AbstractBody; 
-            axis::AbstractVector = zeros(3), qoffset::UnitQuaternion = one(UnitQuaternion), spring, damper
+            axis::AbstractVector = szeros(T,3), qoffset::UnitQuaternion = one(UnitQuaternion{T}), spring = zero(T), damper = zero(T)
         ) where {T,N}
         
         V1, V2, V3 = orthogonalrows(axis)

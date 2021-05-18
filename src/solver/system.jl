@@ -41,9 +41,9 @@ function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
 
         # b
         if component isa Body
-            b[range] = dynamics(mechanism, component)
+            b[range] = -dynamics(mechanism, component)
         else
-            b[range] = g(mechanism, component)
+            b[range] = -g(mechanism, component)
         end
 
 

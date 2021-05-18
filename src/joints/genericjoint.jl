@@ -1,5 +1,8 @@
 # User-defined joint
 mutable struct GenericJoint{T,N} <: AbstractJoint{T,N}
+    spring::T
+    damper::T
+
     F::SVector{3,T}
     τ::SVector{3,T}
 
@@ -8,12 +11,12 @@ mutable struct GenericJoint{T,N} <: AbstractJoint{T,N}
     g::Function  
         
     
-    function GenericJoint{N}(body1::AbstractBody{T}, body2::AbstractBody,gfunc) where {T,N}
+    function GenericJoint{N}(body1::AbstractBody{T}, body2::AbstractBody, gfunc; spring = zero(T), damper = zero(T)) where {T,N}
         F = zeros(T,3)
         τ = zeros(T,3)
         childid = body2.id
 
-        new{T,N}(F, τ, childid, gfunc), body1.id, body2.id
+        new{T,N}(spring, damper, F, τ, childid, gfunc), body1.id, body2.id
     end
 
 end 

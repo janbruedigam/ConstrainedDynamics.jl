@@ -11,7 +11,7 @@ mutable struct Translational{T,N} <: Joint{T,N}
     childid::Int64
 
     function Translational{T,N}(body1::AbstractBody, body2::AbstractBody;
-            p1::AbstractVector = zeros(3), p2::AbstractVector = zeros(3), axis::AbstractVector = zeros(3), spring, damper
+            p1::AbstractVector = szeros(T,3), p2::AbstractVector = szeros(T,3), axis::AbstractVector = szeros(T,3), spring = zero(T), damper = zero(T)
         ) where {T,N}
         
         vertices = (p1, p2)
