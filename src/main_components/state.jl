@@ -31,28 +31,30 @@ mutable struct State{T}
     vsol::Vector{SVector{3,T}}
     ωsol::Vector{SVector{3,T}}
     
-    # Current equations of motion evaluation
+    # Current equations of motion and derivative evaluation
     d::SVector{6,T}
+    D::SMatrix{6,6,T,36}
 
     function State{T}() where T
-        xc = zeros(T, 3)
+        xc = szeros(T, 3)
         qc = one(UnitQuaternion{T})
-        vc = zeros(T, 3)
-        ωc = zeros(T, 3)
+        vc = szeros(T, 3)
+        ωc = szeros(T, 3)
 
-        xk = [zeros(T, 3)]
+        xk = [szeros(T, 3)]
         qk = [one(UnitQuaternion{T})]
-        Fk = [zeros(T, 3)]
-        τk = [zeros(T, 3)]
+        Fk = [szeros(T, 3)]
+        τk = [szeros(T, 3)]
 
-        xsol = [zeros(T, 3) for i=1:2]
+        xsol = [szeros(T, 3) for i=1:2]
         qsol = [one(UnitQuaternion{T}) for i=1:2]
-        vsol = [zeros(T, 3) for i=1:2]
-        ωsol = [zeros(T, 3) for i=1:2]
+        vsol = [szeros(T, 3) for i=1:2]
+        ωsol = [szeros(T, 3) for i=1:2]
 
-        d = zeros(T, 6)
+        d = szeros(T, 6)
+        D = szeros(T, 6, 6)
 
-        new{T}(0, xc, qc, vc, ωc, xk, qk, Fk, τk, xsol, qsol, vsol, ωsol, d)
+        new{T}(0, xc, qc, vc, ωc, xk, qk, Fk, τk, xsol, qsol, vsol, ωsol, d, D)
     end
 end
 

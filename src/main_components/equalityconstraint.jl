@@ -201,6 +201,11 @@ end
     return
 end
 
+@inline function damperToD!(mechanism, body::Body, eqc::EqualityConstraint)
+    isactive(eqc) && (body.state.D -= diagonal∂damper∂ʳvel(mechanism, eqc, body.id))
+    return
+end
+
 @generated function g(mechanism, eqc::EqualityConstraint{T,N,Nc}) where {T,N,Nc}
     vec = [:(g(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, eqc.childids[$i]), mechanism.Δt)) for i = 1:Nc]
     return :(svcat($(vec...)))
