@@ -157,7 +157,7 @@ end
     xa, qa = posargsk(statea)
 
     BFa = -VLmat(qa) * RᵀVᵀmat(qa)
-    Bτa = VLᵀmat(qa) * RVᵀmat(qa) * skew(BFa*vertices[1])
+    Bτa = -skew(vertices[1])
 
     return [BFa; Bτa]
 end
@@ -165,9 +165,10 @@ end
     vertices = joint.vertices
     xa, qa = posargsk(statea)
     xb, qb = posargsk(stateb)
+    qbinvqa = qb\qa
 
     BFb = VLmat(qa) * RᵀVᵀmat(qa)
-    Bτb = VLᵀmat(qb) * RVᵀmat(qb) * skew(BFb*vertices[2])
+    Bτb = skew(vertices[2]) * VLmat(qbinvqa) * RᵀVᵀmat(qbinvqa)
 
     return [BFb; Bτb]
 end
@@ -176,7 +177,7 @@ end
     xb, qb = posargsk(stateb)
 
     BFb = I
-    Bτb = VLᵀmat(qb) * RVᵀmat(qb) * skew(vertices[2])
+    Bτb = skew(vertices[2]) * VLᵀmat(qb) * RVᵀmat(qb)
 
     return [BFb; Bτb]
 end
@@ -212,7 +213,7 @@ end
     FbXb = szeros(T,3,3)
     FbQb = szeros(T,3,3)
     τbXb = szeros(T,3,3)
-    τbQb = 2*skew(vertices[2])*VRᵀmat(qb)*Rᵀmat(qa)*Rmat(UnitQuaternion(F))*Rmat(qa)*LVᵀmat(qb)
+    τbQb = 2*skew(vertices[2])*VLᵀmat(qb)*Lmat(qa)*Lmat(UnitQuaternion(F))*Lᵀmat(qa)*LVᵀmat(qb)
 
     return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
 end
@@ -228,7 +229,7 @@ end
     FbXb = szeros(T,3,3)
     FbQb = szeros(T,3,3)
     τbXb = szeros(T,3,3)
-    τbQb = 2*skew(vertices[2])*VRᵀmat(qb)*Rmat(UnitQuaternion(F))*LVᵀmat(qb)
+    τbQb = 2*skew(vertices[2])*VLᵀmat(qb)*Lmat(UnitQuaternion(F))*LVᵀmat(qb)
 
     return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
 end

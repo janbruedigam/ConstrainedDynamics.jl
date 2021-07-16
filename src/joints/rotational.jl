@@ -195,7 +195,7 @@ end
     FbXb = szeros(T,3,3)
     FbQb = szeros(T,3,3)
     τbXb = szeros(T,3,3)
-    τbQb = 2*VRᵀmat(qb)*Rᵀmat(qa)*Rmat(UnitQuaternion(τ))*Rmat(qa)*LVᵀmat(qb)
+    τbQb = 2*VLᵀmat(qb)*Lmat(qa)*Lmat(UnitQuaternion(τ))*Lᵀmat(qa)*LVᵀmat(qb)
 
     return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
 end
@@ -210,7 +210,7 @@ end
     FbXb = szeros(T,3,3)
     FbQb = szeros(T,3,3)
     τbXb = szeros(T,3,3)
-    τbQb = 2*VRᵀmat(qb)*Rmat(UnitQuaternion(τ))*LVᵀmat(qb)
+    τbQb = 2*VLᵀmat(qb)*Lmat(UnitQuaternion(τ))*LVᵀmat(qb)
 
     return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
 end
