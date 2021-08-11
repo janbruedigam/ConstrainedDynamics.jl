@@ -1,15 +1,19 @@
 struct Graph{N}
-    directchildren::Vector{Vector{Int64}} # direct successor nodes
-    loopchildren::Vector{Vector{Int64}} # successor nodes excluding direct successors
-    ineqchildren::Vector{Vector{Int64}}
-    successors::Vector{Vector{Int64}} # direct and loop children
+    directchildren::Vector{Vector{Int64}} # direct child nodes
+    ineqchildren::Vector{Vector{Int64}} # direct child nodes for inequality constraints (contact)
+    dampergrandchildren::Vector{Vector{Int64}} # direct grandchild nodes for bodies with damped children 
+    loopchildren::Vector{Vector{Int64}} # successor nodes in a loop excluding direct children
+    successors::Vector{Vector{Int64}} # direct and loop successors
     predecessors::Vector{Vector{Int64}} # direct parent and loop-opening predecessor(s?) (for numerics?)
+    dampergrandparent::Vector{Vector{Int64}} # direct grandparent node for bodies with damped grandparents. Should only be one
     connections::Vector{Vector{Int64}} # direct connections
+    springconnections::Vector{Vector{Int64}} # direct connections from bodies to eqconstraints with springs  
+    damperconnections::Vector{Vector{Int64}} # direct connections for eqconstraints with damping  
 
     dfslist::SVector{N,Int64} # depth-first-seach list (dfslist[end] = root)
     rdfslist::SVector{N,Int64} # reverse dfslist
 
-    dict::UnitDict{Base.OneTo{Int64},Int64} # maps ids to the graph-interal numbering (not dfs order) 
+    dict::UnitDict{Base.OneTo{Int64},Int64} # maps ids to the graph-interal numbering (not dfs order). Necessary, e.g., if ids don't start at 1. 
     rdict::UnitDict{Base.OneTo{Int64},Int64} # reverse mapping
     activedict::UnitDict{Base.OneTo{Int64},Bool}
 
@@ -29,6 +33,7 @@ struct Graph{N}
         fil = deleteat(fil, dict[oid])
         originals = deleteat(originals, dict[oid])
         dfslist = StaticArrays.deleteat(dfslist, length(dfslist))
+        rdfslist = reverse(dfslist)
 
         for (id, ind) in dict
             ind > dict[oid] && (dict[id] = ind - 1)
@@ -59,17 +64,21 @@ struct Graph{N}
         originals = convert(Vector{SVector{N,Bool}}, originals)
 
         dirs = directchildren(dfslist, originals, dict)
-        loos = loopchildren(dfslist, fil, dict)
         ineqs = ineqchildren(dfslist, bodies, ineqconstraints, dict)
-        sucs = successors(dfslist, pat, dict)
-        preds = predecessors(dfslist, pat, dict)
+        damps = dampergrandchildren(dfslist, eqconstraints, dict)
+        loops = loopchildren(dfslist, fil, dict)
+        succs = successors(dfslist, pat, dict)
+        preds = predecessors(rdfslist, pat, dict)
+        dampgrand = dampergrandparent(rdfslist, damps, dict, rdict)
         cons = connections(dfslist, adjacency, dict)
+        springcons = springconnections(dfslist, bodies, eqconstraints, dict)
+        dampcons = damperconnections(dfslist, bodies, eqconstraints, dict)
 
         dict = UnitDict(dict)
         rdict = UnitDict(rdict)
         activedict = UnitDict(activedict)
 
-        new{N}(dirs, loos, ineqs, sucs, preds, cons, dfslist, reverse(dfslist), dict, rdict, activedict)
+        new{N}(dirs, ineqs, damps, loops, succs, preds, dampgrand, cons, springcons, dampcons, dfslist, rdfslist, dict, rdict, activedict)
     end
 end
 
@@ -188,19 +197,6 @@ end
 ### Graph functions
 
 # this is done in order!
-function successors(dfslist, pattern, dict::Dict)
-    N = length(dfslist)
-    sucs = [Int64[] for i = 1:N]
-    for i = 1:N
-        for childid in dfslist
-            pattern[i][dict[childid]] && push!(sucs[i], childid)
-        end
-    end
-
-    return sucs
-end
-
-# this is done in order!
 function directchildren(dfslist, dfsgraph, dict::Dict)
     N = length(dfslist)
     dirs = [Int64[] for i = 1:N]
@@ -211,6 +207,32 @@ function directchildren(dfslist, dfsgraph, dict::Dict)
     end
 
     return dirs
+end
+
+function ineqchildren(dfslist, bodies, ineqconstraints, dict::Dict)
+    N = length(dfslist)
+    ineqs = [Int64[] for i = 1:N]
+    for body in bodies
+        for ineqc in ineqconstraints
+            ineqc.parentid == body.id && push!(ineqs[dict[body.id]], ineqc.id)
+        end
+    end
+
+    return ineqs
+end
+
+function dampergrandchildren(dfslist, eqconstraints, dict::Dict)
+    N = length(dfslist)
+    damps = [Int64[] for i = 1:N]
+    for eqc in eqconstraints
+        (!eqc.isdamper || eqc.parentid === nothing) && continue
+
+        for id in unique(eqc.childids)
+            push!(damps[dict[eqc.parentid]], id)
+        end
+    end
+
+    return damps
 end
 
 # this is done in order!
@@ -226,29 +248,43 @@ function loopchildren(dfslist, fillins, dict::Dict)
     return loos
 end
 
-function ineqchildren(dfslist, bodies, ineqconstraints, dict::Dict)
+# this is done in order!
+function successors(dfslist, pattern, dict::Dict)
     N = length(dfslist)
-    ineqs = [Int64[] for i = 1:N]
-    for body in bodies
-        for ineqc in ineqconstraints
-            ineqc.parentid == body.id && push!(ineqs[dict[body.id]], ineqc.id)
+    sucs = [Int64[] for i = 1:N]
+    for i = 1:N
+        for childid in dfslist
+            pattern[i][dict[childid]] && push!(sucs[i], childid)
         end
     end
 
-    return ineqs
+    return sucs
 end
 
 # this is done in reverse order (but this is not really important for predecessors)
-function predecessors(dfslist, pattern, dict::Dict)
-    N = length(dfslist)
+function predecessors(rdfslist, pattern, dict::Dict)
+    N = length(rdfslist)
     preds = [Int64[] for i = 1:N]
     for i = 1:N
-        for childid in reverse(dfslist)
+        for childid in rdfslist
             pattern[dict[childid]][i] && push!(preds[i], childid)
         end
     end
 
     return preds
+end
+
+# this is done in reverse order (but this is not really important for dampergrandparent, should only be one)
+function dampergrandparent(rdfslist, dampergrandchildren, dict::Dict, rdict::Dict)
+    N = length(rdfslist)
+    dampgrand = [Int64[] for i = 1:N]
+    for i = 1:N
+        for grandparentid in rdfslist
+            rdict[i] ∈ dampergrandchildren[dict[grandparentid]] && push!(dampgrand[i], grandparentid)
+        end
+    end
+
+    return dampgrand
 end
 
 # this is done in order (but this is not really important for connections)
@@ -264,6 +300,44 @@ function connections(dfslist, adjacency, dict::Dict)
     return cons
 end
 
+# this is done in order so the spring parent is always the first entry (but this is not really important for spring connections)
+function springconnections(dfslist, bodies, eqconstraints, dict::Dict)
+    N = length(dfslist)
+    springs = [Int64[] for i = 1:N]
+    for bodyid in dfslist
+        for eqc in eqconstraints
+            !eqc.isspring && continue
+
+            eqc.parentid == bodyid && push!(springs[dict[bodyid]], eqc.id)
+
+            for childid in unique(eqc.childids)
+                childid == bodyid && push!(springs[dict[bodyid]], eqc.id)
+            end
+        end
+    end
+
+    return springs
+end
+
+# this is done in order so the damper parent is always the first entry 
+function damperconnections(dfslist, bodies, eqconstraints, dict::Dict)
+    N = length(dfslist)
+    damps = [Int64[] for i = 1:N]
+    for bodyid in dfslist
+        for eqc in eqconstraints
+            !eqc.isdamper && continue
+
+            eqc.parentid == bodyid && push!(damps[dict[bodyid]], eqc.id)
+
+            for childid in unique(eqc.childids)
+                childid == bodyid && push!(damps[dict[bodyid]], eqc.id)
+            end
+        end
+    end
+
+    return damps
+end
+
 function recursivedirectchildren!(graph, id::Integer)
     dirs = copy(directchildren(graph, id))
     dirslocal = copy(dirs)
@@ -275,13 +349,24 @@ end
 
 
 @inline directchildren(graph, id::Integer) = graph.directchildren[graph.dict[id]]
-@inline loopchildren(graph, id::Integer) = graph.loopchildren[graph.dict[id]]
+@inline dampergrandchildren(graph, id::Integer) = graph.dampergrandchildren[graph.dict[id]]
 @inline ineqchildren(graph, id::Integer) = graph.ineqchildren[graph.dict[id]]
+@inline loopchildren(graph, id::Integer) = graph.loopchildren[graph.dict[id]]
 @inline successors(graph, id::Integer) = graph.successors[graph.dict[id]]
 @inline predecessors(graph, id::Integer) = graph.predecessors[graph.dict[id]]
+@inline dampergrandparent(graph, id::Integer) = graph.dampergrandparent[graph.dict[id]]
 @inline connections(graph, id::Integer) = graph.connections[graph.dict[id]]
+@inline springconnections(graph, id::Integer) = graph.springconnections[graph.dict[id]]
+@inline damperconnections(graph, id::Integer) = graph.damperconnections[graph.dict[id]]
 @inline isactive(graph, id::Integer) = graph.activedict[id]
 @inline isinactive(graph, id::Integer) = !isactive(graph, id)
+
+@inline function hasdirectchild(graph::Graph, id, childid)
+    for val in graph.directchildren[graph.dict[id]]
+        val == childid && (return true)
+    end
+    return false
+end
 
 @inline function hassuccessor(graph::Graph, id, childid)
     for val in graph.successors[graph.dict[id]]
@@ -293,13 +378,6 @@ end
 @inline function haspredecessor(graph::Graph, id, parentid)
     for val in graph.predecessors[graph.dict[id]]
         val == parentid && (return true)
-    end
-    return false
-end
-
-@inline function hasdirectchild(graph::Graph, id, childid)
-    for val in graph.directchildren[graph.dict[id]]
-        val == childid && (return true)
     end
     return false
 end

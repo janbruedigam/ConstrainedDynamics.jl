@@ -1,32 +1,39 @@
 @inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry, body::Body)
-    diagonal.D = ∂dyn∂vel(body, mechanism.Δt)
-    diagonal.Δs = dynamics(mechanism, body)
+    diagonal.D = ∂dyn∂vel(mechanism, body)
+    diagonal.Δs = -dynamics(mechanism, body)
     return
 end
 
 @inline function extendDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry, body::Body, ineqc::InequalityConstraint)
     diagonal.D += schurD(ineqc, body, mechanism.Δt) # + SMatrix{6,6,Float64,36}(1e-5*I)
-    diagonal.Δs += schurf(mechanism, ineqc, body)
+    diagonal.Δs -= schurf(mechanism, ineqc, body)
     return
 end
 
 @inline function setDandΔs!(mechanism::Mechanism, diagonal::DiagonalEntry{T,N}, eqc::EqualityConstraint) where {T,N}
     # diagonal.D = szeros(T, N, N)
     μ = 1e-10
-    diagonal.D = -I*μ
-    diagonal.Δs = g(mechanism, eqc)
+    diagonal.D = I*μ
+    diagonal.Δs = -g(mechanism, eqc)
     return
 end
 
 @inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, bodyid::Integer, eqc::EqualityConstraint)
-    offdiagonal.L = ∂g∂ʳpos(mechanism, eqc, bodyid)'
+    offdiagonal.L = -∂g∂ʳpos(mechanism, eqc, bodyid)'
     offdiagonal.U = ∂g∂ʳvel(mechanism, eqc, bodyid)
     return
 end
 
 @inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, bodyid::Integer)
     offdiagonal.L = ∂g∂ʳvel(mechanism, eqc, bodyid)
-    offdiagonal.U = ∂g∂ʳpos(mechanism, eqc, bodyid)'
+    offdiagonal.U = -∂g∂ʳpos(mechanism, eqc, bodyid)'
+    return
+end
+
+@inline function setLU!(mechanism::Mechanism, offdiagonal::OffDiagonalEntry, eqc::EqualityConstraint, body1id::Integer, body2id::Integer)
+    D = -offdiagonal∂damper∂ʳvel(mechanism, eqc, body1id, body2id)
+    offdiagonal.L = D
+    offdiagonal.U = D'
     return
 end
 
@@ -98,7 +105,7 @@ function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, ine
     for i = 1:N
         αmax = τ * s1[i] / Δs[i]
         (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
-        αmax = τ * γ1[i] / -Δγ[i]
+        αmax = τ * γ1[i] / Δγ[i]
         (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
     end
     return
@@ -115,6 +122,12 @@ function setentries!(mechanism::Mechanism)
         for childid in directchildren(graph, id)
             setLU!(mechanism, getentry(ldu, (id, childid)), id, geteqconstraint(mechanism, childid))
         end
+
+        for grandchildid in dampergrandchildren(graph, id)
+            for parentid in predecessors(graph, grandchildid) # Maybe predecessors works out for loop closure?
+                setLU!(mechanism, getentry(ldu, (id, grandchildid)), geteqconstraint(mechanism, parentid), id, grandchildid)
+            end
+        end 
 
         diagonal = getentry(ldu, id)
         setDandΔs!(mechanism, diagonal, body)
@@ -149,11 +162,28 @@ function factor!(graph::Graph, ldu::SparseLDU)
         isinactive(graph, id) && continue
 
         diagonal = getentry(ldu, id)
+
+        for grandchildid in dampergrandchildren(graph, id)
+            isinactive(graph, grandchildid) && continue
+
+            offdiagonal = getentry(ldu, (id, grandchildid))
+            updateLU2!(offdiagonal, getentry(ldu, grandchildid))
+            updateD!(diagonal, getentry(ldu, grandchildid), offdiagonal)
+        end
+
         sucs = successors(graph, id)
         for childid in sucs
             isinactive(graph, childid) && continue
-            
+
             offdiagonal = getentry(ldu, (id, childid))
+
+            for grandchildid in dampergrandchildren(graph, id)
+                grandchildid == childid && break
+                isinactive(graph, grandchildid) && continue
+
+                updateLU1!(offdiagonal, getentry(ldu, grandchildid), getentry(ldu, (id, grandchildid)), getentry(ldu, (childid, grandchildid)))
+            end
+            
             for grandchildid in sucs
                 grandchildid == childid && break
                 isinactive(graph, grandchildid) && continue
@@ -184,6 +214,11 @@ function solve!(mechanism::Mechanism)
 
         diagonal = getentry(ldu, id)
 
+        for grandchildid in dampergrandchildren(graph, id)
+            isinactive(graph, grandchildid) && continue
+            LSol!(diagonal, getentry(ldu, grandchildid), getentry(ldu, (id, grandchildid)))
+        end
+
         for childid in successors(graph, id)
             isinactive(graph, childid) && continue
             LSol!(diagonal, getentry(ldu, childid), getentry(ldu, (id, childid)))
@@ -201,6 +236,11 @@ function solve!(mechanism::Mechanism)
             USol!(diagonal, getentry(ldu, parentid), getentry(ldu, (parentid, id)))
         end
 
+        for grandparentid in dampergrandparent(graph, id)
+            isinactive(graph, grandparentid) && continue
+            USol!(diagonal, getentry(ldu, grandparentid), getentry(ldu, (grandparentid, id)))
+        end
+        
         for childid in ineqchildren(graph, id)
             isinactive(graph, childid) && continue
             eliminatedsolve!(mechanism, getineqentry(ldu, childid), diagonal, id, getineqconstraint(mechanism, childid))
@@ -211,20 +251,18 @@ function solve!(mechanism::Mechanism)
 end
 
 function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, bodyid::Integer, ineqc::InequalityConstraint)
-    Δt = mechanism.Δt
     μ = mechanism.μ
 
     φ = g(mechanism, ineqc)
 
-    Nx = ∂g∂ʳpos(mechanism, ineqc, bodyid)
     Nv = ∂g∂ʳvel(mechanism, ineqc, bodyid)
 
     γ1 = ineqc.γsol[2]
     s1 = ineqc.ssol[2]
 
     Δv = diagonal.Δs
-    ineqentry.Δγ = -γ1 ./ s1 .* φ + μ ./ s1 + γ1 ./ s1 .* (Nv * Δv)
-    ineqentry.Δs = s1 .- μ ./ γ1 + s1 ./ γ1 .* ineqentry.Δγ
+    ineqentry.Δγ = -γ1 ./ s1 .* φ + μ ./ s1 - γ1 ./ s1 .* (Nv * Δv)
+    ineqentry.Δs = -s1 + μ ./ γ1 - s1 ./ γ1 .* ineqentry.Δγ
 
     return
 end

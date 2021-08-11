@@ -1,5 +1,4 @@
 function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
-    bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     graph = mechanism.graph
     ldu = mechanism.ldu
@@ -42,9 +41,9 @@ function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
 
         # b
         if component isa Body
-            b[range] = dynamics(mechanism, component)
+            b[range] = -dynamics(mechanism, component)
         else
-            b[range] = g(mechanism, component)
+            b[range] = -g(mechanism, component)
         end
 
 
@@ -120,7 +119,6 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
     Δt = mechanism.Δt
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
-    graph = mechanism.graph
 
     nc = 0
     for eqc in eqcs

@@ -26,7 +26,7 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
         T = getT(bounddata[1][1])
 
         parentid = bounddata[1][2]
-        childids = Int64[]
+        # childids = Int64[]
         constraints = Bound{T}[]
         N = 0
         for set in bounddata

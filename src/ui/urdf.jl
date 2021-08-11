@@ -162,8 +162,6 @@ function parse_shape(xvisual, materialdict, T)
 end
 
 function parse_link(xlink, materialdict, T)
-    xvisual = find_element(xlink, "visual")
-
     x, q, m, J = parse_inertia(find_element(xlink, "inertial"), T)
     shape = parse_shape(find_element(xlink, "visual"), materialdict, T)
     name = attribute(xlink, "name")
@@ -246,7 +244,7 @@ function parse_loop_joint(xjoint, link1, link2, T)
     jointtype = attribute(xjoint, "type")
     axis = parse_vector(find_element(xjoint, "axis"), "xyz", T, default = "1 0 0")
     x1, q1 = parse_pose(find_element(xjoint, "link1"), T)
-    x2, q2 = parse_pose(find_element(xjoint, "link2"), T) # The orientation q2 of the second body is ignored because it is determined by the mechanism's structure
+    x2, _ = parse_pose(find_element(xjoint, "link2"), T) # The orientation q2 of the second body is ignored because it is determined by the mechanism's structure
     p1 = x1
     p2 = x2
     name = attribute(xjoint, "name")

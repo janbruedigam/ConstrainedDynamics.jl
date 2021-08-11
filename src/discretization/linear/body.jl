@@ -15,11 +15,19 @@
 
     state.d = [dynT;dynR]
 
-    for childid in connections(mechanism.graph, body.id)
-        GtλTof!(mechanism, body, geteqconstraint(mechanism, childid))
+    for connectionid in connections(graph, body.id)
+        GtλTof!(mechanism, body, geteqconstraint(mechanism, connectionid))
     end
 
-    for childid in ineqchildren(mechanism.graph, body.id)
+    for connectionid in springconnections(graph, body.id)
+        springTof!(mechanism, body, geteqconstraint(mechanism, connectionid))
+    end
+
+    for connectionid in damperconnections(graph, body.id)
+        damperTof!(mechanism, body, geteqconstraint(mechanism, connectionid))
+    end
+
+    for childid in ineqchildren(graph, body.id)
         NtγTof!(mechanism, body, getineqconstraint(mechanism, childid))
     end
 

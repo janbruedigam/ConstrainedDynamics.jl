@@ -68,6 +68,11 @@ struct SparseLDU{T}
 
                 offdiagonals[(id, childid)] = OffDiagonalEntry{T,N2,N1}()
             end
+            for grandchildid in dampergrandchildren(graph, id)
+                N2 = 6
+
+                offdiagonals[(id, grandchildid)] = OffDiagonalEntry{T,N2,N1}()
+            end
         end
 
         inequalities = InequalityEntry{T}[]

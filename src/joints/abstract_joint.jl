@@ -91,12 +91,33 @@ end
     end
 end
 
+@inline function offdiagonal∂damper∂ʳvel(joint::AbstractJoint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return offdiagonal∂damper∂ʳvel(joint, body1.state, body2.state)
+    else
+        return offdiagonal∂damper∂ʳvel(joint)
+    end
+end
+@inline function offdiagonal∂damper∂ʳvel(joint::AbstractJoint, body1::Origin, body2::Body)
+    if body2.id == joint.childid
+        return offdiagonal∂damper∂ʳvel(joint, body2.state)
+    else
+        return offdiagonal∂damper∂ʳvel(joint)
+    end
+end
+
+
+
+
 # Wrappers 2
 @inline ∂g∂ʳvela(joint::AbstractJoint{T,N}) where {T,N} = szeros(T, N, 6)
 @inline ∂g∂ʳvelb(joint::AbstractJoint{T,N}) where {T,N} = szeros(T, N, 6)
+@inline offdiagonal∂damper∂ʳvel(joint::AbstractJoint{T}) where {T} = szeros(T, 6, 6)
 ∂g∂ʳvela(joint::AbstractJoint, statea::State, stateb::State, Δt) = ∂g∂ʳvela(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)..., fullargssol(statea)..., Δt)
 ∂g∂ʳvelb(joint::AbstractJoint, statea::State, stateb::State, Δt) = ∂g∂ʳvelb(joint, posargsnext(statea, Δt)..., posargsnext(stateb, Δt)..., fullargssol(stateb)..., Δt)
 ∂g∂ʳvelb(joint::AbstractJoint, stateb::State, Δt) = ∂g∂ʳvelb(joint, posargsnext(stateb, Δt)..., fullargssol(stateb)..., Δt)
+offdiagonal∂damper∂ʳvel(joint::AbstractJoint, statea::State, stateb::State) = offdiagonal∂damper∂ʳvel(joint, posargsk(statea)..., posargsk(stateb)...)
+offdiagonal∂damper∂ʳvel(joint::AbstractJoint, stateb::State) = offdiagonal∂damper∂ʳvel(joint, posargsk(stateb)...)
 
 # Derivatives accounting for quaternion specialness
 @inline function ∂g∂ʳvela(joint::AbstractJoint, x2a::AbstractVector, q2a::UnitQuaternion, x2b::AbstractVector, q2b::UnitQuaternion,
@@ -160,6 +181,64 @@ end
 ∂g∂posac(joint::AbstractJoint, statea::State, stateb::State) = hcat(∂g∂posa(joint, posargsc(statea)..., posargsc(stateb)...)...)
 ∂g∂posbc(joint::AbstractJoint, statea::State, stateb::State) = hcat(∂g∂posb(joint, posargsc(statea)..., posargsc(stateb)...)...)
 ∂g∂posbc(joint::AbstractJoint, stateb::State) = hcat(∂g∂posb(joint, posargsc(stateb)...)...)
+
+
+### Springs and Dampers (for dynamics)
+## Wrappers 1
+@inline function springforcea(joint::AbstractJoint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return springforcea(joint, body1.state, body2.state)
+    else
+        return springforce(joint)
+    end
+end
+@inline function springforceb(joint::AbstractJoint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return springforceb(joint, body1.state, body2.state)
+    else
+        return springforce(joint)
+    end
+end
+@inline function springforceb(joint::AbstractJoint, body1::Origin, body2::Body)
+    if body2.id == joint.childid
+        return springforceb(joint, body2.state)
+    else
+        return springforce(joint)
+    end
+end
+
+@inline function damperforcea(joint::AbstractJoint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return damperforcea(joint, body1.state, body2.state)
+    else
+        return damperforce(joint)
+    end
+end
+@inline function damperforceb(joint::AbstractJoint, body1::Body, body2::Body)
+    if body2.id == joint.childid
+        return damperforceb(joint, body1.state, body2.state)
+    else
+        return damperforce(joint)
+    end
+end
+@inline function damperforceb(joint::AbstractJoint, body1::Origin, body2::Body)
+    if body2.id == joint.childid
+        return damperforceb(joint, body2.state)
+    else
+        return damperforce(joint)
+    end
+end
+
+## Wrappers 2
+@inline springforce(joint::AbstractJoint{T}) where {T} = szeros(T, 6)
+springforcea(joint::AbstractJoint, statea::State, stateb::State) = springforcea(joint, posargsk(statea)..., posargsk(stateb)...)
+springforceb(joint::AbstractJoint, statea::State, stateb::State) = springforceb(joint, posargsk(statea)..., posargsk(stateb)...)
+springforceb(joint::AbstractJoint, stateb::State) = springforceb(joint, posargsk(stateb)...)
+
+@inline damperforce(joint::AbstractJoint{T}) where {T} = szeros(T, 6)
+damperforcea(joint::AbstractJoint, statea::State, stateb::State) = damperforcea(joint, fullargssol(statea)..., fullargssol(stateb)...)
+damperforceb(joint::AbstractJoint, statea::State, stateb::State) = damperforceb(joint, fullargssol(statea)..., fullargssol(stateb)...)
+damperforceb(joint::AbstractJoint, stateb::State) = damperforceb(joint, fullargssol(stateb)...)
 
 
 ### Forcing (for dynamics)

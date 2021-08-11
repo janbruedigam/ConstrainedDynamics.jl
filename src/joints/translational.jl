@@ -2,13 +2,16 @@ mutable struct Translational{T,N} <: Joint{T,N}
     V3::Adjoint{T,SVector{3,T}} # in body1's frame
     V12::SMatrix{2,3,T,6} # in body1's frame
     vertices::NTuple{2,SVector{3,T}} # in body1's & body2's frames
+
+    spring::T
+    damper::T
     
     Fτ::SVector{3,T}
 
     childid::Int64
 
     function Translational{T,N}(body1::AbstractBody, body2::AbstractBody;
-            p1::AbstractVector = zeros(3), p2::AbstractVector = zeros(3), axis::AbstractVector = zeros(3)
+            p1::AbstractVector = szeros(T,3), p2::AbstractVector = szeros(T,3), axis::AbstractVector = szeros(T,3), spring = zero(T), damper = zero(T)
         ) where {T,N}
         
         vertices = (p1, p2)
@@ -19,7 +22,7 @@ mutable struct Translational{T,N} <: Joint{T,N}
 
         childid = body2.id
 
-        new{T,N}(V3, V12, vertices, Fτ, childid), body1.id, body2.id
+        new{T,N}(V3, V12, vertices, spring, damper, Fτ, childid), body1.id, body2.id
     end
 end
 
@@ -115,13 +118,81 @@ end
 end
 
 
+### Spring and damper
+## Forces for dynamics
+@inline function springforcea(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    distance = A * g(joint, xa, qa, xb, qb)
+    force = Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
+    return [force;szeros(3)]
+end
+@inline function springforceb(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    distance = A * g(joint, xa, qa, xb, qb)
+    force = - Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
+    return [force;szeros(3)]
+end
+@inline function springforceb(joint::Translational, xb::AbstractVector, qb::UnitQuaternion)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    distance = A * g(joint, xb, qb)
+    force = - Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
+    return [force;szeros(3)]
+end
+
+@inline function damperforcea(joint::Translational, xa::AbstractVector, va::AbstractVector, qa::UnitQuaternion, ωa::AbstractVector,
+        xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    velocity = A * (vb - va)
+    force = Aᵀ * A * joint.damper * Aᵀ * velocity  # Currently assumes same damper constant in all directions
+    return [force;szeros(3)]
+end
+@inline function damperforceb(joint::Translational, xa::AbstractVector, va::AbstractVector, qa::UnitQuaternion, ωa::AbstractVector,
+    xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    velocity = A * (vb - va)
+    force = - Aᵀ * A * joint.damper * Aᵀ * velocity  # Currently assumes same damper constant in all directions
+    return [force;szeros(3)]
+end
+@inline function damperforceb(joint::Translational, xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+    A = nullspacemat(joint)
+    Aᵀ = zerodimstaticadjoint(A)
+    velocity = A * vb
+    force = - Aᵀ * A * joint.damper * Aᵀ * velocity  # Currently assumes same damper constant in all directions
+    return [force;szeros(3)]
+end
+
+## Damper velocity derivatives
+@inline function diagonal∂damper∂ʳvel(joint::Translational{T}) where T
+    A = nullspacemat(joint)
+    AᵀA = zerodimstaticadjoint(A) * A
+    Z = szeros(T, 3, 3)
+    return [[-AᵀA * joint.damper * AᵀA; Z] [Z; Z]]
+end
+@inline function offdiagonal∂damper∂ʳvel(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+    A = nullspacemat(joint)
+    AᵀA = zerodimstaticadjoint(A) * A
+    Z = szeros(T, 3, 3)
+    return [[AᵀA * joint.damper * AᵀA; Z] [Z; Z]]
+end
+@inline function offdiagonal∂damper∂ʳvel(joint::Translational{T}, xb::AbstractVector, qb::UnitQuaternion) where T
+    A = nullspacemat(joint)
+    AᵀA = zerodimstaticadjoint(A) * A
+    Z = szeros(T, 3, 3)
+    return [[AᵀA * joint.damper * AᵀA; Z] [Z; Z]]
+end
+
 ### Forcing
 ## Application of joint forces (for dynamics)
 @inline function applyFτ!(joint::Translational{T}, statea::State, stateb::State, clear::Bool) where T
     F = joint.Fτ
     vertices = joint.vertices
-    xa, qa = posargsk(statea)
-    xb, qb = posargsk(stateb)
+    _, qa = posargsk(statea)
+    _, qb = posargsk(stateb)
 
     Fa = vrotate(-F, qa)
     Fb = -Fa
@@ -139,7 +210,7 @@ end
 @inline function applyFτ!(joint::Translational{T}, stateb::State, clear::Bool) where T
     F = joint.Fτ
     vertices = joint.vertices
-    xb, qb = posargsk(stateb)
+    _, qb = posargsk(stateb)
 
     Fb = F
     τb = vrotate(torqueFromForce(Fb, vrotate(vertices[2], qb)),inv(qb)) # in local coordinates
@@ -154,7 +225,7 @@ end
 # Control derivatives
 @inline function ∂Fτ∂ua(joint::Translational, statea::State, stateb::State)
     vertices = joint.vertices
-    xa, qa = posargsk(statea)
+    _, qa = posargsk(statea)
 
     BFa = -VLmat(qa) * RᵀVᵀmat(qa)
     Bτa = -skew(vertices[1])
@@ -174,7 +245,7 @@ end
 end
 @inline function ∂Fτ∂ub(joint::Translational, stateb::State)
     vertices = joint.vertices
-    xb, qb = posargsk(stateb)
+    _, qb = posargsk(stateb)
 
     BFb = I
     Bτb = skew(vertices[2]) * VLᵀmat(qb) * RVᵀmat(qb)
@@ -184,8 +255,8 @@ end
 
 # Position derivatives 
 @inline function ∂Fτ∂posa(joint::Translational{T}, statea::State, stateb::State) where T
-    xa, qa = posargsk(statea)
-    xb, qb = posargsk(stateb)
+    _, qa = posargsk(statea)
+    _, qb = posargsk(stateb)
     F = joint.Fτ
     vertices = joint.vertices
 
@@ -201,8 +272,8 @@ end
     return FaXa, FaQa, τaXa, τaQa, FbXa, FbQa, τbXa, τbQa
 end
 @inline function ∂Fτ∂posb(joint::Translational{T}, statea::State, stateb::State) where T
-    xa, qa = posargsk(statea)
-    xb, qb = posargsk(stateb)
+    _, qa = posargsk(statea)
+    _, qb = posargsk(stateb)
     F = joint.Fτ
     vertices = joint.vertices
 

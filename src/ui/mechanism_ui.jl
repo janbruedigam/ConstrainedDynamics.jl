@@ -12,11 +12,11 @@ function activateConstraints!(mechanism::Mechanism)
 
     for (id,eqc) in pairs(mechanism.eqconstraints)
         activate!(eqc)
-        activate!(mechanism.graph,id)
+        activate!(graph,id)
     end
     for (id,ineqc) in pairs(mechanism.ineqconstraints)
         activate!(ineqc)
-        activate!(mechanism.graph,id)
+        activate!(graph,id)
     end
 
     return
@@ -27,11 +27,11 @@ function deactivateConstraints!(mechanism::Mechanism)
     
     for (id,eqc) in pairs(mechanism.eqconstraints)
         deactivate!(eqc)
-        deactivate!(mechanism.graph,id)
+        deactivate!(graph,id)
     end
     for (id,ineqc) in pairs(mechanism.ineqconstraints)
         deactivate!(ineqc)
-        deactivate!(mechanism.graph,id)
+        deactivate!(graph,id)
     end
     
     return
