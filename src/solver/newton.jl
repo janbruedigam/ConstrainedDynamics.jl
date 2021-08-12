@@ -5,14 +5,12 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,0};
     
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
-    graph = mechanism.graph
-    ldu = mechanism.ldu
+    system = mechanism.structure.system
 
     normf0 = normf(mechanism)
     for n = Base.OneTo(newtonIter)
         setentries!(mechanism)
-        factor!(graph, ldu)
-        solve!(mechanism) # x̂1 for each body and constraint
+        ldu_solve!(system) # x̂1 for each body and constraint
 
         normf1 = lineSearch!(mechanism, normf0;iter = lineIter, warning = warning)
         normΔs1 = normΔs(mechanism)
@@ -40,8 +38,7 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,Ni};
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
-    graph = mechanism.graph
-    ldu = mechanism.ldu
+    system = mechanism.structure.system
 
     foreachactive(resetVars!, ineqcs)
     mechanism.μ = μ
@@ -49,8 +46,7 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,Ni};
     meritf0 = meritf(mechanism)
     for n = Base.OneTo(newtonIter)
         setentries!(mechanism)
-        factor!(graph, ldu)
-        solve!(mechanism) # x̂1 for each body and constraint
+        ldu_solve!(system) # x̂1 for each body and constraint
 
         meritf1 = lineSearch!(mechanism, meritf0;iter = lineIter, warning = warning)
 

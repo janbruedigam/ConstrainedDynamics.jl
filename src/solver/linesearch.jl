@@ -1,21 +1,21 @@
 function lineSearch!(mechanism::Mechanism{T,Nn,Nb,Ne,0}, normf0;iter = 10, warning::Bool = false) where {T,Nn,Nb,Ne}
     normf1 = normf0
     scale = 0
-    ldu = mechanism.ldu
+    structure = mechanism.structure
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
 
     for n = Base.OneTo(iter + 1)
         for body in bodies
             isinactive(body) && continue
-            lineStep!(body, getentry(ldu, body.id), scale)
+            lineStep!(body, getentry(structure, body.id), scale)
             if norm(body.state.ωsol[2]) > 1/mechanism.Δt
                 error("Excessive angular velocity. Body-ID: "*string(body.id)*", ω: "*string(body.state.ωsol[2])*".")
             end
         end
         for eqc in eqcs
             isinactive(eqc) && continue
-            lineStep!(eqc, getentry(ldu, eqc.id), scale)
+            lineStep!(eqc, getentry(structure, eqc.id), scale)
         end
 
         normf1 = normf(mechanism)
@@ -33,7 +33,7 @@ end
 function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = false)
     meritf1 = meritf0
     scale = 0
-    ldu = mechanism.ldu
+    structure = mechanism.structure
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
@@ -43,18 +43,18 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     for n = Base.OneTo(iter)
         for body in bodies
             isinactive(body) && continue
-            lineStep!(body, getentry(ldu, body.id), scale, mechanism)
+            lineStep!(body, getentry(structure, body.id), scale, mechanism)
             if norm(body.state.ωsol[2]) > 1/mechanism.Δt
                 error("Excessive angular velocity. Body-ID: "*string(body.id)*", ω: "*string(body.state.ωsol[2])*".")
             end
         end
         for eqc in eqcs
             isinactive(eqc) && continue
-            lineStep!(eqc, getentry(ldu, eqc.id), scale, mechanism)
+            lineStep!(eqc, getentry(structure, eqc.id), scale, mechanism)
         end
         for ineqc in ineqcs
             isinactive(ineqc) && continue
-            lineStep!(ineqc, getineqentry(ldu, ineqc.id), scale, mechanism)
+            lineStep!(ineqc, getineqentry(structure, ineqc.id), scale, mechanism)
         end
 
         meritf1 = meritf(mechanism)
@@ -90,30 +90,30 @@ function lineSearch!(mechanism::LinearMechanism{T,Nn,Nb,Ne,0}, normf0;iter = 10,
 end
 
 
-@inline function lineStep!(body::Body, diagonal::DiagonalEntry, scale)
-    body.state.vsol[2] = body.state.vsol[1] + 1 / (2^scale) * diagonal.Δs[SA[1; 2; 3]]
-    body.state.ωsol[2] = body.state.ωsol[1] + 1 / (2^scale) * diagonal.Δs[SA[4; 5; 6]]
+@inline function lineStep!(body::Body, vector_entry::Entry, scale)
+    body.state.vsol[2] = body.state.vsol[1] + 1 / (2^scale) * vector_entry.value[SA[1; 2; 3]]
+    body.state.ωsol[2] = body.state.ωsol[1] + 1 / (2^scale) * vector_entry.value[SA[4; 5; 6]]
     return
 end
 
-@inline function lineStep!(eqc::EqualityConstraint, diagonal::DiagonalEntry, scale)
-    eqc.λsol[2] = eqc.λsol[1] + 1 / (2^scale) * diagonal.Δs
+@inline function lineStep!(eqc::EqualityConstraint, vector_entry::Entry, scale)
+    eqc.λsol[2] = eqc.λsol[1] + 1 / (2^scale) * vector_entry.value
     return
 end
 
-@inline function lineStep!(body::Body, diagonal, scale, mechanism)
-    body.state.vsol[2] = body.state.vsol[1] + 1 / (2^scale) * mechanism.α * diagonal.Δs[SA[1; 2; 3]]
-    body.state.ωsol[2] = body.state.ωsol[1] + 1 / (2^scale) * mechanism.α * diagonal.Δs[SA[4; 5; 6]]
+@inline function lineStep!(body::Body, vector_entry::Entry, scale, mechanism)
+    body.state.vsol[2] = body.state.vsol[1] + 1 / (2^scale) * mechanism.α * vector_entry.value[SA[1; 2; 3]]
+    body.state.ωsol[2] = body.state.ωsol[1] + 1 / (2^scale) * mechanism.α * vector_entry.value[SA[4; 5; 6]]
     return
 end
 
-@inline function lineStep!(eqc::EqualityConstraint, diagonal, scale, mechanism)
-    eqc.λsol[2] = eqc.λsol[1] + 1 / (2^scale) * mechanism.α * diagonal.Δs
+@inline function lineStep!(eqc::EqualityConstraint, vector_entry::Entry, scale, mechanism)
+    eqc.λsol[2] = eqc.λsol[1] + 1 / (2^scale) * mechanism.α * vector_entry.value
     return
 end
 
-@inline function lineStep!(ineqc::InequalityConstraint, entry, scale, mechanism)
-    ineqc.ssol[2] = ineqc.ssol[1] + 1 / (2^scale) * mechanism.α * entry.Δs
-    ineqc.γsol[2] = ineqc.γsol[1] + 1 / (2^scale) * mechanism.α * entry.Δγ
-    return
-end
+# @inline function lineStep!(ineqc::InequalityConstraint, vector_entry::Entry, scale, mechanism)
+#     ineqc.ssol[2] = ineqc.ssol[1] + 1 / (2^scale) * mechanism.α * vector_entry.Δs
+#     ineqc.γsol[2] = ineqc.γsol[1] + 1 / (2^scale) * mechanism.α * vector_entry.Δγ
+#     return
+# end

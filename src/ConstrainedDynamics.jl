@@ -8,6 +8,8 @@ using Rotations
 using Rotations: RotationError, pure_quaternion, params, lmult, rmult, tmat, vmat, hmat, skew
 using Colors: RGBA, RGB
 using LightXML
+using GraphBasedSystems
+using GraphBasedSystems: Entry
 
 using DocStringExtensions
 
@@ -84,8 +86,8 @@ include(joinpath("main_components", "body.jl"))
 include(joinpath("main_components", "equalityconstraint.jl"))
 include(joinpath("main_components", "inequalityconstraint.jl"))
 include(joinpath("main_components", "graph.jl"))
+include(joinpath("main_components", "structure.jl"))
 include(joinpath("main_components", "controller.jl"))
-include(joinpath("main_components", "sparseldu.jl"))
 include(joinpath("main_components", "mechanism_struct.jl"))
 include(joinpath("main_components", "mechanism_functions.jl"))
 
