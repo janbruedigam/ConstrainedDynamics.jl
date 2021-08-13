@@ -15,8 +15,8 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,0};
         normf1 = lineSearch!(mechanism, normf0;iter = lineIter, warning = warning)
         normΔs1 = normΔs(mechanism)
 
-        foreachactive(updatesolution!, bodies)
-        foreachactive(updatesolution!, eqcs)
+        foreach(updatesolution!, bodies)
+        foreach(updatesolution!, eqcs)
 
         if normf1 < ε && normΔs1 < ε
             # warning && (@info string("Newton iterations: ",n))
@@ -40,7 +40,7 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,Ni};
     ineqcs = mechanism.ineqconstraints
     system = mechanism.system
 
-    foreachactive(resetVars!, ineqcs)
+    foreach(resetVars!, ineqcs)
     mechanism.μ = μ
 
     meritf0 = meritf(mechanism)
@@ -50,9 +50,9 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,Ni};
 
         meritf1 = lineSearch!(mechanism, meritf0;iter = lineIter, warning = warning)
 
-        foreachactive(updatesolution!, bodies)
-        foreachactive(updatesolution!, eqcs)
-        foreachactive(updatesolution!, ineqcs)
+        foreach(updatesolution!, bodies)
+        foreach(updatesolution!, eqcs)
+        foreach(updatesolution!, ineqcs)
 
         if normf(mechanism) < ε
             warning && (@info string("Newton iterations: ", n))

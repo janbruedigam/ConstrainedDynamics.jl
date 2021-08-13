@@ -75,9 +75,7 @@ end
 function setentries!(mechanism::Mechanism)
     system = mechanism.system
 
-    for (id, body) in pairs(mechanism.bodies)
-        isinactive(body) && continue
-        
+    for (id, body) in pairs(mechanism.bodies)        
         for childid in children(system, id)
             setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), id, geteqconstraint(mechanism, childid))
         end
@@ -98,7 +96,6 @@ function setentries!(mechanism::Mechanism)
 
     for eqc in mechanism.eqconstraints
         id = eqc.id
-        isinactive(eqc) && continue
         
         for cyclic_children in system.cycles[id]
             for childid in cyclic_children

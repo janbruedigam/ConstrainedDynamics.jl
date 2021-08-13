@@ -58,7 +58,7 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
         control!(mechanism, k)
         foreach(applyFτ!, eqcs, mechanism)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
-        foreachactive(updatestate!, bodies, Δt)
+        foreach(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
@@ -100,7 +100,7 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
         control!(mechanism, controller, k)
         foreach(applyFτ!, eqcs, mechanism)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
-        foreachactive(updatestate!, bodies, Δt)
+        foreach(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
@@ -118,7 +118,7 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
-        foreachactive(updatestate!, bodies, Δt)
+        foreach(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end

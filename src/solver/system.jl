@@ -1,7 +1,7 @@
 function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
     eqcs = mechanism.eqconstraints
     system = mechanism.system
-    ldu = mechanism.ldu
+    system = mechanism.system
 
     n = 6 * Nb
     for eqc in eqcs
@@ -24,31 +24,34 @@ function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
 
 
         # A
-        diagonal = getentry(ldu,id)
-        A[range,range] = diagonal.D
+        diagonal = getentry(system,id,id)
+        A[range,range] = diagonal.value
 
         for childid in system.acyclic_children[id]
-            offdiagonal = getentry(ldu, (id, childid))
+            offdiagonal_L = getentry(system, id, childid)
+            offdiagonal_U = getentry(system, childid, id)
             nc1 = first(rangeDict[childid])
             nc2 = last(rangeDict[childid])
 
-            A[range,nc1:nc2] = offdiagonal.L
-            A[nc1:nc2,range] = offdiagonal.U
+            A[range,nc1:nc2] = offdiagonal_L.value
+            A[nc1:nc2,range] = offdiagonal_U.value
         end
 
-        for cyclic_children in system.cycles[v]
+        for cyclic_children in system.cycles[id]
             for childid in cyclic_children
-                offdiagonal = getentry(ldu, (id, childid))
+                offdiagonal_L = getentry(system, id, childid)
+                offdiagonal_U = getentry(system, childid, id)
                 nc1 = first(rangeDict[childid])
                 nc2 = last(rangeDict[childid])
 
-                A[range,nc1:nc2] = offdiagonal.L
-                A[nc1:nc2,range] = offdiagonal.U
+                A[range,nc1:nc2] = offdiagonal_L.value
+                A[nc1:nc2,range] = offdiagonal_U.value
             end
         end
 
         # x
-        x[range] = diagonal.Δs
+        sol = getentry(system,id)
+        x[range] = sol.value
 
         # b
         if component isa Body
@@ -133,7 +136,6 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
 
     nc = 0
     for eqc in eqcs
-        isinactive(eqc) && continue
         nc += length(eqc)
     end
 
@@ -213,7 +215,6 @@ function linearconstraints(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
 
     nc = 0
     for eqc in eqcs
-        isinactive(eqc) && continue
         nc += length(eqc)
     end
 
@@ -222,7 +223,6 @@ function linearconstraints(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
 
     oneindc = 0
     for eqc in eqcs
-        isinactive(eqc) && continue
         ind1 = 1
         ind2 = 0
 

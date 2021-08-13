@@ -59,8 +59,6 @@ export Origin,
     disassemble,
     minimalCoordinates,
     minimalVelocities,
-    activate!,
-    deactivate!,
     linearsystem,
 
     RotX,

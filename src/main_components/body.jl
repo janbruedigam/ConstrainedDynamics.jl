@@ -21,7 +21,6 @@ A `Body` is a component of a [`Mechanism`](@ref).
 mutable struct Body{T} <: AbstractBody{T}
     id::Int64
     name::String
-    active::Bool
 
     m::T
     J::SMatrix{3,3,T,9}
@@ -33,7 +32,7 @@ mutable struct Body{T} <: AbstractBody{T}
 
     function Body(m::Real, J::AbstractArray; name::String="", shape::Shape=EmptyShape())
         T = promote_type(eltype.((m, J))...)
-        new{T}(getGlobalID(), name, true, m, J, State{T}(), shape)
+        new{T}(getGlobalID(), name, m, J, State{T}(), shape)
     end
 
     function Body{T}(contents...) where T
@@ -80,7 +79,6 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, body::Body{T}) wher
     println(io,"")
     println(io, " id:     "*string(body.id))
     println(io, " name:   "*string(body.name))
-    println(io, " active: "*string(body.active))
     println(io, " m:      "*string(body.m))
     println(io, " J:      "*string(body.J))
 end

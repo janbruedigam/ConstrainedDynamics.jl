@@ -14,17 +14,11 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, constraint::Abstrac
     println(io,"")
     println(io, " id:     "*string(constraint.id))
     println(io, " name:   "*string(constraint.name))
-    println(io, " active: "*string(constraint.active))
 end
 
 Base.eltype(::Type{<:Component{E}}) where {E} = @isdefined(E) ? E : Any
 Base.length(::AbstractConstraint{T,N}) where {T,N} = N
 getid(component::Component) = component.id
-activate!(component::Component) = (component.active = true; return)
-deactivate!(component::Component) = (component.active = false; return)
-
-isactive(component::Component) = component.active
-isinactive(component::Component) = !isactive(component)
 
 function Base.getindex(dict::UnitDict{Base.OneTo{K},<:Component}, key::String) where K
     for component in dict.values

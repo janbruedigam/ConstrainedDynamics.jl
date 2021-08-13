@@ -2,17 +2,17 @@ using Test
 using SafeTestsets
 
 
-@safetestset "Quaternion Tests" begin
-    include("quaternion_test.jl")
-end
+# @safetestset "Quaternion Tests" begin
+#     include("quaternion_test.jl")
+# end
 
-include("diff/diff_test.jl")
+# include("diff/diff_test.jl")
 
-@safetestset "Factorization Test" begin
-    include("factorization_test.jl")
-end
+# @safetestset "Factorization Test" begin
+#     include("factorization_test.jl")
+# end
 
-include("initialization/initialization_test.jl")
+# include("initialization/initialization_test.jl")
 
 @safetestset "UI Test" begin
     include("ui_test.jl")

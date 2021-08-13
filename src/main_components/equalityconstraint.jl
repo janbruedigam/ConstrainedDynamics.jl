@@ -15,7 +15,6 @@ EqualityConstraint(Revolute(body1, body2, rotation_axis)).
 mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     id::Int64
     name::String
-    active::Bool
     isspring::Bool
     isdamper::Bool
 
@@ -69,7 +68,7 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
 
         λsol = [zeros(T, N) for i=1:2]
 
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, true, isspring, isdamper, constraints, parentid, childids, inds, λsol)
+        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, isspring, isdamper, constraints, parentid, childids, inds, λsol)
     end
 end
 
@@ -187,22 +186,22 @@ Gets the minimal coordinate velocities of joint `eqconstraint`.
 end
 
 @inline function GtλTof!(mechanism, body::Body, eqc::EqualityConstraint)
-    isactive(eqc) && (body.state.d -= zerodimstaticadjoint(∂g∂ʳpos(mechanism, eqc, body.id)) * eqc.λsol[2])
+    body.state.d -= zerodimstaticadjoint(∂g∂ʳpos(mechanism, eqc, body.id)) * eqc.λsol[2]
     return
 end
 
 @inline function springTof!(mechanism, body::Body, eqc::EqualityConstraint)
-    isactive(eqc) && (body.state.d -= springforce(mechanism, eqc, body.id))
+    body.state.d -= springforce(mechanism, eqc, body.id)
     return
 end
 
 @inline function damperTof!(mechanism, body::Body, eqc::EqualityConstraint)
-    isactive(eqc) && (body.state.d -= damperforce(mechanism, eqc, body.id))
+    body.state.d -= damperforce(mechanism, eqc, body.id)
     return
 end
 
 @inline function damperToD!(mechanism, body::Body, eqc::EqualityConstraint)
-    isactive(eqc) && (body.state.D -= diagonal∂damper∂ʳvel(mechanism, eqc, body.id))
+    body.state.D -= diagonal∂damper∂ʳvel(mechanism, eqc, body.id)
     return
 end
 

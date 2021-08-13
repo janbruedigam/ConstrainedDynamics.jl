@@ -9,10 +9,10 @@ files = [
     "dice"
     "disconnected_bodies"
     "doublependulum_3d"
-    "doublependulum_disconnection"
+    # "doublependulum_disconnection"
     "doublependulum_urdf"
     "elliptic_joint"
-    "fourbar_disconnection"
+    # "fourbar_disconnection"
     "inverted_pyramid_plane"
     "joint_force"
     "joint_torque"
@@ -30,12 +30,12 @@ files = [
 ]
 
 controlled = [
-    "doublependulum_disconnection"
+    # "doublependulum_disconnection"
     "joint_force"
     "joint_torque"
     "pendulum_forced"
     "nutation"
-    "fourbar_disconnection"
+    # "fourbar_disconnection"
     "slider_crank"
 ]
 

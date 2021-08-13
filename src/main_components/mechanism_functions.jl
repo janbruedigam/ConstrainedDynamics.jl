@@ -114,9 +114,9 @@ end
 @inline function normf(mechanism::Mechanism)
     mechanism.normf = 0
     
-    foreachactive(addNormf!, mechanism.bodies, mechanism)
-    foreachactive(addNormf!, mechanism.eqconstraints, mechanism)
-    foreachactive(addNormf!, mechanism.ineqconstraints, mechanism)
+    foreach(addNormf!, mechanism.bodies, mechanism)
+    foreach(addNormf!, mechanism.eqconstraints, mechanism)
+    foreach(addNormf!, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normf)
 end
@@ -130,9 +130,9 @@ end
 @inline function meritf(mechanism::Mechanism)
     mechanism.normf = 0
 
-    foreachactive(addNormf!, mechanism.bodies, mechanism)
-    foreachactive(addNormf!, mechanism.eqconstraints, mechanism)
-    foreachactive(addNormfμ!, mechanism.ineqconstraints, mechanism)
+    foreach(addNormf!, mechanism.bodies, mechanism)
+    foreach(addNormf!, mechanism.eqconstraints, mechanism)
+    foreach(addNormfμ!, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normf)
 end
@@ -140,9 +140,9 @@ end
 @inline function normΔs(mechanism::Mechanism)
     mechanism.normΔs = 0
 
-    foreachactive(addNormΔs!, mechanism.bodies, mechanism)
-    foreachactive(addNormΔs!, mechanism.eqconstraints, mechanism)
-    foreachactive(addNormΔs!, mechanism.ineqconstraints, mechanism)
+    foreach(addNormΔs!, mechanism.bodies, mechanism)
+    foreach(addNormΔs!, mechanism.eqconstraints, mechanism)
+    foreach(addNormΔs!, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normΔs)
 end
@@ -166,20 +166,6 @@ end
     foreach(discretizestate!, mechanism.bodies, mechanism.Δt)
     return
 end
-
-# @inline function activate!(mechanism::Mechanism, id::Integer)
-#     component = getcomponent(mechanism, id)
-#     activate!(component)
-#     activate!(mechanism.graph,id)
-#     return
-# end
-
-# @inline function deactivate!(mechanism::Mechanism, id::Integer)
-#     component = getcomponent(mechanism, id)
-#     deactivate!(component)
-#     deactivate!(mechanism.graph,id)
-#     return
-# end
 
 @inline function fdynamics(mechanism::LinearMechanism)
     A = mechanism.A

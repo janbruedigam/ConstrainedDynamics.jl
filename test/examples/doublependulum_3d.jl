@@ -19,13 +19,13 @@ q1 = UnitQuaternion(RotX(phi1))
 
 # Links
 origin = Origin{Float64}()
-link1 = Box(x, y, l1, l1, color = RGBA(1., 1., 0.))
-socket0to1 = EqualityConstraint(Spherical(origin, link1; p2=vert11))
-link2 = Box(x, y, l2, l2, color = RGBA(1., 1., 0.))
+link1 = Box(x, y, l1, l1, color = RGBA(1., 1., 0.), name = "body1")
+socket0to1 = EqualityConstraint(Spherical(origin, link1; p2=vert11), name = "jointb1")
+link2 = Box(x, y, l2, l2, color = RGBA(1., 1., 0.), name = "body2")
 
 # Constraints
 
-socket1to2 = EqualityConstraint(Spherical(link1, link2; p1=vert12, p2=vert21))
+socket1to2 = EqualityConstraint(Spherical(link1, link2; p1=vert12, p2=vert21), name = "joint12")
 
 links = [link1;link2]
 constraints = [socket0to1;socket1to2]

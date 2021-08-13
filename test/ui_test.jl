@@ -1,4 +1,4 @@
-include("examples/doublependulum_disconnection.jl")
+include("examples/doublependulum_3d.jl")
 
 using ConstrainedDynamics: currentasknot!, getbody, geteqconstraint, getcomponent
 
@@ -7,7 +7,7 @@ dq = minimalCoordinates(mech)
 setPosition!(mech,dq)
 @test true
 
-dF = ConstrainedDynamics.UnitDict(dq.keys,[[0.0] for i=1:2])
+dF = ConstrainedDynamics.UnitDict(dq.keys,[[0.0;0;0] for i=1:2])
 setForce!(mech,dF)
 @test true
 
