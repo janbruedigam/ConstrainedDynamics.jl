@@ -287,20 +287,23 @@ function parse_joints(xjoints, ldict, floating, T)
 
     for xjoint in xjoints
         xplink = find_element(xjoint, "parent")
-        plink = ldict[attribute(xplink, "link")]
-        if plink.id == origin.id
-            plink = origin
-        end
         xclink = find_element(xjoint, "child")
         clink = ldict[attribute(xclink, "link")]
 
-        joint = parse_joint(xjoint, plink, clink, T)
-        push!(joints, joint)
+        plink = ldict[attribute(xplink, "link")]
+        if plink.id == origin.id
+            plink = origin
+            joint = parse_joint(xjoint, plink, clink, T)
+            joints = [joint; joints] # For proper parsing the first joint must be connected to the origin
+        else
+            joint = parse_joint(xjoint, plink, clink, T)
+            push!(joints, joint)
+        end
     end
 
     if floating
         originjoint = EqualityConstraint(Floating(origin, ldict[floatingname]), name="auto_generated_floating_joint")
-        push!(joints, originjoint)
+        joints = [originjoint; joints] # For proper parsing the first joint must be connected to the origin
     end
 
     return origin, links, joints
