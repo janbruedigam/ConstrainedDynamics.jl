@@ -5,7 +5,7 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,0};
     
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
-    system = mechanism.structure.system
+    system = mechanism.system
 
     normf0 = normf(mechanism)
     for n = Base.OneTo(newtonIter)
@@ -38,7 +38,7 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,Ni};
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
-    system = mechanism.structure.system
+    system = mechanism.system
 
     foreachactive(resetVars!, ineqcs)
     mechanism.μ = μ

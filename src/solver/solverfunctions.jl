@@ -37,8 +37,8 @@ end
 end
 
 @inline function setLU!(matrix_entry_L::Entry, matrix_entry_U::Entry)
-    matrix_entry_L.value = I*0
-    matrix_entry_U.value = I*0
+    matrix_entry_L.value *= 0
+    matrix_entry_U.value *= 0
     return
 end
 
@@ -73,24 +73,22 @@ end
 
 
 function setentries!(mechanism::Mechanism)
-    graph = mechanism.graph
-    structure = mechanism.structure
-    system = mechanism.structure.system
+    system = mechanism.system
 
     for (id, body) in pairs(mechanism.bodies)
         isinactive(body) && continue
         
-        for childid in directchildren(graph, id)
-            setLU!(mechanism, getentry(structure, id, childid), getentry(structure, childid, id), id, geteqconstraint(mechanism, childid))
+        for childid in children(system, id)
+            setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), id, geteqconstraint(mechanism, childid))
         end
 
-        for grandchildid in dampergrandchildren(graph, id)
-            for parentid in predecessors(graph, grandchildid) # Maybe predecessors works out for loop closure?
-                setLU!(mechanism, getentry(structure, id, grandchildid), getentry(structure, grandchildid, id), geteqconstraint(mechanism, parentid), id, grandchildid)
-            end
-        end 
+        # for grandchildid in dampergrandchildren(graph, id)
+        #     for parentid in predecessors(graph, grandchildid) # Maybe predecessors works out for loop closure?
+        #         setLU!(mechanism, getentry(system, id, grandchildid), getentry(system, grandchildid, id), geteqconstraint(mechanism, parentid), id, grandchildid)
+        #     end
+        # end 
 
-        setDandΔs!(mechanism, getentry(structure, id, id), getentry(structure, id), body)
+        setDandΔs!(mechanism, getentry(system, id, id), getentry(system, id), body)
         # for childid in ineqchildren(graph, id)
         #     ineqc = getineqconstraint(mechanism, childid)
         #     calcFrictionForce!(mechanism, ineqc)
@@ -102,15 +100,17 @@ function setentries!(mechanism::Mechanism)
         id = eqc.id
         isinactive(eqc) && continue
         
-        for childid in directchildren(graph, id)
-            setLU!(mechanism, getentry(structure, id, childid), getentry(structure, childid, id), eqc, childid)
+        for cyclic_children in system.cycles[id]
+            for childid in cyclic_children
+                setLU!(getentry(system, id, childid), getentry(system, childid, id))
+            end
         end
 
-        for childid in loopchildren(graph, id)
-            setLU!(getentry(structure, id, childid), getentry(structure, childid, id))
+        for childid in children(system, id)
+            setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), eqc, childid)
         end
 
-        setDandΔs!(mechanism, getentry(structure, id, id), getentry(structure, id), eqc)
+        setDandΔs!(mechanism, getentry(system, id, id), getentry(system, id), eqc)
     end
 
     return 

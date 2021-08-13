@@ -22,8 +22,7 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
     ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
-    graph::Graph{Nn}
-    structure::Structure
+    system::System{Nn}
 
     # TODO remove once EqualityConstraint is homogenous
     normf::T
@@ -105,8 +104,7 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         normf = 0
         normΔs = 0
 
-        structure = Structure(origin, bodies, eqcs, ineqcs)
-        graph = Graph(origin, bodies, eqcs, ineqcs)
+        system = create_system(origin, bodies, eqcs, ineqcs)
 
         bodies = UnitDict(bodies)
         eqcs = UnitDict((eqcs[1].id):(eqcs[Ne].id), eqcs)
@@ -119,7 +117,7 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         α = 1
         μ = 1
 
-        new{T,Nn,Nb,Ne,Ni}(origin, bodies, eqcs, ineqcs, graph, structure, normf, normΔs, Δt, g, α, μ)
+        new{T,Nn,Nb,Ne,Ni}(origin, bodies, eqcs, ineqcs, system, normf, normΔs, Δt, g, α, μ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
@@ -168,8 +166,7 @@ mutable struct LinearMechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni
     eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
     ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
-    graph::Graph{Nn}
-    structure::Structure
+    system::System{Nn}
 
     # TODO remove once EqualityConstraint is homogenous
     normf::T

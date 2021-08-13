@@ -1,65 +1,66 @@
-struct Structure{N}
-    system::System{N}
-    dict::Dict{Int64,Int64} # maps ids to the graph-interal numbering (not dfs order). Necessary, e.g., if ids don't start at 1. 
-    rdict::Dict{Int64,Int64} # reverse mapping
+function create_system(origin::Origin{T}, bodies::Vector{<:Body},
+        eqconstraints::Vector{<:EqualityConstraint}, ineqconstraints::Vector{<:InequalityConstraint}
+    ) where T
 
-    function Structure(origin::Origin{T}, bodies::Vector{<:Body},
-            eqconstraints::Vector{<:EqualityConstraint}, ineqconstraints::Vector{<:InequalityConstraint}
-        ) where T
+    adjacency, ids, dims = adjacencyMatrix(eqconstraints, bodies)
+    oid = origin.id
+    graphoid = findfirst(x->x==oid, ids)
+    adjacency = deleteat(adjacency, graphoid)
+    dims = deleteat!(dims, graphoid)
+    ids = deleteat!(ids, graphoid)
 
-        adjacency, dict, dims = adjacencyMatrix2(eqconstraints, bodies)
-        oid = origin.id
-        graphoid = dict[oid]
-        adjacency = deleteat(adjacency, graphoid)
-        dims = deleteat!(dims, graphoid)
-        for (id, ind) in dict
-            ind > graphoid && (dict[id] = ind - 1)
-        end
-        pop!(dict, oid)
-        rdict = Dict(ind => id for (id, ind) in dict)
+    system = System{T}(adjacency, dims; ids = ids)
 
-        system = System{T}(adjacency, dims)
-
-        new{length(dims)}(system, dict, rdict)
+    for eqc in eqconstraints
+        eqc.parentid == oid && (eqc.parentid = nothing)
     end
+
+    return system
 end
 
-function adjacencyMatrix2(eqconstraints::Vector{<:EqualityConstraint}, bodies::Vector{<:Body})
+function adjacencyMatrix(eqconstraints::Vector{<:EqualityConstraint}, bodies::Vector{<:Body})
     A = zeros(Bool, 0, 0)
-    dict = Dict{Int64,Int64}()
+    ids = Int64[]
     dims = zeros(Int64, 0)
     n = 0
 
     for constraint in eqconstraints
-        childid = constraint.id
+        constraintid = constraint.id
         A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
-        dict[childid] = n += 1
+        n += 1
+        append!(ids, constraintid)
         append!(dims,length(constraint))
         for bodyid in unique([constraint.parentid;constraint.childids])
-            if !haskey(dict, bodyid)
+            if bodyid ∉ ids
                 A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
-                dict[bodyid] = n += 1
+                n += 1
+                append!(ids, bodyid)
                 append!(dims,6)
             end
-            A[dict[childid],dict[bodyid]] = true
+            A[findfirst(x->x==constraintid, ids),findfirst(x->x==bodyid, ids)] = true
         end
     end
     for body in bodies # add unconnected bodies
-        if !haskey(dict, body.id)
+        if body.id ∉ ids
             A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
-            dict[body.id] = n += 1
+            n += 1
+            append!(ids, body.id)
             append!(dims,6)
         end
     end
 
     A = A .| A'
-    return convert(Matrix{Int64}, A), dict, dims
+    return convert(Matrix{Int64}, A), ids, dims
 end
 
-@inline function getentry(structure, id1, id2)
-    dict = structure.dict
-    structure.system.matrix_entries[(dict[id1],dict[id2])]
-end
-@inline function getentry(structure, id)
-    structure.system.vector_entries[structure.dict[id]]
+@inline getentry(system, id1, id2) = system.matrix_entries[(id1, id2)]
+@inline getentry(system, id) = system.vector_entries[id]
+
+function recursivedirectchildren!(system, id::Integer)
+    dirs = copy(children(system, id))
+    dirslocal = copy(dirs)
+    for childid in dirslocal
+        append!(dirs, recursivedirectchildren!(system, childid))
+    end
+    return dirs
 end

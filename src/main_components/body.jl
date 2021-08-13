@@ -119,9 +119,9 @@ Base.length(::Body) = 6
 
     state.D = [[dynT; Z] [Z; dynR]]
 
-    for connectionid in damperconnections(mechanism.graph, body.id)
-        damperToD!(mechanism, body, geteqconstraint(mechanism, connectionid))
-    end
+    # for connectionid in damperconnections(mechanism.system, body.id)
+    #     damperToD!(mechanism, body, geteqconstraint(mechanism, connectionid))
+    # end
 
     return state.D
 end

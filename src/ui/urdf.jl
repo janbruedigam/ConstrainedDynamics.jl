@@ -414,11 +414,11 @@ end
 ### After parsing
 
 function set_parsed_values!(mechanism::Mechanism{T}, loopjoints) where T
-    graph = mechanism.graph
+    system = mechanism.system
     xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
     qjointlist = Dict{Int64,UnitQuaternion{T}}() # stores id, q in world frame
 
-    for id in graph.rdfslist # from root to leaves
+    for id in system.reverse_dfs_list # from root to leaves
         component = getcomponent(mechanism, id)
         !(component isa Body) && continue # only for bodies
 
@@ -554,8 +554,8 @@ function set_parsed_values!(mechanism::Mechanism{T}, loopjoints) where T
 end
 
 function get_parentid(mechanism, id, loopjoints)
-    graph = mechanism.graph
-    conns = connections(graph, id)
+    system = mechanism.system
+    conns = connections(system, id)
     for connsid in conns
         constraint = geteqconstraint(mechanism, connsid)
         if constraint ∉ loopjoints && id ∈ constraint.childids

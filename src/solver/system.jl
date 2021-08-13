@@ -1,6 +1,6 @@
 function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
     eqcs = mechanism.eqconstraints
-    graph = mechanism.graph
+    system = mechanism.system
     ldu = mechanism.ldu
 
     n = 6 * Nb
@@ -16,7 +16,7 @@ function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
     ind1 = 1
     ind2 = 0
 
-    for id in graph.dfslist
+    for id in system.dfs_list
         component = getcomponent(mechanism, id)
         ind2 += length(component)
         range = ind1:ind2
@@ -27,13 +27,24 @@ function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
         diagonal = getentry(ldu,id)
         A[range,range] = diagonal.D
 
-        for childid in successors(graph, id)
+        for childid in system.acyclic_children[id]
             offdiagonal = getentry(ldu, (id, childid))
             nc1 = first(rangeDict[childid])
             nc2 = last(rangeDict[childid])
 
             A[range,nc1:nc2] = offdiagonal.L
             A[nc1:nc2,range] = offdiagonal.U
+        end
+
+        for cyclic_children in system.cycles[v]
+            for childid in cyclic_children
+                offdiagonal = getentry(ldu, (id, childid))
+                nc1 = first(rangeDict[childid])
+                nc2 = last(rangeDict[childid])
+
+                A[range,nc1:nc2] = offdiagonal.L
+                A[nc1:nc2,range] = offdiagonal.U
+            end
         end
 
         # x

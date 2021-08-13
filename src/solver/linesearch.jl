@@ -1,21 +1,21 @@
 function lineSearch!(mechanism::Mechanism{T,Nn,Nb,Ne,0}, normf0;iter = 10, warning::Bool = false) where {T,Nn,Nb,Ne}
     normf1 = normf0
     scale = 0
-    structure = mechanism.structure
+    system = mechanism.system
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
 
     for n = Base.OneTo(iter + 1)
         for body in bodies
             isinactive(body) && continue
-            lineStep!(body, getentry(structure, body.id), scale)
+            lineStep!(body, getentry(system, body.id), scale)
             if norm(body.state.ωsol[2]) > 1/mechanism.Δt
                 error("Excessive angular velocity. Body-ID: "*string(body.id)*", ω: "*string(body.state.ωsol[2])*".")
             end
         end
         for eqc in eqcs
             isinactive(eqc) && continue
-            lineStep!(eqc, getentry(structure, eqc.id), scale)
+            lineStep!(eqc, getentry(system, eqc.id), scale)
         end
 
         normf1 = normf(mechanism)
@@ -33,7 +33,7 @@ end
 function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = false)
     meritf1 = meritf0
     scale = 0
-    structure = mechanism.structure
+    system = mechanism.system
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
     ineqcs = mechanism.ineqconstraints
@@ -43,18 +43,18 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     for n = Base.OneTo(iter)
         for body in bodies
             isinactive(body) && continue
-            lineStep!(body, getentry(structure, body.id), scale, mechanism)
+            lineStep!(body, getentry(system, body.id), scale, mechanism)
             if norm(body.state.ωsol[2]) > 1/mechanism.Δt
                 error("Excessive angular velocity. Body-ID: "*string(body.id)*", ω: "*string(body.state.ωsol[2])*".")
             end
         end
         for eqc in eqcs
             isinactive(eqc) && continue
-            lineStep!(eqc, getentry(structure, eqc.id), scale, mechanism)
+            lineStep!(eqc, getentry(system, eqc.id), scale, mechanism)
         end
         for ineqc in ineqcs
             isinactive(ineqc) && continue
-            lineStep!(ineqc, getineqentry(structure, ineqc.id), scale, mechanism)
+            lineStep!(ineqc, getineqentry(system, ineqc.id), scale, mechanism)
         end
 
         meritf1 = meritf(mechanism)

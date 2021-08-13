@@ -1,7 +1,7 @@
 @inline function dynamics(mechanism, body::Body{T}) where T
     state = body.state
     Δt = mechanism.Δt
-    graph = mechanism.graph
+    system = mechanism.system
 
     ezg = SA{T}[0; 0; -mechanism.g]
     dynT = body.m * ((state.vsol[2] - state.vc) / Δt + ezg) - state.Fk[1]
@@ -15,11 +15,11 @@
 
     state.d = [dynT;dynR]
 
-    for childid in connections(graph, body.id)
+    for childid in connections(system, body.id)
         GtλTof!(mechanism, body, geteqconstraint(mechanism, childid))
     end
 
-    for childid in ineqchildren(graph, body.id)
+    for childid in ineqchildren(system, body.id)
         NtγTof!(mechanism, body, getineqconstraint(mechanism, childid))
     end
 

@@ -88,7 +88,7 @@ function setPosition!(mechanism, eqc::EqualityConstraint, xθ; iter::Bool = true
     else
         currentvals = minimalCoordinates(mechanism)
         _setPosition!(mechanism, eqc, xθ)
-        for id in recursivedirectchildren!(mechanism.graph, eqc.id)
+        for id in recursivedirectchildren!(mechanism.system, eqc.id)
             component = getcomponent(mechanism, id)
             if component isa EqualityConstraint
                 _setPosition!(mechanism, component, currentvals[id])
