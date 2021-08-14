@@ -64,3 +64,73 @@ function recursivedirectchildren!(system, id::Integer)
     end
     return dirs
 end
+
+
+function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
+    eqcs = mechanism.eqconstraints
+    system = mechanism.system
+    system = mechanism.system
+
+    n = 6 * Nb
+    for eqc in eqcs
+        n += length(eqc)
+    end
+
+    A = zeros(T,n,n)
+    x = zeros(T,n)
+    b = zeros(T,n)
+    
+    rangeDict = Dict{Int64,UnitRange}()
+    ind1 = 1
+    ind2 = 0
+
+    for id in system.dfs_list
+        component = getcomponent(mechanism, id)
+        ind2 += length(component)
+        range = ind1:ind2
+        rangeDict[id] = range
+
+
+        # A
+        diagonal = getentry(system,id,id)
+        A[range,range] = diagonal.value
+
+        for childid in system.acyclic_children[id]
+            offdiagonal_L = getentry(system, id, childid)
+            offdiagonal_U = getentry(system, childid, id)
+            nc1 = first(rangeDict[childid])
+            nc2 = last(rangeDict[childid])
+
+            A[range,nc1:nc2] = offdiagonal_L.value
+            A[nc1:nc2,range] = offdiagonal_U.value
+        end
+
+        for cyclic_children in system.cycles[id]
+            for childid in cyclic_children
+                offdiagonal_L = getentry(system, id, childid)
+                offdiagonal_U = getentry(system, childid, id)
+                nc1 = first(rangeDict[childid])
+                nc2 = last(rangeDict[childid])
+
+                A[range,nc1:nc2] = offdiagonal_L.value
+                A[nc1:nc2,range] = offdiagonal_U.value
+            end
+        end
+
+        # x
+        sol = getentry(system,id)
+        x[range] = sol.value
+
+        # b
+        if component isa Body
+            b[range] = -dynamics(mechanism, component)
+        else
+            b[range] = -g(mechanism, component)
+        end
+
+
+        ind1 = ind2+1
+    end    
+    
+    return A, x, b
+end
