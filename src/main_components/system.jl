@@ -117,16 +117,14 @@ function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
             A[nc1:nc2,range] = offdiagonal_U.value
         end
 
-        for cyclic_children in system.cycles[id]
-            for childid in cyclic_children
-                offdiagonal_L = getentry(system, id, childid)
-                offdiagonal_U = getentry(system, childid, id)
-                nc1 = first(rangeDict[childid])
-                nc2 = last(rangeDict[childid])
+        for childid in system.cyclic_children[id]
+            offdiagonal_L = getentry(system, id, childid)
+            offdiagonal_U = getentry(system, childid, id)
+            nc1 = first(rangeDict[childid])
+            nc2 = last(rangeDict[childid])
 
-                A[range,nc1:nc2] = offdiagonal_L.value
-                A[nc1:nc2,range] = offdiagonal_U.value
-            end
+            A[range,nc1:nc2] = offdiagonal_L.value
+            A[nc1:nc2,range] = offdiagonal_U.value
         end
 
         # x

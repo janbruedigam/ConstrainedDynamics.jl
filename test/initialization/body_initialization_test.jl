@@ -89,10 +89,12 @@ for i=1:3
     end
 end
 
-
-origin, bodies, eqconstraints, ineqconstraints = disassemble(mech)
-
-mech = Mechanism(origin, [links[1]], [eqconstraints[1]], g = 0.)
+origin = Origin{Float64}()
+link1 = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
+link1.m = 1.0
+link1.J = diagm(ones(3))
+joint1 = EqualityConstraint(Floating(origin, link1))
+mech = Mechanism(origin, [link1], [joint1], g = 0.)
 
 for i=1:3
     axis1 = zeros(3)
