@@ -56,7 +56,7 @@ function getineqconstraint(mechanism::Mechanism, name::String)
 end
 
 """
-    getcomponent!(mechanism, id)
+    getcomponent(mechanism, id)
 
 Gets the component (body or equality constraint) with ID `id` from `mechanism` if it exists.
 """

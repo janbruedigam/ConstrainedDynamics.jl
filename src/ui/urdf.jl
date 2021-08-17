@@ -421,7 +421,7 @@ function set_parsed_values!(mechanism::Mechanism{T}, loopjoints) where T
     xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
     qjointlist = Dict{Int64,UnitQuaternion{T}}() # stores id, q in world frame
 
-    for id in system.reverse_dfs_list # from root to leaves
+    for id in reverse(system.dfs_list) # from root to leaves
         component = getcomponent(mechanism, id)
         !(component isa Body) && continue # only for bodies
 

@@ -18,8 +18,8 @@ A `Mechanism` contains the [`Origin`](@ref), [`Body`](@ref)s, and [`EqualityCons
 """
 mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     origin::Origin{T}
-    bodies::UnitDict{Base.OneTo{Int64},Body{T}}
-    eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
+    eqconstraints::UnitDict{Base.OneTo{Int64},<:EqualityConstraint{T}}
+    bodies::UnitDict{UnitRange{Int64},Body{T}}
     ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
     system::System{Nn}
@@ -61,8 +61,12 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
 
         currentid = 1
 
-        bdict = Dict{Int64,Int64}()
-        for (ind, body) in enumerate(bodies)
+        for eqc in eqcs
+            eqc.id = currentid
+            currentid += 1
+        end
+
+        for body in bodies
             initknotpoints!(body.state, order)
 
             for eqc in eqcs
@@ -81,24 +85,11 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
 
             body.id = currentid
             currentid += 1
-
-            bdict[body.id] = ind
         end
 
-        eqdict = Dict{Int64,Int64}()
-        for (ind, eqc) in enumerate(eqcs)
-            eqc.id = currentid
-            currentid += 1
-
-            eqdict[eqc.id] = ind
-        end
-
-        ineqdict = Dict{Int64,Int64}()
-        for (ind, ineqc) in enumerate(ineqcs)
+        for ineqc in ineqcs
             ineqc.id = currentid
             currentid += 1
-
-            ineqdict[ineqc.id] = ind
         end
 
         normf = 0
@@ -106,8 +97,8 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
 
         system = create_system(origin, bodies, eqcs, ineqcs)
 
-        bodies = UnitDict(bodies)
-        eqcs = UnitDict((eqcs[1].id):(eqcs[Ne].id), eqcs)
+        eqcs = UnitDict(eqcs)
+        bodies = UnitDict((bodies[1].id):(bodies[Nb].id), bodies)
         if Ni > 0
             ineqcs = UnitDict((ineqcs[1].id):(ineqcs[Ni].id), ineqcs)
         else
@@ -117,7 +108,7 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         α = 1
         μ = 1
 
-        new{T,Nn,Nb,Ne,Ni}(origin, bodies, eqcs, ineqcs, system, normf, normΔs, Δt, g, α, μ)
+        new{T,Nn,Nb,Ne,Ni}(origin, eqcs, bodies, ineqcs, system, normf, normΔs, Δt, g, α, μ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
@@ -162,8 +153,8 @@ end
 mutable struct LinearMechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     ## Mechanism attributes
     origin::Origin{T}
-    bodies::UnitDict{Base.OneTo{Int64},Body{T}}
-    eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
+    eqconstraints::UnitDict{Base.OneTo{Int64},<:EqualityConstraint{T}}
+    bodies::UnitDict{UnitRange{Int64},Body{T}}
     ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
     system::System{Nn}
@@ -221,10 +212,10 @@ mutable struct LinearMechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni
     end
 
     function LinearMechanism(mechanism::Mechanism{T,Nn,Nb,Ne,Ni}; 
-        xd = [mechanism.bodies[i].state.xc for i=1:Nb],
-        vd = [mechanism.bodies[i].state.vc for i=1:Nb],
-        qd = [mechanism.bodies[i].state.qc for i=1:Nb],
-        ωd = [mechanism.bodies[i].state.ωc for i=1:Nb],
+        xd = [mechanism.bodies[i].state.xc for i=Ne+1:Ne+Nb],
+        vd = [mechanism.bodies[i].state.vc for i=Ne+1:Ne+Nb],
+        qd = [mechanism.bodies[i].state.qc for i=Ne+1:Ne+Nb],
+        ωd = [mechanism.bodies[i].state.ωc for i=Ne+1:Ne+Nb],
         eqcids = [],
         Fτd = []
     ) where {T,Nn,Nb,Ne,Ni}

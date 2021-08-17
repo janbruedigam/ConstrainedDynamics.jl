@@ -59,7 +59,7 @@ function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xθd, vωd, Fτd, controlle
 end
 
 
-function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
+function lineardynamics(mechanism::Mechanism{T,Nn,Nb,Ne}, eqcids) where {T,Nn,Nb,Ne}
     Δt = mechanism.Δt
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
@@ -91,10 +91,10 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
 
     Bcontrol = zeros(T,Nb*6,nu)
 
-    for (id,body) in pairs(bodies)
-        col6 = offsetrange(id,6)
-        col12 = offsetrange(id,12)
-        col13 = offsetrange(id,13)
+    for (ind,body) in enumerate(bodies)
+        col6 = offsetrange(ind,6)
+        col12 = offsetrange(ind,12)
+        col13 = offsetrange(ind,13)
 
         Fzi = ∂F∂z(body, Δt)
         Fui = ∂F∂u(body, Δt)
@@ -118,11 +118,13 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
 
         parentid = eqc.parentid
         if parentid !== nothing
-            col6 = offsetrange(parentid,6)
+            parentind = parentid - Ne
+            col6 = offsetrange(parentind,6)
             Bcontrol[col6,n1:n2] = ∂Fτ∂ua(mechanism, eqc, parentid)
         end
         for childid in eqc.childids
-            col6 = offsetrange(childid,6)
+            childind = childid - Ne
+            col6 = offsetrange(childind,6)
             Bcontrol[col6,n1:n2] = ∂Fτ∂ub(mechanism, eqc, childid)
         end
 
@@ -139,7 +141,7 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb}, eqcids) where {T,Nn,Nb}
     return A, Bu, Bλ, G
 end
 
-function linearconstraints(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
+function linearconstraints(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
     Δt = mechanism.Δt
     eqcs = mechanism.eqconstraints
 
@@ -158,32 +160,34 @@ function linearconstraints(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
 
         parentid = eqc.parentid
         if parentid !== nothing
+            parentind = parentid - Ne
             pbody = getbody(mechanism,parentid)
             pstate = pbody.state
             
             for (i,childid) in enumerate(eqc.childids)
+                childind = childid - Ne
                 cbody = getbody(mechanism,childid)
                 cstate = cbody.state
 
                 ind2 += length(eqc.constraints[i])
                 range = oneindc+ind1:oneindc+ind2
 
-                pcol3a12 = offsetrange(parentid,3,12,1)
-                pcol3b12 = offsetrange(parentid,3,12,2)
-                pcol3c12 = offsetrange(parentid,3,12,3)
-                pcol3d12 = offsetrange(parentid,3,12,4)
+                pcol3a12 = offsetrange(parentind,3,12,1)
+                pcol3b12 = offsetrange(parentind,3,12,2)
+                pcol3c12 = offsetrange(parentind,3,12,3)
+                pcol3d12 = offsetrange(parentind,3,12,4)
 
-                pcol3b = offsetrange(parentid,3,13,2)
-                pcol3d = offsetrange(parentid,3,13,4)
+                pcol3b = offsetrange(parentind,3,13,2)
+                pcol3d = offsetrange(parentind,3,13,4)
                 pcol3d = first(pcol3d)+1:last(pcol3d)+1
 
-                ccol3a12 = offsetrange(childid,3,12,1)
-                ccol3b12 = offsetrange(childid,3,12,2)
-                ccol3c12 = offsetrange(childid,3,12,3)
-                ccol3d12 = offsetrange(childid,3,12,4)
+                ccol3a12 = offsetrange(childind,3,12,1)
+                ccol3b12 = offsetrange(childind,3,12,2)
+                ccol3c12 = offsetrange(childind,3,12,3)
+                ccol3d12 = offsetrange(childind,3,12,4)
 
-                ccol3b = offsetrange(childid,3,13,2)
-                ccol3d = offsetrange(childid,3,13,4)
+                ccol3b = offsetrange(childind,3,13,2)
+                ccol3d = offsetrange(childind,3,13,4)
                 ccol3d = first(ccol3d)+1:last(ccol3d)+1
 
                 pXl, pQl = ∂g∂posa(eqc.constraints[i], posargsnext(pstate, Δt)..., posargsnext(cstate, Δt)...) # x3
@@ -221,19 +225,20 @@ function linearconstraints(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
             end
         else
             for (i,childid) in enumerate(eqc.childids)
+                childind = childid - Ne
                 cbody = getbody(mechanism,childid)
                 cstate = cbody.state
 
                 ind2 += length(eqc.constraints[i])
                 range = oneindc+ind1:oneindc+ind2
 
-                ccol3a12 = offsetrange(childid,3,12,1)
-                ccol3b12 = offsetrange(childid,3,12,2)
-                ccol3c12 = offsetrange(childid,3,12,3)
-                ccol3d12 = offsetrange(childid,3,12,4)
+                ccol3a12 = offsetrange(childind,3,12,1)
+                ccol3b12 = offsetrange(childind,3,12,2)
+                ccol3c12 = offsetrange(childind,3,12,3)
+                ccol3d12 = offsetrange(childind,3,12,4)
 
-                ccol3b = offsetrange(childid,3,13,2)
-                ccol3d = offsetrange(childid,3,13,4)
+                ccol3b = offsetrange(childind,3,13,2)
+                ccol3d = offsetrange(childind,3,13,4)
                 ccol3d = first(ccol3d)+1:last(ccol3d)+1
 
 
@@ -264,7 +269,7 @@ function linearconstraints(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
     return Gl, -Gr'
 end
 
-function linearconstraintmapping(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
+function linearconstraintmapping(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
     FfzG = zeros(T,Nb*13,Nb*13)
 
     K = zeros(T,9,9)
@@ -275,15 +280,17 @@ function linearconstraintmapping(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
         parentid = eqc.parentid
 
         if parentid !== nothing
+            parentind = parentid - Ne
             body1 = getbody(mechanism, parentid)
             state1 = body1.state
-            pcol13 = offsetrange(parentid,13)
+            pcol13 = offsetrange(parentind,13)
 
             for (i, childid) in enumerate(eqc.childids)
+                childind = childid - Ne
                 body2 = getbody(mechanism, childid)
                 state2 = body2.state
                 constraint = eqc.constraints[i]
-                ccol13 = offsetrange(childid,13)
+                ccol13 = offsetrange(childind,13)
 
                 n1 = 1
                 n2 = 0
@@ -332,10 +339,11 @@ function linearconstraintmapping(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
             end
         else
             for (i, childid) in enumerate(eqc.childids)
+                childind = childid - Ne
                 body2 = getbody(mechanism, childid)
                 state2 = body2.state
                 constraint = eqc.constraints[i]
-                ccol13 = offsetrange(childid,13)
+                ccol13 = offsetrange(childind,13)
 
                 n1 = 1
                 n2 = 0
@@ -364,22 +372,24 @@ function linearconstraintmapping(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
     return FfzG
 end
 
-function linearforcemapping(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
+function linearforcemapping(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
     Fzu = zeros(T,Nb*13,Nb*12)
 
     for eqc in mechanism.eqconstraints
         parentid = eqc.parentid
         for (i,childid) in enumerate(eqc.childids)
+            childind = childid - Ne
             if parentid !== nothing
+                parentind = parentid - Ne
                 FaXa, FaQa, τaXa, τaQa, FbXa, FbQa, τbXa, τbQa = ∂Fτ∂posa(eqc.constraints[i], getbody(mechanism, parentid).state, getbody(mechanism, childid).state)
                 FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb = ∂Fτ∂posb(eqc.constraints[i], getbody(mechanism, parentid).state, getbody(mechanism, childid).state)
 
-                cola6 = offsetrange(parentid,6)
-                colb6 = offsetrange(childid,6)
-                rowav = offsetrange(parentid,3,13,2)
-                rowaω = offsetrange(parentid,3,13,4).+1
-                rowbv = offsetrange(childid,3,13,2)
-                rowbω = offsetrange(childid,3,13,4).+1
+                cola6 = offsetrange(parentind,6)
+                colb6 = offsetrange(childind,6)
+                rowav = offsetrange(parentind,3,13,2)
+                rowaω = offsetrange(parentind,3,13,4).+1
+                rowbv = offsetrange(childind,3,13,2)
+                rowbω = offsetrange(childind,3,13,4).+1
 
                 Fzu[rowav,cola6] = [FaXa FaQa]
                 Fzu[rowaω,cola6] = [τaXa τaQa]
@@ -393,9 +403,9 @@ function linearforcemapping(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
             else
                 FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb = ∂Fτ∂posb(eqc.constraints[i], getbody(mechanism, childid).state)
 
-                colb6 = offsetrange(childid,6)
-                rowbv = offsetrange(childid,3,13,2)
-                rowbω = offsetrange(childid,3,13,4).+1
+                colb6 = offsetrange(childind,6)
+                rowbv = offsetrange(childind,3,13,2)
+                rowbω = offsetrange(childind,3,13,4).+1
                 
                 Fzu[rowbv,colb6] = [FbXb FbQb]
                 Fzu[rowbω,colb6] = [τbXb τbQb]
