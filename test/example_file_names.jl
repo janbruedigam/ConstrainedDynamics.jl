@@ -14,7 +14,7 @@ files = [
     # "inverted_pyramid_plane"
     "joint_force"
     "joint_torque"
-    "linear_pendulum"
+    # "linear_pendulum"
     "n_fourbars"
     "n_pendulum"
     "nutation"
