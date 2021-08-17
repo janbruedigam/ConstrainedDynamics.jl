@@ -69,39 +69,3 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,Ni};
     warning && (@info string("newton! did not converge. n = ", newtonIter, ", tol = ", normf(mechanism), "."))
     return
 end
-
-function newton!(mechanism::LinearMechanism{T,Nn,Nb,Ne,0};
-        ε = 1e-10, newtonIter = 100, lineIter = 10, warning::Bool = false
-    ) where {T,Nn,Nb,Ne}
-
-    A = mechanism.A
-    Bu = mechanism.Bu
-    Bλ = mechanism.Bλ
-    G = mechanism.G
-    nc = size(G)[1]
-    Z = zeros(T,nc,nc)
-
-    normf0 = normf(mechanism)
-    for n = Base.OneTo(newtonIter)
-        M = [-I Bλ;G Z]
-        Δsol = M\[fdynamics(mechanism); fconstraints(mechanism)]
-        mechanism.Δz = Δsol[1:12*Nb]
-        mechanism.Δλ = Δsol[12*Nb+1:end]
-
-        normf1 = lineSearch!(mechanism, normf0;iter = lineIter, warning = warning)
-        # normΔs1 = normΔs(mechanism)
-
-        mechanism.zsol[1] = mechanism.zsol[2]
-        mechanism.λsol[1] = mechanism.λsol[2]
-
-        if normf1 < ε #&& normΔs1 < ε
-            # warning && (@info string("Newton iterations: ",n))
-            return
-        else
-            normf0 = normf1
-        end
-    end
-
-    warning && (@info string("newton! did not converge. n = ", newtonIter, ", tol = ", normf(mechanism), "."))
-    return
-end
