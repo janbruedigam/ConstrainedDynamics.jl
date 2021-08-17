@@ -64,26 +64,6 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
     return meritf1
 end
 
-function lineSearch!(mechanism::LinearMechanism{T,Nn,Nb,Ne,0}, normf0;iter = 10, warning::Bool = false) where {T,Nn,Nb,Ne}
-    normf1 = normf0
-    scale = 0
-
-    for n = Base.OneTo(iter + 1)
-        mechanism.zsol[2] = mechanism.zsol[1] + 1 / (2^scale) * mechanism.Δz
-        mechanism.λsol[2] = mechanism.λsol[1] + 1 / (2^scale) * mechanism.Δλ
-
-        normf1 = normf(mechanism)
-        if normf1 >= normf0
-            scale += 1
-        else
-            return normf1
-        end
-    end
-
-    warning && (@info string("lineSearch! did not converge. n = ", iter, ". Last tol: ", normf1))
-    return normf1
-end
-
 
 @inline function lineStep!(body::Body, vector_entry::Entry, scale)
     body.state.vsol[2] = body.state.vsol[1] + 1 / (2^scale) * vector_entry.value[SA[1; 2; 3]]

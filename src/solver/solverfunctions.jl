@@ -36,7 +36,7 @@ end
     return
 end
 
-@inline function setLU!(matrix_entry_L::Entry, matrix_entry_U::Entry)
+@inline function zeroLU!(matrix_entry_L::Entry, matrix_entry_U::Entry)
     matrix_entry_L.value *= 0
     matrix_entry_U.value *= 0
     return
@@ -72,46 +72,81 @@ end
 # end
 
 
-function setentries!(mechanism::Mechanism)
+function setentries!(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
     system = mechanism.system
 
-    for (id, body) in pairs(mechanism.bodies)        
-        for childid in children(system, id)
-            setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), id, geteqconstraint(mechanism, childid))
-        end
+    for id in reverse(system.dfs_list)
+        if id <= Ne # eqconstraint
+            eqc = geteqconstraint(mechanism, id)
+            setDandΔs!(mechanism, getentry(system, id, id), getentry(system, id), eqc)
 
-        # for grandchildid in dampergrandchildren(graph, id)
-        #     for parentid in predecessors(graph, grandchildid) # Maybe predecessors works out for loop closure?
-        #         setLU!(mechanism, getentry(system, id, grandchildid), getentry(system, grandchildid, id), geteqconstraint(mechanism, parentid), id, grandchildid)
-        #     end
-        # end 
-
-        setDandΔs!(mechanism, getentry(system, id, id), getentry(system, id), body)
-        # for childid in ineqchildren(graph, id)
-        #     ineqc = getineqconstraint(mechanism, childid)
-        #     calcFrictionForce!(mechanism, ineqc)
-        #     extendDandΔs!(mechanism, diagonal, body, ineqc)
-        # end
-    end
-
-    for eqc in mechanism.eqconstraints
-        id = eqc.id
-        
-        for cyclic_children in system.cycles[id]
-            for childid in cyclic_children
-                setLU!(getentry(system, id, childid), getentry(system, childid, id))
+            for childid in system.cyclic_children[id]
+                zeroLU!(getentry(system, id, childid), getentry(system, childid, id))
             end
-        end
+            for childid in children(system,id)
+                # childid must belong to a body
+                setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), eqc, childid)
+            end
+        elseif id <= Ne+Nb # body
+            body = getbody(mechanism, id)
+            setDandΔs!(mechanism, getentry(system, id, id), getentry(system, id), body)
 
-        for childid in children(system, id)
-            setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), eqc, childid)
+            for childid in children(system,id)
+                if childid <= Ne # eqconstraint
+                    setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), id, geteqconstraint(mechanism, childid))
+                elseif childid <= Ne+Nb # body
+                    eqcid = parents(system,childid)[1] # TODO This only works for acyclic damped systems
+                    setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), geteqconstraint(mechanism, eqcid), id, childid)
+                else # ineqconstraint
+                end
+            end
+        else # ineqconstraint
         end
-
-        setDandΔs!(mechanism, getentry(system, id, id), getentry(system, id), eqc)
     end
 
     return 
 end
+
+# function setentries!(mechanism::Mechanism)
+#     system = mechanism.system
+
+#     for (id, body) in pairs(mechanism.bodies)        
+#         for childid in children(system, id)
+#             setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), id, geteqconstraint(mechanism, childid))
+#         end
+
+#         # for grandchildid in dampergrandchildren(graph, id)
+#         #     for parentid in predecessors(graph, grandchildid) # Maybe predecessors works out for loop closure?
+#         #         setLU!(mechanism, getentry(system, id, grandchildid), getentry(system, grandchildid, id), geteqconstraint(mechanism, parentid), id, grandchildid)
+#         #     end
+#         # end 
+
+#         setDandΔs!(mechanism, getentry(system, id, id), getentry(system, id), body)
+#         # for childid in ineqchildren(graph, id)
+#         #     ineqc = getineqconstraint(mechanism, childid)
+#         #     calcFrictionForce!(mechanism, ineqc)
+#         #     extendDandΔs!(mechanism, diagonal, body, ineqc)
+#         # end
+#     end
+
+#     for eqc in mechanism.eqconstraints
+#         id = eqc.id
+        
+#         for cyclic_children in system.cycles[id]
+#             for childid in cyclic_children
+#                 zeroLU!(getentry(system, id, childid), getentry(system, childid, id))
+#             end
+#         end
+
+#         for childid in children(system, id)
+#             setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), eqc, childid)
+#         end
+
+#         setDandΔs!(mechanism, getentry(system, id, id), getentry(system, id), eqc)
+#     end
+
+#     return 
+# end
 
 # function eliminatedsolve!(mechanism::Mechanism, ineqentry::InequalityEntry, diagonal::DiagonalEntry, bodyid::Integer, ineqc::InequalityConstraint)
 #     μ = mechanism.μ

@@ -103,28 +103,6 @@ Base.length(::Body) = 6
 @inline getM(body::Body{T}) where T = [[I*body.m;szeros(T,3,3)] [szeros(T,3,3);body.J]]
 
 
-@inline function ∂dyn∂vel(mechanism, body::Body{T}) where T
-    state = body.state
-    Δt = mechanism.Δt
-    J = body.J
-    ω2 = state.ωsol[2]
-    sq = sqrt(4 / Δt^2 - ω2' * ω2)
-
-    dynT = I * body.m / Δt   
-    dynR = skewplusdiag(ω2, sq) * J - J * ω2 * (ω2' / sq) - skew(J * ω2)
-    
-    Z = szeros(T, 3, 3)
-
-    state.D = [[dynT; Z] [Z; dynR]]
-
-    # for connectionid in damperconnections(mechanism.system, body.id)
-    #     damperToD!(mechanism, body, geteqconstraint(mechanism, connectionid))
-    # end
-
-    return state.D
-end
-
-
 # Derivatives for linearizations
 
 function ∂F∂z(body::Body{T}, Δt) where T
