@@ -105,9 +105,9 @@ for i=1:3
 
     function control!(mechanism, k)
         if k==1
-            setForce!(mechanism.bodies[1], F = F, τ = τ, p = p)
+            setForce!(link1, F = F, τ = τ, p = p)
         else
-            setForce!(mechanism.bodies[1])
+            setForce!(link1)
         end
         return
     end
