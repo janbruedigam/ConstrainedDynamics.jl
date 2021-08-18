@@ -100,15 +100,15 @@ end
 end
 
 @inline function normf(mechanism::Mechanism, ineqc::InequalityConstraint)
-    f = gs(mechanism, ineqc)
-    d = h(ineqc)
-    return dot(f, f) + dot(d, d)
+    f1 = complementarity(mechanism, ineqc)
+    f2 = gs(mechanism, ineqc)
+    return dot(f1, f1) + dot(f2, f2)
 end
 
 @inline function normfμ(mechanism::Mechanism, ineqc::InequalityConstraint)
-    f = gs(mechanism, ineqc)
-    d = hμ(ineqc, mechanism.μ)
-    return dot(f, f) + dot(d, d)
+    f1 = complementarityμ(mechanism, ineqc)
+    f2 = gs(mechanism, ineqc)
+    return dot(f1, f1) + dot(f2, f2)
 end
 
 @inline function normf(mechanism::Mechanism)

@@ -21,7 +21,9 @@
             eqc.isspring && springTof!(mechanism, body, eqc)
             eqc.isdamper && damperTof!(mechanism, body, eqc)
         elseif connectionid <= Ne+Nb #body
-        else
+        else # ineqconstraint
+            ineqc = getineqconstraint(mechanism, connectionid)
+            NtγTof!(mechanism, body, ineqc)
         end 
     end
 

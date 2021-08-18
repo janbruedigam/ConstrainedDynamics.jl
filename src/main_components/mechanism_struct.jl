@@ -52,7 +52,7 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         Nb = length(bodies)
         Ne = length(eqcs)
         Ni = length(ineqcs)
-        Nn = Nb + Ne
+        Nn = Nb + Ne + Ni
 
         if Nb < Ne
             @info "More constraints than bodies. Potentially bad behavior."

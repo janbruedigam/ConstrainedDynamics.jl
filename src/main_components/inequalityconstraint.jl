@@ -1,8 +1,8 @@
-mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
+mutable struct InequalityConstraint{T,N,C} <: AbstractConstraint{T,N}
     id::Int64
     name::String
 
-    constraints::Cs
+    constraint::C
     parentid::Int64
     # childid::Int64
 
@@ -10,36 +10,19 @@ mutable struct InequalityConstraint{T,N,Cs} <: AbstractConstraint{T,N}
     γsol::Vector{SVector{N,T}}
     
 
-    function InequalityConstraint(data...; name::String="")
-        bounddata = Tuple{Bound,Int64}[]
-        for info in data
-            if info[1] isa Bound
-                push!(bounddata, info)
-            else
-                for subinfo in info
-                    push!(bounddata, subinfo)
-                end
-            end
-        end
+    function InequalityConstraint(data; name::String="")
+        bound, id = data
+        T = getT(bound)
 
-        T = getT(bounddata[1][1])
-
-        parentid = bounddata[1][2]
+        parentid = id
         # childids = Int64[]
-        constraints = Bound{T}[]
-        N = 0
-        for set in bounddata
-            push!(constraints, set[1])
-            @assert set[2] == parentid
-            N += 1 # length(set[1])
-        end
-        constraints = Tuple(constraints)
-        # Nc = length(constraints)
+        constraint = bound
+        N = length(constraint)
 
         ssol = [ones(T, N) for i=1:2]
         γsol = [ones(T, N) for i=1:2]
 
-        new{T,N,typeof(constraints)}(getGlobalID(), name, constraints, parentid, ssol, γsol)
+        new{T,N,typeof(constraint)}(getGlobalID(), name, constraint, parentid, ssol, γsol)
     end
 end
 
@@ -54,73 +37,30 @@ function resetVars!(ineqc::InequalityConstraint{T,N}) where {T,N}
 end
 
 @inline function NtγTof!(mechanism, body::Body, ineqc::InequalityConstraint{T,N}) where {T,N}
-    state = body.state
-    state.d -= ∂g∂ʳpos(mechanism, ineqc, body.id)' * ineqc.γsol[2]
-    for i=1:N
-        state.d -= additionalforce(ineqc.constraints[i], body)
-    end
+    body.state.d -= ∂g∂ʳpos(mechanism, ineqc, body.id)' * ineqc.γsol[2]
     return
 end
 
-function g(mechanism, ineqc::InequalityConstraint{T,1}) where {T}
-    return g(ineqc.constraints[1], getbody(mechanism, ineqc.parentid), mechanism.Δt)
+function g(mechanism, ineqc::InequalityConstraint)
+    return g(ineqc.constraint, getbody(mechanism, ineqc.parentid), mechanism.Δt)
 end
 
-@generated function g(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
-    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.parentid), mechanism.Δt)) for i = 1:N]
-    return :(SVector{N,T}($(vec...)))
+function gs(mechanism, ineqc::InequalityConstraint)
+    return g(ineqc.constraint, getbody(mechanism, ineqc.parentid), mechanism.Δt) - ineqc.ssol[2]
 end
 
-function gs(mechanism, ineqc::InequalityConstraint{T,1}) where {T}
-    return g(ineqc.constraints[1], getbody(mechanism, ineqc.parentid), mechanism.Δt) - ineqc.ssol[2][1]
+function complementarity(mechanism, ineqc::InequalityConstraint)
+    return ineqc.γsol[2] .* ineqc.ssol[2]
 end
 
-@generated function gs(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
-    vec = [:(g(ineqc.constraints[$i], getbody(mechanism, ineqc.parentid), mechanism.Δt) - ineqc.ssol[2][$i]) for i = 1:N]
-    return :(SVector{N,T}($(vec...)))
+function complementarityμ(mechanism, ineqc::InequalityConstraint)
+    return ineqc.γsol[2] .* ineqc.ssol[2] .- mechanism.μ
 end
 
-function h(ineqc::InequalityConstraint)
-    return ineqc.ssol[2] .* ineqc.γsol[2]
+function ∂g∂ʳpos(mechanism, ineqc::InequalityConstraint, id::Integer)
+    return ∂g∂ʳpos(ineqc.constraint, getbody(mechanism, id))
 end
 
-function hμ(ineqc::InequalityConstraint, μ)
-    return ineqc.ssol[2] .* ineqc.γsol[2] .- μ
-end
-
-
-function schurf(mechanism, ineqc::InequalityConstraint{T,N}, body) where {T,N}
-    val = szeros(T, 6)
-    for i = 1:N
-        val += schurf(ineqc, ineqc.constraints[i], i, body, mechanism.μ, mechanism.Δt)
-    end
-    return val
-end
-
-function schurD(ineqc::InequalityConstraint{T,N}, body, Δt) where {T,N}
-    val = szeros(T, 6, 6)
-    for i = 1:N
-        val += schurD(ineqc, ineqc.constraints[i], i, body, Δt)
-    end
-    return val
-end
-
-@generated function ∂g∂ʳpos(mechanism, ineqc::InequalityConstraint{T,N}, id::Integer) where {T,N}
-    vec = [:(∂g∂ʳpos(ineqc.constraints[$i], getbody(mechanism, id))) for i = 1:N]
-    return :(vcat($(vec...)))
-end
-
-@generated function ∂g∂ʳvel(mechanism, ineqc::InequalityConstraint{T,N}, id::Integer) where {T,N}
-    vec = [:(∂g∂ʳvel(ineqc.constraints[$i], getbody(mechanism, id), mechanism.Δt)) for i = 1:N]
-    return :(vcat($(vec...)))
-end
-
-function calcFrictionForce!(mechanism, ineqc::InequalityConstraint{T,N}) where {T,N}
-    for i = 1:N
-        constraint = ineqc.constraints[i]
-        if constraint isa Friction
-            calcFrictionForce!(mechanism, ineqc, constraint, i, getbody(mechanism, ineqc.parentid))
-        end
-    end
-    return
+function ∂g∂ʳvel(mechanism, ineqc::InequalityConstraint, id::Integer)
+    return ∂g∂ʳvel(ineqc.constraint, getbody(mechanism, id), mechanism.Δt)
 end

@@ -1,4 +1,4 @@
-function lineSearch!(mechanism::Mechanism{T,Nn,Nb,Ne,0}, normf0;iter = 10, warning::Bool = false) where {T,Nn,Nb,Ne}
+function lineSearch!(mechanism::Mechanism{T,Nn,Nb,Ne,0}, normf0; iter = 10, warning::Bool = false) where {T,Nn,Nb,Ne}
     normf1 = normf0
     scale = 0
     system = mechanism.system
@@ -28,7 +28,7 @@ function lineSearch!(mechanism::Mechanism{T,Nn,Nb,Ne,0}, normf0;iter = 10, warni
     return normf1
 end
 
-function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = false)
+function lineSearch!(mechanism::Mechanism, meritf0; iter = 10, warning::Bool = false)
     meritf1 = meritf0
     scale = 0
     system = mechanism.system
@@ -49,7 +49,7 @@ function lineSearch!(mechanism::Mechanism, meritf0;iter = 10, warning::Bool = fa
             lineStep!(eqc, getentry(system, eqc.id), scale, mechanism)
         end
         for ineqc in ineqcs
-            lineStep!(ineqc, getineqentry(system, ineqc.id), scale, mechanism)
+            lineStep!(ineqc, getentry(system, ineqc.id), scale, mechanism)
         end
 
         meritf1 = meritf(mechanism)
@@ -87,8 +87,8 @@ end
     return
 end
 
-# @inline function lineStep!(ineqc::InequalityConstraint, vector_entry::Entry, scale, mechanism)
-#     ineqc.ssol[2] = ineqc.ssol[1] + 1 / (2^scale) * mechanism.α * vector_entry.Δs
-#     ineqc.γsol[2] = ineqc.γsol[1] + 1 / (2^scale) * mechanism.α * vector_entry.Δγ
-#     return
-# end
+@inline function lineStep!(ineqc::InequalityConstraint{T,N}, vector_entry::Entry, scale, mechanism) where {T,N}
+    ineqc.ssol[2] = ineqc.ssol[1] + 1 / (2^scale) * mechanism.α * vector_entry.value[SVector{N,Int64}(1:N)]
+    ineqc.γsol[2] = ineqc.γsol[1] + 1 / (2^scale) * mechanism.α * vector_entry.value[SVector{N,Int64}(N+1:2*N)]
+    return
+end

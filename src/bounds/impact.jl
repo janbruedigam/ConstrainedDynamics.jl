@@ -1,5 +1,4 @@
-
-mutable struct Impact{T} <: Contact{T}
+mutable struct Impact{T,N} <: Bound{T,N}
     ainv3::Adjoint{T,SVector{3,T}}
     p::SVector{3,T}
     offset::SVector{3,T}
@@ -12,17 +11,19 @@ mutable struct Impact{T} <: Contact{T}
         Ainv = inv(A)
         ainv3 = Ainv[3,SA[1; 2; 3]]'
 
-        new{T}(ainv3, p, offset), body.id
+        new{T,1}(ainv3, p, offset), body.id
     end
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, constraint::Impact{T}) where {T}
-    summary(io, constraint)
-    println(io,"")
-    println(io, " ainv3:  "*string(constraint.ainv3))
-    println(io, " offset: "*string(constraint.offset))
+
+### Constraints and derivatives
+## Position level constraints (for dynamics)
+@inline g(impact::Impact{T}, x::AbstractVector, q::UnitQuaternion) where T = SVector{1,T}(impact.ainv3 * (x + vrotate(impact.p,q) - impact.offset))
+
+## Derivatives NOT accounting for quaternion specialness
+@inline function ∂g∂pos(impact::Impact, x::AbstractVector, q::UnitQuaternion)
+    p = impact.p
+    X = impact.ainv3
+    Q = impact.ainv3 * (VLmat(q) * Lmat(UnitQuaternion(p)) * Tmat() + VRᵀmat(q) * Rmat(UnitQuaternion(p)))
+    return X, Q
 end
-
-
-## Additional force for friction default
-@inline additionalforce(bound::Impact{T}, x::AbstractVector, q::UnitQuaternion) where T = szeros(T, 6)

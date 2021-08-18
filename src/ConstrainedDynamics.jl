@@ -96,9 +96,9 @@ include(joinpath("joints", "genericjoint.jl"))
 include(joinpath("joints", "prototypes.jl"))
 
 include(joinpath("bounds", "bound.jl"))
-include(joinpath("bounds", "contact.jl"))
+# include(joinpath("bounds", "contact.jl"))
 include(joinpath("bounds", "impact.jl"))
-include(joinpath("bounds", "friction.jl"))
+# include(joinpath("bounds", "friction.jl"))
 
 include(joinpath("solver", "solverfunctions.jl"))
 include(joinpath("solver", "initconstraints.jl"))
