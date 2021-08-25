@@ -26,49 +26,75 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     λsol::Vector{SVector{N,T}}
 
     function EqualityConstraint(data...; name::String="")
-        jointdata = Tuple{AbstractJoint,Int64,Int64}[]
-        for info in data
-            if info[1] isa AbstractJoint
-                push!(jointdata, info)
-            else
-                for subinfo in info
-                    push!(jointdata, subinfo)
+        if typeof(data[1][1]) <: Friction
+            data = data[1]
+            global CURRENTID
+            data[4].parentid = data[3].parentid = CURRENTID 
+    
+            T = Float64
+    
+            isspring = false
+            isdamper = false
+            parentid = data[2]
+            childids = SA[data[3].id;data[4].id]
+            constraints = (data[1],)
+            inds = [[1;2] for i=1:2]
+            N = 4
+            Nc = 2
+            
+    
+            λsol = [zeros(T, N) for i=1:2]
+    
+            return new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, isspring, isdamper, constraints, parentid, childids, inds, λsol)
+
+        else
+            jointdata = Tuple{AbstractJoint,Int64,Int64}[]
+            for info in data
+                if info[1] isa AbstractJoint
+                    push!(jointdata, info)
+                else
+                    for subinfo in info
+                        push!(jointdata, subinfo)
+                    end
                 end
             end
-        end
-
-        T = getT(jointdata[1][1])# .T
-
-        isspring = false
-        isdamper = false
-        parentid = jointdata[1][2]
-        childids = Int64[]
-        constraints = AbstractJoint{T}[]
-        inds = Vector{Int64}[]
-        N = 0
-        for set in jointdata
-            set[1].spring != 0 && (isspring = true)
-            set[1].damper != 0 && (isdamper = true)
-            
-            push!(constraints, set[1])
-            @assert set[2] == parentid
-            push!(childids, set[3])
-
-            Nset = length(set[1])
-            if isempty(inds)
-                push!(inds, [1;3-Nset])
-            else
-                push!(inds, [last(inds)[2]+1;last(inds)[2]+3-Nset])
+    
+            T = getT(jointdata[1][1])# .T
+    
+            isspring = false
+            isdamper = false
+            parentid = jointdata[1][2]
+            childids = Int64[]
+            constraints = AbstractJoint{T}[]
+            inds = Vector{Int64}[]
+            N = 0
+            for set in jointdata
+                set[1].spring != 0 && (isspring = true)
+                set[1].damper != 0 && (isdamper = true)
+                
+                push!(constraints, set[1])
+                @assert set[2] == parentid
+                push!(childids, set[3])
+    
+                Nset = length(set[1])
+                if isempty(inds)
+                    push!(inds, [1;3-Nset])
+                else
+                    push!(inds, [last(inds)[2]+1;last(inds)[2]+3-Nset])
+                end
+                N += Nset
             end
-            N += Nset
+            constraints = Tuple(constraints)
+            Nc = length(constraints)
+            
+    
+            λsol = [zeros(T, N) for i=1:2]
+    
+            return new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, isspring, isdamper, constraints, parentid, childids, inds, λsol)
         end
-        constraints = Tuple(constraints)
-        Nc = length(constraints)
+
+
         
-
-        λsol = [zeros(T, N) for i=1:2]
-
-        new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, isspring, isdamper, constraints, parentid, childids, inds, λsol)
     end
 end
 
@@ -214,12 +240,6 @@ end
     return :(svcat($(vec...)))
 end
 
-@inline function ∂g∂ʳpos(mechanism, eqc::EqualityConstraint, id::Integer)
-    id == eqc.parentid ? (return ∂g∂ʳposa(mechanism, eqc, id)) : (return ∂g∂ʳposb(mechanism, eqc, id))
-end
-@inline function ∂g∂ʳvel(mechanism, eqc::EqualityConstraint, id::Integer)
-    id == eqc.parentid ? (return ∂g∂ʳvela(mechanism, eqc, id)) : (return ∂g∂ʳvelb(mechanism, eqc, id))
-end
 @inline function ∂damper∂ʳvel(mechanism, eqc::EqualityConstraint, ida::Integer, idb::Integer)
     ida == eqc.parentid ? (return ∂damper∂ʳvela(mechanism, eqc, ida, idb)) : (return ∂damper∂ʳvelb(mechanism, eqc, ida, idb))
 end
@@ -232,20 +252,20 @@ end
 end
 
 @generated function ∂g∂ʳposa(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂ʳposa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
+    vec = [:(∂g∂ʳposa(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]), eqc.childids[$i])) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 @generated function ∂g∂ʳposb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂ʳposb(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
+    vec = [:(∂g∂ʳposb(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), eqc.childids[$i])) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
 @generated function ∂g∂ʳvela(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂ʳvela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]), mechanism.Δt)) for i = 1:Nc]
+    vec = [:(∂g∂ʳvela(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]), eqc.childids[$i], mechanism.Δt)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 @generated function ∂g∂ʳvelb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [:(∂g∂ʳvelb(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), mechanism.Δt)) for i = 1:Nc]
+    vec = [:(∂g∂ʳvelb(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), eqc.childids[$i], mechanism.Δt)) for i = 1:Nc]
     return :(vcat($(vec...)))
 end
 
@@ -264,7 +284,7 @@ end
     body1 = getbody(mechanism, id1)
     body2 = getbody(mechanism, id2)
     for i=1:Nc
-        D += offdiagonal∂damper∂ʳvel(eqc.constraints[i], body1, body2)
+        D += offdiagonal∂damper∂ʳvel(eqc.constraints[i], body1, body2, eqc.childids[i])
     end
     return D
 end
@@ -272,14 +292,14 @@ end
 @inline function springforcea(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = szeros(T,6)
     for i=1:Nc
-        vec += springforcea(eqc.constraints[i], getbody(mechanism, id), getbody(mechanism, eqc.childids[i]))
+        vec += springforcea(eqc.constraints[i], getbody(mechanism, id), getbody(mechanism, eqc.childids[i]), eqc.childids[i])
     end
     return vec
 end
 @inline function springforceb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = szeros(T,6)
     for i=1:Nc
-        vec += springforceb(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))
+        vec += springforceb(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), eqc.childids[i])
     end
     return vec
 end
@@ -287,24 +307,24 @@ end
 @inline function damperforcea(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = szeros(T,6)
     for i=1:Nc
-        vec += damperforcea(eqc.constraints[i], getbody(mechanism, id), getbody(mechanism, eqc.childids[i]))
+        vec += damperforcea(eqc.constraints[i], getbody(mechanism, id), getbody(mechanism, eqc.childids[i]), eqc.childids[i])
     end
     return vec
 end
 @inline function damperforceb(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
     vec = szeros(T,6)
     for i=1:Nc
-        vec += damperforceb(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))
+        vec += damperforceb(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), eqc.childids[i])
     end
     return vec
 end
 
 @generated function ∂Fτ∂ua(mechanism, eqc::EqualityConstraint{T,N,Nc}, id) where {T,N,Nc}
-    vec = [:(∂Fτ∂ua(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]))) for i = 1:Nc]
+    vec = [:(∂Fτ∂ua(eqc.constraints[$i], getbody(mechanism, id), getbody(mechanism, eqc.childids[$i]), eqc.childids[$i])) for i = 1:Nc]
     return :(hcat($(vec...)))
 end
 @generated function ∂Fτ∂ub(mechanism, eqc::EqualityConstraint{T,N,Nc}, id) where {T,N,Nc}
-    vec = [:(∂Fτ∂ub(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
+    vec = [:(∂Fτ∂ub(eqc.constraints[$i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), eqc.childids[$i])) for i = 1:Nc]
     return :(hcat($(vec...)))
 end
 
@@ -322,11 +342,11 @@ function ∂g∂posc(mechanism, eqc::EqualityConstraint, id::Integer)
 end
 
 function ∂g∂posac(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [hcat(∂g∂posac(eqc.constraints[i], getbody(mechanism, id), getbody(mechanism, eqc.childids[i]))) for i = 1:Nc]
+    vec = [hcat(∂g∂posac(eqc.constraints[i], getbody(mechanism, id), getbody(mechanism, eqc.childids[i]), eqc.childids[i])) for i = 1:Nc]
     return vcat(vec...)
 end
 function ∂g∂posbc(mechanism, eqc::EqualityConstraint{T,N,Nc}, id::Integer) where {T,N,Nc}
-    vec = [hcat(∂g∂posbc(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, id))) for i = 1:Nc]
+    vec = [hcat(∂g∂posbc(eqc.constraints[i], getbody(mechanism, eqc.parentid), getbody(mechanism, id), eqc.childids[i])) for i = 1:Nc]
     return vcat(vec...)
 end
 

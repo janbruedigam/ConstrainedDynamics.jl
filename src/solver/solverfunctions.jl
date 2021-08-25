@@ -11,23 +11,43 @@ end
     return
 end
 
+@inline function setDandΔs!(mechanism::Mechanism, matrix_entry::Entry, vector_entry::Entry, eqc::EqualityConstraint{T,N,Nc,Cs}) where {T,N,Nc,Cs<:Tuple{<:Friction}}
+    matrix_entry.value *= 0
+    vector_entry.value = -g(mechanism, eqc)
+    return
+end
+
 @inline function setDandΔs!(mechanism::Mechanism, matrix_entry::Entry, vector_entry::Entry, ineqc::InequalityConstraint)
-    γsol = ineqc.γsol[2]
-    ssol = ineqc.ssol[2]
-    matrix_entry.value = [[diagm(γsol);-I] [diagm(ssol);I*0]]
+    matrix_entry.value = [[diagm(ineqc.γsol[2]);-I] [diagm(ineqc.ssol[2]);I*0]]
     vector_entry.value = [-complementarityμ(mechanism, ineqc);-gs(mechanism, ineqc)]
     return
 end
 
-@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, bodyid::Integer, eqc::EqualityConstraint)
-    matrix_entry_L.value = -∂g∂ʳpos(mechanism, eqc, bodyid)'
-    matrix_entry_U.value = ∂g∂ʳvel(mechanism, eqc, bodyid)
+@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, id::Integer, eqc::EqualityConstraint)
+    matrix_entry_L.value = -∂g∂ʳpos(mechanism, eqc, id)'
+    matrix_entry_U.value = ∂g∂ʳvel(mechanism, eqc, id)
     return
 end
 
-@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, eqc::EqualityConstraint, bodyid::Integer)
-    matrix_entry_L.value = ∂g∂ʳvel(mechanism, eqc, bodyid)
-    matrix_entry_U.value = -∂g∂ʳpos(mechanism, eqc, bodyid)'
+@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, eqc::EqualityConstraint, id::Integer)
+    matrix_entry_L.value = ∂g∂ʳvel(mechanism, eqc, id)
+    matrix_entry_U.value = -∂g∂ʳpos(mechanism, eqc, id)'
+    return
+end
+
+@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, id::Integer, ineqc::InequalityConstraint{T,N,Nc,Cs,N½}) where {T,N,Nc,Cs,N½}
+    A = ∂g∂ʳpos(mechanism, ineqc, id)
+    Z = A*0
+    matrix_entry_L.value = [Z;-A]'
+    matrix_entry_U.value = [Z;∂g∂ʳvel(mechanism, ineqc, id)]
+    return
+end
+
+@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, ineqc::InequalityConstraint{T,N,Nc,Cs,N½}, id::Integer) where {T,N,Nc,Cs,N½}
+    # A = ∂g∂ʳvel(mechanism, ineqc, id)
+    # Z = A*0
+    matrix_entry_L.value = SA[0.0 0.0;0.0 ineqc.constraints[1].cf]#[Z;A]
+    matrix_entry_U.value = SA[0.0 0.0;0.0 0.0]#[Z;-∂g∂ʳpos(mechanism, ineqc, id)]'
     return
 end
 
@@ -38,12 +58,6 @@ end
     return
 end
 
-@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, bodyid::Integer, ineqc::InequalityConstraint{T,N}) where {T,N}
-    Z = szeros(T,N,6)
-    matrix_entry_L.value = [Z;-∂g∂ʳpos(mechanism, ineqc, bodyid)]'
-    matrix_entry_U.value = [Z;∂g∂ʳvel(mechanism, ineqc, bodyid)]
-    return
-end
 
 @inline function zeroLU!(matrix_entry_L::Entry, matrix_entry_U::Entry)
     matrix_entry_L.value *= 0
@@ -55,7 +69,8 @@ end
 function feasibilityStepLength!(mechanism::Mechanism)
     system = mechanism.system
 
-    τ = 0.995
+    # τ = 0.995
+    τ = 0.95
     mechanism.α = 1.0
 
     for ineqc in mechanism.ineqconstraints
@@ -69,7 +84,7 @@ function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, vec
     sγ = [ineqc.ssol[2];ineqc.γsol[2]]
     Δsγ = vector_entry.value
 
-    for i = 1:2*N
+    for i = 1:N
         αmax = τ * sγ[i] / Δsγ[i]
         (αmax > 0) && (αmax < mechanism.α) && (mechanism.α = αmax)
     end
@@ -81,15 +96,15 @@ function setentries!(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
     system = mechanism.system
 
     for id in reverse(system.dfs_list)
+        for childid in system.cyclic_children[id]
+            zeroLU!(getentry(system, id, childid), getentry(system, childid, id))
+        end
+
         if id <= Ne # eqconstraint
             eqc = geteqconstraint(mechanism, id)
             setDandΔs!(mechanism, getentry(system, id, id), getentry(system, id), eqc)
 
-            for childid in system.cyclic_children[id]
-                zeroLU!(getentry(system, id, childid), getentry(system, childid, id))
-            end
-            for childid in children(system,id)
-                # childid must belong to a body
+            for childid in children(system,id) # body or ineqconstraint (constraints are not directly connected)
                 setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), eqc, childid)
             end
         elseif id <= Ne+Nb # body
@@ -109,6 +124,14 @@ function setentries!(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
         else # ineqconstraint
             ineqc = getineqconstraint(mechanism, id)
             setDandΔs!(mechanism, getentry(system, id, id), getentry(system, id), ineqc)
+
+            for childid in children(system,id)
+                if childid <= Ne # eqconstraint
+                elseif childid <= Ne+Nb # body
+                else # ineqconstraint
+                    setLU!(mechanism, getentry(system, id, childid), getentry(system, childid, id), ineqc, childid)
+                end
+            end
         end
     end
 

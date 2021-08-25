@@ -1,5 +1,6 @@
 function verifyConstraints!(mechanism::Mechanism)
     for eqc in mechanism.eqconstraints
+        typeof(eqc) <: EqualityConstraint{T,N,Nc,Cs} where {T,N,Nc,Cs<:Tuple{<:Friction}} && continue
         if norm(gc(mechanism, eqc)) > 1e-3
             @info string("Bad constraint satisfaction at constraint: ", eqc.id, ", |g| = ", norm(gc(mechanism, eqc)))
         end

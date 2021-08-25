@@ -87,8 +87,8 @@ end
     return
 end
 
-@inline function lineStep!(ineqc::InequalityConstraint{T,N}, vector_entry::Entry, scale, mechanism) where {T,N}
-    ineqc.ssol[2] = ineqc.ssol[1] + 1 / (2^scale) * mechanism.α * vector_entry.value[SVector{N,Int64}(1:N)]
-    ineqc.γsol[2] = ineqc.γsol[1] + 1 / (2^scale) * mechanism.α * vector_entry.value[SVector{N,Int64}(N+1:2*N)]
+@inline function lineStep!(ineqc::InequalityConstraint{T,N,Nc,Cs,N½}, vector_entry::Entry, scale, mechanism) where {T,N,Nc,Cs,N½}
+    ineqc.ssol[2] = ineqc.ssol[1] + 1 / (2^scale) * mechanism.α * vector_entry.value[SVector{N½,Int64}(1:N½)]
+    ineqc.γsol[2] = ineqc.γsol[1] + 1 / (2^scale) * mechanism.α * vector_entry.value[SVector{N½,Int64}(N½+1:N)]
     return
 end

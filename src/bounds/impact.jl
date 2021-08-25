@@ -11,7 +11,7 @@ mutable struct Impact{T,N} <: Bound{T,N}
         Ainv = inv(A)
         ainv3 = Ainv[3,SA[1; 2; 3]]'
 
-        new{T,1}(ainv3, p, offset), body.id
+        new{T,2}(ainv3, p, offset), body.id, nothing
     end
 end
 

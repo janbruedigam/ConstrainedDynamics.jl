@@ -8,73 +8,30 @@ function create_system(origin::Origin{T}, bodies::Vector{<:Body},
     for eqc in eqconstraints
         eqc.parentid == origin.id && (eqc.parentid = nothing)
     end
+    origin.id = 0
 
     return system
 end
 
 function adjacencyMatrix(eqcs::Vector{<:EqualityConstraint}, bodies::Vector{<:Body}, ineqcs::Vector{<:InequalityConstraint})
-    A = zeros(Bool, 0, 0)
-    ids = Int64[]
-    dims = zeros(Int64, 0)
-    n = 0
+    nodes = [eqcs;bodies;ineqcs]
+    n = length(nodes)
+    A = zeros(Bool, n, n)
+    dims = zeros(Int64, n)
 
-    for eqc in eqcs
-        eqcid = eqc.id
-        A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
-        n += 1
-        append!(ids, eqcid)
-        append!(dims,length(eqc))
+    for node1 in nodes
+        dims[node1.id] = length(node1)
 
-        parentid = eqc.parentid
-        if parentid ∉ ids
-            A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
-            n += 1
-            append!(ids, parentid)
-            append!(dims,6)
-        end
-        A[findfirst(x->x==eqcid, ids),findfirst(x->x==parentid, ids)] = true
-
-        for bodyid in unique(eqc.childids)
-            if bodyid ∉ ids
-                A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
-                n += 1
-                append!(ids, bodyid)
-                append!(dims,6)
-            end
-            A[findfirst(x->x==eqcid, ids),findfirst(x->x==bodyid, ids)] = true
-
-            if eqc.isdamper
-                A[findfirst(x->x==parentid, ids),findfirst(x->x==bodyid, ids)] = true
+        for node2 in nodes
+            if typeof(node1) <: AbstractConstraint
+                node2.id in node1.childids && (A[node1.id,node2.id] = 1)
+            elseif typeof(node2) <: AbstractConstraint
+                node1.id == node2.parentid && (A[node1.id,node2.id] = 1)
             end
         end
     end
 
-    for body in bodies # add unconnected bodies
-        if body.id ∉ ids
-            A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
-            n += 1
-            append!(ids, body.id)
-            append!(dims,6)
-        end
-    end
-
-    for ineqc in ineqcs 
-        if typeof(ineqc.constraint) <: Impact
-            ineqcid = ineqc.id
-            A = [A zeros(Bool, n, 1); zeros(Bool, 1, n) zero(Bool)]
-            n += 1
-            append!(ids, ineqcid)
-            append!(dims,length(ineqc)*2)
-
-            parentid = ineqc.parentid
-            A[findfirst(x->x==ineqcid, ids),findfirst(x->x==parentid, ids)] = true
-        end
-    end
-
-    p = [findfirst(x->x==i,ids) for i=1:length(ids)][1:end-1]
     A = convert(Matrix{Int64}, A .| A')
-    A = A[p,p]
-    dims = dims[p]
 
     return A, dims
 end

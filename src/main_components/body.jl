@@ -85,6 +85,7 @@ end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, origin::Origin{T}) where {T}
     summary(io, origin)
+    println(io,"")
     println(io, " id:   "*string(origin.id))
     println(io, " name: "*string(origin.name))
 end
@@ -99,6 +100,7 @@ function Base.deepcopy(b::Body{T}) where T
 end
 
 Base.length(::Body) = 6
+Base.zero(::Body{T}) where T = szeros(T,6,6)
 
 @inline getM(body::Body{T}) where T = [[I*body.m;szeros(T,3,3)] [szeros(T,3,3);body.J]]
 

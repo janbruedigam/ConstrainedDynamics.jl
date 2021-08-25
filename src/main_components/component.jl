@@ -1,3 +1,5 @@
+abstract type AbstractMechanism{T,Nn,Nb,Ne,Ni} end
+
 abstract type Component{T} end
 abstract type AbstractBody{T} <: Component{T} end
 abstract type AbstractConstraint{T,N} <: Component{T} end

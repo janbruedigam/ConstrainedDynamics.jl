@@ -8,8 +8,6 @@ mutable struct Translational{T,N} <: Joint{T,N}
     
     Fτ::SVector{3,T}
 
-    childid::Int64
-
     function Translational{T,N}(body1::AbstractBody, body2::AbstractBody;
             p1::AbstractVector = szeros(T,3), p2::AbstractVector = szeros(T,3), axis::AbstractVector = szeros(T,3), spring = zero(T), damper = zero(T)
         ) where {T,N}
@@ -20,9 +18,7 @@ mutable struct Translational{T,N} <: Joint{T,N}
 
         Fτ = zeros(T,3)
 
-        childid = body2.id
-
-        new{T,N}(V3, V12, vertices, spring, damper, Fτ, childid), body1.id, body2.id
+        new{T,N}(V3, V12, vertices, spring, damper, Fτ), body1.id, body2.id
     end
 end
 

@@ -1,5 +1,3 @@
-abstract type AbstractMechanism{T,Nn,Nb,Ne,Ni} end
-
 """
 $(TYPEDEF)
 
@@ -44,6 +42,7 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         order = getGlobalOrder()
 
         for body in bodies
+            initknotpoints!(body.state, order)
             if norm(body.m) == 0 || norm(body.J) == 0
                 @info "Potentially bad inertial properties detected"
             end 
@@ -54,48 +53,21 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         Ni = length(ineqcs)
         Nn = Nb + Ne + Ni
 
-        if Nb < Ne
-            @info "More constraints than bodies. Potentially bad behavior."
-        end
+        nodes = [eqcs;bodies;ineqcs]
+        oldnewid = Dict([node.id=>i for (i,node) in enumerate(nodes)]...)
 
-
-        currentid = 1
-
-        for eqc in eqcs
-            eqc.id = currentid
-            currentid += 1
-        end
-
-        for body in bodies
-            initknotpoints!(body.state, order)
-
-            for eqc in eqcs
-                eqc.parentid == body.id && (eqc.parentid = currentid)
-                for (ind, bodyid) in enumerate(eqc.childids)
-                    if bodyid == body.id
-                        eqc.childids = setindex(eqc.childids, currentid, ind)
-                        eqc.constraints[ind].childid = currentid
-                    end
-                end
+        for node in nodes
+            node.id = oldnewid[node.id]
+            if typeof(node) <: AbstractConstraint
+                node.parentid = get(oldnewid, node.parentid, nothing)
+                node.childids = [get(oldnewid, childid, nothing) for childid in node.childids]
             end
-
-            for ineqc in ineqcs
-                ineqc.parentid == body.id && (ineqc.parentid = currentid)
-            end
-
-            body.id = currentid
-            currentid += 1
         end
 
-        for ineqc in ineqcs
-            ineqc.id = currentid
-            currentid += 1
-        end
+        system = create_system(origin, bodies, eqcs, ineqcs)
 
         normf = 0
         normΔs = 0
-
-        system = create_system(origin, bodies, eqcs, ineqcs)
 
         eqcs = UnitDict(eqcs)
         bodies = UnitDict((bodies[1].id):(bodies[Nb].id), bodies)
