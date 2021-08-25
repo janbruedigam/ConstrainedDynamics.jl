@@ -120,12 +120,12 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb,Ne}, eqcids) where {T,Nn,Nb
         if parentid !== nothing
             parentind = parentid - Ne
             col6 = offsetrange(parentind,6)
-            Bcontrol[col6,n1:n2] = ∂Fτ∂ua(mechanism, eqc, parentid)
+            Bcontrol[col6,n1:n2] = ∂Fτ∂ua(mechanism, eqc, getbody(mechanism, parentid))
         end
         for childid in eqc.childids
             childind = childid - Ne
             col6 = offsetrange(childind,6)
-            Bcontrol[col6,n1:n2] = ∂Fτ∂ub(mechanism, eqc, childid)
+            Bcontrol[col6,n1:n2] = ∂Fτ∂ub(mechanism, eqc, getbody(mechanism, childid))
         end
 
         n1 = n2+1

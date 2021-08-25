@@ -22,7 +22,7 @@ function gc(mechanism::Mechanism{T}) where T
 end   
 
 # Derivatives
-function ∂g∂posc(mechanism::Mechanism{T,Nn,Nb},freeids) where {T,Nn,Nb}
+function ∂g∂posc(mechanism::Mechanism{T,Nn,Nb}, freeids) where {T,Nn,Nb}
     freebodies = mechanism.bodies[freeids]
 
     rangeDict = Dict{Int64,UnitRange}()
@@ -41,7 +41,7 @@ function ∂g∂posc(mechanism::Mechanism{T,Nn,Nb},freeids) where {T,Nn,Nb}
     
     for (i,eqc) in enumerate(mechanism.eqconstraints)
         for (j,body) in enumerate(freebodies)
-             G[rangeDict[i],offsetrange(j,7)] = ∂g∂posc(mechanism, eqc, body.id)
+             G[rangeDict[i],offsetrange(j,7)] = ∂g∂posc(mechanism, eqc, body)
         end
     end
         

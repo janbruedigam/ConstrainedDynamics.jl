@@ -60,15 +60,13 @@ end
 
 Gets the component (body or equality constraint) with ID `id` from `mechanism` if it exists.
 """
-function getcomponent(mechanism::Mechanism, id::Integer)
-    if haskey(mechanism.bodies, id)
-        return getbody(mechanism, id)
-    elseif haskey(mechanism.eqconstraints, id)
+function getcomponent(mechanism::Mechanism{T,Nn,Nb,Ne}, id::Integer) where {T,Nn,Nb,Ne}
+    if id <= Ne
         return geteqconstraint(mechanism, id)
-    elseif haskey(mechanism.ineqconstraints, id)
-        return getineqconstraint(mechanism, id)
+    elseif id <= Ne+Nb
+        return getbody(mechanism, id)
     else
-        return
+        return getineqconstraint(mechanism, id)
     end
 end
 getcomponent(mechanism::Mechanism, id::Nothing) = mechanism.origin
