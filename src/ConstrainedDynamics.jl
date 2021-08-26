@@ -18,6 +18,7 @@ export Origin,
     Body,
     EqualityConstraint,
     InequalityConstraint,
+    Friction,
     Mechanism,
     Controller,
     Storage,
@@ -41,7 +42,6 @@ export Origin,
     CylindricalFree,
 
     Impact,
-    Friction,
     UnitQuaternion,
 
     setPosition!,
@@ -83,6 +83,7 @@ include(joinpath("main_components", "body.jl"))
 include(joinpath("main_components", "abstractconstraint.jl"))
 include(joinpath("main_components", "equalityconstraint.jl"))
 include(joinpath("main_components", "inequalityconstraint.jl"))
+include(joinpath("main_components", "friction.jl"))
 include(joinpath("main_components", "controller.jl"))
 include(joinpath("main_components", "mechanism_struct.jl"))
 include(joinpath("main_components", "system.jl"))
@@ -99,7 +100,7 @@ include(joinpath("joints", "translational.jl"))
 include(joinpath("joints", "rotational.jl"))
 include(joinpath("joints", "genericjoint.jl"))
 include(joinpath("joints", "prototypes.jl"))
-include(joinpath("joints", "friction.jl"))
+# include(joinpath("joints", "friction.jl"))
 
 include(joinpath("solver", "solverfunctions.jl"))
 include(joinpath("solver", "initconstraints.jl"))

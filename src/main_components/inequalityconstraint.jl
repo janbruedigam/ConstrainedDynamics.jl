@@ -16,7 +16,7 @@ mutable struct InequalityConstraint{T,N,Nc,Cs,N½} <: AbstractConstraint{T,N}
         bound, parentid, childid = data
         T = getT(bound)
 
-        # childids = Int64[]
+        childids = [childid]
         constraint = Tuple([bound])
         N = length(constraint[1])
         N½ = Int64(N/2)
@@ -24,7 +24,7 @@ mutable struct InequalityConstraint{T,N,Nc,Cs,N½} <: AbstractConstraint{T,N}
         ssol = [ones(T, N½) for i=1:2]
         γsol = [ones(T, N½) for i=1:2]
 
-        new{T,N,1,typeof(constraint),N½}(getGlobalID(), name, constraint, parentid, [childid], ssol, γsol)
+        new{T,N,1,typeof(constraint),N½}(getGlobalID(), name, constraint, parentid, childids, ssol, γsol)
     end
 end
 

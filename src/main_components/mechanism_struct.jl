@@ -14,11 +14,12 @@ A `Mechanism` contains the [`Origin`](@ref), [`Body`](@ref)s, and [`EqualityCons
     Mechanism(origin, bodies, eqcs; Δt, g)
     Mechanism(urdf_filename; floating, Δt, g)
 """
-mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
+mutable struct Mechanism{T,Nn,Nb,Ne,Ni,Nf} <: AbstractMechanism{T,Nn,Nb,Ne,Ni,Nf}
     origin::Origin{T}
     eqconstraints::UnitDict{Base.OneTo{Int64},<:EqualityConstraint{T}}
     bodies::UnitDict{UnitRange{Int64},Body{T}}
     ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
+    frictions::UnitDict{UnitRange{Int64},<:Friction{T}}
 
     system::System{Nn}
 
@@ -33,8 +34,9 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     μ::T
 
 
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
-            eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},
+            eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}},
+            frics::Vector{<:Friction{T}};
             Δt::Real = .01, g::Real = -9.81
         ) where T
 
@@ -51,47 +53,46 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         Nb = length(bodies)
         Ne = length(eqcs)
         Ni = length(ineqcs)
-        Nn = Nb + Ne + Ni
+        Nf = length(frics)
+        Nn = Nb + Ne + Ni + Nf
 
-        nodes = [eqcs;bodies;ineqcs]
+        nodes = [eqcs;bodies;ineqcs;frics]
         oldnewid = Dict([node.id=>i for (i,node) in enumerate(nodes)]...)
 
         for node in nodes
             node.id = oldnewid[node.id]
-            if typeof(node) <: AbstractConstraint
+            if typeof(node) <: Union{AbstractConstraint, Friction}
                 node.parentid = get(oldnewid, node.parentid, nothing)
                 node.childids = [get(oldnewid, childid, nothing) for childid in node.childids]
             end
         end
 
-        system = create_system(origin, bodies, eqcs, ineqcs)
+        system = create_system(origin, bodies, eqcs, ineqcs, frics)
 
         normf = 0
         normΔs = 0
 
         eqcs = UnitDict(eqcs)
         bodies = UnitDict((bodies[1].id):(bodies[Nb].id), bodies)
-        if Ni > 0
-            ineqcs = UnitDict((ineqcs[1].id):(ineqcs[Ni].id), ineqcs)
-        else
-            ineqcs = UnitDict(0:0, ineqcs)
-        end
+        Ni > 0 ? (ineqcs = UnitDict((ineqcs[1].id):(ineqcs[Ni].id), ineqcs)) : (ineqcs = UnitDict(0:0, ineqcs))
+        Nf > 0 ? (frics = UnitDict((frics[1].id):(frics[Nf].id), frics)) : (frics = UnitDict(0:0, frics))
 
         α = 1
         μ = 1
 
-        new{T,Nn,Nb,Ne,Ni}(origin, eqcs, bodies, ineqcs, system, normf, normΔs, Δt, g, α, μ)
+        new{T,Nn,Nb,Ne,Ni,Nf}(origin, eqcs, bodies, ineqcs, frics, system, normf, normΔs, Δt, g, α, μ)
     end
 
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
             Δt::Real = .01, g::Real = -9.81
         ) where T
 
         ineqcs = InequalityConstraint{T}[]
-        return Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g)
+        frics = Friction{T}[]
+        return Mechanism(origin, bodies, eqcs, ineqcs, frics; Δt = Δt, g = g)
     end
 
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
             Δt::Real = .01, g::Real = -9.81
         ) where T
 
@@ -99,10 +100,10 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         for body in bodies
             push!(eqc, EqualityConstraint(Floating(origin, body)))
         end
-        return Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g)
+        return Mechanism(origin, bodies, eqc, ineqcs; Δt = Δt, g = g)
     end
 
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}};
             Δt::Real = .01, g::Real = -9.81
         ) where T
 

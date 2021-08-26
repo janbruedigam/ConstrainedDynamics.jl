@@ -1,8 +1,8 @@
 function create_system(origin::Origin{T}, bodies::Vector{<:Body},
-        eqconstraints::Vector{<:EqualityConstraint}, ineqconstraints::Vector{<:InequalityConstraint}
+        eqconstraints::Vector{<:EqualityConstraint}, ineqconstraints::Vector{<:InequalityConstraint}, frictions::Vector{<:Friction}
     ) where T
 
-    adjacency, dims = adjacencyMatrix(eqconstraints, bodies, ineqconstraints)
+    adjacency, dims = adjacencyMatrix(eqconstraints, bodies, ineqconstraints, frictions)
     system = System{T}(adjacency, dims)
 
     for eqc in eqconstraints
@@ -13,8 +13,8 @@ function create_system(origin::Origin{T}, bodies::Vector{<:Body},
     return system
 end
 
-function adjacencyMatrix(eqcs::Vector{<:EqualityConstraint}, bodies::Vector{<:Body}, ineqcs::Vector{<:InequalityConstraint})
-    nodes = [eqcs;bodies;ineqcs]
+function adjacencyMatrix(eqcs::Vector{<:EqualityConstraint}, bodies::Vector{<:Body}, ineqcs::Vector{<:InequalityConstraint}, frics::Vector{<:Friction})
+    nodes = [eqcs;bodies;ineqcs;frics]
     n = length(nodes)
     A = zeros(Bool, n, n)
     dims = zeros(Int64, n)
@@ -23,9 +23,9 @@ function adjacencyMatrix(eqcs::Vector{<:EqualityConstraint}, bodies::Vector{<:Bo
         dims[node1.id] = length(node1)
 
         for node2 in nodes
-            if typeof(node1) <: AbstractConstraint
+            if typeof(node1) <: Union{AbstractConstraint, Friction}
                 node2.id in node1.childids && (A[node1.id,node2.id] = 1)
-            elseif typeof(node2) <: AbstractConstraint
+            elseif typeof(node2) <: Union{AbstractConstraint, Friction}
                 node1.id == node2.parentid && (A[node1.id,node2.id] = 1)
             end
         end
@@ -105,7 +105,7 @@ function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
 
         # b
         if component isa Body
-            b[range] = -dynamics(mechanism, component)
+            b[range] = -g(mechanism, component)
         else
             b[range] = -g(mechanism, component)
         end

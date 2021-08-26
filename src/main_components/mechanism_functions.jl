@@ -47,9 +47,19 @@ end
 
 @inline getineqconstraint(mechanism::Mechanism, id::Integer) = mechanism.ineqconstraints[id]
 function getineqconstraint(mechanism::Mechanism, name::String)
-    for ineqc in mechanism.eqconstraints
+    for ineqc in mechanism.ineqconstraints
         if ineqc.name == name
             return ineqc
+        end
+    end
+    return
+end
+
+@inline getfriction(mechanism::Mechanism, id::Integer) = mechanism.frictions[id]
+function getfriction(mechanism::Mechanism, name::String)
+    for friction in mechanism.frictions
+        if friction.name == name
+            return friction
         end
     end
     return
@@ -60,13 +70,15 @@ end
 
 Gets the component (body or equality constraint) with ID `id` from `mechanism` if it exists.
 """
-function getcomponent(mechanism::Mechanism{T,Nn,Nb,Ne}, id::Integer) where {T,Nn,Nb,Ne}
+function getcomponent(mechanism::Mechanism{T,Nn,Nb,Ne,Nf}, id::Integer) where {T,Nn,Nb,Ne,Nf}
     if id <= Ne
         return geteqconstraint(mechanism, id)
     elseif id <= Ne+Nb
         return getbody(mechanism, id)
-    else
+    elseif id <= Ne+Nb+Nf
         return getineqconstraint(mechanism, id)
+    else
+        return getfriction(mechanism, id)
     end
 end
 getcomponent(mechanism::Mechanism, id::Nothing) = mechanism.origin
@@ -83,6 +95,9 @@ function getcomponent(mechanism::Mechanism, name::String)
     end
     if component === nothing
         component = getineqconstraint(mechanism,name)
+    end
+    if component === nothing
+        component = getfriction(mechanism,name)
     end
     return component
 end

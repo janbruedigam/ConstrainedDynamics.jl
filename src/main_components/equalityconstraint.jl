@@ -26,75 +26,49 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     λsol::Vector{SVector{N,T}}
 
     function EqualityConstraint(data...; name::String="")
-        if typeof(data[1][1]) <: Friction
-            data = data[1]
-            global CURRENTID
-            data[4].parentid = data[3].parentid = CURRENTID 
-    
-            T = Float64
-    
-            isspring = false
-            isdamper = false
-            parentid = data[2]
-            childids = SA[data[3].id;data[4].id]
-            constraints = (data[1],)
-            inds = [[1;2] for i=1:2]
-            N = 4
-            Nc = 2
-            
-    
-            λsol = [zeros(T, N) for i=1:2]
-    
-            return new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, isspring, isdamper, constraints, parentid, childids, inds, λsol)
-
-        else
-            jointdata = Tuple{AbstractJoint,Int64,Int64}[]
-            for info in data
-                if info[1] isa AbstractJoint
-                    push!(jointdata, info)
-                else
-                    for subinfo in info
-                        push!(jointdata, subinfo)
-                    end
+        jointdata = Tuple{AbstractJoint,Int64,Int64}[]
+        for info in data
+            if info[1] isa AbstractJoint
+                push!(jointdata, info)
+            else
+                for subinfo in info
+                    push!(jointdata, subinfo)
                 end
             end
-    
-            T = getT(jointdata[1][1])# .T
-    
-            isspring = false
-            isdamper = false
-            parentid = jointdata[1][2]
-            childids = Int64[]
-            constraints = AbstractJoint{T}[]
-            inds = Vector{Int64}[]
-            N = 0
-            for set in jointdata
-                set[1].spring != 0 && (isspring = true)
-                set[1].damper != 0 && (isdamper = true)
-                
-                push!(constraints, set[1])
-                @assert set[2] == parentid
-                push!(childids, set[3])
-    
-                Nset = length(set[1])
-                if isempty(inds)
-                    push!(inds, [1;3-Nset])
-                else
-                    push!(inds, [last(inds)[2]+1;last(inds)[2]+3-Nset])
-                end
-                N += Nset
-            end
-            constraints = Tuple(constraints)
-            Nc = length(constraints)
-            
-    
-            λsol = [zeros(T, N) for i=1:2]
-    
-            return new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, isspring, isdamper, constraints, parentid, childids, inds, λsol)
         end
 
+        T = getT(jointdata[1][1])# .T
 
+        isspring = false
+        isdamper = false
+        parentid = jointdata[1][2]
+        childids = Int64[]
+        constraints = AbstractJoint{T}[]
+        inds = Vector{Int64}[]
+        N = 0
+        for set in jointdata
+            set[1].spring != 0 && (isspring = true)
+            set[1].damper != 0 && (isdamper = true)
+            
+            push!(constraints, set[1])
+            @assert set[2] == parentid
+            push!(childids, set[3])
+
+            Nset = length(set[1])
+            if isempty(inds)
+                push!(inds, [1;3-Nset])
+            else
+                push!(inds, [last(inds)[2]+1;last(inds)[2]+3-Nset])
+            end
+            N += Nset
+        end
+        constraints = Tuple(constraints)
+        Nc = length(constraints)
         
+
+        λsol = [zeros(T, N) for i=1:2]
+
+        return new{T,N,Nc,typeof(constraints)}(getGlobalID(), name, isspring, isdamper, constraints, parentid, childids, inds, λsol)
     end
 end
 

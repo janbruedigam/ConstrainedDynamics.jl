@@ -43,8 +43,8 @@ end
 
 # Wrappers 2
 ∂g∂ʳpos(friction::Friction, state::State) = ∂g∂ʳpos(friction, posargsk(state)...)
-∂g∂ʳpos(friction::Friction{T,N}, constraint::FrictionForceLimit) where {T,N} = [szeros(T,N) sones(T,N)]
-∂g∂ʳpos(friction::Friction{T,N}, constraint::FrictionVectorLimit) where {T,N} = [szeros(T,N,N) -I]
+∂g∂ʳpos(friction::Friction{T,N}, constraint::FrictionBound) where {T,N} = [szeros(T,N) sones(T,N)]
+∂g∂ʳpos(friction::Friction{T,N}, constraint::BetaBound) where {T,N} = [szeros(T,N,N) -I]
 
 # Derivatives accounting for quaternion specialness
 @inline function ∂g∂ʳpos(friction::Friction, x::AbstractVector, q::UnitQuaternion)
