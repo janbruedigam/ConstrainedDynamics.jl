@@ -1,4 +1,4 @@
-@inline function g(mechanism::Mechanism{T,Nn,Nb,Ne}, body::Body{T}) where {T,Nn,Nb,Ne}
+@inline function g(mechanism::Mechanism{T,Nn,Ne,Nb}, body::Body{T}) where {T,Nn,Ne,Nb}
     state = body.state
     Δt = mechanism.Δt
 
@@ -22,7 +22,7 @@
     return state.d
 end
 
-@inline function ∂g∂ʳself(mechanism::Mechanism{T,Nn,Nb,Ne}, body::Body{T}) where {T,Nn,Nb,Ne}
+@inline function ∂g∂ʳself(mechanism::Mechanism{T,Nn,Ne}, body::Body{T}) where {T,Nn,Ne}
     state = body.state
     Δt = mechanism.Δt
     J = body.J

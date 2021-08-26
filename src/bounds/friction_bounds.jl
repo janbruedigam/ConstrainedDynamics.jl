@@ -1,7 +1,8 @@
-mutable struct FrictionBound{T,N} <: Bound{T,N}    
+mutable struct FrictionBound{T,N} <: Bound{T,N}
+    cf::T
 
-    function FrictionBound(frictionid, impactid)
-        new{Float64,2}(), frictionid, impactid
+    function FrictionBound(cf, frictionid, impactid)
+        new{Float64,2}(cf), frictionid, impactid
     end
 end
 
@@ -18,21 +19,14 @@ end
 @inline g(ffl::FrictionBound, β::AbstractVector, γ::AbstractVector) = ffl.cf*γ - SVector{1,Float64}(sum(β))
 @inline g(fvl::BetaBound, β::AbstractVector) = β
 
-## Derivatives accounting for quaternion specialness
-@inline function ∂g∂ʳposa(ffl::FrictionBound{T,N}, λ::AbstractVector, γ::AbstractVector) where {T,N}
-    return sones(T,N)
+## Derivatives 
+@inline function ∂g∂beta(::Friction{T,N}, ::FrictionBound) where {T,N}
+    return [szeros(T,N) sones(T,N)]
 end
-@inline function ∂g∂ʳposb(fvl::FrictionBound{T,N}, λ::AbstractVector, γ::AbstractVector) where {T,N}
-    return szeros(T,1,1)
-end
-@inline function ∂g∂ʳpos(fvl::FrictionBound, λ::AbstractVector)
-    return -I
+@inline function ∂g∂beta(::Friction{T,N}, ::BetaBound) where {T,N}
+    return [szeros(T,N,N) -I]
 end
 
-@inline function ∂g∂ʳvela(ffl::FrictionBound{T,N}, λ::AbstractVector, γ::AbstractVector) where {T,N}
-    return szeros(T,1,1)
+@inline function ∂gab∂ʳba(ffl::FrictionBound{T}, impact::Impact) where T
+    SA{T}[0 0;0 ffl.cf], szeros(T,2,2)
 end
-@inline function ∂g∂ʳvelb(ffl::FrictionBound{T,N}, λ::AbstractVector, γ::AbstractVector) where {T,N}
-    return sones(T,1,1)*ffl.cf
-end
-

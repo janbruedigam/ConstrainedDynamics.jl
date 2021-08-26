@@ -22,7 +22,7 @@ function gc(mechanism::Mechanism{T}) where T
 end   
 
 # Derivatives
-function ∂g∂posc(mechanism::Mechanism{T,Nn,Nb}, freeids) where {T,Nn,Nb}
+function ∂g∂posc(mechanism::Mechanism{T,Nn,Ne,Nb}, freeids) where {T,Nn,Ne,Nb}
     freebodies = mechanism.bodies[freeids]
 
     rangeDict = Dict{Int64,UnitRange}()
@@ -49,7 +49,7 @@ function ∂g∂posc(mechanism::Mechanism{T,Nn,Nb}, freeids) where {T,Nn,Nb}
 end
 
 
-function constraintstep!(mechanism::Mechanism{T,Nn,Nb},freeids) where {T,Nn,Nb}
+function constraintstep!(mechanism::Mechanism{T,Nn,Ne,Nb},freeids) where {T,Nn,Ne,Nb}
     freebodies = mechanism.bodies[freeids]
 
     gval=gc(mechanism)
@@ -72,7 +72,7 @@ function constraintstep!(mechanism::Mechanism{T,Nn,Nb},freeids) where {T,Nn,Nb}
     return
 end
 
-function initializeConstraints!(mechanism::Mechanism{T,Nn,Nb,Ne}; fixedids = Int64[], freeids = Int64[], ε = 1e-5, newtonIter = 100, lineIter = 10) where {T,Nn,Nb,Ne}
+function initializeConstraints!(mechanism::Mechanism{T,Nn,Ne,Nb}; fixedids = Int64[], freeids = Int64[], ε = 1e-5, newtonIter = 100, lineIter = 10) where {T,Nn,Ne,Nb}
     freebodies = Body[]
     if !isempty(fixedids) && !isempty(freeids)
         error("Specify either free or fixed bodies, not both.")

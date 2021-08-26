@@ -1,11 +1,11 @@
 # Newton with line search 
-function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,0};
+function newton!(mechanism::Mechanism{T,Nn,Ne,Nb,Nf,0};
         ε = 1e-10, newtonIter = 100, lineIter = 10, warning::Bool = false
-    ) where {T,Nn,Nb,Ne}
+    ) where {T,Nn,Ne,Nb,Nf}
     
-    bodies = mechanism.bodies
-    eqcs = mechanism.eqconstraints
     system = mechanism.system
+    eqcs = mechanism.eqconstraints
+    bodies = mechanism.bodies
 
     normf0 = normf(mechanism)
     for n = Base.OneTo(newtonIter)
@@ -31,14 +31,15 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,0};
 end
 
 # Newton on interior point with line search
-function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,Ni};
+function newton!(mechanism::Mechanism;
         ε = 1e-10, σ = 0.1, μ = 1.0, newtonIter = 100, lineIter = 10, warning::Bool = false
-    ) where {T,Nn,Nb,Ne,Ni}
+    )
     
-    bodies = mechanism.bodies
-    eqcs = mechanism.eqconstraints
-    ineqcs = mechanism.ineqconstraints
     system = mechanism.system
+    eqcs = mechanism.eqconstraints
+    bodies = mechanism.bodies
+    frics = mechanism.frictions
+    ineqcs = mechanism.ineqconstraints
 
     foreach(resetVars!, ineqcs)
     mechanism.μ = μ
@@ -53,6 +54,7 @@ function newton!(mechanism::Mechanism{T,Nn,Nb,Ne,Ni};
         foreach(updatesolution!, bodies)
         foreach(updatesolution!, eqcs)
         foreach(updatesolution!, ineqcs)
+        foreach(updatesolution!, frics)
 
         if normf(mechanism) < ε
             warning && (@info string("Newton iterations: ", n))

@@ -14,12 +14,12 @@ A `Mechanism` contains the [`Origin`](@ref), [`Body`](@ref)s, and [`EqualityCons
     Mechanism(origin, bodies, eqcs; Δt, g)
     Mechanism(urdf_filename; floating, Δt, g)
 """
-mutable struct Mechanism{T,Nn,Nb,Ne,Ni,Nf} <: AbstractMechanism{T,Nn,Nb,Ne,Ni,Nf}
+mutable struct Mechanism{T,Nn,Ne,Nb,Nf,Ni} <: AbstractMechanism{T,Nn,Ne,Nb,Nf,Ni}
     origin::Origin{T}
     eqconstraints::UnitDict{Base.OneTo{Int64},<:EqualityConstraint{T}}
     bodies::UnitDict{UnitRange{Int64},Body{T}}
-    ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
     frictions::UnitDict{UnitRange{Int64},<:Friction{T}}
+    ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
     system::System{Nn}
 
@@ -50,13 +50,13 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni,Nf} <: AbstractMechanism{T,Nn,Nb,Ne,Ni,Nf
             end 
         end
 
-        Nb = length(bodies)
         Ne = length(eqcs)
-        Ni = length(ineqcs)
+        Nb = length(bodies)
         Nf = length(frics)
-        Nn = Nb + Ne + Ni + Nf
+        Ni = length(ineqcs)
+        Nn = Ne + Nb + Nf + Ni
 
-        nodes = [eqcs;bodies;ineqcs;frics]
+        nodes = [eqcs;bodies;frics;ineqcs]
         oldnewid = Dict([node.id=>i for (i,node) in enumerate(nodes)]...)
 
         for node in nodes
@@ -67,20 +67,21 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni,Nf} <: AbstractMechanism{T,Nn,Nb,Ne,Ni,Nf
             end
         end
 
-        system = create_system(origin, bodies, eqcs, ineqcs, frics)
+        system = create_system(origin, eqcs, bodies, frics, ineqcs)
 
         normf = 0
         normΔs = 0
 
         eqcs = UnitDict(eqcs)
         bodies = UnitDict((bodies[1].id):(bodies[Nb].id), bodies)
-        Ni > 0 ? (ineqcs = UnitDict((ineqcs[1].id):(ineqcs[Ni].id), ineqcs)) : (ineqcs = UnitDict(0:0, ineqcs))
         Nf > 0 ? (frics = UnitDict((frics[1].id):(frics[Nf].id), frics)) : (frics = UnitDict(0:0, frics))
+        Ni > 0 ? (ineqcs = UnitDict((ineqcs[1].id):(ineqcs[Ni].id), ineqcs)) : (ineqcs = UnitDict(0:0, ineqcs))
+        
 
         α = 1
         μ = 1
 
-        new{T,Nn,Nb,Ne,Ni,Nf}(origin, eqcs, bodies, ineqcs, frics, system, normf, normΔs, Δt, g, α, μ)
+        new{T,Nn,Ne,Nb,Nf,Ni}(origin, eqcs, bodies, frics, ineqcs, system, normf, normΔs, Δt, g, α, μ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
@@ -88,6 +89,14 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni,Nf} <: AbstractMechanism{T,Nn,Nb,Ne,Ni,Nf
         ) where T
 
         ineqcs = InequalityConstraint{T}[]
+        frics = Friction{T}[]
+        return Mechanism(origin, bodies, eqcs, ineqcs, frics; Δt = Δt, g = g)
+    end
+
+    function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},eqcs::Vector{<:EqualityConstraint{T}},ineqcs::Vector{<:InequalityConstraint{T}};
+            Δt::Real = .01, g::Real = -9.81
+        ) where T
+
         frics = Friction{T}[]
         return Mechanism(origin, bodies, eqcs, ineqcs, frics; Δt = Δt, g = g)
     end
@@ -123,14 +132,14 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni,Nf} <: AbstractMechanism{T,Nn,Nb,Ne,Ni,Nf
     end
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Nb,Ne,0}) where {T,Nn,Nb,Ne}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Ne,Nb,Nf,0}) where {T,Nn,Ne,Nb,Nf}
     summary(io, mechanism)
     println(io, " with ", Nb, " bodies and ", Ne, " constraints")
     println(io, " Δt: "*string(mechanism.Δt))
     println(io, " g:  "*string(mechanism.g))
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Nb,Ne,Ni}) where {T,Nn,Nb,Ne,Ni}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Ne,Nb,Nf,Ni}) where {T,Nn,Ne,Nb,Nf,Ni}
     summary(io, mechanism)
     println(io, " with ", Nb, " bodies, ", Ne, " equality constraints, and ", Ni, " inequality constraints")
     println(io, " Δt: "*string(mechanism.Δt))

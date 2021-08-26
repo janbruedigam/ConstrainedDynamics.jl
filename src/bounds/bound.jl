@@ -12,8 +12,8 @@ Base.length(bound::Bound{T,N}) where {T,N} = N
 ### Constraints and derivatives
 ## Position level constraint wrappers
 g(bound::Bound, body::Body, Δt) = g(bound, body.state, Δt)
-g(bound::Bound, eqc::EqualityConstraint, Δt) = g(bound, eqc.λsol[2])
-g(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, Δt) = g(bound, eqc.λsol[2], ineqc.γsol[2])
+g(bound::Bound, fric::Friction, Δt) = g(bound, fric.βsol[2])
+g(bound::Bound, fric::Friction, ineqc::InequalityConstraint) = g(bound, fric.βsol[2], ineqc.γsol[2])
 
 ## Discrete-time position wrappers (for dynamics)
 @inline g(bound::Bound, state::State, Δt) = g(bound, posargsnext(state, Δt)...)
@@ -23,9 +23,9 @@ g(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, Δt) = g(b
 @inline function ∂g∂ʳposa(bound::Bound, body::Body, id)
     return ∂g∂ʳpos(bound, body.state)
 end
-# @inline function ∂g∂ʳposa(bound::Bound, eqc::EqualityConstraint, id)
-#     return ∂g∂ʳpos(bound, eqc.λsol[2])
-# end
+@inline function ∂g∂ʳpos(bound::Bound, fric::Friction, id)
+    return ∂g∂ʳpos(bound, eqc.λsol[2])
+end
 # @inline function ∂g∂ʳposa(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, id)
 #     return ∂g∂ʳposa(bound, eqc.λsol[2], ineqc.γsol[2])
 # end

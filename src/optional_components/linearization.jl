@@ -1,6 +1,6 @@
 # TODO only works for 1DOF active constraints (eqcids)
 # Maximal Coordinates
-function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,Nn,Nb}
+function linearsystem(mechanism::Mechanism{T,Nn,Ne,Nb}, xd, vd, qd, ωd, Fτd, bodyids, eqcids) where {T,Nn,Ne,Nb}
     statesold = [State{T}() for i=1:Nb]
 
     # store old state and set new initial state
@@ -23,7 +23,7 @@ function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xd, vd, qd, ωd, Fτd, body
     return A, Bu, Bλ, G
 end
 # Minimal Coordinates
-function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xθd, vωd, Fτd, controlledids, controlids) where {T,Nn,Nb}
+function linearsystem(mechanism::Mechanism{T,Nn,Ne,Nb}, xθd, vωd, Fτd, controlledids, controlids) where {T,Nn,Ne,Nb}
     statesold = [State{T}() for i=1:Nb]
     xd = [szeros(T,3) for i=1:Nb]
     vd = [szeros(T,3) for i=1:Nb]
@@ -59,7 +59,7 @@ function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xθd, vωd, Fτd, controlle
 end
 
 
-function lineardynamics(mechanism::Mechanism{T,Nn,Nb,Ne}, eqcids) where {T,Nn,Nb,Ne}
+function lineardynamics(mechanism::Mechanism{T,Nn,Ne,Nb}, eqcids) where {T,Nn,Ne,Nb}
     Δt = mechanism.Δt
     bodies = mechanism.bodies
     eqcs = mechanism.eqconstraints
@@ -141,7 +141,7 @@ function lineardynamics(mechanism::Mechanism{T,Nn,Nb,Ne}, eqcids) where {T,Nn,Nb
     return A, Bu, Bλ, G
 end
 
-function linearconstraints(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
+function linearconstraints(mechanism::Mechanism{T,Nn,Ne,Nb}) where {T,Nn,Ne,Nb}
     Δt = mechanism.Δt
     eqcs = mechanism.eqconstraints
 
@@ -269,7 +269,7 @@ function linearconstraints(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
     return Gl, -Gr'
 end
 
-function linearconstraintmapping(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
+function linearconstraintmapping(mechanism::Mechanism{T,Nn,Ne,Nb}) where {T,Nn,Ne,Nb}
     FfzG = zeros(T,Nb*13,Nb*13)
 
     K = zeros(T,9,9)
@@ -372,7 +372,7 @@ function linearconstraintmapping(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,N
     return FfzG
 end
 
-function linearforcemapping(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
+function linearforcemapping(mechanism::Mechanism{T,Nn,Ne,Nb}) where {T,Nn,Ne,Nb}
     Fzu = zeros(T,Nb*13,Nb*12)
 
     for eqc in mechanism.eqconstraints

@@ -70,15 +70,15 @@ end
 
 Gets the component (body or equality constraint) with ID `id` from `mechanism` if it exists.
 """
-function getcomponent(mechanism::Mechanism{T,Nn,Nb,Ne,Nf}, id::Integer) where {T,Nn,Nb,Ne,Nf}
+function getcomponent(mechanism::Mechanism{T,Nn,Ne,Nb,Nf}, id::Integer) where {T,Nn,Ne,Nb,Nf}
     if id <= Ne
         return geteqconstraint(mechanism, id)
     elseif id <= Ne+Nb
         return getbody(mechanism, id)
     elseif id <= Ne+Nb+Nf
-        return getineqconstraint(mechanism, id)
-    else
         return getfriction(mechanism, id)
+    else
+        return getineqconstraint(mechanism, id)
     end
 end
 getcomponent(mechanism::Mechanism, id::Nothing) = mechanism.origin
@@ -102,8 +102,8 @@ function getcomponent(mechanism::Mechanism, name::String)
     return component
 end
 
-@inline function normf(mechanism::Mechanism, body::Component)
-    f = g(mechanism, body)
+@inline function normf(mechanism::Mechanism, component::Component)
+    f = g(mechanism, component)
     return dot(f, f)
 end
 
@@ -122,8 +122,9 @@ end
 @inline function normf(mechanism::Mechanism)
     mechanism.normf = 0
     
-    foreach(addNormf!, mechanism.bodies, mechanism)
     foreach(addNormf!, mechanism.eqconstraints, mechanism)
+    foreach(addNormf!, mechanism.bodies, mechanism)
+    foreach(addNormf!, mechanism.frictions, mechanism)
     foreach(addNormf!, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normf)
@@ -132,8 +133,9 @@ end
 @inline function meritf(mechanism::Mechanism)
     mechanism.normf = 0
 
-    foreach(addNormf!, mechanism.bodies, mechanism)
     foreach(addNormf!, mechanism.eqconstraints, mechanism)
+    foreach(addNormf!, mechanism.bodies, mechanism)
+    foreach(addNormf!, mechanism.frictions, mechanism)
     foreach(addNormfμ!, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normf)
@@ -142,8 +144,9 @@ end
 @inline function normΔs(mechanism::Mechanism)
     mechanism.normΔs = 0
 
-    foreach(addNormΔs!, mechanism.bodies, mechanism)
     foreach(addNormΔs!, mechanism.eqconstraints, mechanism)
+    foreach(addNormΔs!, mechanism.bodies, mechanism)
+    foreach(addNormΔs!, mechanism.frictions, mechanism)
     foreach(addNormΔs!, mechanism.ineqconstraints, mechanism)
 
     return sqrt(mechanism.normΔs)

@@ -9,29 +9,14 @@ end
     return
 end
 
-@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, body::Body, eqc::EqualityConstraint)
-    matrix_entry_L.value = -∂g∂ʳpos(mechanism, eqc, body)'
-    matrix_entry_U.value = ∂g∂ʳvel(mechanism, eqc, body)
+@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, componenta::Component, componentb::Component)
+    L, U = ∂gab∂ʳba(mechanism, componenta, componentb)
+    matrix_entry_L.value = L
+    matrix_entry_U.value = U
     return
 end
-@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, eqc::EqualityConstraint, body::Body)
-    matrix_entry_L.value = ∂g∂ʳvel(mechanism, eqc, body)
-    matrix_entry_U.value = -∂g∂ʳpos(mechanism, eqc, body)'
-    return
-end
-@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, body1::Body, body2::Body)
-    eqc = geteqconstraint(mechanism, parents(mechanism.system, body2.id)[1]) # TODO This only works for acyclic damped systems
-    D = -offdiagonal∂damper∂ʳvel(mechanism, eqc, body1, body2)
-    matrix_entry_L.value = D
-    matrix_entry_U.value = D'
-    return
-end
-@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, body::Body, ineqc::InequalityConstraint{T,N,Nc,Cs,N½}) where {T,N,Nc,Cs,N½}
-    Z = szeros(T,N½,6)
-    matrix_entry_L.value = [Z;-∂g∂ʳpos(mechanism, ineqc, body)]'
-    matrix_entry_U.value = [Z;∂g∂ʳvel(mechanism, ineqc, body)]
-    return
-end
+
+
 # @inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, ineqc::InequalityConstraint{T,N,Nc,Cs,N½}, body::Body) where {T,N,Nc,Cs,N½}
 #     # A = ∂g∂ʳvel(mechanism, ineqc, id)
 #     # Z = A*0
@@ -53,8 +38,8 @@ end
 function feasibilityStepLength!(mechanism::Mechanism)
     system = mechanism.system
 
-    τ = 0.995
-    # τ = 0.95
+    # τ = 0.995
+    τ = 0.95
     mechanism.α = 1.0
 
     for ineqc in mechanism.ineqconstraints
@@ -76,7 +61,7 @@ function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, vec
 end
 
 
-function setentries!(mechanism::Mechanism{T,Nn,Nb,Ne}) where {T,Nn,Nb,Ne}
+function setentries!(mechanism::Mechanism)
     system = mechanism.system
 
     for id in reverse(system.dfs_list)
@@ -110,6 +95,11 @@ end
 @inline function updatesolution!(ineqc::InequalityConstraint)
     ineqc.ssol[1] = ineqc.ssol[2]
     ineqc.γsol[1] = ineqc.γsol[2]
+    return
+end
+
+@inline function updatesolution!(fric::Friction)
+    fric.βsol[1] = fric.βsol[2]
     return
 end
 

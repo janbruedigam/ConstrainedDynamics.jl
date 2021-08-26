@@ -1,8 +1,8 @@
-function create_system(origin::Origin{T}, bodies::Vector{<:Body},
-        eqconstraints::Vector{<:EqualityConstraint}, ineqconstraints::Vector{<:InequalityConstraint}, frictions::Vector{<:Friction}
+function create_system(origin::Origin{T}, eqconstraints::Vector{<:EqualityConstraint}, bodies::Vector{<:Body},
+        frictions::Vector{<:Friction}, ineqconstraints::Vector{<:InequalityConstraint}
     ) where T
 
-    adjacency, dims = adjacencyMatrix(eqconstraints, bodies, ineqconstraints, frictions)
+    adjacency, dims = adjacencyMatrix(eqconstraints, bodies, frictions, ineqconstraints)
     system = System{T}(adjacency, dims)
 
     for eqc in eqconstraints
@@ -13,8 +13,8 @@ function create_system(origin::Origin{T}, bodies::Vector{<:Body},
     return system
 end
 
-function adjacencyMatrix(eqcs::Vector{<:EqualityConstraint}, bodies::Vector{<:Body}, ineqcs::Vector{<:InequalityConstraint}, frics::Vector{<:Friction})
-    nodes = [eqcs;bodies;ineqcs;frics]
+function adjacencyMatrix(eqcs::Vector{<:EqualityConstraint}, bodies::Vector{<:Body}, frics::Vector{<:Friction}, ineqcs::Vector{<:InequalityConstraint})
+    nodes = [eqcs;bodies;frics;ineqcs]
     n = length(nodes)
     A = zeros(Bool, n, n)
     dims = zeros(Int64, n)
@@ -50,7 +50,7 @@ end
 
 
 # TODO does not include ineqcs yet
-function densesystem(mechanism::Mechanism{T,Nn,Nb}) where {T,Nn,Nb}
+function densesystem(mechanism::Mechanism{T,Nn,Ne,Nb}) where {T,Nn,Ne,Nb}
     eqcs = mechanism.eqconstraints
     system = mechanism.system
     system = mechanism.system
