@@ -1,12 +1,6 @@
-@inline function setDandΔs!(mechanism::Mechanism, matrix_entry::Entry, vector_entry::Entry, body::Body)
-    matrix_entry.value = ∂dyn∂vel(mechanism, body)
-    vector_entry.value = -dynamics(mechanism, body)
-    return
-end
-@inline function setDandΔs!(mechanism::Mechanism, matrix_entry::Entry, vector_entry::Entry, eqc::EqualityConstraint)
-    μ = 1e-10 # 0 for no regularization
-    matrix_entry.value = I*μ
-    vector_entry.value = -g(mechanism, eqc)
+@inline function setDandΔs!(mechanism::Mechanism, matrix_entry::Entry, vector_entry::Entry, component::Component)
+    matrix_entry.value = ∂g∂ʳself(mechanism, component)
+    vector_entry.value = -g(mechanism, component)
     return
 end
 @inline function setDandΔs!(mechanism::Mechanism, matrix_entry::Entry, vector_entry::Entry, ineqc::InequalityConstraint)

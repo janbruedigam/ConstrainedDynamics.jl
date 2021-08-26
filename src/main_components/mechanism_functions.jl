@@ -102,13 +102,8 @@ function getcomponent(mechanism::Mechanism, name::String)
     return component
 end
 
-@inline function normf(mechanism::Mechanism, body::Body)
-    f = dynamics(mechanism, body)
-    return dot(f, f)
-end
-
-@inline function normf(mechanism::Mechanism, eqc::EqualityConstraint)
-    f = g(mechanism, eqc)
+@inline function normf(mechanism::Mechanism, body::Component)
+    f = g(mechanism, body)
     return dot(f, f)
 end
 

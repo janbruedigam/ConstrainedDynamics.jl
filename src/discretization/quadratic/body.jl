@@ -1,4 +1,4 @@
-@inline function dynamics(mechanism, body::Body{T}) where T
+@inline function g(mechanism, body::Body{T}) where T
     state = body.state
     Δt = mechanism.Δt
     system = mechanism.system

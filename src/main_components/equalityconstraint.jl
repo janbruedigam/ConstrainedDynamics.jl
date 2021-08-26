@@ -222,6 +222,7 @@ end
     return :(vcat($(vec...)))
 end
 
+@inline ∂g∂ʳself(mechanism, eqc::EqualityConstraint) = I*1e-10 # 0 for no regularization
 @generated function ∂g∂ʳvela(mechanism, eqc::EqualityConstraint{T,N,Nc}, body::Body) where {T,N,Nc}
     vec = [:(∂g∂ʳvela(eqc.constraints[$i], body, getbody(mechanism, eqc.childids[$i]), eqc.childids[$i], mechanism.Δt)) for i = 1:Nc]
     return :(vcat($(vec...)))
