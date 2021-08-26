@@ -23,15 +23,15 @@ g(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, Δt) = g(b
 @inline function ∂g∂ʳposa(bound::Bound, body::Body, id)
     return ∂g∂ʳpos(bound, body.state)
 end
-@inline function ∂g∂ʳposa(bound::Bound, eqc::EqualityConstraint, id)
-    return ∂g∂ʳpos(bound, eqc.λsol[2])
-end
-@inline function ∂g∂ʳposa(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, id)
-    return ∂g∂ʳposa(bound, eqc.λsol[2], ineqc.γsol[2])
-end
-@inline function ∂g∂ʳposb(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, id)
-    return ∂g∂ʳposb(bound, eqc.λsol[2], ineqc.γsol[2])
-end
+# @inline function ∂g∂ʳposa(bound::Bound, eqc::EqualityConstraint, id)
+#     return ∂g∂ʳpos(bound, eqc.λsol[2])
+# end
+# @inline function ∂g∂ʳposa(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, id)
+#     return ∂g∂ʳposa(bound, eqc.λsol[2], ineqc.γsol[2])
+# end
+# @inline function ∂g∂ʳposb(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, id)
+#     return ∂g∂ʳposb(bound, eqc.λsol[2], ineqc.γsol[2])
+# end
 
 # Wrappers 2
 ∂g∂ʳpos(bound::Bound, state::State) = ∂g∂ʳpos(bound, posargsk(state)...)
@@ -49,15 +49,15 @@ end
 @inline function ∂g∂ʳvela(bound::Bound, body::Body, id, Δt)
     return ∂g∂ʳvel(bound, body.state, Δt)
 end
-@inline function ∂g∂ʳvela(bound::Bound, eqc::EqualityConstraint, id, Δt)
-    return ∂g∂ʳpos(bound, eqc.λsol[2])
-end
-@inline function ∂g∂ʳvela(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, id, Δt)
-    return ∂g∂ʳvela(bound, eqc.λsol[2], ineqc.γsol[2])
-end
-@inline function ∂g∂ʳvelb(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, id, Δt)
-    return ∂g∂ʳvelb(bound, eqc.λsol[2], ineqc.γsol[2])
-end
+# @inline function ∂g∂ʳvela(bound::Bound, eqc::EqualityConstraint, id, Δt)
+#     return ∂g∂ʳpos(bound, eqc.λsol[2])
+# end
+# @inline function ∂g∂ʳvela(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, id, Δt)
+#     return ∂g∂ʳvela(bound, eqc.λsol[2], ineqc.γsol[2])
+# end
+# @inline function ∂g∂ʳvelb(bound::Bound, eqc::EqualityConstraint, ineqc::InequalityConstraint, id, Δt)
+#     return ∂g∂ʳvelb(bound, eqc.λsol[2], ineqc.γsol[2])
+# end
 
 # Wrappers 2
 ∂g∂ʳvel(bound::Bound, state::State, Δt) = ∂g∂ʳvel(bound, posargsnext(state, Δt)..., fullargssol(state)..., Δt)

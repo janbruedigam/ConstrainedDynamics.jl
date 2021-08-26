@@ -211,23 +211,15 @@ Gets the minimal coordinate velocities of joint `eqconstraint`.
     return :(svcat($(vec...)))
 end
 
-@inline function GtλTof!(mechanism, body::Body, eqc::EqualityConstraint)
+@inline function constraintForceMapping!(mechanism, body::Body, eqc::EqualityConstraint)
     body.state.d -= zerodimstaticadjoint(∂g∂ʳpos(mechanism, eqc, body)) * eqc.λsol[2]
-    return
-end
-
-@inline function springTof!(mechanism, body::Body, eqc::EqualityConstraint)
-    body.state.d -= springforce(mechanism, eqc, body)
-    return
-end
-
-@inline function damperTof!(mechanism, body::Body, eqc::EqualityConstraint)
-    body.state.d -= damperforce(mechanism, eqc, body)
+    eqc.isspring && (body.state.d -= springforce(mechanism, eqc, body))
+    eqc.isdamper && (body.state.d -= damperforce(mechanism, eqc, body))
     return
 end
 
 @inline function damperToD!(mechanism, body::Body, eqc::EqualityConstraint)
-    body.state.D -= diagonal∂damper∂ʳvel(mechanism, eqc, body)
+    eqc.isdamper && (body.state.D -= diagonal∂damper∂ʳvel(mechanism, eqc, body))
     return
 end
 

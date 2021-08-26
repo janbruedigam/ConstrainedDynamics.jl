@@ -15,16 +15,8 @@
     state.d = [dynT;dynR]
 
     for connectionid in connections(mechanism.system, body.id)
-        if connectionid <= Ne # eqconstraint
-            eqc = geteqconstraint(mechanism, connectionid)
-            GtλTof!(mechanism, body, eqc)
-            eqc.isspring && springTof!(mechanism, body, eqc)
-            eqc.isdamper && damperTof!(mechanism, body, eqc)
-        elseif connectionid <= Ne+Nb #body
-        else # ineqconstraint
-            ineqc = getineqconstraint(mechanism, connectionid)
-            NtγTof!(mechanism, body, ineqc)
-        end 
+        Ne < connectionid <= Ne+Nb && continue # body
+        constraintForceMapping!(mechanism, body, getcomponent(mechanism, connectionid))
     end
 
     return state.d
@@ -45,12 +37,8 @@ end
     state.D = [[dynT; Z] [Z; dynR]]
 
     for connectionid in connections(mechanism.system, body.id)
-        if connectionid <= Ne # eqconstraint
-            eqc = geteqconstraint(mechanism, connectionid)
-            eqc.isdamper && damperToD!(mechanism, body, eqc)
-        elseif connectionid <= Ne+Nb #body
-        else
-        end 
+        connectionid > Ne && continue # not eqc
+        damperToD!(mechanism, body, geteqconstraint(mechanism, connectionid))
     end
 
     return state.D

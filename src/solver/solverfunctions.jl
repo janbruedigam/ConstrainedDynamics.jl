@@ -3,54 +3,28 @@
     vector_entry.value = -dynamics(mechanism, body)
     return
 end
-
 @inline function setDandΔs!(mechanism::Mechanism, matrix_entry::Entry, vector_entry::Entry, eqc::EqualityConstraint)
     μ = 1e-10 # 0 for no regularization
     matrix_entry.value = I*μ
     vector_entry.value = -g(mechanism, eqc)
     return
 end
-
-# @inline function setDandΔs!(mechanism::Mechanism, matrix_entry::Entry, vector_entry::Entry, eqc::EqualityConstraint{T,N,Nc,Cs}) where {T,N,Nc,Cs<:Tuple{<:Friction}}
-#     matrix_entry.value *= 0
-#     vector_entry.value = -g(mechanism, eqc)
-#     return
-# end
-
-# @inline function setDandΔs!(mechanism::Mechanism, matrix_entry::Entry, vector_entry::Entry, ineqc::InequalityConstraint)
-#     matrix_entry.value = [[diagm(ineqc.γsol[2]);-I] [diagm(ineqc.ssol[2]);I*0]]
-#     vector_entry.value = [-complementarityμ(mechanism, ineqc);-gs(mechanism, ineqc)]
-#     return
-# end
+@inline function setDandΔs!(mechanism::Mechanism, matrix_entry::Entry, vector_entry::Entry, ineqc::InequalityConstraint)
+    matrix_entry.value = [[diagm(ineqc.γsol[2]);-I] [diagm(ineqc.ssol[2]);I*0]]
+    vector_entry.value = [-complementarityμ(mechanism, ineqc);-gs(mechanism, ineqc)]
+    return
+end
 
 @inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, body::Body, eqc::EqualityConstraint)
     matrix_entry_L.value = -∂g∂ʳpos(mechanism, eqc, body)'
     matrix_entry_U.value = ∂g∂ʳvel(mechanism, eqc, body)
     return
 end
-
 @inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, eqc::EqualityConstraint, body::Body)
     matrix_entry_L.value = ∂g∂ʳvel(mechanism, eqc, body)
     matrix_entry_U.value = -∂g∂ʳpos(mechanism, eqc, body)'
     return
 end
-
-# @inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, id::Integer, ineqc::InequalityConstraint{T,N,Nc,Cs,N½}) where {T,N,Nc,Cs,N½}
-#     A = ∂g∂ʳpos(mechanism, ineqc, id)
-#     Z = A*0
-#     matrix_entry_L.value = [Z;-A]'
-#     matrix_entry_U.value = [Z;∂g∂ʳvel(mechanism, ineqc, id)]
-#     return
-# end
-
-# @inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, ineqc::InequalityConstraint{T,N,Nc,Cs,N½}, id::Integer) where {T,N,Nc,Cs,N½}
-#     # A = ∂g∂ʳvel(mechanism, ineqc, id)
-#     # Z = A*0
-#     matrix_entry_L.value = SA[0.0 0.0;0.0 ineqc.constraints[1].cf]#[Z;A]
-#     matrix_entry_U.value = SA[0.0 0.0;0.0 0.0]#[Z;-∂g∂ʳpos(mechanism, ineqc, id)]'
-#     return
-# end
-
 @inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, body1::Body, body2::Body)
     eqc = geteqconstraint(mechanism, parents(mechanism.system, body2.id)[1]) # TODO This only works for acyclic damped systems
     D = -offdiagonal∂damper∂ʳvel(mechanism, eqc, body1, body2)
@@ -58,6 +32,21 @@ end
     matrix_entry_U.value = D'
     return
 end
+@inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, body::Body, ineqc::InequalityConstraint{T,N,Nc,Cs,N½}) where {T,N,Nc,Cs,N½}
+    Z = szeros(T,N½,6)
+    matrix_entry_L.value = [Z;-∂g∂ʳpos(mechanism, ineqc, body)]'
+    matrix_entry_U.value = [Z;∂g∂ʳvel(mechanism, ineqc, body)]
+    return
+end
+# @inline function setLU!(mechanism::Mechanism, matrix_entry_L::Entry, matrix_entry_U::Entry, ineqc::InequalityConstraint{T,N,Nc,Cs,N½}, body::Body) where {T,N,Nc,Cs,N½}
+#     # A = ∂g∂ʳvel(mechanism, ineqc, id)
+#     # Z = A*0
+#     matrix_entry_L.value = SA[0.0 0.0;0.0 ineqc.constraints[1].cf]#[Z;A]
+#     matrix_entry_U.value = SA[0.0 0.0;0.0 0.0]#[Z;-∂g∂ʳpos(mechanism, ineqc, id)]'
+#     return
+# end
+
+
 
 
 @inline function zeroLU!(matrix_entry_L::Entry, matrix_entry_U::Entry)
@@ -70,8 +59,8 @@ end
 function feasibilityStepLength!(mechanism::Mechanism)
     system = mechanism.system
 
-    # τ = 0.995
-    τ = 0.95
+    τ = 0.995
+    # τ = 0.95
     mechanism.α = 1.0
 
     for ineqc in mechanism.ineqconstraints

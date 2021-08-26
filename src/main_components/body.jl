@@ -106,7 +106,6 @@ Base.zero(::Body{T}) where T = szeros(T,6,6)
 
 
 # Derivatives for linearizations
-
 function ∂F∂z(body::Body{T}, Δt) where T
     state = body.state
     Z3 = szeros(T,3,3)
