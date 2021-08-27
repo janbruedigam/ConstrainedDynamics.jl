@@ -1,14 +1,17 @@
-mutable struct Friction{T,N} <: Component{T}
+mutable struct Friction{T} <: Component{T}
     id::Int64
     name::String
 
     Bx::SMatrix{4,3,T,12}
     p::SVector{3,T}
 
-    parentid::Union{Int64,Nothing}
+    parentid::Int64
     childids::SVector{2,Int64}
 
-    βsol::Vector{SVector{N,T}}
+    βsol::Vector{SVector{4,T}}
+    γsolref::Vector{SVector{1,T}} #TODO this is a reference to the associated impact γ to avoid allocations
+
+    d::SVector{4,T}
 
     function Friction(body::Body{T}, normal::AbstractVector, cf; p = szeros(T, 3), offset::AbstractVector = szeros(T, 3), name::String="") where T
         N = 4
@@ -26,31 +29,35 @@ mutable struct Friction{T,N} <: Component{T}
         betabound = InequalityConstraint(BetaBound(frictionid))
 
         βsol = [szeros(T, N) for i=1:2]
+        γsolref = impact.γsol
 
-        new{T,N}(frictionid, name, Bx, p, body.id, [frictionbound.id; betabound.id], βsol), [impact; frictionbound; betabound]
+        d = szeros(T, 4)
+
+        new{T}(frictionid, name, Bx, p, body.id, [frictionbound.id; betabound.id], βsol, γsolref, d), [impact; frictionbound; betabound]
     end
 end
 
 
-Base.length(::Friction{T,N}) where {T,N} = N
+Base.length(::Friction) = 4
 
-@inline ∂g∂ʳself(mechanism, fric::Friction{T,N}) where {T,N} = szeros(T,N,N)
+@inline ∂g∂ʳself(mechanism, fric::Friction{T}) where {T} = szeros(T,4,4)
 
 @inline Bq(Bxmat, p, q) = Bxmat*VRᵀmat(q)*LVᵀmat(q)*skew(-p)
 @inline Bmat(Bxmat, p, q) = [Bxmat Bq(Bxmat, p, q)]
 
 function g(mechanism, fric::Friction)
     body = getbody(mechanism, fric.parentid)
-    frictionbound = getineqconstraint(mechanism, fric.childids[1])
-    betabound = getineqconstraint(mechanism, fric.childids[2])
-
     x, v, q, ω = fullargssol(body.state)
-    ψ = frictionbound.γsol[2]
-    η = betabound.γsol[2]
-
     Bxmat = fric.Bx
     Bqmat = Bq(Bxmat, fric.p, q)
-    return Bxmat*v + Bqmat*ω - η .+ ψ
+
+    fric.d = Bxmat*v + Bqmat*ω
+
+    for childid in fric.childids
+        constraintForceMapping!(mechanism, fric, getineqconstraint(mechanism, childid))
+    end
+    
+    return fric.d
 end
 
 @inline function constraintForceMapping!(mechanism, body::Body, fric::Friction)

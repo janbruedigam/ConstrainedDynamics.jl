@@ -4,7 +4,7 @@ files = [
     "chain_in_chain"
     "dice_nofriction"
     # "dice_tiltedplane"
-    # "dice"
+    "dice"
     "disconnected_bodies"
     "doublependulum_3d"
     # "doublependulum_disconnection"

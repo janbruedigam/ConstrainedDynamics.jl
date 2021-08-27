@@ -43,14 +43,14 @@ end
     return
 end
 
-function g(mechanism, ineqc::InequalityConstraint)
-    childid = ineqc.childids[1]
-    if childid === nothing
-        return g(ineqc.constraints[1], getcomponent(mechanism, ineqc.parentid), mechanism.Δt)
-    else
-        return g(ineqc.constraints[1], getfriction(mechanism, ineqc.parentid), getineqconstraint(mechanism, childid))
-    end
-end
+# function g(mechanism, ineqc::InequalityConstraint)
+#     childid = ineqc.childids[1]
+#     if childid === nothing
+#         return g(ineqc.constraints[1], getcomponent(mechanism, ineqc.parentid), mechanism.Δt)
+#     else
+#         return g(ineqc.constraints[1], getfriction(mechanism, ineqc.parentid), getineqconstraint(mechanism, childid))
+#     end
+# end
 
 function gs(mechanism, ineqc::InequalityConstraint)
     return g(mechanism, ineqc) - ineqc.ssol[2]

@@ -12,8 +12,7 @@ Base.length(bound::Bound{T,N}) where {T,N} = N
 ### Constraints and derivatives
 ## Position level constraint wrappers
 g(bound::Bound, body::Body, Δt) = g(bound, body.state, Δt)
-g(bound::Bound, fric::Friction, Δt) = g(bound, fric.βsol[2])
-g(bound::Bound, fric::Friction, ineqc::InequalityConstraint) = g(bound, fric.βsol[2], ineqc.γsol[2])
+
 
 ## Discrete-time position wrappers (for dynamics)
 @inline g(bound::Bound, state::State, Δt) = g(bound, posargsnext(state, Δt)...)
