@@ -16,6 +16,13 @@ end
 
 ### Constraints and derivatives
 ## Position level constraints (for dynamics)
+function g(mechanism, ineqc::InequalityConstraint{T,N,Nc,Cs}) where {T,N,Nc,Cs<:Tuple{Impact{T,N}}}
+    g(ineqc.constraints[1], getbody(mechanism, ineqc.parentid), mechanism.Δt)
+end
+
+g(bound::FrictionBound, fric::Friction, Δt) = g(bound, fric.βsol[2], fric.γsolref[2])
+g(bound::BetaBound, fric::Friction, Δt) = g(bound, fric.βsol[2])
+
 @inline g(ffl::FrictionBound, β::AbstractVector, γ::AbstractVector) = ffl.cf*γ - SVector{1,Float64}(sum(β))
 @inline g(fvl::BetaBound, β::AbstractVector) = β
 
@@ -39,25 +46,3 @@ end
 @inline function ∂gab∂ʳba(ffl::FrictionBound{T}, impact::Impact) where T
     SA{T}[0 0;0 ffl.cf], szeros(T,2,2)
 end
-
-function g(mechanism, ineqc::InequalityConstraint)
-    childid = ineqc.childids[1]
-    if childid === nothing
-        return g(ineqc.constraints[1], getcomponent(mechanism, ineqc.parentid), mechanism.Δt)
-    else
-        return g(ineqc.constraints[1], getfriction(mechanism, ineqc.parentid), getineqconstraint(mechanism, childid))
-    end
-end
-
-function g(mechanism, ineqc::InequalityConstraint{T,N,Nc,Cs}) where {T,N,Nc,Cs<:Tuple{Impact{T,N}}}
-    g(ineqc.constraints[1], getbody(mechanism, ineqc.parentid), mechanism.Δt)
-end
-function g(mechanism, ineqc::InequalityConstraint{T,N,Nc,Cs}) where {T,N,Nc,Cs<:Tuple{FrictionBound{T,N}}}
-    g(ineqc.constraints[1], getfriction(mechanism, ineqc.parentid), mechanism.Δt)
-end
-function g(mechanism, ineqc::InequalityConstraint{T,N,Nc,Cs}) where {T,N,Nc,Cs<:Tuple{BetaBound{T,N}}}
-    g(ineqc.constraints[1], getfriction(mechanism, ineqc.parentid), mechanism.Δt)
-end
-
-g(bound::FrictionBound, fric::Friction, Δt) = g(bound, fric.βsol[2], fric.γsolref[2])
-g(bound::BetaBound, fric::Friction, Δt) = g(bound, fric.βsol[2])
