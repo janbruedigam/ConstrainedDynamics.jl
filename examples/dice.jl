@@ -1,7 +1,6 @@
 using ConstrainedDynamics
 using ConstrainedDynamicsVis
 
-
 # Parameters
 joint_axis = [1.0;0.0;0.0]
 
@@ -29,19 +28,20 @@ origin = Origin{Float64}()
 link1 = Box(width, depth, length1, 1., color = RGBA(1., 1., 0.))
 
 # Constraints
-impacts = [InequalityConstraint(Friction(link1,[0;0;1.0], 0.2; p = corners[i])) for i=1:8]
+fricsandineqs = [Friction(link1, [0;0;1.0], 0.2; p = corners[i]) for i=1:8]
+frics = getindex.(fricsandineqs,1)
+ineqcs = vcat(getindex.(fricsandineqs,2)...)
 
 joint0to1 = EqualityConstraint(Floating(origin, link1))
 
 links = [link1]
 eqcs = [joint0to1]
-ineqcs = impacts
 
 
-mech = Mechanism(origin, links, eqcs, ineqcs)
+mech = Mechanism(origin, links, eqcs, ineqcs, frics)
 
 setPosition!(link1,x = [0.;-2;1.5])
-ωtemp = (rand(3) .- 0.5) * 100
+ωtemp = (rand(3) .- 0.5) * 10
 
 setVelocity!(link1,v = [0;3;7.],ω = ωtemp)
 
