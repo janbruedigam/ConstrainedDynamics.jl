@@ -37,19 +37,17 @@ end
 
 function feasibilityStepLength!(mechanism::Mechanism)
     system = mechanism.system
-
-    # τ = 0.995
-    τ = 0.95
     mechanism.α = 1.0
 
     for ineqc in mechanism.ineqconstraints
-        feasibilityStepLength!(mechanism, ineqc, getentry(system, ineqc.id), τ)
+        feasibilityStepLength!(mechanism, ineqc, getentry(system, ineqc.id))
     end
 
     return
 end
 
-function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, vector_entry::Entry, τ) where {T,N}
+function feasibilityStepLength!(mechanism, ineqc::InequalityConstraint{T,N}, vector_entry::Entry) where {T,N}
+    τ = mechanism.τ
     sγ = [ineqc.ssol[2];ineqc.γsol[2]]
     Δsγ = vector_entry.value
 

@@ -32,6 +32,7 @@ mutable struct Mechanism{T,Nn,Ne,Nb,Nf,Ni} <: AbstractMechanism{T,Nn,Ne,Nb,Nf,Ni
 
     α::T
     μ::T
+    τ::T
 
 
     function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},
@@ -80,8 +81,9 @@ mutable struct Mechanism{T,Nn,Ne,Nb,Nf,Ni} <: AbstractMechanism{T,Nn,Ne,Nb,Nf,Ni
 
         α = 1
         μ = 1
+        τ = 0.95
 
-        new{T,Nn,Ne,Nb,Nf,Ni}(origin, eqcs, bodies, frics, ineqcs, system, normf, normΔs, Δt, g, α, μ)
+        new{T,Nn,Ne,Nb,Nf,Ni}(origin, eqcs, bodies, frics, ineqcs, system, normf, normΔs, Δt, g, α, μ, τ)
     end
 
     function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
