@@ -110,7 +110,7 @@ function _setPosition!(mechanism, eqc::EqualityConstraint{T,N,Nc}, xθ) where {T
         Δx = getPositionDelta(eqc.constraints[1+(i-1)*2], body1, body2, xθ[SUnitRange(eqc.inds[1+(i-1)*2][1],eqc.inds[1+(i-1)*2][2])]) 
         Δq = getPositionDelta(eqc.constraints[2+(i-1)*2], body1, body2, xθ[SUnitRange(eqc.inds[2+(i-1)*2][1],eqc.inds[2+(i-1)*2][2])])
         
-        p1, p2 = eqc.constraints[i].vertices
+        p1, p2 = eqc.constraints[1+(i-1)*2].vertices
         setPosition!(body1, body2; p1 = p1, p2 = p2, Δx = Δx, Δq = Δq)
     end
     return
@@ -153,7 +153,7 @@ function _setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T
         Δv = getVelocityDelta(eqc.constraints[1+(i-1)*2], body1, body2, vω[SUnitRange(eqc.inds[1+(i-1)*2][1],eqc.inds[1+(i-1)*2][2])])
         Δω = getVelocityDelta(eqc.constraints[2+(i-1)*2], body1, body2, vω[SUnitRange(eqc.inds[2+(i-1)*2][1],eqc.inds[2+(i-1)*2][2])])
         
-        p1, p2 = eqc.constraints[i].vertices
+        p1, p2 = eqc.constraints[1+(i-1)*2].vertices
         setVelocity!(body1, body2; p1 = p1, p2 = p2, Δv = Δv, Δω = Δω)
     end
     return
