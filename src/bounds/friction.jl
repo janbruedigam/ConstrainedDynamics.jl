@@ -30,7 +30,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, constraint::Frictio
     println(io, " offset: "*string(constraint.offset))
 end
 
-@inline function calcb0(friction::Friction, m, Δt, x::AbstractVector, q::UnitQuaternion, vc, ωc, dyn)
+@inline function calcb0(friction::Friction, m, Δt, x::AbstractVector, q::QuatRotation, vc, ωc, dyn)
     p = friction.p
     np2 = norm(p)^2
     vp = vc + vrotate(cross(ωc,p),q)
@@ -41,14 +41,14 @@ end
     end
 end
 
-@inline function frictionmap(friction::Friction, x::AbstractVector, q::UnitQuaternion)
+@inline function frictionmap(friction::Friction, x::AbstractVector, q::QuatRotation)
     Fp = friction.D' * friction.b
     Fc = Fp
     τc = torqueFromForce(vrotate(Fp,inv(q)), friction.p) # in local coordinates
     return [Fc;2*τc]
 end
 
-@inline additionalforce(friction::Friction, x::AbstractVector, q::UnitQuaternion) = frictionmap(friction, x, q)
+@inline additionalforce(friction::Friction, x::AbstractVector, q::QuatRotation) = frictionmap(friction, x, q)
 
 @inline function calcFrictionForce!(mechanism, ineqc, friction::Friction, i, body::Body)
     calcFrictionForce!(mechanism, friction, body, ineqc.γsol[2][i])

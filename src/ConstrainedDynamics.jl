@@ -5,7 +5,7 @@ using StaticArrays
 using ForwardDiff 
 using StaticArrays: SUnitRange
 using Rotations
-using Rotations: RotationError, pure_quaternion, params, lmult, rmult, tmat, vmat, hmat, skew
+using Rotations: RotationError, pure_quaternion, params, lmult, rmult, tmat, vmat, hmat, skew, Quaternion
 using Colors: RGBA, RGB
 using LightXML
 
@@ -20,7 +20,7 @@ export Origin,
     LinearMechanism,
     Controller,
     Storage,
-    UnitQuaternion,
+    QuatRotation,
 
     Box,
     Cylinder,
@@ -41,7 +41,7 @@ export Origin,
 
     Impact,
     Friction,
-    UnitQuaternion,
+    QuatRotation,
 
     setPosition!,
     setVelocity!,

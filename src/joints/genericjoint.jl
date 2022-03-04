@@ -34,28 +34,28 @@ g(joint::GenericJoint, statea::State, stateb::State) = joint.g(joint, posargsc(s
 g(joint::GenericJoint, stateb::State) = joint.g(joint, posargsc(stateb)...)
 
 ## Derivatives NOT accounting for quaternion specialness
-@inline function ∂g∂posa(joint::GenericJoint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+@inline function ∂g∂posa(joint::GenericJoint, xa::AbstractVector, qa::QuatRotation, xb::AbstractVector, qb::QuatRotation)
     z = [xa;params(qa);xb;params(qb)]
 
-    G = ForwardDiff.jacobian(x -> joint.g(joint,x[1:3],UnitQuaternion(x[4:7]...,false),x[8:10],UnitQuaternion(x[11:14]...,false)), z)
+    G = ForwardDiff.jacobian(x -> joint.g(joint,x[1:3],QuatRotation(x[4:7]...,false),x[8:10],QuatRotation(x[11:14]...,false)), z)
     X = G[:,1:3]
     Q = G[:,4:7]
 
     return X, Q
 end
-@inline function ∂g∂posb(joint::GenericJoint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+@inline function ∂g∂posb(joint::GenericJoint, xa::AbstractVector, qa::QuatRotation, xb::AbstractVector, qb::QuatRotation)
     z = [xa;params(qa);xb;params(qb)]
     
-    G = ForwardDiff.jacobian(x -> joint.g(joint,x[1:3],UnitQuaternion(x[4:7]...,false),x[8:10],UnitQuaternion(x[11:14]...,false)), z)
+    G = ForwardDiff.jacobian(x -> joint.g(joint,x[1:3],QuatRotation(x[4:7]...,false),x[8:10],QuatRotation(x[11:14]...,false)), z)
     X = G[:,8:10]
     Q = G[:,11:14]
 
     return X, Q
 end
-@inline function ∂g∂posb(joint::GenericJoint, xb::AbstractVector, qb::UnitQuaternion)
+@inline function ∂g∂posb(joint::GenericJoint, xb::AbstractVector, qb::QuatRotation)
     z = [xb;params(qb)]
     
-    G = ForwardDiff.jacobian(x -> joint.g(joint,x[1:3],UnitQuaternion(x[4:7]...,false)), z)
+    G = ForwardDiff.jacobian(x -> joint.g(joint,x[1:3],QuatRotation(x[4:7]...,false)), z)
     X = G[:,1:3]
     Q = G[:,4:7]
 

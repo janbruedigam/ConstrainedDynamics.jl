@@ -106,7 +106,7 @@ function initializeConstraints!(mechanism::Mechanism{T,Nn,Nb,Ne}; fixedids = Int
                 body.state.xc = body.state.xk[1] + body.state.vsol[1]/(2^(j-1))
                 
                 w = sqrt(1-norm(body.state.ωsol[1]/(2^(j-1)))^2)
-                body.state.qc = body.state.qk[1] * UnitQuaternion(w,body.state.ωsol[1]/(2^(j-1))...,false)
+                body.state.qc = body.state.qk[1] * QuatRotation(w,body.state.ωsol[1]/(2^(j-1))...,false)
             end
             
             norm1 = norm(gc(mechanism))

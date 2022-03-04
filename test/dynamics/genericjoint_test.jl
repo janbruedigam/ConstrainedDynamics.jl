@@ -1,11 +1,11 @@
 using ConstrainedDynamics
-using ConstrainedDynamics: vrotate, Vmat, GenericJoint, AbstractBody, orthogonalrows, deepcopy
+using ConstrainedDynamics: vrotate, Vmat, GenericJoint, AbstractBody, orthogonalrows, deepcopy, params
 using LinearAlgebra
 
 
-function Fixed_abstract(body1::AbstractBody{T}, body2; p1 = szeros(T, 3), p2 = szeros(T, 3), qoffset = one(UnitQuaternion{T})) where T  
+function Fixed_abstract(body1::AbstractBody{T}, body2; p1 = szeros(T, 3), p2 = szeros(T, 3), qoffset = one(QuatRotation{T})) where T  
     vertices = (p1, p2)
-    function gfixed(joint::GenericJoint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+    function gfixed(joint::GenericJoint, xa::AbstractVector, qa::QuatRotation, xb::AbstractVector, qb::QuatRotation)
        G= [
            vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa));
            Vmat(qa \ qb / qoffset)
@@ -13,7 +13,7 @@ function Fixed_abstract(body1::AbstractBody{T}, body2; p1 = szeros(T, 3), p2 = s
 
        return G
    end
-   function gfixed(joint::GenericJoint, xb::AbstractVector, qb::UnitQuaternion)
+   function gfixed(joint::GenericJoint, xb::AbstractVector, qb::QuatRotation)
        G= [
            xb + vrotate(vertices[2], qb) - vertices[1];
            Vmat(qb / qoffset)
@@ -24,12 +24,12 @@ function Fixed_abstract(body1::AbstractBody{T}, body2; p1 = szeros(T, 3), p2 = s
 
    return GenericJoint{6}(body1, body2, gfixed) 
 end
-function Revolute_abstract(body1::AbstractBody{T}, body2, axis; p1 = szeros(T, 3), p2 = szeros(T, 3), qoffset = one(UnitQuaternion{T})) where T  
+function Revolute_abstract(body1::AbstractBody{T}, body2, axis; p1 = szeros(T, 3), p2 = szeros(T, 3), qoffset = one(QuatRotation{T})) where T  
     vertices = (p1, p2)
     V1, V2, V3 = orthogonalrows(axis)  
     V12 = [V1;V2]
     
-    function grevolute(joint::GenericJoint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+    function grevolute(joint::GenericJoint, xa::AbstractVector, qa::QuatRotation, xb::AbstractVector, qb::QuatRotation)
        G= [
            vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa));
            V12*Vmat(qa \ qb / qoffset)
@@ -37,7 +37,7 @@ function Revolute_abstract(body1::AbstractBody{T}, body2, axis; p1 = szeros(T, 3
 
        return G
    end
-   function grevolute(joint::GenericJoint, xb::AbstractVector, qb::UnitQuaternion)
+   function grevolute(joint::GenericJoint, xb::AbstractVector, qb::QuatRotation)
        G= [
            xb + vrotate(vertices[2], qb) - vertices[1];
            V12*Vmat(qb / qoffset)
@@ -84,9 +84,9 @@ setPosition!(origin_abstract,link1_abstract,p2 = vert11)
 
 function compare(s1,s2)
     @test all(isapprox.(norm.(s1.x[1]-s2.x[1]), 0.0; atol = 1e-8)) &&
-        all(isapprox.(norm.(s1.q[1]./s2.q[1]), 1.0; atol = 1e-8)) &&
+        all(isapprox.(norm.(params.(s1.q[1]./s2.q[1])), 1.0; atol = 1e-8)) &&
         all(isapprox.(norm.(s1.x[2]-s2.x[2]), 0.0; atol = 1e-8)) &&
-        all(isapprox.(norm.(s1.q[2]./s2.q[2]), 1.0; atol = 1e-8)) &&
+        all(isapprox.(norm.(params.(s1.q[2]./s2.q[2])), 1.0; atol = 1e-8)) &&
         all(isapprox.(norm.(s1.ω[1]-s2.ω[1]), 0.0; atol = 1e-8)) &&
         all(isapprox.(norm.(s1.v[1]-s2.v[1]), 0.0; atol = 1e-8)) &&
         all(isapprox.(norm.(s1.ω[2]-s2.ω[2]), 0.0; atol = 1e-8)) &&
@@ -95,8 +95,8 @@ end
 
 for i=1:10
     randang = pi/4*rand()
-    setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = UnitQuaternion(RotX(randang)))
-    setPosition!(link1_abstract,link2_abstract,p1 = vert12,p2 = vert21,Δq = UnitQuaternion(RotX(randang)))
+    setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = QuatRotation(RotX(randang)))
+    setPosition!(link1_abstract,link2_abstract,p1 = vert12,p2 = vert21,Δq = QuatRotation(RotX(randang)))
     storage = simulate!(mech, 1, record = true)
     storage_abstract = simulate!(mech_abstract, 1, record = true)
 

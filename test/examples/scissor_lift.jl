@@ -15,7 +15,7 @@ vert12 = -vert11
 
 # Initial orientation
 phi1, phi2, phi3 = pi / 4, -pi / 4, pi / 2
-q1, q2, q3 = UnitQuaternion(RotX(phi1)), UnitQuaternion(RotX(phi2)), UnitQuaternion(RotX(phi3))
+q1, q2, q3 = QuatRotation(RotX(phi1)), QuatRotation(RotX(phi2)), QuatRotation(RotX(phi3))
 
 # Links
 origin = Origin{Float64}()
