@@ -191,7 +191,7 @@ mutable struct LinearMechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni
 
     xd::Vector{SVector{3,T}}
     vd::Vector{SVector{3,T}}
-    qd::Vector{UnitQuaternion{T}}
+    qd::Vector{QuatRotation{T}}
     ωd::Vector{SVector{3,T}}
     # Fτd::Vector{SVector{3,T}}
 

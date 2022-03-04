@@ -83,7 +83,7 @@ function linearsystem(mechanism::Mechanism{T,Nn,Nb}, xθd, vωd, Fτd, controlle
     statesold = [State{T}() for i=1:Nb]
     xd = [szeros(T,3) for i=1:Nb]
     vd = [szeros(T,3) for i=1:Nb]
-    qd = [one(UnitQuaternion{T}) for i=1:Nb]
+    qd = [one(QuatRotation{T}) for i=1:Nb]
     ωd = [szeros(T,3) for i=1:Nb]
 
     # store old state and set new initial state

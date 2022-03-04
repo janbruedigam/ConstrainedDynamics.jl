@@ -22,7 +22,7 @@ corners = [
 
 # Initial orientation
 ϕ1 = 0;
-q1 = UnitQuaternion(RotX(ϕ1))
+q1 = QuatRotation(RotX(ϕ1))
 
 # Links
 origin = Origin{Float64}()

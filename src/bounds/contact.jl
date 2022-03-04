@@ -6,14 +6,14 @@ abstract type Contact{T} <: Bound{T} end
 
 ## Position level constraints (for dynamics)
 # @inline g(contact::Contact{T}) where {T} = szeros(T,6)
-@inline g(contact::Contact, x::AbstractVector, q::UnitQuaternion) = contact.ainv3 * (x + vrotate(contact.p,q) - contact.offset)
+@inline g(contact::Contact, x::AbstractVector, q::QuatRotation) = contact.ainv3 * (x + vrotate(contact.p,q) - contact.offset)
 
 
 ## Derivatives NOT accounting for quaternion specialness
-@inline function ∂g∂pos(contact::Contact, x::AbstractVector, q::UnitQuaternion)
+@inline function ∂g∂pos(contact::Contact, x::AbstractVector, q::QuatRotation)
     p = contact.p
     X = contact.ainv3
-    Q = contact.ainv3 * (VLmat(q) * Lmat(UnitQuaternion(p)) * Tmat() + VRᵀmat(q) * Rmat(UnitQuaternion(p)))
+    Q = contact.ainv3 * (VLmat(q) * Lmat(QuatRotation(p)) * Tmat() + VRᵀmat(q) * Rmat(QuatRotation(p)))
     return X, Q
 end
 
@@ -28,7 +28,7 @@ end
 ∂g∂ʳpos(contact::Contact, state::State) = ∂g∂ʳpos(contact, posargsk(state)...)
 
 #Derivatives accounting for quaternion specialness
-@inline function ∂g∂ʳpos(contact::Contact, x::AbstractVector, q::UnitQuaternion)
+@inline function ∂g∂ʳpos(contact::Contact, x::AbstractVector, q::QuatRotation)
     X, Q = ∂g∂pos(contact, x, q)
     Q = Q * LVᵀmat(q)
 
@@ -46,7 +46,7 @@ end
 ∂g∂ʳvel(contact::Contact, state::State, Δt) = ∂g∂ʳvel(contact, posargsnext(state, Δt)..., fullargssol(state)..., Δt)
 
 #Derivatives accounting for quaternion specialness
-@inline function ∂g∂ʳvel(contact::Contact,x2::AbstractVector, q2::UnitQuaternion, x1::AbstractVector,v1::AbstractVector, q1::UnitQuaternion,w1::AbstractVector, Δt)
+@inline function ∂g∂ʳvel(contact::Contact,x2::AbstractVector, q2::QuatRotation, x1::AbstractVector,v1::AbstractVector, q1::QuatRotation,w1::AbstractVector, Δt)
     X, Q = ∂g∂pos(contact, x2, q2)
     V = X * Δt
     Ω = Q * Lmat(q1) * derivωbar(w1, Δt) * Δt / 2

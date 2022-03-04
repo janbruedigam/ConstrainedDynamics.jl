@@ -29,7 +29,7 @@ setPosition!(origin,link1,p2 = p2)
 setPosition!(link1,link2,p1=-p2,p2 = p2)
 
 xd=[-[p2];-[p2+p2+p2]]
-qd=[[UnitQuaternion(RotX(0.0))];[UnitQuaternion(RotX(0.0))]]
+qd=[[QuatRotation(RotX(0.0))];[QuatRotation(RotX(0.0))]]
 
 A, Bu, Bλ, G = ConstrainedDynamics.linearsystem(mech, xd, [zeros(3) for i=1:2], qd, [zeros(3) for i=1:2], [[0.] for i=1:1], getid.(mech.bodies), [getid(constraints[2])])
 
@@ -38,8 +38,8 @@ storage = Storage{Float64}(steps,length(mech.bodies))
 
 ang01 = 0.1
 ang02 = 0.0
-setPosition!(origin,link1,p2 = p2,Δq = UnitQuaternion(RotX(ang01)))
-setPosition!(link1,link2,p1=-p2,p2 = p2,Δq = UnitQuaternion(RotX(ang02)))
+setPosition!(origin,link1,p2 = p2,Δq = QuatRotation(RotX(ang01)))
+setPosition!(link1,link2,p1=-p2,p2 = p2,Δq = QuatRotation(RotX(ang02)))
 state1 = link1.state
 state2 = link2.state
 q01=[state1.xc-xd[1]; 0;0;0; ConstrainedDynamics.Vmat() * Rotations.params(state1.qc); 0;0;0]

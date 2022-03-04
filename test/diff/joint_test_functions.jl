@@ -27,9 +27,9 @@ getqk(state) = posargsk(state)[2]
 
 function transfuncpos(vars)
     xa = vars[1:3]
-    qa = UnitQuaternion(SA[vars[4:7]...])
+    qa = QuatRotation(SA[vars[4:7]...])
     xb = vars[8:10]
-    qb = UnitQuaternion(SA[vars[11:14]...])
+    qb = QuatRotation(SA[vars[11:14]...])
 
     pa = vars[15:17]
     pb = vars[18:20]
@@ -65,12 +65,12 @@ function transfuncvel(vars)
 
     xa1 = vars[1:3]
     va1 = vars[4:6]
-    qa1 = UnitQuaternion(SA[vars[7:10]...])
+    qa1 = QuatRotation(SA[vars[7:10]...])
     ωa1 = vars[11:13]
 
     xb1 = vars[14:16]
     vb1 = vars[17:19]
-    qb1 = UnitQuaternion(SA[vars[20:23]...])
+    qb1 = QuatRotation(SA[vars[20:23]...])
     ωb1 = vars[24:26]
 
     xa2 = xa1 + va1 * Δt
@@ -111,11 +111,11 @@ end
 
 function rotfuncpos(vars)
     xa = vars[1:3]
-    qa = UnitQuaternion(SA[vars[4:7]...], false)
+    qa = QuatRotation(SA[vars[4:7]...], false)
     xb = vars[8:10]
-    qb = UnitQuaternion(SA[vars[11:14]...], false)
+    qb = QuatRotation(SA[vars[11:14]...], false)
 
-    offset = UnitQuaternion(SA[vars[15:18]...], false)
+    offset = QuatRotation(SA[vars[15:18]...], false)
 
     return VLᵀmat(qa) * Lmat(qb) * params(inv(offset))
 end
@@ -148,12 +148,12 @@ function rotfuncvel(vars)
 
     xa1 = vars[1:3]
     va1 = vars[4:6]
-    qa1 = UnitQuaternion(SA[vars[7:10]...], false)
+    qa1 = QuatRotation(SA[vars[7:10]...], false)
     ωa1 = vars[11:13]
 
     xb1 = vars[14:16]
     vb1 = vars[17:19]
-    qb1 = UnitQuaternion(SA[vars[20:23]...], false)
+    qb1 = QuatRotation(SA[vars[20:23]...], false)
     ωb1 = vars[24:26]
 
     xa2 = xa1 + va1 * Δt
@@ -162,7 +162,7 @@ function rotfuncvel(vars)
     xb2 = xb1 + vb1 * Δt
     qb2 = qb1 * ωbar(ωb1, Δt) * Δt / 2
 
-    offset = UnitQuaternion(SA[vars[27:30]...], false)
+    offset = QuatRotation(SA[vars[27:30]...], false)
 
     return VLᵀmat(qa2) * Lmat(qb2) * params(inv(offset))
 end

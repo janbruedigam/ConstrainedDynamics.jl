@@ -22,14 +22,14 @@ A `Mesh` can be used to visualize arbitrary geometries.
 """
 mutable struct Mesh{T} <: Shape{T}
     xoffset::SVector{3,T}
-    qoffset::UnitQuaternion{T}
+    qoffset::QuatRotation{T}
 
     path::String
     scale::SVector{3,T}
     color::RGBA
 
     function Mesh(path::String;
-            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
             scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((xoffset, qoffset))...)
@@ -38,7 +38,7 @@ mutable struct Mesh{T} <: Shape{T}
     end
 
     function Mesh(path::String, m::Real, J::AbstractMatrix;
-            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
             scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((m, J, xoffset, qoffset))...)
@@ -56,7 +56,7 @@ A `Box`.
 """
 mutable struct Box{T} <: Shape{T}
     xoffset::SVector{3,T}
-    qoffset::UnitQuaternion{T}
+    qoffset::QuatRotation{T}
 
     xyz::SVector{3,T}
     scale::SVector{3,T}
@@ -64,7 +64,7 @@ mutable struct Box{T} <: Shape{T}
 
 
     function Box(x::Real, y::Real, z::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
             scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((x, y, z, xoffset, qoffset))...)
@@ -73,7 +73,7 @@ mutable struct Box{T} <: Shape{T}
     end
 
     function Box(x::Real, y::Real, z::Real, m::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
             scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((x, y, z, m, xoffset, qoffset))...)
@@ -92,7 +92,7 @@ A `Cylinder` along the z-axis.
 """
 mutable struct Cylinder{T} <: Shape{T}
     xoffset::SVector{3,T}
-    qoffset::UnitQuaternion{T}
+    qoffset::QuatRotation{T}
 
     rh::SVector{2,T}
     scale::SVector{3,T}
@@ -100,7 +100,7 @@ mutable struct Cylinder{T} <: Shape{T}
 
     # Cylinder points in the z direction
     function Cylinder(r::Real, h::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
             scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((r, h, xoffset, qoffset))...)
@@ -109,7 +109,7 @@ mutable struct Cylinder{T} <: Shape{T}
     end
 
     function Cylinder(r::Real, h::Real, m::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
             scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((r, h, m, xoffset, qoffset))...)
@@ -128,14 +128,14 @@ A `Sphere`.
 """
 mutable struct Sphere{T} <: Shape{T}
     xoffset::SVector{3,T}
-    qoffset::UnitQuaternion{T}
+    qoffset::QuatRotation{T}
 
     r::T
     scale::SVector{3,T}
     color::RGBA
 
     function Sphere(r::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
             scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((r, xoffset, qoffset))...)
@@ -144,7 +144,7 @@ mutable struct Sphere{T} <: Shape{T}
     end
 
     function Sphere(r::Real, m::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
             scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((r, m, xoffset, qoffset))...)
@@ -162,7 +162,7 @@ A square `Pyramid` with a base in the x-y-plane.
 """
 mutable struct Pyramid{T} <: Shape{T}
     xoffset::SVector{3,T}
-    qoffset::UnitQuaternion{T}
+    qoffset::QuatRotation{T}
 
     wh::SVector{2,T}
     scale::SVector{3,T}
@@ -170,7 +170,7 @@ mutable struct Pyramid{T} <: Shape{T}
 
     # Pyramid points in the z direction, Center of mass at 1/4 h
     function Pyramid(w::Real, h::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
             scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((w, h, xoffset, qoffset))...)
@@ -179,7 +179,7 @@ mutable struct Pyramid{T} <: Shape{T}
     end
 
     function Pyramid(w::Real, h::Real, m::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::UnitQuaternion = one(UnitQuaternion),
+            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
             scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
         T = promote_type(eltype.((w, h, m, xoffset, qoffset))...)

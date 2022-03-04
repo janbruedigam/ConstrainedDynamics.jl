@@ -18,7 +18,7 @@ for i=1:10
 
     axis = rand(3)
     axis = axis/norm(axis)
-    qoff = one(UnitQuaternion) # rand(UnitQuaternion)
+    qoff = one(QuatRotation) # rand(QuatRotation)
 
 
     # Constraints
@@ -45,7 +45,7 @@ for i=1:10
     storage = simulate!(mech, 10., control!, record = true)
 
     angend = mod((xθ + (vω + Fτ*Δt)*10.0)[1],2pi)
-    qend = qoff*UnitQuaternion(cos(angend/2), (axis*sin(angend/2))..., false)
+    qend = qoff*QuatRotation(cos(angend/2), (axis*sin(angend/2))..., false)
     minresult = mod(minimalCoordinates(mech, joint1)[1],2pi)
 
     @test isapprox(norm(minresult - angend), 0.0; atol = 1e-3)

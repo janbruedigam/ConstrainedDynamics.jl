@@ -25,4 +25,4 @@ end
 
 
 ## Additional force for friction default
-@inline additionalforce(bound::Impact{T}, x::AbstractVector, q::UnitQuaternion) where T = szeros(T, 6)
+@inline additionalforce(bound::Impact{T}, x::AbstractVector, q::QuatRotation) where T = szeros(T, 6)
