@@ -8,15 +8,15 @@ v1 = rand(3)
 w2 = rand()
 v2 = rand(3)
 qvref1 = pure_quaternion(v1)
-qref1 = UnitQuaternion(w1,v1...)
-qref2 = UnitQuaternion(w2,v2...)
-q1 = UnitQuaternion(w1,SA[v1...])
+qref1 = QuatRotation(w1,v1...)
+qref2 = QuatRotation(w2,v2...)
+q1 = QuatRotation(w1,SA[v1...])
 @test q1 == qref1
-q1 = UnitQuaternion(w1,v1)
+q1 = QuatRotation(w1,v1)
 @test q1 == qref1
-qv1 = UnitQuaternion(SA[v1...])
+qv1 = QuatRotation(SA[v1...])
 @test qv1 == qvref1
-qv1 = UnitQuaternion(v1)
+qv1 = QuatRotation(v1)
 @test qv1 == qvref1
 
 

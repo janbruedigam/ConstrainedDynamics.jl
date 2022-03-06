@@ -8,9 +8,9 @@ using LinearAlgebra
 
 function transtest()
     xa = srand(3)
-    qa = rand(UnitQuaternion)
+    qa = rand(QuatRotation)
     xb = srand(3)
-    qb = rand(UnitQuaternion)
+    qb = rand(QuatRotation)
     z = [xa;params(qa);xb;params(qb)]
 
     axis = srand(3)
@@ -38,11 +38,11 @@ function transtest()
         Z43 = zeros(4,3)
         postmultmat = [
             E 0*I 0*I 0*I
-            Z43 LVᵀmat(UnitQuaternion(z[4:7]...,false)) Z43 Z43
+            Z43 LVᵀmat(QuatRotation(z[4:7]...,false)) Z43 Z43
             0*I 0*I E 0*I
-            Z43 Z43 Z43 LVᵀmat(UnitQuaternion(z[11:14]...,false))
+            Z43 Z43 Z43 LVᵀmat(QuatRotation(z[11:14]...,false))
         ]
-        ForwardDiff.jacobian(x->g(trans,x[1:3],UnitQuaternion(x[4:7]...,false),x[8:10],UnitQuaternion(x[11:14]...,false)),z)*postmultmat
+        ForwardDiff.jacobian(x->g(trans,x[1:3],QuatRotation(x[4:7]...,false),x[8:10],QuatRotation(x[11:14]...,false)),z)*postmultmat
     end
     function secondderivative(z)
         ForwardDiff.jacobian(x->vec(firstderivative(x)),z)
@@ -52,13 +52,13 @@ end
 
 function rottest()
     xa = srand(3)
-    qa = rand(UnitQuaternion)
+    qa = rand(QuatRotation)
     xb = srand(3)
-    qb = rand(UnitQuaternion)
+    qb = rand(QuatRotation)
     z = [xa;params(qa);xb;params(qb)]
 
     axis = srand(3)
-    qoffset = rand(UnitQuaternion)
+    qoffset = rand(QuatRotation)
 
     body1 = Box(1., 1., 1., 1.)
     body2 = Box(1., 1., 1., 1.)
@@ -82,11 +82,11 @@ function rottest()
         Z43 = zeros(4,3)
         postmultmat = [
             E 0*I 0*I 0*I
-            Z43 LVᵀmat(UnitQuaternion(z[4:7]...,false)) Z43 Z43
+            Z43 LVᵀmat(QuatRotation(z[4:7]...,false)) Z43 Z43
             0*I 0*I E 0*I
-            Z43 Z43 Z43 LVᵀmat(UnitQuaternion(z[11:14]...,false))
+            Z43 Z43 Z43 LVᵀmat(QuatRotation(z[11:14]...,false))
         ]
-        ForwardDiff.jacobian(x->g(rot,x[1:3],UnitQuaternion(x[4:7]...,false),x[8:10],UnitQuaternion(x[11:14]...,false)),z)*postmultmat
+        ForwardDiff.jacobian(x->g(rot,x[1:3],QuatRotation(x[4:7]...,false),x[8:10],QuatRotation(x[11:14]...,false)),z)*postmultmat
     end
     function secondderivative(z)
         ForwardDiff.jacobian(x->vec(firstderivative(x)),z)

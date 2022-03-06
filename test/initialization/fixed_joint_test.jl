@@ -18,7 +18,7 @@ for i=1:10
 
     p1 = rand(3)
     p2 = rand(3)
-    qoff = rand(UnitQuaternion)
+    qoff = rand(QuatRotation)
 
 
     # Constraints

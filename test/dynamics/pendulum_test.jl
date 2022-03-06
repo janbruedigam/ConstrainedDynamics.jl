@@ -28,7 +28,7 @@ mech = Mechanism(origin, links, constraints, g=g,Δt=Δt)
 T0 = 2*pi*sqrt((m*l^2/3)/(-g*l/2))
 t0 = 1
 
-q1 = UnitQuaternion(RotX(π / 2))
+q1 = QuatRotation(RotX(π / 2))
 setPosition!(origin,link1,p2 = p2,Δq = q1)
 setVelocity!(link1)
 storage = simulate!(mech,10.,record = true)
@@ -38,7 +38,7 @@ traj = getindex.(storage.x[1],2)
 diff = traj[1:Δ]-traj[Δ+1:2*Δ]
 @test maximum(diff)<0.1
 
-q1 = UnitQuaternion(RotX(π / 3))
+q1 = QuatRotation(RotX(π / 3))
 setPosition!(origin,link1,p2 = p2,Δq = q1)
 setVelocity!(link1)
 storage = simulate!(mech,10.,record = true)
@@ -48,7 +48,7 @@ traj = getindex.(storage.x[1],2)
 diff = traj[1:Δ]-traj[Δ+1:2*Δ]
 @test maximum(diff)<0.1
 
-q1 = UnitQuaternion(RotX(π / 6))
+q1 = QuatRotation(RotX(π / 6))
 setPosition!(origin,link1,p2 = p2,Δq = q1)
 setVelocity!(link1)
 storage = simulate!(mech,10.,record = true)

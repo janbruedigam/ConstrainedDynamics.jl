@@ -13,7 +13,7 @@ function dyntestT()
     v1 = rand(3)
     v2 = rand(3)
 
-    q1 = rand(UnitQuaternion)
+    q1 = rand(QuatRotation)
     ω1 = rand(3)
     ω2 = rand(3)
 
@@ -46,7 +46,7 @@ function dyntestR()
     v1 = rand(3)
     v2 = rand(3)
 
-    q1 = rand(UnitQuaternion)
+    q1 = rand(QuatRotation)
     ω1 = rand(3)
     ω2 = rand(3)
 

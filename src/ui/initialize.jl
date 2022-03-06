@@ -3,7 +3,7 @@
 
 Set the position and orientation of a body.
 """
-function setPosition!(body::Body; x::AbstractVector = SA[0;0;0], q::UnitQuaternion = one(UnitQuaternion))
+function setPosition!(body::Body; x::AbstractVector = SA[0;0;0], q::QuatRotation = one(QuatRotation))
     body.state.xc = x
     body.state.qc = q
     return
@@ -16,7 +16,7 @@ Set the position and orientation of body2 relative to body1 at the connection po
 """
 function setPosition!(body1::Body, body2::Body;
         p1::AbstractVector = SA[0;0;0], p2::AbstractVector = SA[0;0;0], 
-        Δx::AbstractVector = SA[0;0;0], Δq::UnitQuaternion = one(UnitQuaternion)
+        Δx::AbstractVector = SA[0;0;0], Δq::QuatRotation = one(QuatRotation)
     )
 
     q1 = body1.state.qc
@@ -33,7 +33,7 @@ Set the position and orientation of body2 relative to the origin at the connecti
 """
 function setPosition!(body1::Origin, body2::Body;
         p1::AbstractVector = SA[0;0;0], p2::AbstractVector = SA[0;0;0],
-        Δx::AbstractVector = SA[0;0;0], Δq::UnitQuaternion = one(UnitQuaternion)
+        Δx::AbstractVector = SA[0;0;0], Δq::QuatRotation = one(QuatRotation)
     )
 
     q2 = Δq
@@ -66,10 +66,10 @@ function setVelocity!(body1::Body, body2::Body;
 
     q1 = body1.state.qc
     q2 = body2.state.qc
-    
+
     v1 = body1.state.vc
     ω1 = body1.state.ωc # in local coordinates
-    
+
     vp1 = v1 + vrotate(cross(ω1,p1),q1)
     ωp1 = vrotate(ω1,q1) # in world coordinates
 
@@ -98,7 +98,7 @@ function setVelocity!(body1::Origin, body2::Body;
     vp2 = Δv
     ωp2 = vrotate(Δω,q2) # in world coordinates
 
-    v2 = vp2 + cross(ωp2,-p2)
+    v2 = vp2 + vrotate(cross(vrotate(ωp2,inv(q2)),-p2),q2)
     ω2 = vrotate(ωp2,inv(q2)) # in local coordinates
 
     setVelocity!(body2;v = v2,ω = ω2)

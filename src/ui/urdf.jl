@@ -47,11 +47,11 @@ end
 
 function parse_pose(xpose, T)
     if xpose === nothing
-        x, q = zeros(T, 3), one(UnitQuaternion{T})
+        x, q = zeros(T, 3), one(QuatRotation{T})
     else
         x = parse_vector(xpose, "xyz", T, default = "0 0 0")
         rpy = parse_vector(xpose, "rpy", T, default = "0 0 0")
-        q = UnitQuaternion(RotZYX(rpy[3], rpy[2], rpy[1]))
+        q = QuatRotation(RotZYX(rpy[3], rpy[2], rpy[1]))
     end
 
     return x, q
@@ -60,7 +60,7 @@ end
 function parse_inertia(xinertial, T)
     if xinertial === nothing
         x = zeros(T, 3)
-        q = one(UnitQuaternion{T})
+        q = one(QuatRotation{T})
         m = zero(T)
         J = zeros(T, 3, 3)
     else
@@ -194,7 +194,7 @@ function parse_links(xlinks, materialdict, T)
 end
 
 function joint_selector(jointtype, link1, link2, T; 
-        axis = SA{T}[1;0;0], p1 = szeros(T,3), p2 = szeros(T,3), qoffset = one(UnitQuaternion{T}), name = ""
+        axis = SA{T}[1;0;0], p1 = szeros(T,3), p2 = szeros(T,3), qoffset = one(QuatRotation{T}), name = ""
     )
 
     # TODO limits for revolute joint?
@@ -419,7 +419,7 @@ end
 function set_parsed_values!(mechanism::Mechanism{T}, loopjoints) where T
     system = mechanism.system
     xjointlist = Dict{Int64,SVector{3,T}}() # stores id, x in world frame
-    qjointlist = Dict{Int64,UnitQuaternion{T}}() # stores id, q in world frame
+    qjointlist = Dict{Int64,QuatRotation{T}}() # stores id, q in world frame
 
     for id in reverse(system.dfs_list) # from root to leaves
         component = getcomponent(mechanism, id)
@@ -438,10 +438,10 @@ function set_parsed_values!(mechanism::Mechanism{T}, loopjoints) where T
             parentbody = mechanism.origin
 
             xparentbody = SA{T}[0; 0; 0]
-            qparentbody = one(UnitQuaternion{T})
+            qparentbody = one(QuatRotation{T})
 
             xparentjoint = SA{T}[0; 0; 0]
-            qparentjoint = one(UnitQuaternion{T})
+            qparentjoint = one(QuatRotation{T})
         else
             parentbody = getbody(mechanism, grandparentid)
 
@@ -503,10 +503,10 @@ function set_parsed_values!(mechanism::Mechanism{T}, loopjoints) where T
             parentbody1 = mechanism.origin
 
             xparentbody1 = SA{T}[0; 0; 0]
-            qparentbody1 = one(UnitQuaternion{T})
+            qparentbody1 = one(QuatRotation{T})
 
             xparentjoint1 = SA{T}[0; 0; 0]
-            qparentjoint1 = one(UnitQuaternion{T})
+            qparentjoint1 = one(QuatRotation{T})
         else
             parentbody1 = getbody(mechanism, parentid1)
 
