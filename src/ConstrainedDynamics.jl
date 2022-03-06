@@ -42,7 +42,7 @@ export Origin,
     CylindricalFree,
 
     Impact,
-    UnitQuaternion,
+    QuatRotation,
 
     setPosition!,
     setVelocity!,

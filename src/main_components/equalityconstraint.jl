@@ -130,7 +130,7 @@ function setVelocity!(mechanism, eqc::EqualityConstraint, vω; iter::Bool = true
     else
         currentvals = minimalVelocities(mechanism)
         _setVelocity!(mechanism, eqc, vω)
-        for id in recursivedirectchildren!(mechanism.graph, eqc.id)
+        for id in recursivedirectchildren!(mechanism.system, eqc.id)
             component = getcomponent(mechanism, id)
             if component isa EqualityConstraint
                 _setVelocity!(mechanism, component, currentvals[id])
