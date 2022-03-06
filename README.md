@@ -16,7 +16,9 @@ The package is largely built on StaticArrays and avoids allocations for improved
 
 ## Related Publications
 [Linear-Time Variational Integrators in Maximal Coordinates](https://arxiv.org/abs/2002.11245) (accepted to WAFR 2020) [Presentation](https://www.youtube.com/watch?v=kI5qBccGKfU)
+
 [Linear-Quadratic Optimal Control in Maximal Coordinates](https://arxiv.org/abs/2010.05886) (accepted to ICRA 2021)
+
 [Linear-Time Contact and Friction Dynamics in Maximal Coordinates using Variational Integrators](https://arxiv.org/abs/2109.07262)
 
 
