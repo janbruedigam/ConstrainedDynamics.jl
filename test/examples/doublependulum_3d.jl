@@ -15,7 +15,7 @@ vert21 = [0.;0.;l2 / 2]
 
 # Initial orientation
 phi1 = pi / 4
-q1 = UnitQuaternion(RotX(phi1))
+q1 = Quaternion(RotX(phi1))
 
 # Links
 origin = Origin{Float64}()
@@ -33,4 +33,4 @@ constraints = [socket0to1;socket1to2]
 
 mech = Mechanism(origin, links, constraints)
 setPosition!(origin,link1,p2 = vert11,Δq = q1)
-setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = inv(q1)*UnitQuaternion(RotY(0.2)))
+setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = inv(q1)*Quaternion(RotY(0.2)))

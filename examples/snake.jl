@@ -14,7 +14,7 @@ vert12 = -vert11
 
 # Initial orientation
 phi = pi / 4
-q1 = UnitQuaternion(RotX(phi))
+q1 = Quaternion(RotX(phi))
 
 steps = Base.OneTo(1000)
 # data=zeros(50)
@@ -43,14 +43,14 @@ frics2 = getindex.(fricsandineqs2,1)
 ineqcs2 = vcat(getindex.(fricsandineqs2,2)...)
 
 mech = Mechanism(origin, links, constraints, [ineqcs1;ineqcs2], [frics1;frics2])
-# setPosition!(origin,links[1],p2 = [0;0.0;0.5],Δq = UnitQuaternion(RotX(pi/2)*RotY(pi/4)))
-setPosition!(origin,links[1],p2 = [0;-2.0;0.5],Δq = UnitQuaternion(RotX(pi/2)*RotZ(pi/4)))
+# setPosition!(origin,links[1],p2 = [0;0.0;0.5],Δq = Quaternion(RotX(pi/2)*RotY(pi/4)))
+setPosition!(origin,links[1],p2 = [0;-2.0;0.5],Δq = Quaternion(RotX(pi/2)*RotZ(pi/4)))
 setVelocity!(links[1],v=randn(3)*2,ω=randn(3)*2)
 for j=2:N
     if iseven(j)
-        setPosition!(links[j-1],links[j],p1 = vert12, p2 = vert11,Δq = UnitQuaternion(RotY(-pi/2)))
+        setPosition!(links[j-1],links[j],p1 = vert12, p2 = vert11,Δq = Quaternion(RotY(-pi/2)))
     else
-        setPosition!(links[j-1],links[j],p1 = vert12, p2 = vert11,Δq = UnitQuaternion(RotY(pi/2)))
+        setPosition!(links[j-1],links[j],p1 = vert12, p2 = vert11,Δq = Quaternion(RotY(pi/2)))
     end  
     setVelocity!(links[j],v=randn(3)*2,ω=randn(3)*2)
 end

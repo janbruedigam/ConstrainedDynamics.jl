@@ -31,7 +31,7 @@ mutable struct Body{T} <: AbstractBody{T}
 
 
     function Body(m::Real, J::AbstractArray; name::String="", shape::Shape=EmptyShape())
-        T = promote_type(eltype.((m, J))...)
+        T = promote_type(quateltype.((m, J))...)
         new{T}(getGlobalID(), name, m, J, State{T}(), shape)
     end
 

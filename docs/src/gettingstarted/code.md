@@ -29,7 +29,7 @@ mech = Mechanism(origin, links, constraints)
 
 # Set feasible initial configuration
 setPosition!(origin, link1, p2 = connection1) # set link1 relative to origin
-setPosition!(link1, link2, p1 = connection2, p2 = connection1, Δq = UnitQuaternion(RotX(pi/2))) # set link2 relative to link1 with an offset angle of pi/2
+setPosition!(link1, link2, p1 = connection2, p2 = connection1, Δq = Quaternion(RotX(pi/2))) # set link2 relative to link1 with an offset angle of pi/2
 
 # Simulate
 storage = simulate!(mech, 10, record = true) # simulate mech for 10 seconds and record the result (will be stored in storage)

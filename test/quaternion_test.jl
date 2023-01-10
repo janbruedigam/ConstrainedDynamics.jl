@@ -1,22 +1,24 @@
 using ConstrainedDynamics
-using ConstrainedDynamics: params, pure_quaternion, Lmat, Lᵀmat, Rmat, Rᵀmat, Tmat, Tᵀmat, Vmat, Vᵀmat, VLmat, VLᵀmat, VRmat, VRᵀmat, LVᵀmat, LᵀVᵀmat, RVᵀmat, RᵀVᵀmat, slerp
+using ConstrainedDynamics: params, Lmat, Lᵀmat, Rmat, Rᵀmat, Tmat, Tᵀmat, Vmat, Vᵀmat, VLmat, VLᵀmat, VRmat, VRᵀmat, LVᵀmat, LᵀVᵀmat, RVᵀmat, RᵀVᵀmat, slerp
 using StaticArrays
 using LinearAlgebra
 
-w1 = rand()
-v1 = rand(3)
-w2 = rand()
-v2 = rand(3)
-qvref1 = pure_quaternion(v1)
-qref1 = UnitQuaternion(w1,v1...)
-qref2 = UnitQuaternion(w2,v2...)
-q1 = UnitQuaternion(w1,SA[v1...])
+p1 = normalize(rand(4))
+w1 = p1[1]
+v1 = p1[2:4]
+p2 = normalize(rand(4))
+w2 = p2[1]
+v2 = p2[2:4]
+qvref1 = Quaternion(v1)
+qref1 = Quaternion(w1,v1...)
+qref2 = Quaternion(w2,v2...)
+q1 = Quaternion(w1,v1...)
 @test q1 == qref1
-q1 = UnitQuaternion(w1,v1)
+q1 = Quaternion(w1,v1...)
 @test q1 == qref1
-qv1 = UnitQuaternion(SA[v1...])
+qv1 = Quaternion(v1)
 @test qv1 == qvref1
-qv1 = UnitQuaternion(v1)
+qv1 = Quaternion(v1)
 @test qv1 == qvref1
 
 

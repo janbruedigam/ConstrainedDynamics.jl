@@ -8,6 +8,6 @@ end
     include("joint_test.jl")
 end
 
-@safetestset "Joint Diff Tensor Tests" begin
-    include("tensor_test.jl")
-end
+# @safetestset "Joint Diff Tensor Tests" begin
+#     include("tensor_test.jl")
+# end

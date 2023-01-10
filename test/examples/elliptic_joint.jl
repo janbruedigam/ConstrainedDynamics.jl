@@ -12,7 +12,7 @@ origin = Origin{Float64}()
 link1 = Box(width, depth, length1, length1)
 
 
-@inline function g(joint::GenericJoint, xb::AbstractVector, qb::UnitQuaternion)
+@inline function g(joint::GenericJoint, xb::AbstractVector, qb::Quaternion)
     a=5
     b=2
 
@@ -24,7 +24,7 @@ link1 = Box(width, depth, length1, length1)
         α = -atan(b^2/a^2*xb[2]/xb[3]) - pi
     end
 
-    qα = UnitQuaternion(cos(α/2),sin(α/2),0,0,false)
+    qα = Quaternion(cos(α/2),sin(α/2),0,0)
 
     eqc1=Vmat(qb\qα)
     eqc2=SA[xb[1]; (xb[2]^2/a^2)+(xb[3]^2/b^2)-1]
@@ -41,5 +41,5 @@ constraints = [joint_between_origin_and_link1]
 
 
 mech = Mechanism(origin, links, constraints)
-setPosition!(link1,x=[0;0.0;2],q = UnitQuaternion(RotX(0)))
+setPosition!(link1,x=[0;0.0;2],q = Quaternion(RotX(0)))
 setVelocity!(link1,v=[0;2.0;0])

@@ -20,7 +20,7 @@ for i=1:10
     p2 = rand(3)
     axis = rand(3)
     axis = axis/norm(axis)
-    qoff = rand(UnitQuaternion)
+    qoff = rand(QuatRotation).q
 
 
     # Constraints

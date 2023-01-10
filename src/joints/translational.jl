@@ -37,41 +37,41 @@ end
 
 ### Constraints and derivatives
 ## Position level constraints (for dynamics)
-@inline function g(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+@inline function g(joint::Translational, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion)
     vertices = joint.vertices
     return vrotate(xb + vrotate(vertices[2], qb) - (xa + vrotate(vertices[1], qa)), inv(qa))
 end
-@inline function g(joint::Translational, xb::AbstractVector, qb::UnitQuaternion)
+@inline function g(joint::Translational, xb::AbstractVector, qb::Quaternion)
     vertices = joint.vertices
     return xb + vrotate(vertices[2], qb) - vertices[1]
 end
 
 ## Derivatives NOT accounting for quaternion specialness
-@inline function ∂g∂posa(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+@inline function ∂g∂posa(joint::Translational, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion)
     point2 = xb + vrotate(joint.vertices[2], qb)
 
     X = -VLᵀmat(qa) * RVᵀmat(qa)
-    Q = 2 * VLᵀmat(qa) * (Lmat(UnitQuaternion(point2)) - Lmat(UnitQuaternion(xa)))
+    Q = 2 * VLᵀmat(qa) * (Lmat(Quaternion(point2)) - Lmat(Quaternion(xa)))
 
     return X, Q
 end
-@inline function ∂g∂posb(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+@inline function ∂g∂posb(joint::Translational, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion)
     X = VLᵀmat(qa) * RVᵀmat(qa)
-    Q = 2 * VLᵀmat(qa) * Rmat(qa) * Rᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
+    Q = 2 * VLᵀmat(qa) * Rmat(qa) * Rᵀmat(qb) * Rmat(Quaternion(joint.vertices[2]))
 
     return X, Q
 end
-@inline function ∂g∂posb(joint::Translational, xb::AbstractVector, qb::UnitQuaternion)
+@inline function ∂g∂posb(joint::Translational, xb::AbstractVector, qb::Quaternion)
     X = I
-    Q = 2 * VRᵀmat(qb) * Rmat(UnitQuaternion(joint.vertices[2]))
+    Q = 2 * VRᵀmat(qb) * Rmat(Quaternion(joint.vertices[2]))
 
     return X, Q
 end
 
 ## vec(G) Jacobian (also NOT accounting for quaternion specialness in the second derivative: ∂(∂ʳg∂posx)∂y)
-@inline function ∂2g∂posaa(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
-    Lpos = Lmat(UnitQuaternion(xb + vrotate(joint.vertices[2], qb) - xa))
-    Ltpos = Lᵀmat(UnitQuaternion(xb + vrotate(joint.vertices[2], qb) - xa))
+@inline function ∂2g∂posaa(joint::Translational{T}, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion) where T
+    Lpos = Lmat(Quaternion(xb + vrotate(joint.vertices[2], qb) - xa))
+    Ltpos = Lᵀmat(Quaternion(xb + vrotate(joint.vertices[2], qb) - xa))
 
     XX = szeros(T, 9, 3)
     XQ = -kron(Vmat(T),VLᵀmat(qa))*∂R∂qsplit(T) - kron(VRᵀmat(qa),Vmat(T))*∂Lᵀ∂qsplit(T)
@@ -80,35 +80,35 @@ end
 
     return XX, XQ, QX, QQ
 end
-@inline function ∂2g∂posab(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+@inline function ∂2g∂posab(joint::Translational{T}, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion) where T
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = kron(VLᵀmat(qa),2*VLᵀmat(qa))*∂L∂qsplit(T)[:,SA[2; 3; 4]]
-    QQ = kron(VLᵀmat(qa),2*VLᵀmat(qa)*Lmat(qb)*Lmat(UnitQuaternion(joint.vertices[2])))*∂Lᵀ∂qsplit(T) + kron(VLᵀmat(qa)*Lmat(qb)*Lᵀmat(UnitQuaternion(joint.vertices[2])),2*VLᵀmat(qa))*∂L∂qsplit(T)
+    QQ = kron(VLᵀmat(qa),2*VLᵀmat(qa)*Lmat(qb)*Lmat(Quaternion(joint.vertices[2])))*∂Lᵀ∂qsplit(T) + kron(VLᵀmat(qa)*Lmat(qb)*Lᵀmat(Quaternion(joint.vertices[2])),2*VLᵀmat(qa))*∂L∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
-@inline function ∂2g∂posba(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+@inline function ∂2g∂posba(joint::Translational{T}, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion) where T
     XX = szeros(T, 9, 3)
     XQ = kron(Vmat(T),VLᵀmat(qa))*∂R∂qsplit(T) + kron(VRᵀmat(qa),Vmat(T))*∂Lᵀ∂qsplit(T)
     QX = szeros(T, 9, 3)
-    QQ = kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2]))*Rmat(qb),2*VLᵀmat(qa))*∂R∂qsplit(T) + kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2]))*Rmat(qb)*Rᵀmat(qa),2*Vmat(T))*∂Lᵀ∂qsplit(T)
+    QQ = kron(VLᵀmat(qb)*Rᵀmat(Quaternion(joint.vertices[2]))*Rmat(qb),2*VLᵀmat(qa))*∂R∂qsplit(T) + kron(VLᵀmat(qb)*Rᵀmat(Quaternion(joint.vertices[2]))*Rmat(qb)*Rᵀmat(qa),2*Vmat(T))*∂Lᵀ∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
-@inline function ∂2g∂posbb(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+@inline function ∂2g∂posbb(joint::Translational{T}, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion) where T
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = szeros(T, 9, 3)
-    QQ = kron(Vmat(T),2*VLᵀmat(qa)*Rmat(qa)*Rᵀmat(qb)*Rmat(UnitQuaternion(joint.vertices[2])))*∂L∂qsplit(T) + kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2])),2*VLᵀmat(qa)*Rmat(qa))*∂Rᵀ∂qsplit(T)
+    QQ = kron(Vmat(T),2*VLᵀmat(qa)*Rmat(qa)*Rᵀmat(qb)*Rmat(Quaternion(joint.vertices[2])))*∂L∂qsplit(T) + kron(VLᵀmat(qb)*Rᵀmat(Quaternion(joint.vertices[2])),2*VLᵀmat(qa)*Rmat(qa))*∂Rᵀ∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
-@inline function ∂2g∂posbb(joint::Translational{T}, xb::AbstractVector, qb::UnitQuaternion) where T
+@inline function ∂2g∂posbb(joint::Translational{T}, xb::AbstractVector, qb::Quaternion) where T
     XX = szeros(T, 9, 3)
     XQ = szeros(T, 9, 4)
     QX = szeros(T, 9, 3)
-    QQ = kron(Vmat(T),2*VRᵀmat(qb)*Rmat(UnitQuaternion(joint.vertices[2])))*∂L∂qsplit(T) + kron(VLᵀmat(qb)*Rᵀmat(UnitQuaternion(joint.vertices[2])),2*Vmat(T))*∂Rᵀ∂qsplit(T)
+    QQ = kron(Vmat(T),2*VRᵀmat(qb)*Rmat(Quaternion(joint.vertices[2])))*∂L∂qsplit(T) + kron(VLᵀmat(qb)*Rᵀmat(Quaternion(joint.vertices[2])),2*Vmat(T))*∂Rᵀ∂qsplit(T)
 
     return XX, XQ, QX, QQ
 end
@@ -116,21 +116,21 @@ end
 
 ### Spring and damper
 ## Forces for dynamics
-@inline function springforcea(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+@inline function springforcea(joint::Translational, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
     distance = A * g(joint, xa, qa, xb, qb)
     force = Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
     return [force;szeros(3)]
 end
-@inline function springforceb(joint::Translational, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+@inline function springforceb(joint::Translational, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
     distance = A * g(joint, xa, qa, xb, qb)
     force = - Aᵀ * A * joint.spring * Aᵀ * distance  # Currently assumes same spring constant in all directions
     return [force;szeros(3)]
 end
-@inline function springforceb(joint::Translational, xb::AbstractVector, qb::UnitQuaternion)
+@inline function springforceb(joint::Translational, xb::AbstractVector, qb::Quaternion)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
     distance = A * g(joint, xb, qb)
@@ -138,23 +138,23 @@ end
     return [force;szeros(3)]
 end
 
-@inline function damperforcea(joint::Translational, xa::AbstractVector, va::AbstractVector, qa::UnitQuaternion, ωa::AbstractVector,
-        xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+@inline function damperforcea(joint::Translational, xa::AbstractVector, va::AbstractVector, qa::Quaternion, ωa::AbstractVector,
+        xb::AbstractVector, vb::AbstractVector, qb::Quaternion, ωb::AbstractVector)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
     velocity = A * (vb - va)
     force = Aᵀ * A * joint.damper * Aᵀ * velocity  # Currently assumes same damper constant in all directions
     return [force;szeros(3)]
 end
-@inline function damperforceb(joint::Translational, xa::AbstractVector, va::AbstractVector, qa::UnitQuaternion, ωa::AbstractVector,
-    xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+@inline function damperforceb(joint::Translational, xa::AbstractVector, va::AbstractVector, qa::Quaternion, ωa::AbstractVector,
+    xb::AbstractVector, vb::AbstractVector, qb::Quaternion, ωb::AbstractVector)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
     velocity = A * (vb - va)
     force = - Aᵀ * A * joint.damper * Aᵀ * velocity  # Currently assumes same damper constant in all directions
     return [force;szeros(3)]
 end
-@inline function damperforceb(joint::Translational, xb::AbstractVector, vb::AbstractVector, qb::UnitQuaternion, ωb::AbstractVector)
+@inline function damperforceb(joint::Translational, xb::AbstractVector, vb::AbstractVector, qb::Quaternion, ωb::AbstractVector)
     A = nullspacemat(joint)
     Aᵀ = zerodimstaticadjoint(A)
     velocity = A * vb
@@ -169,13 +169,13 @@ end
     Z = szeros(T, 3, 3)
     return [[-AᵀA * joint.damper * AᵀA; Z] [Z; Z]]
 end
-@inline function offdiagonal∂damper∂ʳvel(joint::Translational{T}, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion) where T
+@inline function offdiagonal∂damper∂ʳvel(joint::Translational{T}, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion) where T
     A = nullspacemat(joint)
     AᵀA = zerodimstaticadjoint(A) * A
     Z = szeros(T, 3, 3)
     return [[AᵀA * joint.damper * AᵀA; Z] [Z; Z]]
 end
-@inline function offdiagonal∂damper∂ʳvel(joint::Translational{T}, xb::AbstractVector, qb::UnitQuaternion) where T
+@inline function offdiagonal∂damper∂ʳvel(joint::Translational{T}, xb::AbstractVector, qb::Quaternion) where T
     A = nullspacemat(joint)
     AᵀA = zerodimstaticadjoint(A) * A
     Z = szeros(T, 3, 3)
@@ -257,13 +257,13 @@ end
     vertices = joint.vertices
 
     FaXa = szeros(T,3,3)
-    FaQa = -2*VRᵀmat(qa)*Rmat(UnitQuaternion(F))*LVᵀmat(qa)
+    FaQa = -2*VRᵀmat(qa)*Rmat(Quaternion(F))*LVᵀmat(qa)
     τaXa = szeros(T,3,3)
     τaQa = szeros(T,3,3)
     FbXa = szeros(T,3,3)
-    FbQa = 2*VRᵀmat(qa)*Rmat(UnitQuaternion(F))*LVᵀmat(qa)
+    FbQa = 2*VRᵀmat(qa)*Rmat(Quaternion(F))*LVᵀmat(qa)
     τbXa = szeros(T,3,3)
-    τbQa = 2*skew(vertices[2])*VLᵀmat(qb)*Rmat(qb)*Rᵀmat(qa)*Rmat(UnitQuaternion(F))*LVᵀmat(qa)
+    τbQa = 2*skew(vertices[2])*VLᵀmat(qb)*Rmat(qb)*Rᵀmat(qa)*Rmat(Quaternion(F))*LVᵀmat(qa)
 
     return FaXa, FaQa, τaXa, τaQa, FbXa, FbQa, τbXa, τbQa
 end
@@ -280,7 +280,7 @@ end
     FbXb = szeros(T,3,3)
     FbQb = szeros(T,3,3)
     τbXb = szeros(T,3,3)
-    τbQb = 2*skew(vertices[2])*VLᵀmat(qb)*Lmat(qa)*Lmat(UnitQuaternion(F))*Lᵀmat(qa)*LVᵀmat(qb)
+    τbQb = 2*skew(vertices[2])*VLᵀmat(qb)*Lmat(qa)*Lmat(Quaternion(F))*Lᵀmat(qa)*LVᵀmat(qb)
 
     return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
 end
@@ -296,7 +296,7 @@ end
     FbXb = szeros(T,3,3)
     FbQb = szeros(T,3,3)
     τbXb = szeros(T,3,3)
-    τbQb = 2*skew(vertices[2])*VLᵀmat(qb)*Lmat(UnitQuaternion(F))*LVᵀmat(qb)
+    τbQb = 2*skew(vertices[2])*VLᵀmat(qb)*Lmat(Quaternion(F))*LVᵀmat(qb)
 
     return FaXb, FaQb, τaXb, τaQb, FbXb, FbQb, τbXb, τbQb
 end

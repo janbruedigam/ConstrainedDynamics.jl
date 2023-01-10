@@ -18,7 +18,7 @@ p2 = [0;r;0]
 p3 = -p2
 
 # Initial orientation
-q1 = UnitQuaternion(RotY(pi / 2))
+q1 = Quaternion(RotY(pi / 2))
 
 # Links
 origin = Origin{Float64}()

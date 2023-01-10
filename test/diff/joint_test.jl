@@ -1,8 +1,7 @@
 using ConstrainedDynamics
 using ConstrainedDynamics: ∂g∂ʳpos, ∂g∂ʳvel, discretizestate!, LVᵀmat, vrotate
 using ForwardDiff
-using Rotations
-using Rotations: params
+using Rotations: params, QuatRotation
 using LinearAlgebra
 
 
@@ -10,9 +9,9 @@ using LinearAlgebra
 function transtest3()
     Δt = 0.01
     xa1 = rand(3)
-    qa1 = rand(UnitQuaternion)
+    qa1 = rand(QuatRotation).q
     xb1 = rand(3)
-    qb1 = rand(UnitQuaternion)
+    qb1 = rand(QuatRotation).q
 
     va1 = rand(3)
     ωa1 = rand(3)
@@ -71,9 +70,9 @@ end
 function transtest2()
     Δt = 0.01
     xa1 = rand(3)
-    qa1 = rand(UnitQuaternion)
+    qa1 = rand(QuatRotation).q
     xb1 = rand(3)
-    qb1 = rand(UnitQuaternion)
+    qb1 = rand(QuatRotation).q
 
     va1 = rand(3)
     ωa1 = rand(3)
@@ -135,9 +134,9 @@ end
 function transtest1()
     Δt = 0.01
     xa1 = rand(3)
-    qa1 = rand(UnitQuaternion)
+    qa1 = rand(QuatRotation).q
     xb1 = rand(3)
-    qb1 = rand(UnitQuaternion)
+    qb1 = rand(QuatRotation).q
 
     va1 = rand(3)
     ωa1 = rand(3)
@@ -200,9 +199,9 @@ end
 function rottest3()
     Δt = 0.01
     xa1 = rand(3)
-    qa1 = rand(UnitQuaternion)
+    qa1 = rand(QuatRotation).q
     xb1 = rand(3)
-    qb1 = rand(UnitQuaternion)
+    qb1 = rand(QuatRotation).q
 
     va1 = rand(3)
     ωa1 = rand(3)
@@ -214,7 +213,7 @@ function rottest3()
     vb2 = rand(3)
     ωb2 = rand(3)
 
-    qoffset = rand(UnitQuaternion)
+    qoffset = rand(QuatRotation).q
 
 
     origin = Origin{Float64}()
@@ -260,9 +259,9 @@ end
 function rottest2()
     Δt = 0.01
     xa1 = rand(3)
-    qa1 = rand(UnitQuaternion)
+    qa1 = rand(QuatRotation).q
     xb1 = rand(3)
-    qb1 = rand(UnitQuaternion)
+    qb1 = rand(QuatRotation).q
 
     va1 = rand(3)
     ωa1 = rand(3)
@@ -274,7 +273,7 @@ function rottest2()
     vb2 = rand(3)
     ωb2 = rand(3)
 
-    qoffset = rand(UnitQuaternion)
+    qoffset = rand(QuatRotation).q
 
     v = rand(3)
 
@@ -323,9 +322,9 @@ end
 function rottest1()
     Δt = 0.01
     xa1 = rand(3)
-    qa1 = rand(UnitQuaternion)
+    qa1 = rand(QuatRotation).q
     xb1 = rand(3)
-    qb1 = rand(UnitQuaternion)
+    qb1 = rand(QuatRotation).q
 
     va1 = rand(3)
     ωa1 = rand(3)
@@ -337,7 +336,7 @@ function rottest1()
     vb2 = rand(3)
     ωb2 = rand(3)
 
-    qoffset = rand(UnitQuaternion)
+    qoffset = rand(QuatRotation).q
 
     v = rand(3)
 

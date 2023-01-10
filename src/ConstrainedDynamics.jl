@@ -4,8 +4,9 @@ using LinearAlgebra
 using StaticArrays
 using ForwardDiff 
 using StaticArrays: SUnitRange
+using Quaternions
 using Rotations
-using Rotations: RotationError, pure_quaternion, params, lmult, rmult, tmat, vmat, hmat, skew
+using Rotations: RotationError, params, lmult, rmult, tmat, vmat, hmat, skew
 using Colors: RGBA, RGB
 using LightXML
 using GraphBasedSystems
@@ -22,7 +23,7 @@ export Origin,
     Mechanism,
     Controller,
     Storage,
-    UnitQuaternion,
+    Quaternion,
 
     Box,
     Cylinder,
@@ -42,7 +43,7 @@ export Origin,
     CylindricalFree,
 
     Impact,
-    UnitQuaternion,
+    Quaternion,
 
     setPosition!,
     setVelocity!,

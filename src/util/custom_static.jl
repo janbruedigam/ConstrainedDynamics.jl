@@ -56,6 +56,7 @@ Base.convert(::Type{SMatrix{N,N,T,N2}}, E::UniformScaling) where {T, N, N2} = SM
 
 
 sisnan(a::StaticArray) = any(isnan.(a))
+sisnan(q::Quaternion) = isnan(q)
 
 
 # To fix StaticArray bug

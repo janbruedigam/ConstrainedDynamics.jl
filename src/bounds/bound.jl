@@ -36,7 +36,7 @@ end
 ∂g∂ʳpos(bound::Bound, state::State) = ∂g∂ʳpos(bound, posargsk(state)...)
 
 # Derivatives accounting for quaternion specialness
-@inline function ∂g∂ʳpos(bound::Bound, x::AbstractVector, q::UnitQuaternion)
+@inline function ∂g∂ʳpos(bound::Bound, x::AbstractVector, q::Quaternion)
     X, Q = ∂g∂pos(bound, x, q)
     Q = Q * LVᵀmat(q)
 
@@ -62,8 +62,8 @@ end
 ∂g∂ʳvel(bound::Bound, state::State, Δt) = ∂g∂ʳvel(bound, posargsnext(state, Δt)..., fullargssol(state)..., Δt)
 
 # Derivatives accounting for quaternion specialness
-@inline function ∂g∂ʳvel(bound::Bound, x2::AbstractVector, q2::UnitQuaternion,
-        x1::AbstractVector, v1::AbstractVector, q1::UnitQuaternion, ω1::AbstractVector, Δt
+@inline function ∂g∂ʳvel(bound::Bound, x2::AbstractVector, q2::Quaternion,
+        x1::AbstractVector, v1::AbstractVector, q1::Quaternion, ω1::AbstractVector, Δt
     )
 
     X, Q = ∂g∂pos(bound, x2, q2)

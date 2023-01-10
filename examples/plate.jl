@@ -4,7 +4,7 @@ using BenchmarkTools
 
 # Initial orientation
 ϕ1 = 0;
-q1 = UnitQuaternion(RotX(ϕ1))
+q1 = Quaternion(RotX(ϕ1))
 
 # Links
 origin = Origin{Float64}()
@@ -36,7 +36,7 @@ eqcs = [joint0to1]
 
 mech = Mechanism(origin, links, eqcs, ineqcs, frics)
 
-setPosition!(link1,x = [2.0;2.0;0.5],q=UnitQuaternion(RotY(pi/2-0.1)))
+setPosition!(link1,x = [2.0;2.0;0.5],q=Quaternion(RotY(pi/2-0.1)))
 setVelocity!(link1,v=[0;-1*pi;0.0],ω = [0;0.0;2*pi])
 storagedisc = simulate!(mech, 5, record = true, debug=false, ε=1e-6)
 visualize(mech, storagedisc, showframes=true)

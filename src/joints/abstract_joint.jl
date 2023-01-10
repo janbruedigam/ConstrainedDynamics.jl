@@ -47,19 +47,19 @@ end
 ∂g∂ʳposb(joint::AbstractJoint, stateb::State) = ∂g∂ʳposb(joint, posargsk(stateb)...)
 
 # Derivatives accounting for quaternion specialness
-@inline function ∂g∂ʳposa(joint::AbstractJoint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+@inline function ∂g∂ʳposa(joint::AbstractJoint, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion)
     X, Q = ∂g∂posa(joint, xa, qa, xb, qb)
     Q = Q * LVᵀmat(qa)
 
     return [X Q]
 end
-@inline function ∂g∂ʳposb(joint::AbstractJoint, xa::AbstractVector, qa::UnitQuaternion, xb::AbstractVector, qb::UnitQuaternion)
+@inline function ∂g∂ʳposb(joint::AbstractJoint, xa::AbstractVector, qa::Quaternion, xb::AbstractVector, qb::Quaternion)
     X, Q = ∂g∂posb(joint, xa, qa, xb, qb)
     Q = Q * LVᵀmat(qb)
 
     return [X Q]
 end
-@inline function ∂g∂ʳposb(joint::AbstractJoint, xb::AbstractVector, qb::UnitQuaternion)
+@inline function ∂g∂ʳposb(joint::AbstractJoint, xb::AbstractVector, qb::Quaternion)
     X, Q = ∂g∂posb(joint, xb, qb)
     Q = Q * LVᵀmat(qb)
 
@@ -116,8 +116,8 @@ offdiagonal∂damper∂ʳvel(joint::AbstractJoint, statea::State, stateb::State)
 offdiagonal∂damper∂ʳvel(joint::AbstractJoint, stateb::State) = offdiagonal∂damper∂ʳvel(joint, posargsk(stateb)...)
 
 # Derivatives accounting for quaternion specialness
-@inline function ∂g∂ʳvela(joint::AbstractJoint, x2a::AbstractVector, q2a::UnitQuaternion, x2b::AbstractVector, q2b::UnitQuaternion,
-        x1a::AbstractVector, v1a::AbstractVector, q1a::UnitQuaternion, ω1a::AbstractVector, Δt
+@inline function ∂g∂ʳvela(joint::AbstractJoint, x2a::AbstractVector, q2a::Quaternion, x2b::AbstractVector, q2b::Quaternion,
+        x1a::AbstractVector, v1a::AbstractVector, q1a::Quaternion, ω1a::AbstractVector, Δt
     )
 
     X, Q = ∂g∂posa(joint, x2a, q2a, x2b, q2b)
@@ -126,8 +126,8 @@ offdiagonal∂damper∂ʳvel(joint::AbstractJoint, stateb::State) = offdiagonal�
 
     return [V Ω]
 end
-@inline function ∂g∂ʳvelb(joint::AbstractJoint, x2a::AbstractVector, q2a::UnitQuaternion, x2b::AbstractVector, q2b::UnitQuaternion,
-        x1b::AbstractVector, v1b::AbstractVector, q1b::UnitQuaternion, ω1b::AbstractVector, Δt
+@inline function ∂g∂ʳvelb(joint::AbstractJoint, x2a::AbstractVector, q2a::Quaternion, x2b::AbstractVector, q2b::Quaternion,
+        x1b::AbstractVector, v1b::AbstractVector, q1b::Quaternion, ω1b::AbstractVector, Δt
     )
 
     X, Q = ∂g∂posb(joint, x2a, q2a, x2b, q2b)
@@ -136,8 +136,8 @@ end
 
     return [V Ω]
 end
-@inline function ∂g∂ʳvelb(joint::AbstractJoint, x2b::AbstractVector, q2b::UnitQuaternion,
-        x1b::AbstractVector, v1b::AbstractVector, q1b::UnitQuaternion, ω1b::AbstractVector, Δt
+@inline function ∂g∂ʳvelb(joint::AbstractJoint, x2b::AbstractVector, q2b::Quaternion,
+        x1b::AbstractVector, v1b::AbstractVector, q1b::Quaternion, ω1b::AbstractVector, Δt
     )
 
     X, Q = ∂g∂posb(joint, x2b, q2b)

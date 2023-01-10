@@ -20,13 +20,13 @@ Indexing example:
 """
 struct Storage{T,N}
     x::Vector{Vector{SVector{3,T}}}
-    q::Vector{Vector{UnitQuaternion{T}}}
+    q::Vector{Vector{Quaternion{T}}}
     v::Vector{Vector{SVector{3,T}}}
     ω::Vector{Vector{SVector{3,T}}}
 
     function Storage{T}(steps, nbodies) where T
         x = [[szeros(T, 3) for i = steps] for j = 1:nbodies]
-        q = [[one(UnitQuaternion{T}) for i = steps] for j = 1:nbodies]
+        q = [[one(Quaternion{T}) for i = steps] for j = 1:nbodies]
         v = [[szeros(T, 3) for i = steps] for j = 1:nbodies]
         ω = [[szeros(T, 3) for i = steps] for j = 1:nbodies]
         new{T,length(steps)}(x, q, v, ω)
@@ -36,7 +36,7 @@ struct Storage{T,N}
     Storage{T}(nsteps::Integer, nbodies) where T = Storage{T}(Base.OneTo(nsteps), nbodies)
     Storage(nsteps::Integer, nbodies) = Storage{Float64}(nsteps, nbodies)
 
-    function Storage(x::Vector{<:Vector{<:AbstractVector{T}}},q::Vector{Vector{UnitQuaternion{T}}}) where T
+    function Storage(x::Vector{<:Vector{<:AbstractVector{T}}},q::Vector{Vector{Quaternion{T}}}) where T
         steps = Base.OneTo(length(x[1]))
         nbodies = length(x)
     

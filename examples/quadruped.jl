@@ -32,7 +32,7 @@ mech2 = Mechanism(origin, bodies, eqcs, ineqcs, frics, Δt = 0.001)
 
 # setPosition!(mech2, geteqconstraint(mech2,"floating_base"),[0;0;0.232;0.;0.;0.])
 setPosition!(mech2, geteqconstraint(mech2,"floating_base"),[-0.007044513654001689, 0.0028495585299927887, 0.21575955182909478,0.00102226, -0.0247454, 0.00297319])
-# setPosition!(getbody(mech2,"trunk"),x=[-0.007044513654001689, 0.0028495585299927887, 0.21175955182909478],q=UnitQuaternion(0.999886, 0.00102226, -0.0147454, 0.00297319))
+# setPosition!(getbody(mech2,"trunk"),x=[-0.007044513654001689, 0.0028495585299927887, 0.21175955182909478],q=Quaternion(0.999886, 0.00102226, -0.0147454, 0.00297319))
 
 
 initangle = 0.95

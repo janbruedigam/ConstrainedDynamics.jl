@@ -18,12 +18,12 @@ end
 
 ### Constraints and derivatives
 ## Position level constraints (for dynamics)
-@inline g(impact::Impact{T}, x::AbstractVector, q::UnitQuaternion) where T = SVector{1,T}(impact.ainv3 * (x + vrotate(impact.p,q) - impact.offset))
+@inline g(impact::Impact{T}, x::AbstractVector, q::Quaternion) where T = SVector{1,T}(impact.ainv3 * (x + vrotate(impact.p,q) - impact.offset))
 
 ## Derivatives NOT accounting for quaternion specialness
-@inline function ∂g∂pos(impact::Impact, x::AbstractVector, q::UnitQuaternion)
+@inline function ∂g∂pos(impact::Impact, x::AbstractVector, q::Quaternion)
     p = impact.p
     X = impact.ainv3
-    Q = impact.ainv3 * (VLmat(q) * Lmat(UnitQuaternion(p)) * Tmat() + VRᵀmat(q) * Rmat(UnitQuaternion(p)))
+    Q = impact.ainv3 * (VLmat(q) * Lmat(Quaternion(p)) * Tmat() + VRᵀmat(q) * Rmat(Quaternion(p)))
     return X, Q
 end
