@@ -111,7 +111,6 @@ include(joinpath("solver", "linesearch.jl"))
 include(joinpath("optional_components", "linearization.jl"))
 
 include(joinpath("discretization", "Linear.jl"))
-# include(joinpath("discretization", "Quadratic.jl"))
 
 include(joinpath("ui", "mechanism_ui.jl"))
 include(joinpath("ui", "simulate.jl"))
