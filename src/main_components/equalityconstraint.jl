@@ -105,36 +105,54 @@ function _setPosition!(mechanism, eqc::EqualityConstraint{T,N,Nc}, xθ) where {T
     n = Int64(Nc/2)
     body1 = getbody(mechanism, eqc.parentid)
     for i = 1:n
-        body2 = getbody(mechanism, eqc.childids[i])
-        Δx = getPositionDelta(eqc.constraints[i], body1, body2, xθ[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])]) 
-        Δq = getPositionDelta(eqc.constraints[i+1], body1, body2, xθ[SUnitRange(eqc.inds[i+1][1],eqc.inds[i+1][2])])
+        body2 = getbody(mechanism, eqc.childids[1+(i-1)*2])
+        Δx = getPositionDelta(eqc.constraints[1+(i-1)*2], body1, body2, xθ[SUnitRange(eqc.inds[1+(i-1)*2][1],eqc.inds[1+(i-1)*2][2])]) 
+        Δq = getPositionDelta(eqc.constraints[2+(i-1)*2], body1, body2, xθ[SUnitRange(eqc.inds[2+(i-1)*2][1],eqc.inds[2+(i-1)*2][2])])
         
-        p1, p2 = eqc.constraints[i].vertices
+        p1, p2 = eqc.constraints[1+(i-1)*2].vertices
         setPosition!(body1, body2; p1 = p1, p2 = p2, Δx = Δx, Δq = Δq)
     end
     return
 end
 
-# TODO make zero alloc
-# TODO currently assumed constraints are in order and only joints which is the case unless very low level constraint setting
+
 """
     setVelocity!(mechanism, eqconstraint, vω)
 
-Sets the minimal coordinate velocities (vector) of joint `eqconstraint`. Note that currently this function sets the velocity of the directly connected body.
+Sets the minimal coordinate velocities (vector) of joint `eqconstraint`.
 
 Planar joint example:
     setVelocity!(mechanism, geteqconstraint(mechanism, jointid), [0.5;2.0])
 """
-function setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T,N,Nc}
+function setVelocity!(mechanism, eqc::EqualityConstraint, vω; iter::Bool = true)
+    if !iter
+        _setVelocity!(mechanism, eqc, vω)
+    else
+        currentvals = minimalVelocities(mechanism)
+        _setVelocity!(mechanism, eqc, vω)
+        for id in recursivedirectchildren!(mechanism.system, eqc.id)
+            component = getcomponent(mechanism, id)
+            if component isa EqualityConstraint
+                _setVelocity!(mechanism, component, currentvals[id])
+            end
+        end
+    end
+
+    return
+end
+
+# TODO make zero alloc
+# TODO currently assumed constraints are in order and only joints which is the case unless very low level constraint setting
+function _setVelocity!(mechanism, eqc::EqualityConstraint{T,N,Nc}, vω) where {T,N,Nc}
     @assert length(vω)==3*Nc-N
     n = Int64(Nc/2)
     body1 = getbody(mechanism, eqc.parentid)
     for i = 1:n
-        body2 = getbody(mechanism, eqc.childids[i])
-        Δv = getVelocityDelta(eqc.constraints[i], body1, body2, vω[SUnitRange(eqc.inds[i][1],eqc.inds[i][2])])
-        Δω = getVelocityDelta(eqc.constraints[i+1], body1, body2, vω[SUnitRange(eqc.inds[i+1][1],eqc.inds[i+1][2])])
+        body2 = getbody(mechanism, eqc.childids[1+(i-1)*2])
+        Δv = getVelocityDelta(eqc.constraints[1+(i-1)*2], body1, body2, vω[SUnitRange(eqc.inds[1+(i-1)*2][1],eqc.inds[1+(i-1)*2][2])])
+        Δω = getVelocityDelta(eqc.constraints[2+(i-1)*2], body1, body2, vω[SUnitRange(eqc.inds[2+(i-1)*2][1],eqc.inds[2+(i-1)*2][2])])
         
-        p1, p2 = eqc.constraints[i].vertices
+        p1, p2 = eqc.constraints[1+(i-1)*2].vertices
         setVelocity!(body1, body2; p1 = p1, p2 = p2, Δv = Δv, Δω = Δω)
     end
     return

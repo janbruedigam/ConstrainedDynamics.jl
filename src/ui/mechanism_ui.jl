@@ -39,7 +39,17 @@ function minimalCoordinates(mechanism::Mechanism)
     end
 
     return UnitDict(keys, values)
+end
 
+function minimalVelocities(mechanism::Mechanism)
+    keys = mechanism.eqconstraints.keys
+    values = Vector{SVector}()
+
+    for eqc in mechanism.eqconstraints
+        push!(values, minimalVelocities(mechanism, eqc))
+    end
+
+    return UnitDict(keys, values)
 end
 
 function setPosition!(mechanism::Mechanism, dict::UnitDict)

@@ -1,5 +1,5 @@
 using ConstrainedDynamics
-using ConstrainedDynamics: vrotate, Vmat, GenericJoint, AbstractBody, orthogonalrows, deepcopy
+using ConstrainedDynamics: vrotate, Vmat, GenericJoint, AbstractBody, orthogonalrows, deepcopy, params
 using LinearAlgebra
 
 
@@ -84,9 +84,9 @@ setPosition!(origin_abstract,link1_abstract,p2 = vert11)
 
 function compare(s1,s2)
     @test all(isapprox.(norm.(s1.x[1]-s2.x[1]), 0.0; atol = 1e-8)) &&
-        all(isapprox.(norm.(s1.q[1]./s2.q[1]), 1.0; atol = 1e-8)) &&
+        all(isapprox.(norm.(params.(s1.q[1]./s2.q[1])), 1.0; atol = 1e-8)) &&
         all(isapprox.(norm.(s1.x[2]-s2.x[2]), 0.0; atol = 1e-8)) &&
-        all(isapprox.(norm.(s1.q[2]./s2.q[2]), 1.0; atol = 1e-8)) &&
+        all(isapprox.(norm.(params.(s1.q[2]./s2.q[2])), 1.0; atol = 1e-8)) &&
         all(isapprox.(norm.(s1.ω[1]-s2.ω[1]), 0.0; atol = 1e-8)) &&
         all(isapprox.(norm.(s1.v[1]-s2.v[1]), 0.0; atol = 1e-8)) &&
         all(isapprox.(norm.(s1.ω[2]-s2.ω[2]), 0.0; atol = 1e-8)) &&

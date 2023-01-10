@@ -1,6 +1,5 @@
 using ConstrainedDynamics
 using ConstrainedDynamicsVis
-CD = ConstrainedDynamics
 using BenchmarkTools
 
 # Parameters
@@ -16,13 +15,7 @@ vert12 = -vert11
 phi = pi / 4
 q1 = Quaternion(RotX(phi))
 
-steps = Base.OneTo(1000)
-# data=zeros(50)
-
-for i=7:7
-# Links
-display(i)
-N = i
+N = 7
 
 origin = Origin{Float64}()
 links = [Cylinder(r, h, h, color = RGBA(1., 0., 0.)) for i = 1:N]
@@ -54,20 +47,9 @@ for j=2:N
     end  
     setVelocity!(links[j],v=randn(3)*2,ω=randn(3)*2)
 end
-# previd = links[1].id
-# for body in Iterators.drop(mech.bodies, 1)
-#     global previd
-#     setPosition!(ConstrainedDynamics.getbody(mech, previd), body, p1 = vert12, p2 = vert11)
-#     previd = body.id
-# end
 
+steps = Base.OneTo(1000)
 storagesnake = Storage(steps,length(mech.bodies))
 
 storagesnake = simulate!(mech, storagesnake, record = true, ε=1e-6)
 visualize(mech, storagesnake)
-
-# 
-
-# t = @benchmarkable simulate!($mech, $steps, $storage, ε=1e-6)
-# data[i] = BenchmarkTools.minimum(run(t,samples=100,seconds=100)).time/1e9
-end
