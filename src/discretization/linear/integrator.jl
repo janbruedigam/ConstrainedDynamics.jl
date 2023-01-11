@@ -52,9 +52,6 @@ end
     state.Fk[1] = szeros(T,3)
     state.τk[1] = szeros(T,3)
 
-    state.xsol[1] = state.xc
-    state.qsol[1] = state.qc
-
     return
 end
 
@@ -88,7 +85,9 @@ end
 
 @inline function setsolution!(body::Body)
     state = body.state
+    state.xsol[1] = state.xc
     state.xsol[2] = state.xk[1]
+    state.qsol[1] = state.qc
     state.qsol[2] = state.qk[1]
     state.vsol[1] = state.vc
     state.vsol[2] = state.vc
