@@ -52,6 +52,9 @@ end
     state.Fk[1] = szeros(T,3)
     state.τk[1] = szeros(T,3)
 
+    state.xsol[1] = state.xc
+    state.qsol[1] = state.qc
+
     return
 end
 

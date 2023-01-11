@@ -63,6 +63,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, state::State{T}) wh
     println(io,"")
     println(io,"xc:   "*string(state.xc))
     println(io,"qc:   "*string(state.qc))
+    println(io,"vc:   "*string(state.vc))
     println(io,"ωc:   "*string(state.ωc))
     println(io,"xk:   "*string(state.xk))
     println(io,"qk:   "*string(state.qk))
