@@ -72,6 +72,12 @@ mutable struct EqualityConstraint{T,N,Nc,Cs} <: AbstractConstraint{T,N}
     end
 end
 
+function resetVars!(eqc::EqualityConstraint{T,N}) where {T,N}
+    eqc.λsol[1] = zeros(T, N)
+    eqc.λsol[2] = zeros(T, N)
+
+    return 
+end
 
 """
     setPosition!(mechanism, eqconstraint, xθ)

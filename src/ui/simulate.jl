@@ -13,6 +13,7 @@ function initializeSimulation!(mechanism::Mechanism, debug::Bool)
     discretizestate!(mechanism)
     debug && verifyConstraints!(mechanism)
     foreach(setsolution!, mechanism.bodies)
+    foreach(resetVars!, mechanism.eqconstraints)
     return
 end
 
