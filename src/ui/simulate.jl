@@ -14,6 +14,8 @@ function initializeSimulation!(mechanism::Mechanism, debug::Bool)
     debug && verifyConstraints!(mechanism)
     foreach(setsolution!, mechanism.bodies)
     foreach(resetVars!, mechanism.eqconstraints)
+    foreach(resetVars!, mechanism.ineqconstraints)
+    foreach(resetVars!, mechanism.frictions)
     return
 end
 

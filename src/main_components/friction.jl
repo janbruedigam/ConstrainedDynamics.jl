@@ -37,6 +37,12 @@ mutable struct Friction{T} <: Component{T}
     end
 end
 
+function resetVars!(fric::Friction{T}) where {T}
+    fric.βsol[1] = szeros(T, 4)
+    fric.βsol[2] = szeros(T, 4)
+
+    return 
+end
 
 Base.length(::Friction) = 4
 
