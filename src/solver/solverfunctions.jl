@@ -28,9 +28,9 @@ end
 
 
 
-@inline function zeroLU!(matrix_entry_L::Entry, matrix_entry_U::Entry)
-    matrix_entry_L.value *= 0
-    matrix_entry_U.value *= 0
+@inline function zeroLU!(matrix_entry_L::Entry{ET1}, matrix_entry_U::Entry{ET2}) where {ET1,ET2}
+    matrix_entry_L.value = zero(ET1)
+    matrix_entry_U.value = zero(ET2)
     return
 end
 
