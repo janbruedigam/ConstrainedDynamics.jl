@@ -15,17 +15,17 @@ vert21 = [0.;0.;l2 / 2]
 
 # Initial orientation
 phi1 = pi / 4
-q1 = QuatRotation(RotX(phi1))
+q1 = Quaternion(RotX(phi1))
 
 # Links
 origin = Origin{Float64}()
-link1 = Box(x, y, l1, l1, color = RGBA(1., 1., 0.))
-socket0to1 = EqualityConstraint(Spherical(origin, link1; p2=vert11))
-link2 = Box(x, y, l2, l2, color = RGBA(1., 1., 0.))
+link1 = Box(x, y, l1, l1, color = RGBA(1., 1., 0.), name = "body1")
+socket0to1 = EqualityConstraint(Spherical(origin, link1; p2=vert11), name = "jointb1")
+link2 = Box(x, y, l2, l2, color = RGBA(1., 1., 0.), name = "body2")
 
 # Constraints
 
-socket1to2 = EqualityConstraint(Spherical(link1, link2; p1=vert12, p2=vert21))
+socket1to2 = EqualityConstraint(Spherical(link1, link2; p1=vert12, p2=vert21), name = "joint12")
 
 links = [link1;link2]
 constraints = [socket0to1;socket1to2]
@@ -33,4 +33,4 @@ constraints = [socket0to1;socket1to2]
 
 mech = Mechanism(origin, links, constraints)
 setPosition!(origin,link1,p2 = vert11,Δq = q1)
-setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = inv(q1)*QuatRotation(RotY(0.2)))
+setPosition!(link1,link2,p1 = vert12,p2 = vert21,Δq = inv(q1)*Quaternion(RotY(0.2)))

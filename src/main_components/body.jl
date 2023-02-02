@@ -21,7 +21,6 @@ A `Body` is a component of a [`Mechanism`](@ref).
 mutable struct Body{T} <: AbstractBody{T}
     id::Int64
     name::String
-    active::Bool
 
     m::T
     J::SMatrix{3,3,T,9}
@@ -32,8 +31,8 @@ mutable struct Body{T} <: AbstractBody{T}
 
 
     function Body(m::Real, J::AbstractArray; name::String="", shape::Shape=EmptyShape())
-        T = promote_type(eltype.((m, J))...)
-        new{T}(getGlobalID(), name, true, m, J, State{T}(), shape)
+        T = promote_type(quateltype.((m, J))...)
+        new{T}(getGlobalID(), name, m, J, State{T}(), shape)
     end
 
     function Body{T}(contents...) where T
@@ -80,13 +79,13 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, body::Body{T}) wher
     println(io,"")
     println(io, " id:     "*string(body.id))
     println(io, " name:   "*string(body.name))
-    println(io, " active: "*string(body.active))
     println(io, " m:      "*string(body.m))
     println(io, " J:      "*string(body.J))
 end
 
 function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, origin::Origin{T}) where {T}
     summary(io, origin)
+    println(io,"")
     println(io, " id:   "*string(origin.id))
     println(io, " name: "*string(origin.name))
 end
@@ -101,34 +100,18 @@ function Base.deepcopy(b::Body{T}) where T
 end
 
 Base.length(::Body) = 6
+Base.zero(::Body{T}) where T = szeros(T,6,6)
 
 @inline getM(body::Body{T}) where T = [[I*body.m;szeros(T,3,3)] [szeros(T,3,3);body.J]]
 
 
-@inline function ∂dyn∂vel(mechanism, body::Body{T}) where T
-    state = body.state
-    Δt = mechanism.Δt
-    J = body.J
-    ω2 = state.ωsol[2]
-    sq = sqrt(4 / Δt^2 - ω2' * ω2)
-
-    dynT = I * body.m / Δt   
-    dynR = skewplusdiag(ω2, sq) * J - J * ω2 * (ω2' / sq) - skew(J * ω2)
-    
-    Z = szeros(T, 3, 3)
-
-    state.D = [[dynT; Z] [Z; dynR]]
-
-    for connectionid in damperconnections(mechanism.graph, body.id)
-        damperToD!(mechanism, body, geteqconstraint(mechanism, connectionid))
-    end
-
-    return state.D
+@inline function ∂gab∂ʳba(mechanism, body1::Body, body2::Body)
+    eqc = geteqconstraint(mechanism, parents(mechanism.system, body2.id)[1]) # TODO This only works for acyclic damped systems
+    D = -offdiagonal∂damper∂ʳvel(mechanism, eqc, body1, body2)
+    return D, D'
 end
 
-
 # Derivatives for linearizations
-
 function ∂F∂z(body::Body{T}, Δt) where T
     state = body.state
     Z3 = szeros(T,3,3)

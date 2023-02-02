@@ -29,6 +29,6 @@ constraints = [joint1;joint2;joint3]
 
 
 mech = Mechanism(origin, links, constraints, g = 0.)
-setPosition!(origin,link1,Δq = QuatRotation(RotZ(0.)),p2=v1)
-setPosition!(origin,link2,Δq = QuatRotation(RotX(0.)),p2=v2)
-setPosition!(origin,link3,Δq = QuatRotation(RotX(0.)),p2=v3)
+setPosition!(origin,link1,Δq = Quaternion(RotZ(0.)),p2=v1)
+setPosition!(origin,link2,Δq = Quaternion(RotX(0.)),p2=v2)
+setPosition!(origin,link3,Δq = Quaternion(RotX(0.)),p2=v3)

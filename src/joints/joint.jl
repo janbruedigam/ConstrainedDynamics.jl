@@ -45,25 +45,25 @@ end
 @inline addForce!(joint::Joint) = return
 
 ## Derivative wrappers
-@inline function ∂Fτ∂ua(joint::Joint, body1::Body, body2::Body)
+@inline function ∂Fτ∂ua(joint::Joint, body1::Body, body2::Body, childid)
     return ∂Fτ∂ua(joint, body1.state, body2.state) * zerodimstaticadjoint(nullspacemat(joint))
 end
-@inline function ∂Fτ∂ub(joint::Joint, body1::Body, body2::Body)
-    if body2.id == joint.childid
+@inline function ∂Fτ∂ub(joint::Joint, body1::Body, body2::Body, childid)
+    if body2.id == childid
         return ∂Fτ∂ub(joint, body1.state, body2.state) * zerodimstaticadjoint(nullspacemat(joint))
     else
         return ∂Fτ∂ub(joint)
     end
 end
-@inline function ∂Fτ∂ub(joint::Joint, body1::Origin, body2::Body)
-    if body2.id == joint.childid
+@inline function ∂Fτ∂ub(joint::Joint, body1::Origin, body2::Body, childid)
+    if body2.id == childid
         return return ∂Fτ∂ub(joint, body2.state) * zerodimstaticadjoint(nullspacemat(joint))
     else
         return ∂Fτ∂ub(joint)
     end
 end
 
-@inline ∂Fτ∂ub(joint::Joint{T,N}) where {T,N} = szeros(T, 6, 3 - N)
+@inline ∂Fτ∂ub(joint::Joint{T,N}) where {T,N} = szeros(T, 6, 3 - N) # TODO zero function?
 
 
 ### Minimal coordinates

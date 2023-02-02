@@ -15,9 +15,9 @@ verts = [[vert11];[vert12]]
 offset1 = pi / 4
 offset2 = pi / 2
 phi1 = pi / 8
-q1 = QuatRotation(RotX(phi1))
-qoff1 = QuatRotation(RotX(offset1))
-qoff2 = QuatRotation(RotX(offset2))
+q1 = Quaternion(RotX(phi1))
+qoff1 = Quaternion(RotX(offset1))
+qoff2 = Quaternion(RotX(offset2))
 
 N = 10
 

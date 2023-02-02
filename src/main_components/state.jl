@@ -15,19 +15,19 @@ mutable struct State{T}
 
     # Continuous states
     xc::SVector{3,T}
-    qc::QuatRotation{T}
+    qc::Quaternion{T}
     vc::SVector{3,T}
     ωc::SVector{3,T}
 
     # Knot points
     xk::Vector{SVector{3,T}}
-    qk::Vector{QuatRotation{T}}
+    qk::Vector{Quaternion{T}}
     Fk::Vector{SVector{3,T}}
     τk::Vector{SVector{3,T}}
 
     # Current solution estimate [before step;after step]
     xsol::Vector{SVector{3,T}}
-    qsol::Vector{QuatRotation{T}}
+    qsol::Vector{Quaternion{T}}
     vsol::Vector{SVector{3,T}}
     ωsol::Vector{SVector{3,T}}
     
@@ -37,17 +37,17 @@ mutable struct State{T}
 
     function State{T}() where T
         xc = szeros(T, 3)
-        qc = one(QuatRotation{T})
+        qc = one(Quaternion{T})
         vc = szeros(T, 3)
         ωc = szeros(T, 3)
 
         xk = [szeros(T, 3)]
-        qk = [one(QuatRotation{T})]
+        qk = [one(Quaternion{T})]
         Fk = [szeros(T, 3)]
         τk = [szeros(T, 3)]
 
         xsol = [szeros(T, 3) for i=1:2]
-        qsol = [one(QuatRotation{T}) for i=1:2]
+        qsol = [one(Quaternion{T}) for i=1:2]
         vsol = [szeros(T, 3) for i=1:2]
         ωsol = [szeros(T, 3) for i=1:2]
 
@@ -63,6 +63,7 @@ function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, state::State{T}) wh
     println(io,"")
     println(io,"xc:   "*string(state.xc))
     println(io,"qc:   "*string(state.qc))
+    println(io,"vc:   "*string(state.vc))
     println(io,"ωc:   "*string(state.ωc))
     println(io,"xk:   "*string(state.xk))
     println(io,"qk:   "*string(state.qk))

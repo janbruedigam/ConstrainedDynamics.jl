@@ -1,6 +1,6 @@
 using ConstrainedDynamics
-using ConstrainedDynamics: vrotate
-using Rotations
+using ConstrainedDynamics: vrotate, RotX
+using Rotations: QuatRotation
 using StaticArrays
 using LinearAlgebra
 
@@ -18,7 +18,7 @@ for i=1:10
 
     p1 = rand(3)
     p2 = rand(3)
-    qoff = rand(QuatRotation)
+    qoff = rand(QuatRotation).q
 
 
     # Constraints

@@ -22,26 +22,26 @@ A `Mesh` can be used to visualize arbitrary geometries.
 """
 mutable struct Mesh{T} <: Shape{T}
     xoffset::SVector{3,T}
-    qoffset::QuatRotation{T}
+    qoffset::Quaternion{T}
 
     path::String
     scale::SVector{3,T}
     color::RGBA
 
     function Mesh(path::String;
-            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
+            xoffset::AbstractVector = szeros(3), qoffset::Quaternion = one(Quaternion),
             scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
-        T = promote_type(eltype.((xoffset, qoffset))...)
+        T = promote_type(quateltype.((xoffset, qoffset))...)
 
         new{T}(xoffset, qoffset, path, scale, color)
     end
 
     function Mesh(path::String, m::Real, J::AbstractMatrix;
-            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
+            xoffset::AbstractVector = szeros(3), qoffset::Quaternion = one(Quaternion),
             scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
-        T = promote_type(eltype.((m, J, xoffset, qoffset))...)
+        T = promote_type(quateltype.((m, J, xoffset, qoffset))...)
 
         return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, path, scale, color))
     end
@@ -56,7 +56,7 @@ A `Box`.
 """
 mutable struct Box{T} <: Shape{T}
     xoffset::SVector{3,T}
-    qoffset::QuatRotation{T}
+    qoffset::Quaternion{T}
 
     xyz::SVector{3,T}
     scale::SVector{3,T}
@@ -64,19 +64,19 @@ mutable struct Box{T} <: Shape{T}
 
 
     function Box(x::Real, y::Real, z::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
+            xoffset::AbstractVector = szeros(3), qoffset::Quaternion = one(Quaternion),
             scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
-        T = promote_type(eltype.((x, y, z, xoffset, qoffset))...)
+        T = promote_type(quateltype.((x, y, z, xoffset, qoffset))...)
 
         new{T}(xoffset, qoffset, [x;y;z], scale, color)
     end
 
     function Box(x::Real, y::Real, z::Real, m::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
+            xoffset::AbstractVector = szeros(3), qoffset::Quaternion = one(Quaternion),
             scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
-        T = promote_type(eltype.((x, y, z, m, xoffset, qoffset))...)
+        T = promote_type(quateltype.((x, y, z, m, xoffset, qoffset))...)
         J = 1 / 12 * m * diagm([y^2 + z^2;x^2 + z^2;x^2 + y^2])
 
         return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, [x;y;z], scale, color))
@@ -92,7 +92,7 @@ A `Cylinder` along the z-axis.
 """
 mutable struct Cylinder{T} <: Shape{T}
     xoffset::SVector{3,T}
-    qoffset::QuatRotation{T}
+    qoffset::Quaternion{T}
 
     rh::SVector{2,T}
     scale::SVector{3,T}
@@ -100,19 +100,19 @@ mutable struct Cylinder{T} <: Shape{T}
 
     # Cylinder points in the z direction
     function Cylinder(r::Real, h::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
+            xoffset::AbstractVector = szeros(3), qoffset::Quaternion = one(Quaternion),
             scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
-        T = promote_type(eltype.((r, h, xoffset, qoffset))...)
+        T = promote_type(quateltype.((r, h, xoffset, qoffset))...)
 
         new{T}(xoffset, qoffset, [r;h], scale, color)
     end
 
     function Cylinder(r::Real, h::Real, m::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
+            xoffset::AbstractVector = szeros(3), qoffset::Quaternion = one(Quaternion),
             scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
-        T = promote_type(eltype.((r, h, m, xoffset, qoffset))...)
+        T = promote_type(quateltype.((r, h, m, xoffset, qoffset))...)
         J = 1 / 2 * m * diagm([r^2 + 1 / 6 * h^2;r^2 + 1 / 6 * h^2;r^2])
 
         return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, [r;h], scale, color))
@@ -128,26 +128,26 @@ A `Sphere`.
 """
 mutable struct Sphere{T} <: Shape{T}
     xoffset::SVector{3,T}
-    qoffset::QuatRotation{T}
+    qoffset::Quaternion{T}
 
     r::T
     scale::SVector{3,T}
     color::RGBA
 
     function Sphere(r::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
+            xoffset::AbstractVector = szeros(3), qoffset::Quaternion = one(Quaternion),
             scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
-        T = promote_type(eltype.((r, xoffset, qoffset))...)
+        T = promote_type(quateltype.((r, xoffset, qoffset))...)
 
         new{T}(xoffset, qoffset, r, scale, color)
     end
 
     function Sphere(r::Real, m::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
+            xoffset::AbstractVector = szeros(3), qoffset::Quaternion = one(Quaternion),
             scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
-        T = promote_type(eltype.((r, m, xoffset, qoffset))...)
+        T = promote_type(quateltype.((r, m, xoffset, qoffset))...)
         J = 2 / 5 * m * diagm([r^2 for i = 1:3])
 
         return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, r, scale, color))
@@ -162,7 +162,7 @@ A square `Pyramid` with a base in the x-y-plane.
 """
 mutable struct Pyramid{T} <: Shape{T}
     xoffset::SVector{3,T}
-    qoffset::QuatRotation{T}
+    qoffset::Quaternion{T}
 
     wh::SVector{2,T}
     scale::SVector{3,T}
@@ -170,19 +170,19 @@ mutable struct Pyramid{T} <: Shape{T}
 
     # Pyramid points in the z direction, Center of mass at 1/4 h
     function Pyramid(w::Real, h::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
+            xoffset::AbstractVector = szeros(3), qoffset::Quaternion = one(Quaternion),
             scale::AbstractVector = sones(3), color = RGBA(0.75, 0.75, 0.75)
         )
-        T = promote_type(eltype.((w, h, xoffset, qoffset))...)
+        T = promote_type(quateltype.((w, h, xoffset, qoffset))...)
 
         new{T}(xoffset, qoffset, [w;h], scale, color)
     end
 
     function Pyramid(w::Real, h::Real, m::Real;
-            xoffset::AbstractVector = szeros(3), qoffset::QuatRotation = one(QuatRotation),
+            xoffset::AbstractVector = szeros(3), qoffset::Quaternion = one(Quaternion),
             scale::AbstractVector = sones(3), name::String="", color = RGBA(0.75, 0.75, 0.75)
         )
-        T = promote_type(eltype.((w, h, m, xoffset, qoffset))...)
+        T = promote_type(quateltype.((w, h, m, xoffset, qoffset))...)
         J = 1/80 * m * diagm([4*w^2+3*h^2;4*w^2+3*h^2;8*w^2])
 
         return Body(m, J; name=name, shape=new{T}(xoffset, qoffset, [w;h], scale, color))

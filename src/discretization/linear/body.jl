@@ -1,7 +1,6 @@
-@inline function dynamics(mechanism, body::Body{T}) where T
+@inline function g(mechanism::Mechanism{T,Nn,Ne,Nb}, body::Body{T}) where {T,Nn,Ne,Nb}
     state = body.state
     Δt = mechanism.Δt
-    graph = mechanism.graph
 
     ezg = SA{T}[0; 0; -mechanism.g]
     dynT = body.m * ((state.vsol[2] - state.vc) / Δt + ezg) - state.Fk[1]
@@ -15,21 +14,32 @@
 
     state.d = [dynT;dynR]
 
-    for connectionid in connections(graph, body.id)
-        GtλTof!(mechanism, body, geteqconstraint(mechanism, connectionid))
-    end
-
-    for connectionid in springconnections(graph, body.id)
-        springTof!(mechanism, body, geteqconstraint(mechanism, connectionid))
-    end
-
-    for connectionid in damperconnections(graph, body.id)
-        damperTof!(mechanism, body, geteqconstraint(mechanism, connectionid))
-    end
-
-    for childid in ineqchildren(graph, body.id)
-        NtγTof!(mechanism, body, getineqconstraint(mechanism, childid))
+    for connectionid in connections(mechanism.system, body.id)
+        Ne < connectionid <= Ne+Nb && continue # body
+        constraintForceMapping!(mechanism, body, getcomponent(mechanism, connectionid))
     end
 
     return state.d
+end
+
+@inline function ∂g∂ʳself(mechanism::Mechanism{T,Nn,Ne}, body::Body{T}) where {T,Nn,Ne}
+    state = body.state
+    Δt = mechanism.Δt
+    J = body.J
+    ω2 = state.ωsol[2]
+    sq = sqrt(4 / Δt^2 - ω2' * ω2)
+
+    dynT = I * body.m / Δt   
+    dynR = skewplusdiag(ω2, sq) * J - J * ω2 * (ω2' / sq) - skew(J * ω2)
+    
+    Z = szeros(T, 3, 3)
+
+    state.D = [[dynT; Z] [Z; dynR]]
+
+    for connectionid in connections(mechanism.system, body.id)
+        connectionid > Ne && continue # not eqc
+        damperToD!(mechanism, body, geteqconstraint(mechanism, connectionid))
+    end
+
+    return state.D
 end

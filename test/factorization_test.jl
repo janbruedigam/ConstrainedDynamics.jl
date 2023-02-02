@@ -7,8 +7,7 @@ ConstrainedDynamics.setentries!(mech)
 A1, _, b1 = ConstrainedDynamics.densesystem(mech)
 x1 = A1\b1
 
-ConstrainedDynamics.factor!(mech.graph,mech.ldu)
-ConstrainedDynamics.solve!(mech)
+ConstrainedDynamics.ldu_solve!(mech.system)
 
 A2, x2, b2 = ConstrainedDynamics.densesystem(mech)
 

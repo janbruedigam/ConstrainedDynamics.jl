@@ -38,5 +38,5 @@ function joint_force_control!(mechanism, k)
 end
 
 mech = Mechanism(origin, links, constraints, g = 0.)
-setPosition!(link1,q = QuatRotation(RotX(pi / 2)))
+setPosition!(link1,q = Quaternion(RotX(pi / 2)))
 setPosition!(link1,link2,p1 = vert12,p2 = vert21)

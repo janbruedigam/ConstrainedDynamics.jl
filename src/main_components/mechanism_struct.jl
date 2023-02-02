@@ -1,5 +1,3 @@
-abstract type AbstractMechanism{T,Nn,Nb,Ne,Ni} end
-
 """
 $(TYPEDEF)
 
@@ -16,14 +14,14 @@ A `Mechanism` contains the [`Origin`](@ref), [`Body`](@ref)s, and [`EqualityCons
     Mechanism(origin, bodies, eqcs; Δt, g)
     Mechanism(urdf_filename; floating, Δt, g)
 """
-mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
+mutable struct Mechanism{T,Nn,Ne,Nb,Nf,Ni} <: AbstractMechanism{T,Nn,Ne,Nb,Nf,Ni}
     origin::Origin{T}
-    bodies::UnitDict{Base.OneTo{Int64},Body{T}}
-    eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
+    eqconstraints::UnitDict{Base.OneTo{Int64},<:EqualityConstraint{T}}
+    bodies::UnitDict{UnitRange{Int64},Body{T}}
+    frictions::UnitDict{UnitRange{Int64},<:Friction{T}}
     ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
 
-    graph::Graph{Nn}
-    ldu::SparseLDU{T}
+    system::System{Nn}
 
     # TODO remove once EqualityConstraint is homogenous
     normf::T
@@ -34,10 +32,12 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
 
     α::T
     μ::T
+    τ::T
 
 
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},
-            eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},
+            eqcs::Vector{<:EqualityConstraint{T}}, ineqcs::Vector{<:InequalityConstraint{T}},
+            frics::Vector{<:Friction{T}};
             Δt::Real = .01, g::Real = -9.81
         ) where T
 
@@ -45,94 +45,65 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         order = getGlobalOrder()
 
         for body in bodies
+            initknotpoints!(body.state, order)
             if norm(body.m) == 0 || norm(body.J) == 0
                 @info "Potentially bad inertial properties detected"
             end 
         end
 
-        Nb = length(bodies)
         Ne = length(eqcs)
+        Nb = length(bodies)
+        Nf = length(frics)
         Ni = length(ineqcs)
-        Nn = Nb + Ne
+        Nn = Ne + Nb + Nf + Ni
 
-        if Nb < Ne
-            @info "More constraints than bodies. Potentially bad behavior."
-        end
+        nodes = [eqcs;bodies;frics;ineqcs]
+        oldnewid = Dict([node.id=>i for (i,node) in enumerate(nodes)]...)
 
-
-        currentid = 1
-
-        bdict = Dict{Int64,Int64}()
-        for (ind, body) in enumerate(bodies)
-            initknotpoints!(body.state, order)
-
-            for eqc in eqcs
-                eqc.parentid == body.id && (eqc.parentid = currentid)
-                for (ind, bodyid) in enumerate(eqc.childids)
-                    if bodyid == body.id
-                        eqc.childids = setindex(eqc.childids, currentid, ind)
-                        eqc.constraints[ind].childid = currentid
-                    end
-                end
+        for node in nodes
+            node.id = oldnewid[node.id]
+            if typeof(node) <: Union{AbstractConstraint, Friction}
+                node.parentid = get(oldnewid, node.parentid, nothing)
+                node.childids = [get(oldnewid, childid, nothing) for childid in node.childids]
             end
-
-            for ineqc in ineqcs
-                ineqc.parentid == body.id && (ineqc.parentid = currentid)
-            end
-
-            body.id = currentid
-            currentid += 1
-
-            bdict[body.id] = ind
         end
 
-        eqdict = Dict{Int64,Int64}()
-        for (ind, eqc) in enumerate(eqcs)
-            eqc.id = currentid
-            currentid += 1
-
-            eqdict[eqc.id] = ind
-        end
-
-        ineqdict = Dict{Int64,Int64}()
-        for (ind, ineqc) in enumerate(ineqcs)
-            ineqc.id = currentid
-            currentid += 1
-
-            ineqdict[ineqc.id] = ind
-        end
+        system = create_system(origin, eqcs, bodies, frics, ineqcs)
 
         normf = 0
         normΔs = 0
 
-        graph = Graph(origin, bodies, eqcs, ineqcs)
-        ldu = SparseLDU(graph, bodies, eqcs, ineqcs, bdict, eqdict, ineqdict)
-
-        # storage = Storage{T}(steps, Nb, Ne)
-
-        bodies = UnitDict(bodies)
-        eqcs = UnitDict((eqcs[1].id):(eqcs[Ne].id), eqcs)
-        if Ni > 0
-            ineqcs = UnitDict((ineqcs[1].id):(ineqcs[Ni].id), ineqcs)
-        else
-            ineqcs = UnitDict(0:0, ineqcs)
-        end
+        eqcs = UnitDict(eqcs)
+        bodies = UnitDict((bodies[1].id):(bodies[Nb].id), bodies)
+        Nf > 0 ? (frics = UnitDict((frics[1].id):(frics[Nf].id), frics)) : (frics = UnitDict(0:0, frics))
+        Ni > 0 ? (ineqcs = UnitDict((ineqcs[1].id):(ineqcs[Ni].id), ineqcs)) : (ineqcs = UnitDict(0:0, ineqcs))
+        
 
         α = 1
         μ = 1
+        τ = 0.95
 
-        new{T,Nn,Nb,Ne,Ni}(origin, bodies, eqcs, ineqcs, graph, ldu, normf, normΔs, Δt, g, α, μ)
+        new{T,Nn,Ne,Nb,Nf,Ni}(origin, eqcs, bodies, frics, ineqcs, system, normf, normΔs, Δt, g, α, μ, τ)
     end
 
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},eqcs::Vector{<:EqualityConstraint{T}};
             Δt::Real = .01, g::Real = -9.81
         ) where T
 
         ineqcs = InequalityConstraint{T}[]
-        return Mechanism(origin, bodies, eqcs, ineqcs, Δt = Δt, g = g)
+        frics = Friction{T}[]
+        return Mechanism(origin, bodies, eqcs, ineqcs, frics; Δt = Δt, g = g)
     end
 
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},eqcs::Vector{<:EqualityConstraint{T}},ineqcs::Vector{<:InequalityConstraint{T}};
+            Δt::Real = .01, g::Real = -9.81
+        ) where T
+
+        frics = Friction{T}[]
+        return Mechanism(origin, bodies, eqcs, ineqcs, frics; Δt = Δt, g = g)
+    end
+
+    function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}},ineqcs::Vector{<:InequalityConstraint{T}};
             Δt::Real = .01, g::Real = -9.81
         ) where T
 
@@ -140,10 +111,10 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
         for body in bodies
             push!(eqc, EqualityConstraint(Floating(origin, body)))
         end
-        return Mechanism(origin, bodies, eqc, ineqcs, Δt = Δt, g = g)
+        return Mechanism(origin, bodies, eqc, ineqcs; Δt = Δt, g = g)
     end
 
-    function Mechanism(origin::Origin{T},bodies::Vector{Body{T}};
+    function Mechanism(origin::Origin{T},bodies::Vector{<:Body{T}};
             Δt::Real = .01, g::Real = -9.81
         ) where T
 
@@ -163,90 +134,14 @@ mutable struct Mechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
     end
 end
 
-mutable struct LinearMechanism{T,Nn,Nb,Ne,Ni} <: AbstractMechanism{T,Nn,Nb,Ne,Ni}
-    ## Mechanism attributes
-    origin::Origin{T}
-    bodies::UnitDict{Base.OneTo{Int64},Body{T}}
-    eqconstraints::UnitDict{UnitRange{Int64},<:EqualityConstraint{T}}
-    ineqconstraints::UnitDict{UnitRange{Int64},<:InequalityConstraint{T}}
-
-    graph::Graph{Nn}
-    ldu::SparseLDU{T}
-
-    # TODO remove once EqualityConstraint is homogenous
-    normf::T
-    normΔs::T
-
-    Δt::T
-    g::T
-
-    α::T
-    μ::T
-    
-    ## LinearMechanism attributes
-    A::AbstractMatrix{T}
-    Bu::AbstractMatrix{T}
-    Bλ::AbstractMatrix{T}
-    G::AbstractMatrix{T}
-
-    xd::Vector{SVector{3,T}}
-    vd::Vector{SVector{3,T}}
-    qd::Vector{QuatRotation{T}}
-    ωd::Vector{SVector{3,T}}
-    # Fτd::Vector{SVector{3,T}}
-
-    z::Vector{T}
-    zsol::Vector{Vector{T}}
-    Δz::Vector{T}
-    λ::Vector{T}
-    λsol::Vector{Vector{T}}
-    Δλ::Vector{T}
-    u::Vector{T}
-
-
-    function LinearMechanism(mechanism::Mechanism{T,Nn,Nb,Ne,Ni}, xd, vd, qd, ωd, Fτd, eqcids) where {T,Nn,Nb,Ne,Ni}
-
-        A, Bu, Bλ, G = linearsystem(mechanism, xd, vd, qd, ωd, Fτd, getid.(mechanism.bodies), eqcids)
-
-        z = zeros(T,Nb*12)
-        zsol = [zeros(T,Nb*12) for i=1:2]
-        Δz = zeros(T,Nb*12)
-
-        nc = 0
-        for eqc in mechanism.eqconstraints
-            nc += length(eqc)
-        end
-        λ = zeros(T,nc)
-        λsol = [zeros(T,nc) for i=1:2]
-        Δλ = zeros(T,nc)
-        
-        u = zeros(T,size(Bu)[2])
-
-        new{T,Nn,Nb,Ne,Ni}([getfield(mechanism,i) for i=1:getfieldnumber(mechanism)]..., A, Bu, Bλ, G, xd, vd, qd, ωd, z, zsol, Δz, λ, λsol, Δλ, u)
-    end
-
-    function LinearMechanism(mechanism::Mechanism{T,Nn,Nb,Ne,Ni}; 
-        xd = [mechanism.bodies[i].state.xc for i=1:Nb],
-        vd = [mechanism.bodies[i].state.vc for i=1:Nb],
-        qd = [mechanism.bodies[i].state.qc for i=1:Nb],
-        ωd = [mechanism.bodies[i].state.ωc for i=1:Nb],
-        eqcids = [],
-        Fτd = []
-    ) where {T,Nn,Nb,Ne,Ni}
-
-        return LinearMechanism(mechanism, xd, vd, qd, ωd, Fτd, eqcids)
-    end
-end
-
-
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Nb,Ne,0}) where {T,Nn,Nb,Ne}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Ne,Nb,Nf,0}) where {T,Nn,Ne,Nb,Nf}
     summary(io, mechanism)
     println(io, " with ", Nb, " bodies and ", Ne, " constraints")
     println(io, " Δt: "*string(mechanism.Δt))
     println(io, " g:  "*string(mechanism.g))
 end
 
-function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Nb,Ne,Ni}) where {T,Nn,Nb,Ne,Ni}
+function Base.show(io::IO, mime::MIME{Symbol("text/plain")}, mechanism::AbstractMechanism{T,Nn,Ne,Nb,Nf,Ni}) where {T,Nn,Ne,Nb,Nf,Ni}
     summary(io, mechanism)
     println(io, " with ", Nb, " bodies, ", Ne, " equality constraints, and ", Ni, " inequality constraints")
     println(io, " Δt: "*string(mechanism.Δt))

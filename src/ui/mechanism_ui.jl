@@ -1,41 +1,13 @@
 function verifyConstraints!(mechanism::Mechanism)
     for eqc in mechanism.eqconstraints
-        if norm(g(mechanism, eqc)) > 1e-3
-            @info string("Bad constraint satisfaction at constraint: ", eqc.id, ", |g| = ", norm(g(mechanism, eqc)))
+        typeof(eqc) <: EqualityConstraint{T,N,Nc,Cs} where {T,N,Nc,Cs<:Tuple{<:Friction}} && continue
+        if norm(gc(mechanism, eqc)) > 1e-3
+            @info string("Bad constraint satisfaction at constraint: ", eqc.id, ", |g| = ", norm(gc(mechanism, eqc)))
         end
     end
     return
 end
 
-function activateConstraints!(mechanism::Mechanism)
-    graph = mechanism.graph
-
-    for (id,eqc) in pairs(mechanism.eqconstraints)
-        activate!(eqc)
-        activate!(graph,id)
-    end
-    for (id,ineqc) in pairs(mechanism.ineqconstraints)
-        activate!(ineqc)
-        activate!(graph,id)
-    end
-
-    return
-end
-
-function deactivateConstraints!(mechanism::Mechanism)
-    graph = mechanism.graph
-    
-    for (id,eqc) in pairs(mechanism.eqconstraints)
-        deactivate!(eqc)
-        deactivate!(graph,id)
-    end
-    for (id,ineqc) in pairs(mechanism.ineqconstraints)
-        deactivate!(ineqc)
-        deactivate!(graph,id)
-    end
-    
-    return
-end
 
 function nameiddict(mechanism::Mechanism)
     dict = Dict{String,Int64}()

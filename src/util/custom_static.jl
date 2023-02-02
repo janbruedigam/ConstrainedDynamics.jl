@@ -56,6 +56,7 @@ Base.convert(::Type{SMatrix{N,N,T,N2}}, E::UniformScaling) where {T, N, N2} = SM
 
 
 sisnan(a::StaticArray) = any(isnan.(a))
+sisnan(q::Quaternion) = isnan(q)
 
 
 # To fix StaticArray bug
@@ -63,5 +64,3 @@ zerodimstaticadjoint(A) = A'
 zerodimstaticadjoint(::SMatrix{0,N,T,0}) where {T,N} = SMatrix{N,0,T,0}()
 zerodimstaticadjoint(::SMatrix{N,0,T,0}) where {T,N} = SMatrix{0,N,T,0}()
 Base.:*(x::LinearAlgebra.AdjointAbsVec, A::SMatrix{0,N,T,0}) where {T,N} = (zerodimstaticadjoint(A)*x')'
-Base.:*(A::SMatrix{N,0,T,0},x::SVector{0}) where {T,N} = szeros(T,N)
-Base.:*(A::SMatrix{N,0,T,0},B::SMatrix{0,M,T,0}) where {T,N,M} = szeros(T,N,M)

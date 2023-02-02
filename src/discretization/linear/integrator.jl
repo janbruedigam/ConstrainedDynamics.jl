@@ -29,7 +29,7 @@ getGlobalOrder() = (global METHODORDER; return METHODORDER)
 end
 
 @inline function ωbar(ω, Δt)
-    return QuatRotation(sqrt(4 / Δt^2 - dot(ω, ω)), ω, false)
+    return Quaternion(sqrt(4 / Δt^2 - dot(ω, ω)), ω...)
 end
 
 @inline function setForce!(state::State, F, τ)
@@ -83,14 +83,20 @@ end
     return
 end
 
-@inline function setsolution!(body::Body)
+@inline function setsolution!(body::Body{T}) where T
     state = body.state
+    state.xsol[1] = state.xc
     state.xsol[2] = state.xk[1]
+    state.qsol[1] = state.qc
     state.qsol[2] = state.qk[1]
+    
     state.vsol[1] = state.vc
     state.vsol[2] = state.vc
     state.ωsol[1] = state.ωc
     state.ωsol[2] = state.ωc
+
+    state.d = szeros(T, 6)
+    state.D = szeros(T, 6, 6)
     return
 end
 

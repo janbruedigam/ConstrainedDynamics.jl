@@ -1,38 +1,35 @@
-Rotations.params(q::Quaternion) = SVector(q.s,q.v1,q.v2,q.v3)
+# Quaternions.Quaternion(w::T, v::StaticVector{3,T}) where T = Quaternion{T}(w, v[1], v[2], v[3])
+# Quaternions.Quaternion(w::T, v::Vector{T}) where T = (@assert length(v)==3; Quaternion{T}(w, v[1], v[2], v[3]))
+# Quaternions.Quaternion(v::StaticVector{3,T}) where T = Quaternion{T}(0, v[1], v[2], v[3])
+# Quaternions.Quaternion(v::StaticVector{4,T}) where T = Quaternion{T}(v[1], v[2], v[3], v[4])
+Quaternions.Quaternion(v::AbstractVector) = (@assert length(v)==3; Quaternion(0, v[1], v[2], v[3]))
 
-Base.:*(q1::QuatRotation, q2::Quaternion) = q1.q*q2
-Base.:*(q1::Quaternion, q2::QuatRotation) = q1*q2.q
-Base.:/(q1::QuatRotation, q2::Quaternion) = q1.q/q2
-Base.:/(q1::Quaternion, q2::QuatRotation) = q1/q2.q
-Base.:\(q1::QuatRotation, q2::Quaternion) = q1.q\q2
-Base.:\(q1::Quaternion, q2::QuatRotation) = q1\q2.q
+RotX(θ) = Quaternion(cos(θ/2), sin(θ/2), 0, 0)
+RotY(θ) = Quaternion(cos(θ/2), 0, sin(θ/2), 0)
+RotZ(θ) = Quaternion(cos(θ/2), 0, 0, sin(θ/2))
 
-Base.:*(q1::QuatRotation, q2::Real) = QuatRotation(q1.q*q2)
-Base.:*(q1::Real, q2::QuatRotation) = QuatRotation(q1*q2.q)
-Base.:/(q1::QuatRotation, q2::Real) = QuatRotation(q1.q/q2)
-Base.:/(q1::Real, q2::QuatRotation) = QuatRotation(q1/q2.q)
-Base.:\(q1::QuatRotation, q2::Real) = QuatRotation(q1.q\q2)
-Base.:\(q1::Real, q2::QuatRotation) = QuatRotation(q1\q2.q)
+quateltype(x) = eltype(x) # TODO not super elegant
+quateltype(::Quaternion{T}) where T = T
 
-Rotations.QuatRotation(w::T, v::StaticVector{3,T}, normalize::Bool = true) where T = QuatRotation{T}(w, v[1], v[2], v[3], normalize)
-Rotations.QuatRotation(w::T, v::Vector{T}, normalize::Bool = true) where T = (@assert length(v)==3; QuatRotation{T}(w, v[1], v[2], v[3], normalize))
-Rotations.QuatRotation(v::StaticVector{3,T}) where T = pure_quaternion(v)
-Rotations.QuatRotation(v::Vector) = (@assert length(v)==3; pure_quaternion(v))
-Rotations.QuatRotation(q::Quaternion) = QuatRotation(q.s,q.v1,q.v2,q.v3,false)
+Rotations.params(q::Quaternion{T}) where T = SVector{4,T}(q.s, q.v1, q.v2, q.v3)
 
-@inline imag(q::QuatRotation) = Rotations.vector(q)
-@inline imag(q::Quaternion) = SVector(q.v1,q.v2,q.v3)
+@inline imag(q::Quaternion) = SA[q.v1, q.v2, q.v3]
 
-qrotate(q1::QuatRotation,q2::QuatRotation) = q2 * q1 / q2
-qrotate(q1::QuatRotation,q2::Quaternion) = q2 * q1.q / q2
-qrotate(q1::Quaternion,q2::QuatRotation) = q2.q * q1 / q2.q
 qrotate(q1::Quaternion,q2::Quaternion) = q2 * q1 / q2
-vrotate(v::Vector,q::QuatRotation) = imag(qrotate(pure_quaternion(v), q))
-vrotate(v::StaticVector,q::QuatRotation) = q*v
-vrotate(v::Vector,q::Quaternion) = imag(qrotate(pure_quaternion(v), q))
-vrotate(v::StaticVector,q::Quaternion) = imag(qrotate(pure_quaternion(v), q))
+vrotate(v::AbstractVector,q::Quaternion) = imag(qrotate(Quaternion(v), q))
+# vrotate(v::StaticVector,q::Quaternion) = q*v
 
-rotation_vector(q::QuatRotation) = rotation_angle(q) * rotation_axis(q)
+rotation_vector(q::Quaternion) = rotation_angle(q) * rotation_axis(q)
+
+rotation_angle(q::Quaternion) = 2*atan(norm(SVector{3,Float64}(q.v1,q.v2,q.v3)),q.s)
+function rotation_axis(q::Quaternion)
+    if q.s == 1
+        return SVector{3,Float64}(1,0,0)
+    else
+        qv = SVector{3,Float64}(q.v1,q.v2,q.v3)
+        return qv/norm(qv)
+    end
+end 
 
 Lmat(q) = lmult(q)
 Lᵀmat(q) = lmult(q)'
@@ -43,67 +40,67 @@ Tmat(::Type{T}=Float64) where T = tmat(T)
 Tᵀmat(::Type{T}=Float64) where T = tmat(T)
 Vmat(::Type{T}=Float64) where T = vmat(T)
 Vᵀmat(::Type{T}=Float64) where T = hmat(T)
-Vmat(q::QuatRotation) = imag(q)
+Vmat(q::Quaternion) = imag(q)
 
-function VLmat(q::QuatRotation)
+function VLmat(q::Quaternion)
     SA[
-        q.x  q.w -q.z  q.y;
-        q.y  q.z  q.w -q.x;
-        q.z -q.y  q.x  q.w;
+        q.v1  q.s -q.v3  q.v2;
+        q.v2  q.v3  q.s -q.v1;
+        q.v3 -q.v2  q.v1  q.s;
     ]
 end
-function VLᵀmat(q::QuatRotation)
+function VLᵀmat(q::Quaternion)
     SA[
-        -q.x  q.w  q.z -q.y;
-        -q.y -q.z  q.w  q.x;
-        -q.z  q.y -q.x  q.w;
+        -q.v1  q.s  q.v3 -q.v2;
+        -q.v2 -q.v3  q.s  q.v1;
+        -q.v3  q.v2 -q.v1  q.s;
     ]
 end
-function VRmat(q::QuatRotation)
+function VRmat(q::Quaternion)
     SA[
-        q.x  q.w  q.z -q.y;
-        q.y -q.z  q.w  q.x;
-        q.z  q.y -q.x  q.w;
+        q.v1  q.s  q.v3 -q.v2;
+        q.v2 -q.v3  q.s  q.v1;
+        q.v3  q.v2 -q.v1  q.s;
     ]
 end
-function VRᵀmat(q::QuatRotation)
+function VRᵀmat(q::Quaternion)
     SA[
-        -q.x  q.w -q.z  q.y;
-        -q.y  q.z  q.w -q.x;
-        -q.z -q.y  q.x  q.w;
+        -q.v1  q.s -q.v3  q.v2;
+        -q.v2  q.v3  q.s -q.v1;
+        -q.v3 -q.v2  q.v1  q.s;
     ]
 end
 
-function LVᵀmat(q::QuatRotation)
+function LVᵀmat(q::Quaternion)
     SA[
-        -q.x -q.y -q.z;
-         q.w -q.z  q.y;
-         q.z  q.w -q.x;
-        -q.y  q.x  q.w;
+        -q.v1 -q.v2 -q.v3;
+         q.s -q.v3  q.v2;
+         q.v3  q.s -q.v1;
+        -q.v2  q.v1  q.s;
     ]
 end
-function LᵀVᵀmat(q::QuatRotation)
+function LᵀVᵀmat(q::Quaternion)
     SA[
-         q.x  q.y  q.z;
-         q.w  q.z -q.y;
-        -q.z  q.w  q.x;
-         q.y -q.x  q.w;
+         q.v1  q.v2  q.v3;
+         q.s  q.v3 -q.v2;
+        -q.v3  q.s  q.v1;
+         q.v2 -q.v1  q.s;
     ]
 end
-function RVᵀmat(q::QuatRotation)
+function RVᵀmat(q::Quaternion)
     SA[
-        -q.x -q.y -q.z;
-         q.w  q.z -q.y;
-        -q.z  q.w  q.x;
-         q.y -q.x  q.w;
+        -q.v1 -q.v2 -q.v3;
+         q.s  q.v3 -q.v2;
+        -q.v3  q.s  q.v1;
+         q.v2 -q.v1  q.s;
     ]
 end
-function RᵀVᵀmat(q::QuatRotation)
+function RᵀVᵀmat(q::Quaternion)
     SA[
-         q.x  q.y  q.z;
-         q.w -q.z  q.y;
-         q.z  q.w -q.x;
-        -q.y  q.x  q.w;
+         q.v1  q.v2  q.v3;
+         q.s -q.v3  q.v2;
+         q.v3  q.s -q.v1;
+        -q.v2  q.v1  q.s;
     ]
 end
 
@@ -211,7 +208,7 @@ function slerp(q1,q2,h)
     φdiff = rotation_angle(qdiff) 
     udiff = rotation_axis(qdiff)
     φint = φdiff*h
-    qint = QuatRotation(cos(φint/2),udiff*sin(φint/2),false)
+    qint = Quaternion(cos(φint/2),sin(φint/2)*udiff...)
     
     return q1*qint
 end

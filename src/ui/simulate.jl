@@ -1,21 +1,10 @@
 function saveToStorage!(mechanism::Mechanism, storage::Storage, i)
-    for (id, body) in pairs(mechanism.bodies)
+    for (ind, body) in enumerate(mechanism.bodies)
         state = body.state
-        storage.x[id][i] = state.xc
-        storage.q[id][i] = state.qc
-        storage.v[id][i] = state.vc
-        storage.ω[id][i] = state.ωc
-    end
-    return
-end
-
-function saveToStorage!(mechanism::LinearMechanism, storage::Storage, i)
-    qvm = QuatVecMap()
-    for id in getid.(mechanism.bodies)
-        storage.x[id][i] = mechanism.xd[id] + mechanism.z[offsetrange(id,3,12,1)]
-        storage.q[id][i] = Rotations.add_error(mechanism.qd[id],RotationError(SA[mechanism.z[offsetrange(id,3,12,3)]...],qvm))
-        storage.v[id][i] = mechanism.vd[id] + mechanism.z[offsetrange(id,3,12,2)]
-        storage.ω[id][i] = mechanism.ωd[id] + mechanism.z[offsetrange(id,3,12,4)]
+        storage.x[ind][i] = state.xc
+        storage.q[ind][i] = state.qc
+        storage.v[ind][i] = state.vc
+        storage.ω[ind][i] = state.ωc
     end
     return
 end
@@ -24,20 +13,9 @@ function initializeSimulation!(mechanism::Mechanism, debug::Bool)
     discretizestate!(mechanism)
     debug && verifyConstraints!(mechanism)
     foreach(setsolution!, mechanism.bodies)
-    return
-end
-function initializeSimulation!(mechanism::LinearMechanism, debug::Bool)
-    # debug && verifyConstraints!(mechanism)
-
-    qvm = QuatVecMap()
-    for (id, body) in pairs(mechanism.bodies)
-        state = body.state
-        mechanism.z[offsetrange(id,3,12,1)] = state.xc - mechanism.xd[id]
-        mechanism.z[offsetrange(id,3,12,3)] = Rotations.rotation_error(state.qc,mechanism.qd[id],qvm)
-        mechanism.z[offsetrange(id,3,12,2)] = state.vc - mechanism.vd[id]
-        mechanism.z[offsetrange(id,3,12,4)] = state.ωc - mechanism.ωd[id]
-    end
-    mechanism.zsol[2] = mechanism.z
+    foreach(resetVars!, mechanism.eqconstraints)
+    foreach(resetVars!, mechanism.ineqconstraints)
+    foreach(resetVars!, mechanism.frictions)
     return
 end
 
@@ -58,26 +36,7 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
         control!(mechanism, k)
         foreach(applyFτ!, eqcs, mechanism)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
-        foreachactive(updatestate!, bodies, Δt)
-    end
-    record ? (return storage) : (return) 
-end
-
-function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage::Storage, control!::Function;
-        ε = 1e-10, newtonIter = 100, lineIter = 10,
-        record::Bool = false,debug::Bool = false
-    )
-
-    initializeSimulation!(mechanism, debug)
-    eqcs = mechanism.eqconstraints
-
-    for k = steps
-        record && saveToStorage!(mechanism, storage, k)
-        control!(mechanism, k)
-        foreach(applyFτ!, eqcs, mechanism)
-        newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
-        mechanism.z = mechanism.zsol[2]
-        mechanism.λ = mechanism.λsol[2]
+        foreach(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
@@ -100,7 +59,7 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
         control!(mechanism, controller, k)
         foreach(applyFτ!, eqcs, mechanism)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
-        foreachactive(updatestate!, bodies, Δt)
+        foreach(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end
@@ -118,23 +77,7 @@ function simulate!(mechanism::Mechanism, steps::AbstractUnitRange, storage::Stor
     for k = steps
         record && saveToStorage!(mechanism, storage, k)
         newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
-        foreachactive(updatestate!, bodies, Δt)
-    end
-    record ? (return storage) : (return) 
-end
-
-function simulate!(mechanism::LinearMechanism, steps::AbstractUnitRange, storage::Storage;
-        ε = 1e-10, newtonIter = 100, lineIter = 10,
-        record::Bool = false,debug::Bool = false
-    )
-
-    initializeSimulation!(mechanism, debug)
-
-    for k = steps
-        record && saveToStorage!(mechanism, storage, k)
-        newton!(mechanism, ε = ε, newtonIter = newtonIter, lineIter = lineIter, warning = debug)
-        mechanism.z = mechanism.zsol[2]
-        mechanism.λ = mechanism.λsol[2]
+        foreach(updatestate!, bodies, Δt)
     end
     record ? (return storage) : (return) 
 end

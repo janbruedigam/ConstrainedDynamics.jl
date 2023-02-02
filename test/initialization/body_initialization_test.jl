@@ -1,6 +1,6 @@
 using ConstrainedDynamics
 using ConstrainedDynamics: vrotate
-using Rotations
+using Rotations: QuatRotation
 using StaticArrays
 using LinearAlgebra
 
@@ -41,8 +41,8 @@ for i=1:3
         p12 = rand(3)
         p21 = rand(3)
         Δx = rand(3)
-        q1 = rand(QuatRotation)
-        Δq = rand(QuatRotation)
+        q1 = rand(QuatRotation).q
+        Δq = rand(QuatRotation).q
         v1 = rand(3)
         Δv = rand(3)
 
@@ -78,9 +78,9 @@ for i=1:3
         end
 
         truex1 = [truex10 + truev1*Δt*i for i=0:999]
-        trueq1 = [QuatRotation(cos(i*an1*Δt/2), (ax1*sin(i*an1*Δt/2))..., false)*trueq10 for i=0:999]
+        trueq1 = [Quaternion(cos(i*an1*Δt/2), (ax1*sin(i*an1*Δt/2))...)*trueq10 for i=0:999]
         truex2 = [truex20 + truev2*Δt*i for i=0:999]
-        trueq2 = [QuatRotation(cos(i*an2*Δt/2), (ax2*sin(i*an2*Δt/2))..., false)*trueq20 for i=0:999]
+        trueq2 = [Quaternion(cos(i*an2*Δt/2), (ax2*sin(i*an2*Δt/2))...)*trueq20 for i=0:999]
 
         @test isapprox(sum(norm.(storage.x[1].-truex1))/1000, 0.0; atol = 1e-3)
         @test isapprox(sum(norm.(storage.q[1].-trueq1))/1000, 0.0; atol = 1e-3)
@@ -89,25 +89,27 @@ for i=1:3
     end
 end
 
-
-origin, bodies, eqconstraints, ineqconstraints = disassemble(mech)
-
-mech = Mechanism(origin, [links[1]], [eqconstraints[1]], g = 0.)
+origin = Origin{Float64}()
+link1 = Box(width, depth, length1, length1, color = RGBA(1., 1., 0.))
+link1.m = 1.0
+link1.J = diagm(ones(3))
+joint1 = EqualityConstraint(Floating(origin, link1))
+mech = Mechanism(origin, [link1], [joint1], g = 0.)
 
 for i=1:3
     axis1 = zeros(3)
     axis1[i] = 1
 
-    q1 = rand(QuatRotation)
+    q1 = rand(QuatRotation).q
     p = rand(3)
     F = rand(3)
     τ = rand(3)
 
     function control!(mechanism, k)
         if k==1
-            setForce!(mechanism.bodies[1], F = F, τ = τ, p = p)
+            setForce!(link1, F = F, τ = τ, p = p)
         else
-            setForce!(mechanism.bodies[1])
+            setForce!(link1)
         end
         return
     end
@@ -134,7 +136,7 @@ for i=1:3
     end
 
     truex1 = [truex10 + truev1*Δt*i for i=0:999]
-    trueq1 = [QuatRotation(cos(i*an1*Δt/2), (ax1*sin(i*an1*Δt/2))..., false)*trueq10 for i=0:999]
+    trueq1 = [Quaternion(cos(i*an1*Δt/2), (ax1*sin(i*an1*Δt/2))...)*trueq10 for i=0:999]
 
     @test isapprox(sum(norm.(storage.x[1].-truex1))/1000, 0.0; atol = 1e-3)
     @test isapprox(sum(norm.(storage.q[1].-trueq1))/1000, 0.0; atol = 1e-3)  

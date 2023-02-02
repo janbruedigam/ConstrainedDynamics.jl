@@ -22,7 +22,7 @@ function gc(mechanism::Mechanism{T}) where T
 end   
 
 # Derivatives
-function ∂g∂posc(mechanism::Mechanism{T,Nn,Nb},freeids) where {T,Nn,Nb}
+function ∂g∂posc(mechanism::Mechanism{T,Nn,Ne,Nb}, freeids) where {T,Nn,Ne,Nb}
     freebodies = mechanism.bodies[freeids]
 
     rangeDict = Dict{Int64,UnitRange}()
@@ -41,7 +41,7 @@ function ∂g∂posc(mechanism::Mechanism{T,Nn,Nb},freeids) where {T,Nn,Nb}
     
     for (i,eqc) in enumerate(mechanism.eqconstraints)
         for (j,body) in enumerate(freebodies)
-             G[rangeDict[i],offsetrange(j,7)] = ∂g∂posc(mechanism, eqc, body.id)
+             G[rangeDict[i],offsetrange(j,7)] = ∂g∂posc(mechanism, eqc, body)
         end
     end
         
@@ -49,7 +49,7 @@ function ∂g∂posc(mechanism::Mechanism{T,Nn,Nb},freeids) where {T,Nn,Nb}
 end
 
 
-function constraintstep!(mechanism::Mechanism{T,Nn,Nb},freeids) where {T,Nn,Nb}
+function constraintstep!(mechanism::Mechanism{T,Nn,Ne,Nb},freeids) where {T,Nn,Ne,Nb}
     freebodies = mechanism.bodies[freeids]
 
     gval=gc(mechanism)
@@ -72,7 +72,7 @@ function constraintstep!(mechanism::Mechanism{T,Nn,Nb},freeids) where {T,Nn,Nb}
     return
 end
 
-function initializeConstraints!(mechanism::Mechanism{T,Nn,Nb,Ne}; fixedids = Int64[], freeids = Int64[], ε = 1e-5, newtonIter = 100, lineIter = 10) where {T,Nn,Nb,Ne}
+function initializeConstraints!(mechanism::Mechanism{T,Nn,Ne,Nb}; fixedids = Int64[], freeids = Int64[], ε = 1e-5, newtonIter = 100, lineIter = 10) where {T,Nn,Ne,Nb}
     freebodies = Body[]
     if !isempty(fixedids) && !isempty(freeids)
         error("Specify either free or fixed bodies, not both.")
@@ -106,7 +106,7 @@ function initializeConstraints!(mechanism::Mechanism{T,Nn,Nb,Ne}; fixedids = Int
                 body.state.xc = body.state.xk[1] + body.state.vsol[1]/(2^(j-1))
                 
                 w = sqrt(1-norm(body.state.ωsol[1]/(2^(j-1)))^2)
-                body.state.qc = body.state.qk[1] * QuatRotation(w,body.state.ωsol[1]/(2^(j-1))...,false)
+                body.state.qc = body.state.qk[1] * Quaternion(w,body.state.ωsol[1]/(2^(j-1))...)
             end
             
             norm1 = norm(gc(mechanism))
