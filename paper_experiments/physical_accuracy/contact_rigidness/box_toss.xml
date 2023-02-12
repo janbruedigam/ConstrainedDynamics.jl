@@ -1,0 +1,15 @@
+<mujoco model="box_toss">
+    <default>
+        <geom contype="0"/>
+    </default>
+	<worldbody>
+		<light diffuse=".5 .5 .5" dir="0 0 -1" pos="0 0 3" />
+        <geom name="ground" pos="0 0 0" rgba="0.25 0.26 0.25 1" size="10 10 2" type="plane" contype="1" friction="0.3" />
+
+            <body name="link1" pos="0 0 0" euler="0 0 0">
+                <joint type="free" name="joint1"/>
+                <geom type="box" size="0.25 0.25 0.25" rgba=".2 .2 1 1" friction="0.3" mass="1"/>
+            </body>
+
+	</worldbody>
+</mujoco>

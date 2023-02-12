@@ -1,0 +1,1438 @@
+<mujoco model="n_snake">
+    <!-- <default>
+        <geom contype="0"/>
+    </default> -->
+	<worldbody>
+		<light diffuse=".5 .5 .5" dir="0 0 -1" pos="0 0 3" />
+        <geom name="ground" pos="0 0 0" rgba="0.25 0.26 0.25 1" size="100 100 2" type="plane" contype="1"/>
+
+            <body name="link1" pos="0 0 0.25" euler="135 0 0">
+                <joint type="free" name="joint1"/>
+                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                <body name="link2" pos="0 0 -1" euler="0 0 0">
+                    <joint type="ball" pos="0 0 0" name="joint2"/>
+                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                    <body name="link3" pos="0 0 -1" euler="0 0 0">
+                        <joint type="ball" pos="0 0 0" name="joint3"/>
+                        <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                        <body name="link4" pos="0 0 -1" euler="0 0 0">
+                            <joint type="ball" pos="0 0 0" name="joint4"/>
+                            <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                            <body name="link5" pos="0 0 -1" euler="0 0 0">
+                                <joint type="ball" pos="0 0 0" name="joint5"/>
+                                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                <body name="link6" pos="0 0 -1" euler="0 0 0">
+                                    <joint type="ball" pos="0 0 0" name="joint6"/>
+                                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                    <body name="link7" pos="0 0 -1" euler="0 0 0">
+                                        <joint type="ball" pos="0 0 0" name="joint7"/>
+                                        <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                        <body name="link8" pos="0 0 -1" euler="0 0 0">
+                                            <joint type="ball" pos="0 0 0" name="joint8"/>
+                                            <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                            <body name="link9" pos="0 0 -1" euler="0 0 0">
+                                                <joint type="ball" pos="0 0 0" name="joint9"/>
+                                                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                                <body name="link10" pos="0 0 -1" euler="0 0 0">
+                                                    <joint type="ball" pos="0 0 0" name="joint10"/>
+                                                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+            <body name="link11" pos="0 0 -1" euler="0 0 0">
+                <joint type="ball" pos="0 0 0" name="joint11"/>
+                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                <body name="link12" pos="0 0 -1" euler="0 0 0">
+                    <joint type="ball" pos="0 0 0" name="joint12"/>
+                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                    <body name="link13" pos="0 0 -1" euler="0 0 0">
+                        <joint type="ball" pos="0 0 0" name="joint13"/>
+                        <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                        <body name="link14" pos="0 0 -1" euler="0 0 0">
+                            <joint type="ball" pos="0 0 0" name="joint14"/>
+                            <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                            <body name="link15" pos="0 0 -1" euler="0 0 0">
+                                <joint type="ball" pos="0 0 0" name="joint15"/>
+                                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                <body name="link16" pos="0 0 -1" euler="0 0 0">
+                                    <joint type="ball" pos="0 0 0" name="joint16"/>
+                                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                    <body name="link17" pos="0 0 -1" euler="0 0 0">
+                                        <joint type="ball" pos="0 0 0" name="joint17"/>
+                                        <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                        <body name="link18" pos="0 0 -1" euler="0 0 0">
+                                            <joint type="ball" pos="0 0 0" name="joint18"/>
+                                            <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                            <body name="link19" pos="0 0 -1" euler="0 0 0">
+                                                <joint type="ball" pos="0 0 0" name="joint19"/>
+                                                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                                <body name="link20" pos="0 0 -1" euler="0 0 0">
+                                                    <joint type="ball" pos="0 0 0" name="joint20"/>
+                                                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+            <body name="link21" pos="0 0 -1" euler="0 0 0">
+                <joint type="ball" pos="0 0 0" name="joint21"/>
+                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                <body name="link22" pos="0 0 -1" euler="0 0 0">
+                    <joint type="ball" pos="0 0 0" name="joint22"/>
+                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                    <body name="link23" pos="0 0 -1" euler="0 0 0">
+                        <joint type="ball" pos="0 0 0" name="joint23"/>
+                        <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                        <body name="link24" pos="0 0 -1" euler="0 0 0">
+                            <joint type="ball" pos="0 0 0" name="joint24"/>
+                            <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                            <body name="link25" pos="0 0 -1" euler="0 0 0">
+                                <joint type="ball" pos="0 0 0" name="joint25"/>
+                                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                <body name="link26" pos="0 0 -1" euler="0 0 0">
+                                    <joint type="ball" pos="0 0 0" name="joint26"/>
+                                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                    <body name="link27" pos="0 0 -1" euler="0 0 0">
+                                        <joint type="ball" pos="0 0 0" name="joint27"/>
+                                        <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                        <body name="link28" pos="0 0 -1" euler="0 0 0">
+                                            <joint type="ball" pos="0 0 0" name="joint28"/>
+                                            <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                            <body name="link29" pos="0 0 -1" euler="0 0 0">
+                                                <joint type="ball" pos="0 0 0" name="joint29"/>
+                                                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                                <body name="link30" pos="0 0 -1" euler="0 0 0">
+                                                    <joint type="ball" pos="0 0 0" name="joint30"/>
+                                                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+            <body name="link31" pos="0 0 -1" euler="0 0 0">
+                <joint type="ball" pos="0 0 0" name="joint31"/>
+                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                <body name="link32" pos="0 0 -1" euler="0 0 0">
+                    <joint type="ball" pos="0 0 0" name="joint32"/>
+                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                    <body name="link33" pos="0 0 -1" euler="0 0 0">
+                        <joint type="ball" pos="0 0 0" name="joint33"/>
+                        <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                        <body name="link34" pos="0 0 -1" euler="0 0 0">
+                            <joint type="ball" pos="0 0 0" name="joint34"/>
+                            <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                            <body name="link35" pos="0 0 -1" euler="0 0 0">
+                                <joint type="ball" pos="0 0 0" name="joint35"/>
+                                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                <body name="link36" pos="0 0 -1" euler="0 0 0">
+                                    <joint type="ball" pos="0 0 0" name="joint36"/>
+                                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                    <body name="link37" pos="0 0 -1" euler="0 0 0">
+                                        <joint type="ball" pos="0 0 0" name="joint37"/>
+                                        <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                        <!-- <body name="link38" pos="0 0 -1" euler="0 0 0">
+                                            <joint type="ball" pos="0 0 0" name="joint38"/>
+                                            <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                            <body name="link39" pos="0 0 -1" euler="0 0 0">
+                                                <joint type="ball" pos="0 0 0" name="joint39"/>
+                                                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                                <body name="link40" pos="0 0 -1" euler="0 0 0">
+                                                    <joint type="ball" pos="0 0 0" name="joint40"/>
+                                                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+            <body name="link41" pos="0 0 -1" euler="0 0 0">
+                <joint type="ball" pos="0 0 0" name="joint41"/>
+                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                <body name="link42" pos="0 0 -1" euler="0 0 0">
+                    <joint type="ball" pos="0 0 0" name="joint42"/>
+                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                    <body name="link43" pos="0 0 -1" euler="0 0 0">
+                        <joint type="ball" pos="0 0 0" name="joint43"/>
+                        <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                        <body name="link44" pos="0 0 -1" euler="0 0 0">
+                            <joint type="ball" pos="0 0 0" name="joint44"/>
+                            <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                            <body name="link45" pos="0 0 -1" euler="0 0 0">
+                                <joint type="ball" pos="0 0 0" name="joint45"/>
+                                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                <body name="link46" pos="0 0 -1" euler="0 0 0">
+                                    <joint type="ball" pos="0 0 0" name="joint46"/>
+                                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                    <body name="link47" pos="0 0 -1" euler="0 0 0">
+                                        <joint type="ball" pos="0 0 0" name="joint47"/>
+                                        <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                        <body name="link48" pos="0 0 -1" euler="0 0 0">
+                                            <joint type="ball" pos="0 0 0" name="joint48"/>
+                                            <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                            <body name="link49" pos="0 0 -1" euler="0 0 0">
+                                                <joint type="ball" pos="0 0 0" name="joint49"/>
+                                                <geom type="sphere" mass="1" size="0.25" rgba=".2 .2 1 1"/>
+                                                <body name="link50" pos="0 0 -1" euler="0 0 0">
+                                                    <joint type="ball" pos="0 0 0" name="joint50"/>
+                                                    <geom type="sphere" mass="1" size="0.25" rgba=".8 .7 9 1"/>
+                                                </body>
+                                            </body>
+                                        </body>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+                                                </body>
+                                            </body>
+                                        </body> -->
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+                                                </body>
+                                            </body>
+                                        </body>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+                                                </body>
+                                            </body>
+                                        </body>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+                                                </body>
+                                            </body>
+                                        </body>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+
+	</worldbody>
+    <contact>
+		<exclude body1="link1" body2="link2"/>
+		<exclude body1="link1" body2="link3"/>
+		<exclude body1="link2" body2="link3"/>
+		<exclude body1="link1" body2="link4"/>
+		<exclude body1="link2" body2="link4"/>
+		<exclude body1="link3" body2="link4"/>
+		<exclude body1="link1" body2="link5"/>
+		<exclude body1="link2" body2="link5"/>
+		<exclude body1="link3" body2="link5"/>
+		<exclude body1="link4" body2="link5"/>
+		<exclude body1="link1" body2="link6"/>
+		<exclude body1="link2" body2="link6"/>
+		<exclude body1="link3" body2="link6"/>
+		<exclude body1="link4" body2="link6"/>
+		<exclude body1="link5" body2="link6"/>
+		<exclude body1="link1" body2="link7"/>
+		<exclude body1="link2" body2="link7"/>
+		<exclude body1="link3" body2="link7"/>
+		<exclude body1="link4" body2="link7"/>
+		<exclude body1="link5" body2="link7"/>
+		<exclude body1="link6" body2="link7"/>
+		<exclude body1="link1" body2="link8"/>
+		<exclude body1="link2" body2="link8"/>
+		<exclude body1="link3" body2="link8"/>
+		<exclude body1="link4" body2="link8"/>
+		<exclude body1="link5" body2="link8"/>
+		<exclude body1="link6" body2="link8"/>
+		<exclude body1="link7" body2="link8"/>
+		<exclude body1="link1" body2="link9"/>
+		<exclude body1="link2" body2="link9"/>
+		<exclude body1="link3" body2="link9"/>
+		<exclude body1="link4" body2="link9"/>
+		<exclude body1="link5" body2="link9"/>
+		<exclude body1="link6" body2="link9"/>
+		<exclude body1="link7" body2="link9"/>
+		<exclude body1="link8" body2="link9"/>
+		<exclude body1="link1" body2="link10"/>
+		<exclude body1="link2" body2="link10"/>
+		<exclude body1="link3" body2="link10"/>
+		<exclude body1="link4" body2="link10"/>
+		<exclude body1="link5" body2="link10"/>
+		<exclude body1="link6" body2="link10"/>
+		<exclude body1="link7" body2="link10"/>
+		<exclude body1="link8" body2="link10"/>
+		<exclude body1="link9" body2="link10"/>
+		<exclude body1="link1" body2="link11"/>
+		<exclude body1="link2" body2="link11"/>
+		<exclude body1="link3" body2="link11"/>
+		<exclude body1="link4" body2="link11"/>
+		<exclude body1="link5" body2="link11"/>
+		<exclude body1="link6" body2="link11"/>
+		<exclude body1="link7" body2="link11"/>
+		<exclude body1="link8" body2="link11"/>
+		<exclude body1="link9" body2="link11"/>
+		<exclude body1="link10" body2="link11"/>
+		<exclude body1="link1" body2="link12"/>
+		<exclude body1="link2" body2="link12"/>
+		<exclude body1="link3" body2="link12"/>
+		<exclude body1="link4" body2="link12"/>
+		<exclude body1="link5" body2="link12"/>
+		<exclude body1="link6" body2="link12"/>
+		<exclude body1="link7" body2="link12"/>
+		<exclude body1="link8" body2="link12"/>
+		<exclude body1="link9" body2="link12"/>
+		<exclude body1="link10" body2="link12"/>
+		<exclude body1="link11" body2="link12"/>
+		<exclude body1="link1" body2="link13"/>
+		<exclude body1="link2" body2="link13"/>
+		<exclude body1="link3" body2="link13"/>
+		<exclude body1="link4" body2="link13"/>
+		<exclude body1="link5" body2="link13"/>
+		<exclude body1="link6" body2="link13"/>
+		<exclude body1="link7" body2="link13"/>
+		<exclude body1="link8" body2="link13"/>
+		<exclude body1="link9" body2="link13"/>
+		<exclude body1="link10" body2="link13"/>
+		<exclude body1="link11" body2="link13"/>
+		<exclude body1="link12" body2="link13"/>
+		<exclude body1="link1" body2="link14"/>
+		<exclude body1="link2" body2="link14"/>
+		<exclude body1="link3" body2="link14"/>
+		<exclude body1="link4" body2="link14"/>
+		<exclude body1="link5" body2="link14"/>
+		<exclude body1="link6" body2="link14"/>
+		<exclude body1="link7" body2="link14"/>
+		<exclude body1="link8" body2="link14"/>
+		<exclude body1="link9" body2="link14"/>
+		<exclude body1="link10" body2="link14"/>
+		<exclude body1="link11" body2="link14"/>
+		<exclude body1="link12" body2="link14"/>
+		<exclude body1="link13" body2="link14"/>
+		<exclude body1="link1" body2="link15"/>
+		<exclude body1="link2" body2="link15"/>
+		<exclude body1="link3" body2="link15"/>
+		<exclude body1="link4" body2="link15"/>
+		<exclude body1="link5" body2="link15"/>
+		<exclude body1="link6" body2="link15"/>
+		<exclude body1="link7" body2="link15"/>
+		<exclude body1="link8" body2="link15"/>
+		<exclude body1="link9" body2="link15"/>
+		<exclude body1="link10" body2="link15"/>
+		<exclude body1="link11" body2="link15"/>
+		<exclude body1="link12" body2="link15"/>
+		<exclude body1="link13" body2="link15"/>
+		<exclude body1="link14" body2="link15"/>
+		<exclude body1="link1" body2="link16"/>
+		<exclude body1="link2" body2="link16"/>
+		<exclude body1="link3" body2="link16"/>
+		<exclude body1="link4" body2="link16"/>
+		<exclude body1="link5" body2="link16"/>
+		<exclude body1="link6" body2="link16"/>
+		<exclude body1="link7" body2="link16"/>
+		<exclude body1="link8" body2="link16"/>
+		<exclude body1="link9" body2="link16"/>
+		<exclude body1="link10" body2="link16"/>
+		<exclude body1="link11" body2="link16"/>
+		<exclude body1="link12" body2="link16"/>
+		<exclude body1="link13" body2="link16"/>
+		<exclude body1="link14" body2="link16"/>
+		<exclude body1="link15" body2="link16"/>
+		<exclude body1="link1" body2="link17"/>
+		<exclude body1="link2" body2="link17"/>
+		<exclude body1="link3" body2="link17"/>
+		<exclude body1="link4" body2="link17"/>
+		<exclude body1="link5" body2="link17"/>
+		<exclude body1="link6" body2="link17"/>
+		<exclude body1="link7" body2="link17"/>
+		<exclude body1="link8" body2="link17"/>
+		<exclude body1="link9" body2="link17"/>
+		<exclude body1="link10" body2="link17"/>
+		<exclude body1="link11" body2="link17"/>
+		<exclude body1="link12" body2="link17"/>
+		<exclude body1="link13" body2="link17"/>
+		<exclude body1="link14" body2="link17"/>
+		<exclude body1="link15" body2="link17"/>
+		<exclude body1="link16" body2="link17"/>
+		<exclude body1="link1" body2="link18"/>
+		<exclude body1="link2" body2="link18"/>
+		<exclude body1="link3" body2="link18"/>
+		<exclude body1="link4" body2="link18"/>
+		<exclude body1="link5" body2="link18"/>
+		<exclude body1="link6" body2="link18"/>
+		<exclude body1="link7" body2="link18"/>
+		<exclude body1="link8" body2="link18"/>
+		<exclude body1="link9" body2="link18"/>
+		<exclude body1="link10" body2="link18"/>
+		<exclude body1="link11" body2="link18"/>
+		<exclude body1="link12" body2="link18"/>
+		<exclude body1="link13" body2="link18"/>
+		<exclude body1="link14" body2="link18"/>
+		<exclude body1="link15" body2="link18"/>
+		<exclude body1="link16" body2="link18"/>
+		<exclude body1="link17" body2="link18"/>
+		<exclude body1="link1" body2="link19"/>
+		<exclude body1="link2" body2="link19"/>
+		<exclude body1="link3" body2="link19"/>
+		<exclude body1="link4" body2="link19"/>
+		<exclude body1="link5" body2="link19"/>
+		<exclude body1="link6" body2="link19"/>
+		<exclude body1="link7" body2="link19"/>
+		<exclude body1="link8" body2="link19"/>
+		<exclude body1="link9" body2="link19"/>
+		<exclude body1="link10" body2="link19"/>
+		<exclude body1="link11" body2="link19"/>
+		<exclude body1="link12" body2="link19"/>
+		<exclude body1="link13" body2="link19"/>
+		<exclude body1="link14" body2="link19"/>
+		<exclude body1="link15" body2="link19"/>
+		<exclude body1="link16" body2="link19"/>
+		<exclude body1="link17" body2="link19"/>
+		<exclude body1="link18" body2="link19"/>
+		<exclude body1="link1" body2="link20"/>
+		<exclude body1="link2" body2="link20"/>
+		<exclude body1="link3" body2="link20"/>
+		<exclude body1="link4" body2="link20"/>
+		<exclude body1="link5" body2="link20"/>
+		<exclude body1="link6" body2="link20"/>
+		<exclude body1="link7" body2="link20"/>
+		<exclude body1="link8" body2="link20"/>
+		<exclude body1="link9" body2="link20"/>
+		<exclude body1="link10" body2="link20"/>
+		<exclude body1="link11" body2="link20"/>
+		<exclude body1="link12" body2="link20"/>
+		<exclude body1="link13" body2="link20"/>
+		<exclude body1="link14" body2="link20"/>
+		<exclude body1="link15" body2="link20"/>
+		<exclude body1="link16" body2="link20"/>
+		<exclude body1="link17" body2="link20"/>
+		<exclude body1="link18" body2="link20"/>
+		<exclude body1="link19" body2="link20"/>
+		<exclude body1="link1" body2="link21"/>
+		<exclude body1="link2" body2="link21"/>
+		<exclude body1="link3" body2="link21"/>
+		<exclude body1="link4" body2="link21"/>
+		<exclude body1="link5" body2="link21"/>
+		<exclude body1="link6" body2="link21"/>
+		<exclude body1="link7" body2="link21"/>
+		<exclude body1="link8" body2="link21"/>
+		<exclude body1="link9" body2="link21"/>
+		<exclude body1="link10" body2="link21"/>
+		<exclude body1="link11" body2="link21"/>
+		<exclude body1="link12" body2="link21"/>
+		<exclude body1="link13" body2="link21"/>
+		<exclude body1="link14" body2="link21"/>
+		<exclude body1="link15" body2="link21"/>
+		<exclude body1="link16" body2="link21"/>
+		<exclude body1="link17" body2="link21"/>
+		<exclude body1="link18" body2="link21"/>
+		<exclude body1="link19" body2="link21"/>
+		<exclude body1="link20" body2="link21"/>
+		<exclude body1="link1" body2="link22"/>
+		<exclude body1="link2" body2="link22"/>
+		<exclude body1="link3" body2="link22"/>
+		<exclude body1="link4" body2="link22"/>
+		<exclude body1="link5" body2="link22"/>
+		<exclude body1="link6" body2="link22"/>
+		<exclude body1="link7" body2="link22"/>
+		<exclude body1="link8" body2="link22"/>
+		<exclude body1="link9" body2="link22"/>
+		<exclude body1="link10" body2="link22"/>
+		<exclude body1="link11" body2="link22"/>
+		<exclude body1="link12" body2="link22"/>
+		<exclude body1="link13" body2="link22"/>
+		<exclude body1="link14" body2="link22"/>
+		<exclude body1="link15" body2="link22"/>
+		<exclude body1="link16" body2="link22"/>
+		<exclude body1="link17" body2="link22"/>
+		<exclude body1="link18" body2="link22"/>
+		<exclude body1="link19" body2="link22"/>
+		<exclude body1="link20" body2="link22"/>
+		<exclude body1="link21" body2="link22"/>
+		<exclude body1="link1" body2="link23"/>
+		<exclude body1="link2" body2="link23"/>
+		<exclude body1="link3" body2="link23"/>
+		<exclude body1="link4" body2="link23"/>
+		<exclude body1="link5" body2="link23"/>
+		<exclude body1="link6" body2="link23"/>
+		<exclude body1="link7" body2="link23"/>
+		<exclude body1="link8" body2="link23"/>
+		<exclude body1="link9" body2="link23"/>
+		<exclude body1="link10" body2="link23"/>
+		<exclude body1="link11" body2="link23"/>
+		<exclude body1="link12" body2="link23"/>
+		<exclude body1="link13" body2="link23"/>
+		<exclude body1="link14" body2="link23"/>
+		<exclude body1="link15" body2="link23"/>
+		<exclude body1="link16" body2="link23"/>
+		<exclude body1="link17" body2="link23"/>
+		<exclude body1="link18" body2="link23"/>
+		<exclude body1="link19" body2="link23"/>
+		<exclude body1="link20" body2="link23"/>
+		<exclude body1="link21" body2="link23"/>
+		<exclude body1="link22" body2="link23"/>
+		<exclude body1="link1" body2="link24"/>
+		<exclude body1="link2" body2="link24"/>
+		<exclude body1="link3" body2="link24"/>
+		<exclude body1="link4" body2="link24"/>
+		<exclude body1="link5" body2="link24"/>
+		<exclude body1="link6" body2="link24"/>
+		<exclude body1="link7" body2="link24"/>
+		<exclude body1="link8" body2="link24"/>
+		<exclude body1="link9" body2="link24"/>
+		<exclude body1="link10" body2="link24"/>
+		<exclude body1="link11" body2="link24"/>
+		<exclude body1="link12" body2="link24"/>
+		<exclude body1="link13" body2="link24"/>
+		<exclude body1="link14" body2="link24"/>
+		<exclude body1="link15" body2="link24"/>
+		<exclude body1="link16" body2="link24"/>
+		<exclude body1="link17" body2="link24"/>
+		<exclude body1="link18" body2="link24"/>
+		<exclude body1="link19" body2="link24"/>
+		<exclude body1="link20" body2="link24"/>
+		<exclude body1="link21" body2="link24"/>
+		<exclude body1="link22" body2="link24"/>
+		<exclude body1="link23" body2="link24"/>
+		<exclude body1="link1" body2="link25"/>
+		<exclude body1="link2" body2="link25"/>
+		<exclude body1="link3" body2="link25"/>
+		<exclude body1="link4" body2="link25"/>
+		<exclude body1="link5" body2="link25"/>
+		<exclude body1="link6" body2="link25"/>
+		<exclude body1="link7" body2="link25"/>
+		<exclude body1="link8" body2="link25"/>
+		<exclude body1="link9" body2="link25"/>
+		<exclude body1="link10" body2="link25"/>
+		<exclude body1="link11" body2="link25"/>
+		<exclude body1="link12" body2="link25"/>
+		<exclude body1="link13" body2="link25"/>
+		<exclude body1="link14" body2="link25"/>
+		<exclude body1="link15" body2="link25"/>
+		<exclude body1="link16" body2="link25"/>
+		<exclude body1="link17" body2="link25"/>
+		<exclude body1="link18" body2="link25"/>
+		<exclude body1="link19" body2="link25"/>
+		<exclude body1="link20" body2="link25"/>
+		<exclude body1="link21" body2="link25"/>
+		<exclude body1="link22" body2="link25"/>
+		<exclude body1="link23" body2="link25"/>
+		<exclude body1="link24" body2="link25"/>
+		<exclude body1="link1" body2="link26"/>
+		<exclude body1="link2" body2="link26"/>
+		<exclude body1="link3" body2="link26"/>
+		<exclude body1="link4" body2="link26"/>
+		<exclude body1="link5" body2="link26"/>
+		<exclude body1="link6" body2="link26"/>
+		<exclude body1="link7" body2="link26"/>
+		<exclude body1="link8" body2="link26"/>
+		<exclude body1="link9" body2="link26"/>
+		<exclude body1="link10" body2="link26"/>
+		<exclude body1="link11" body2="link26"/>
+		<exclude body1="link12" body2="link26"/>
+		<exclude body1="link13" body2="link26"/>
+		<exclude body1="link14" body2="link26"/>
+		<exclude body1="link15" body2="link26"/>
+		<exclude body1="link16" body2="link26"/>
+		<exclude body1="link17" body2="link26"/>
+		<exclude body1="link18" body2="link26"/>
+		<exclude body1="link19" body2="link26"/>
+		<exclude body1="link20" body2="link26"/>
+		<exclude body1="link21" body2="link26"/>
+		<exclude body1="link22" body2="link26"/>
+		<exclude body1="link23" body2="link26"/>
+		<exclude body1="link24" body2="link26"/>
+		<exclude body1="link25" body2="link26"/>
+		<exclude body1="link1" body2="link27"/>
+		<exclude body1="link2" body2="link27"/>
+		<exclude body1="link3" body2="link27"/>
+		<exclude body1="link4" body2="link27"/>
+		<exclude body1="link5" body2="link27"/>
+		<exclude body1="link6" body2="link27"/>
+		<exclude body1="link7" body2="link27"/>
+		<exclude body1="link8" body2="link27"/>
+		<exclude body1="link9" body2="link27"/>
+		<exclude body1="link10" body2="link27"/>
+		<exclude body1="link11" body2="link27"/>
+		<exclude body1="link12" body2="link27"/>
+		<exclude body1="link13" body2="link27"/>
+		<exclude body1="link14" body2="link27"/>
+		<exclude body1="link15" body2="link27"/>
+		<exclude body1="link16" body2="link27"/>
+		<exclude body1="link17" body2="link27"/>
+		<exclude body1="link18" body2="link27"/>
+		<exclude body1="link19" body2="link27"/>
+		<exclude body1="link20" body2="link27"/>
+		<exclude body1="link21" body2="link27"/>
+		<exclude body1="link22" body2="link27"/>
+		<exclude body1="link23" body2="link27"/>
+		<exclude body1="link24" body2="link27"/>
+		<exclude body1="link25" body2="link27"/>
+		<exclude body1="link26" body2="link27"/>
+		<exclude body1="link1" body2="link28"/>
+		<exclude body1="link2" body2="link28"/>
+		<exclude body1="link3" body2="link28"/>
+		<exclude body1="link4" body2="link28"/>
+		<exclude body1="link5" body2="link28"/>
+		<exclude body1="link6" body2="link28"/>
+		<exclude body1="link7" body2="link28"/>
+		<exclude body1="link8" body2="link28"/>
+		<exclude body1="link9" body2="link28"/>
+		<exclude body1="link10" body2="link28"/>
+		<exclude body1="link11" body2="link28"/>
+		<exclude body1="link12" body2="link28"/>
+		<exclude body1="link13" body2="link28"/>
+		<exclude body1="link14" body2="link28"/>
+		<exclude body1="link15" body2="link28"/>
+		<exclude body1="link16" body2="link28"/>
+		<exclude body1="link17" body2="link28"/>
+		<exclude body1="link18" body2="link28"/>
+		<exclude body1="link19" body2="link28"/>
+		<exclude body1="link20" body2="link28"/>
+		<exclude body1="link21" body2="link28"/>
+		<exclude body1="link22" body2="link28"/>
+		<exclude body1="link23" body2="link28"/>
+		<exclude body1="link24" body2="link28"/>
+		<exclude body1="link25" body2="link28"/>
+		<exclude body1="link26" body2="link28"/>
+		<exclude body1="link27" body2="link28"/>
+		<exclude body1="link1" body2="link29"/>
+		<exclude body1="link2" body2="link29"/>
+		<exclude body1="link3" body2="link29"/>
+		<exclude body1="link4" body2="link29"/>
+		<exclude body1="link5" body2="link29"/>
+		<exclude body1="link6" body2="link29"/>
+		<exclude body1="link7" body2="link29"/>
+		<exclude body1="link8" body2="link29"/>
+		<exclude body1="link9" body2="link29"/>
+		<exclude body1="link10" body2="link29"/>
+		<exclude body1="link11" body2="link29"/>
+		<exclude body1="link12" body2="link29"/>
+		<exclude body1="link13" body2="link29"/>
+		<exclude body1="link14" body2="link29"/>
+		<exclude body1="link15" body2="link29"/>
+		<exclude body1="link16" body2="link29"/>
+		<exclude body1="link17" body2="link29"/>
+		<exclude body1="link18" body2="link29"/>
+		<exclude body1="link19" body2="link29"/>
+		<exclude body1="link20" body2="link29"/>
+		<exclude body1="link21" body2="link29"/>
+		<exclude body1="link22" body2="link29"/>
+		<exclude body1="link23" body2="link29"/>
+		<exclude body1="link24" body2="link29"/>
+		<exclude body1="link25" body2="link29"/>
+		<exclude body1="link26" body2="link29"/>
+		<exclude body1="link27" body2="link29"/>
+		<exclude body1="link28" body2="link29"/>
+		<exclude body1="link1" body2="link30"/>
+		<exclude body1="link2" body2="link30"/>
+		<exclude body1="link3" body2="link30"/>
+		<exclude body1="link4" body2="link30"/>
+		<exclude body1="link5" body2="link30"/>
+		<exclude body1="link6" body2="link30"/>
+		<exclude body1="link7" body2="link30"/>
+		<exclude body1="link8" body2="link30"/>
+		<exclude body1="link9" body2="link30"/>
+		<exclude body1="link10" body2="link30"/>
+		<exclude body1="link11" body2="link30"/>
+		<exclude body1="link12" body2="link30"/>
+		<exclude body1="link13" body2="link30"/>
+		<exclude body1="link14" body2="link30"/>
+		<exclude body1="link15" body2="link30"/>
+		<exclude body1="link16" body2="link30"/>
+		<exclude body1="link17" body2="link30"/>
+		<exclude body1="link18" body2="link30"/>
+		<exclude body1="link19" body2="link30"/>
+		<exclude body1="link20" body2="link30"/>
+		<exclude body1="link21" body2="link30"/>
+		<exclude body1="link22" body2="link30"/>
+		<exclude body1="link23" body2="link30"/>
+		<exclude body1="link24" body2="link30"/>
+		<exclude body1="link25" body2="link30"/>
+		<exclude body1="link26" body2="link30"/>
+		<exclude body1="link27" body2="link30"/>
+		<exclude body1="link28" body2="link30"/>
+		<exclude body1="link29" body2="link30"/>
+		<exclude body1="link1" body2="link31"/>
+		<exclude body1="link2" body2="link31"/>
+		<exclude body1="link3" body2="link31"/>
+		<exclude body1="link4" body2="link31"/>
+		<exclude body1="link5" body2="link31"/>
+		<exclude body1="link6" body2="link31"/>
+		<exclude body1="link7" body2="link31"/>
+		<exclude body1="link8" body2="link31"/>
+		<exclude body1="link9" body2="link31"/>
+		<exclude body1="link10" body2="link31"/>
+		<exclude body1="link11" body2="link31"/>
+		<exclude body1="link12" body2="link31"/>
+		<exclude body1="link13" body2="link31"/>
+		<exclude body1="link14" body2="link31"/>
+		<exclude body1="link15" body2="link31"/>
+		<exclude body1="link16" body2="link31"/>
+		<exclude body1="link17" body2="link31"/>
+		<exclude body1="link18" body2="link31"/>
+		<exclude body1="link19" body2="link31"/>
+		<exclude body1="link20" body2="link31"/>
+		<exclude body1="link21" body2="link31"/>
+		<exclude body1="link22" body2="link31"/>
+		<exclude body1="link23" body2="link31"/>
+		<exclude body1="link24" body2="link31"/>
+		<exclude body1="link25" body2="link31"/>
+		<exclude body1="link26" body2="link31"/>
+		<exclude body1="link27" body2="link31"/>
+		<exclude body1="link28" body2="link31"/>
+		<exclude body1="link29" body2="link31"/>
+		<exclude body1="link30" body2="link31"/>
+		<exclude body1="link1" body2="link32"/>
+		<exclude body1="link2" body2="link32"/>
+		<exclude body1="link3" body2="link32"/>
+		<exclude body1="link4" body2="link32"/>
+		<exclude body1="link5" body2="link32"/>
+		<exclude body1="link6" body2="link32"/>
+		<exclude body1="link7" body2="link32"/>
+		<exclude body1="link8" body2="link32"/>
+		<exclude body1="link9" body2="link32"/>
+		<exclude body1="link10" body2="link32"/>
+		<exclude body1="link11" body2="link32"/>
+		<exclude body1="link12" body2="link32"/>
+		<exclude body1="link13" body2="link32"/>
+		<exclude body1="link14" body2="link32"/>
+		<exclude body1="link15" body2="link32"/>
+		<exclude body1="link16" body2="link32"/>
+		<exclude body1="link17" body2="link32"/>
+		<exclude body1="link18" body2="link32"/>
+		<exclude body1="link19" body2="link32"/>
+		<exclude body1="link20" body2="link32"/>
+		<exclude body1="link21" body2="link32"/>
+		<exclude body1="link22" body2="link32"/>
+		<exclude body1="link23" body2="link32"/>
+		<exclude body1="link24" body2="link32"/>
+		<exclude body1="link25" body2="link32"/>
+		<exclude body1="link26" body2="link32"/>
+		<exclude body1="link27" body2="link32"/>
+		<exclude body1="link28" body2="link32"/>
+		<exclude body1="link29" body2="link32"/>
+		<exclude body1="link30" body2="link32"/>
+		<exclude body1="link31" body2="link32"/>
+		<exclude body1="link1" body2="link33"/>
+		<exclude body1="link2" body2="link33"/>
+		<exclude body1="link3" body2="link33"/>
+		<exclude body1="link4" body2="link33"/>
+		<exclude body1="link5" body2="link33"/>
+		<exclude body1="link6" body2="link33"/>
+		<exclude body1="link7" body2="link33"/>
+		<exclude body1="link8" body2="link33"/>
+		<exclude body1="link9" body2="link33"/>
+		<exclude body1="link10" body2="link33"/>
+		<exclude body1="link11" body2="link33"/>
+		<exclude body1="link12" body2="link33"/>
+		<exclude body1="link13" body2="link33"/>
+		<exclude body1="link14" body2="link33"/>
+		<exclude body1="link15" body2="link33"/>
+		<exclude body1="link16" body2="link33"/>
+		<exclude body1="link17" body2="link33"/>
+		<exclude body1="link18" body2="link33"/>
+		<exclude body1="link19" body2="link33"/>
+		<exclude body1="link20" body2="link33"/>
+		<exclude body1="link21" body2="link33"/>
+		<exclude body1="link22" body2="link33"/>
+		<exclude body1="link23" body2="link33"/>
+		<exclude body1="link24" body2="link33"/>
+		<exclude body1="link25" body2="link33"/>
+		<exclude body1="link26" body2="link33"/>
+		<exclude body1="link27" body2="link33"/>
+		<exclude body1="link28" body2="link33"/>
+		<exclude body1="link29" body2="link33"/>
+		<exclude body1="link30" body2="link33"/>
+		<exclude body1="link31" body2="link33"/>
+		<exclude body1="link32" body2="link33"/>
+		<exclude body1="link1" body2="link34"/>
+		<exclude body1="link2" body2="link34"/>
+		<exclude body1="link3" body2="link34"/>
+		<exclude body1="link4" body2="link34"/>
+		<exclude body1="link5" body2="link34"/>
+		<exclude body1="link6" body2="link34"/>
+		<exclude body1="link7" body2="link34"/>
+		<exclude body1="link8" body2="link34"/>
+		<exclude body1="link9" body2="link34"/>
+		<exclude body1="link10" body2="link34"/>
+		<exclude body1="link11" body2="link34"/>
+		<exclude body1="link12" body2="link34"/>
+		<exclude body1="link13" body2="link34"/>
+		<exclude body1="link14" body2="link34"/>
+		<exclude body1="link15" body2="link34"/>
+		<exclude body1="link16" body2="link34"/>
+		<exclude body1="link17" body2="link34"/>
+		<exclude body1="link18" body2="link34"/>
+		<exclude body1="link19" body2="link34"/>
+		<exclude body1="link20" body2="link34"/>
+		<exclude body1="link21" body2="link34"/>
+		<exclude body1="link22" body2="link34"/>
+		<exclude body1="link23" body2="link34"/>
+		<exclude body1="link24" body2="link34"/>
+		<exclude body1="link25" body2="link34"/>
+		<exclude body1="link26" body2="link34"/>
+		<exclude body1="link27" body2="link34"/>
+		<exclude body1="link28" body2="link34"/>
+		<exclude body1="link29" body2="link34"/>
+		<exclude body1="link30" body2="link34"/>
+		<exclude body1="link31" body2="link34"/>
+		<exclude body1="link32" body2="link34"/>
+		<exclude body1="link33" body2="link34"/>
+		<exclude body1="link1" body2="link35"/>
+		<exclude body1="link2" body2="link35"/>
+		<exclude body1="link3" body2="link35"/>
+		<exclude body1="link4" body2="link35"/>
+		<exclude body1="link5" body2="link35"/>
+		<exclude body1="link6" body2="link35"/>
+		<exclude body1="link7" body2="link35"/>
+		<exclude body1="link8" body2="link35"/>
+		<exclude body1="link9" body2="link35"/>
+		<exclude body1="link10" body2="link35"/>
+		<exclude body1="link11" body2="link35"/>
+		<exclude body1="link12" body2="link35"/>
+		<exclude body1="link13" body2="link35"/>
+		<exclude body1="link14" body2="link35"/>
+		<exclude body1="link15" body2="link35"/>
+		<exclude body1="link16" body2="link35"/>
+		<exclude body1="link17" body2="link35"/>
+		<exclude body1="link18" body2="link35"/>
+		<exclude body1="link19" body2="link35"/>
+		<exclude body1="link20" body2="link35"/>
+		<exclude body1="link21" body2="link35"/>
+		<exclude body1="link22" body2="link35"/>
+		<exclude body1="link23" body2="link35"/>
+		<exclude body1="link24" body2="link35"/>
+		<exclude body1="link25" body2="link35"/>
+		<exclude body1="link26" body2="link35"/>
+		<exclude body1="link27" body2="link35"/>
+		<exclude body1="link28" body2="link35"/>
+		<exclude body1="link29" body2="link35"/>
+		<exclude body1="link30" body2="link35"/>
+		<exclude body1="link31" body2="link35"/>
+		<exclude body1="link32" body2="link35"/>
+		<exclude body1="link33" body2="link35"/>
+		<exclude body1="link34" body2="link35"/>
+		<exclude body1="link1" body2="link36"/>
+		<exclude body1="link2" body2="link36"/>
+		<exclude body1="link3" body2="link36"/>
+		<exclude body1="link4" body2="link36"/>
+		<exclude body1="link5" body2="link36"/>
+		<exclude body1="link6" body2="link36"/>
+		<exclude body1="link7" body2="link36"/>
+		<exclude body1="link8" body2="link36"/>
+		<exclude body1="link9" body2="link36"/>
+		<exclude body1="link10" body2="link36"/>
+		<exclude body1="link11" body2="link36"/>
+		<exclude body1="link12" body2="link36"/>
+		<exclude body1="link13" body2="link36"/>
+		<exclude body1="link14" body2="link36"/>
+		<exclude body1="link15" body2="link36"/>
+		<exclude body1="link16" body2="link36"/>
+		<exclude body1="link17" body2="link36"/>
+		<exclude body1="link18" body2="link36"/>
+		<exclude body1="link19" body2="link36"/>
+		<exclude body1="link20" body2="link36"/>
+		<exclude body1="link21" body2="link36"/>
+		<exclude body1="link22" body2="link36"/>
+		<exclude body1="link23" body2="link36"/>
+		<exclude body1="link24" body2="link36"/>
+		<exclude body1="link25" body2="link36"/>
+		<exclude body1="link26" body2="link36"/>
+		<exclude body1="link27" body2="link36"/>
+		<exclude body1="link28" body2="link36"/>
+		<exclude body1="link29" body2="link36"/>
+		<exclude body1="link30" body2="link36"/>
+		<exclude body1="link31" body2="link36"/>
+		<exclude body1="link32" body2="link36"/>
+		<exclude body1="link33" body2="link36"/>
+		<exclude body1="link34" body2="link36"/>
+		<exclude body1="link35" body2="link36"/>
+		<exclude body1="link1" body2="link37"/>
+		<exclude body1="link2" body2="link37"/>
+		<exclude body1="link3" body2="link37"/>
+		<exclude body1="link4" body2="link37"/>
+		<exclude body1="link5" body2="link37"/>
+		<exclude body1="link6" body2="link37"/>
+		<exclude body1="link7" body2="link37"/>
+		<exclude body1="link8" body2="link37"/>
+		<exclude body1="link9" body2="link37"/>
+		<exclude body1="link10" body2="link37"/>
+		<exclude body1="link11" body2="link37"/>
+		<exclude body1="link12" body2="link37"/>
+		<exclude body1="link13" body2="link37"/>
+		<exclude body1="link14" body2="link37"/>
+		<exclude body1="link15" body2="link37"/>
+		<exclude body1="link16" body2="link37"/>
+		<exclude body1="link17" body2="link37"/>
+		<exclude body1="link18" body2="link37"/>
+		<exclude body1="link19" body2="link37"/>
+		<exclude body1="link20" body2="link37"/>
+		<exclude body1="link21" body2="link37"/>
+		<exclude body1="link22" body2="link37"/>
+		<exclude body1="link23" body2="link37"/>
+		<exclude body1="link24" body2="link37"/>
+		<exclude body1="link25" body2="link37"/>
+		<exclude body1="link26" body2="link37"/>
+		<exclude body1="link27" body2="link37"/>
+		<exclude body1="link28" body2="link37"/>
+		<exclude body1="link29" body2="link37"/>
+		<exclude body1="link30" body2="link37"/>
+		<exclude body1="link31" body2="link37"/>
+		<exclude body1="link32" body2="link37"/>
+		<exclude body1="link33" body2="link37"/>
+		<exclude body1="link34" body2="link37"/>
+		<exclude body1="link35" body2="link37"/>
+		<exclude body1="link36" body2="link37"/>
+		<!-- <exclude body1="link1" body2="link38"/>
+		<exclude body1="link2" body2="link38"/>
+		<exclude body1="link3" body2="link38"/>
+		<exclude body1="link4" body2="link38"/>
+		<exclude body1="link5" body2="link38"/>
+		<exclude body1="link6" body2="link38"/>
+		<exclude body1="link7" body2="link38"/>
+		<exclude body1="link8" body2="link38"/>
+		<exclude body1="link9" body2="link38"/>
+		<exclude body1="link10" body2="link38"/>
+		<exclude body1="link11" body2="link38"/>
+		<exclude body1="link12" body2="link38"/>
+		<exclude body1="link13" body2="link38"/>
+		<exclude body1="link14" body2="link38"/>
+		<exclude body1="link15" body2="link38"/>
+		<exclude body1="link16" body2="link38"/>
+		<exclude body1="link17" body2="link38"/>
+		<exclude body1="link18" body2="link38"/>
+		<exclude body1="link19" body2="link38"/>
+		<exclude body1="link20" body2="link38"/>
+		<exclude body1="link21" body2="link38"/>
+		<exclude body1="link22" body2="link38"/>
+		<exclude body1="link23" body2="link38"/>
+		<exclude body1="link24" body2="link38"/>
+		<exclude body1="link25" body2="link38"/>
+		<exclude body1="link26" body2="link38"/>
+		<exclude body1="link27" body2="link38"/>
+		<exclude body1="link28" body2="link38"/>
+		<exclude body1="link29" body2="link38"/>
+		<exclude body1="link30" body2="link38"/>
+		<exclude body1="link31" body2="link38"/>
+		<exclude body1="link32" body2="link38"/>
+		<exclude body1="link33" body2="link38"/>
+		<exclude body1="link34" body2="link38"/>
+		<exclude body1="link35" body2="link38"/>
+		<exclude body1="link36" body2="link38"/>
+		<exclude body1="link37" body2="link38"/>
+		<exclude body1="link1" body2="link39"/>
+		<exclude body1="link2" body2="link39"/>
+		<exclude body1="link3" body2="link39"/>
+		<exclude body1="link4" body2="link39"/>
+		<exclude body1="link5" body2="link39"/>
+		<exclude body1="link6" body2="link39"/>
+		<exclude body1="link7" body2="link39"/>
+		<exclude body1="link8" body2="link39"/>
+		<exclude body1="link9" body2="link39"/>
+		<exclude body1="link10" body2="link39"/>
+		<exclude body1="link11" body2="link39"/>
+		<exclude body1="link12" body2="link39"/>
+		<exclude body1="link13" body2="link39"/>
+		<exclude body1="link14" body2="link39"/>
+		<exclude body1="link15" body2="link39"/>
+		<exclude body1="link16" body2="link39"/>
+		<exclude body1="link17" body2="link39"/>
+		<exclude body1="link18" body2="link39"/>
+		<exclude body1="link19" body2="link39"/>
+		<exclude body1="link20" body2="link39"/>
+		<exclude body1="link21" body2="link39"/>
+		<exclude body1="link22" body2="link39"/>
+		<exclude body1="link23" body2="link39"/>
+		<exclude body1="link24" body2="link39"/>
+		<exclude body1="link25" body2="link39"/>
+		<exclude body1="link26" body2="link39"/>
+		<exclude body1="link27" body2="link39"/>
+		<exclude body1="link28" body2="link39"/>
+		<exclude body1="link29" body2="link39"/>
+		<exclude body1="link30" body2="link39"/>
+		<exclude body1="link31" body2="link39"/>
+		<exclude body1="link32" body2="link39"/>
+		<exclude body1="link33" body2="link39"/>
+		<exclude body1="link34" body2="link39"/>
+		<exclude body1="link35" body2="link39"/>
+		<exclude body1="link36" body2="link39"/>
+		<exclude body1="link37" body2="link39"/>
+		<exclude body1="link38" body2="link39"/>
+		<exclude body1="link1" body2="link40"/>
+		<exclude body1="link2" body2="link40"/>
+		<exclude body1="link3" body2="link40"/>
+		<exclude body1="link4" body2="link40"/>
+		<exclude body1="link5" body2="link40"/>
+		<exclude body1="link6" body2="link40"/>
+		<exclude body1="link7" body2="link40"/>
+		<exclude body1="link8" body2="link40"/>
+		<exclude body1="link9" body2="link40"/>
+		<exclude body1="link10" body2="link40"/>
+		<exclude body1="link11" body2="link40"/>
+		<exclude body1="link12" body2="link40"/>
+		<exclude body1="link13" body2="link40"/>
+		<exclude body1="link14" body2="link40"/>
+		<exclude body1="link15" body2="link40"/>
+		<exclude body1="link16" body2="link40"/>
+		<exclude body1="link17" body2="link40"/>
+		<exclude body1="link18" body2="link40"/>
+		<exclude body1="link19" body2="link40"/>
+		<exclude body1="link20" body2="link40"/>
+		<exclude body1="link21" body2="link40"/>
+		<exclude body1="link22" body2="link40"/>
+		<exclude body1="link23" body2="link40"/>
+		<exclude body1="link24" body2="link40"/>
+		<exclude body1="link25" body2="link40"/>
+		<exclude body1="link26" body2="link40"/>
+		<exclude body1="link27" body2="link40"/>
+		<exclude body1="link28" body2="link40"/>
+		<exclude body1="link29" body2="link40"/>
+		<exclude body1="link30" body2="link40"/>
+		<exclude body1="link31" body2="link40"/>
+		<exclude body1="link32" body2="link40"/>
+		<exclude body1="link33" body2="link40"/>
+		<exclude body1="link34" body2="link40"/>
+		<exclude body1="link35" body2="link40"/>
+		<exclude body1="link36" body2="link40"/>
+		<exclude body1="link37" body2="link40"/>
+		<exclude body1="link38" body2="link40"/>
+		<exclude body1="link39" body2="link40"/>
+		<exclude body1="link1" body2="link41"/>
+		<exclude body1="link2" body2="link41"/>
+		<exclude body1="link3" body2="link41"/>
+		<exclude body1="link4" body2="link41"/>
+		<exclude body1="link5" body2="link41"/>
+		<exclude body1="link6" body2="link41"/>
+		<exclude body1="link7" body2="link41"/>
+		<exclude body1="link8" body2="link41"/>
+		<exclude body1="link9" body2="link41"/>
+		<exclude body1="link10" body2="link41"/>
+		<exclude body1="link11" body2="link41"/>
+		<exclude body1="link12" body2="link41"/>
+		<exclude body1="link13" body2="link41"/>
+		<exclude body1="link14" body2="link41"/>
+		<exclude body1="link15" body2="link41"/>
+		<exclude body1="link16" body2="link41"/>
+		<exclude body1="link17" body2="link41"/>
+		<exclude body1="link18" body2="link41"/>
+		<exclude body1="link19" body2="link41"/>
+		<exclude body1="link20" body2="link41"/>
+		<exclude body1="link21" body2="link41"/>
+		<exclude body1="link22" body2="link41"/>
+		<exclude body1="link23" body2="link41"/>
+		<exclude body1="link24" body2="link41"/>
+		<exclude body1="link25" body2="link41"/>
+		<exclude body1="link26" body2="link41"/>
+		<exclude body1="link27" body2="link41"/>
+		<exclude body1="link28" body2="link41"/>
+		<exclude body1="link29" body2="link41"/>
+		<exclude body1="link30" body2="link41"/>
+		<exclude body1="link31" body2="link41"/>
+		<exclude body1="link32" body2="link41"/>
+		<exclude body1="link33" body2="link41"/>
+		<exclude body1="link34" body2="link41"/>
+		<exclude body1="link35" body2="link41"/>
+		<exclude body1="link36" body2="link41"/>
+		<exclude body1="link37" body2="link41"/>
+		<exclude body1="link38" body2="link41"/>
+		<exclude body1="link39" body2="link41"/>
+		<exclude body1="link40" body2="link41"/>
+		<exclude body1="link1" body2="link42"/>
+		<exclude body1="link2" body2="link42"/>
+		<exclude body1="link3" body2="link42"/>
+		<exclude body1="link4" body2="link42"/>
+		<exclude body1="link5" body2="link42"/>
+		<exclude body1="link6" body2="link42"/>
+		<exclude body1="link7" body2="link42"/>
+		<exclude body1="link8" body2="link42"/>
+		<exclude body1="link9" body2="link42"/>
+		<exclude body1="link10" body2="link42"/>
+		<exclude body1="link11" body2="link42"/>
+		<exclude body1="link12" body2="link42"/>
+		<exclude body1="link13" body2="link42"/>
+		<exclude body1="link14" body2="link42"/>
+		<exclude body1="link15" body2="link42"/>
+		<exclude body1="link16" body2="link42"/>
+		<exclude body1="link17" body2="link42"/>
+		<exclude body1="link18" body2="link42"/>
+		<exclude body1="link19" body2="link42"/>
+		<exclude body1="link20" body2="link42"/>
+		<exclude body1="link21" body2="link42"/>
+		<exclude body1="link22" body2="link42"/>
+		<exclude body1="link23" body2="link42"/>
+		<exclude body1="link24" body2="link42"/>
+		<exclude body1="link25" body2="link42"/>
+		<exclude body1="link26" body2="link42"/>
+		<exclude body1="link27" body2="link42"/>
+		<exclude body1="link28" body2="link42"/>
+		<exclude body1="link29" body2="link42"/>
+		<exclude body1="link30" body2="link42"/>
+		<exclude body1="link31" body2="link42"/>
+		<exclude body1="link32" body2="link42"/>
+		<exclude body1="link33" body2="link42"/>
+		<exclude body1="link34" body2="link42"/>
+		<exclude body1="link35" body2="link42"/>
+		<exclude body1="link36" body2="link42"/>
+		<exclude body1="link37" body2="link42"/>
+		<exclude body1="link38" body2="link42"/>
+		<exclude body1="link39" body2="link42"/>
+		<exclude body1="link40" body2="link42"/>
+		<exclude body1="link41" body2="link42"/>
+		<exclude body1="link1" body2="link43"/>
+		<exclude body1="link2" body2="link43"/>
+		<exclude body1="link3" body2="link43"/>
+		<exclude body1="link4" body2="link43"/>
+		<exclude body1="link5" body2="link43"/>
+		<exclude body1="link6" body2="link43"/>
+		<exclude body1="link7" body2="link43"/>
+		<exclude body1="link8" body2="link43"/>
+		<exclude body1="link9" body2="link43"/>
+		<exclude body1="link10" body2="link43"/>
+		<exclude body1="link11" body2="link43"/>
+		<exclude body1="link12" body2="link43"/>
+		<exclude body1="link13" body2="link43"/>
+		<exclude body1="link14" body2="link43"/>
+		<exclude body1="link15" body2="link43"/>
+		<exclude body1="link16" body2="link43"/>
+		<exclude body1="link17" body2="link43"/>
+		<exclude body1="link18" body2="link43"/>
+		<exclude body1="link19" body2="link43"/>
+		<exclude body1="link20" body2="link43"/>
+		<exclude body1="link21" body2="link43"/>
+		<exclude body1="link22" body2="link43"/>
+		<exclude body1="link23" body2="link43"/>
+		<exclude body1="link24" body2="link43"/>
+		<exclude body1="link25" body2="link43"/>
+		<exclude body1="link26" body2="link43"/>
+		<exclude body1="link27" body2="link43"/>
+		<exclude body1="link28" body2="link43"/>
+		<exclude body1="link29" body2="link43"/>
+		<exclude body1="link30" body2="link43"/>
+		<exclude body1="link31" body2="link43"/>
+		<exclude body1="link32" body2="link43"/>
+		<exclude body1="link33" body2="link43"/>
+		<exclude body1="link34" body2="link43"/>
+		<exclude body1="link35" body2="link43"/>
+		<exclude body1="link36" body2="link43"/>
+		<exclude body1="link37" body2="link43"/>
+		<exclude body1="link38" body2="link43"/>
+		<exclude body1="link39" body2="link43"/>
+		<exclude body1="link40" body2="link43"/>
+		<exclude body1="link41" body2="link43"/>
+		<exclude body1="link42" body2="link43"/>
+		<exclude body1="link1" body2="link44"/>
+		<exclude body1="link2" body2="link44"/>
+		<exclude body1="link3" body2="link44"/>
+		<exclude body1="link4" body2="link44"/>
+		<exclude body1="link5" body2="link44"/>
+		<exclude body1="link6" body2="link44"/>
+		<exclude body1="link7" body2="link44"/>
+		<exclude body1="link8" body2="link44"/>
+		<exclude body1="link9" body2="link44"/>
+		<exclude body1="link10" body2="link44"/>
+		<exclude body1="link11" body2="link44"/>
+		<exclude body1="link12" body2="link44"/>
+		<exclude body1="link13" body2="link44"/>
+		<exclude body1="link14" body2="link44"/>
+		<exclude body1="link15" body2="link44"/>
+		<exclude body1="link16" body2="link44"/>
+		<exclude body1="link17" body2="link44"/>
+		<exclude body1="link18" body2="link44"/>
+		<exclude body1="link19" body2="link44"/>
+		<exclude body1="link20" body2="link44"/>
+		<exclude body1="link21" body2="link44"/>
+		<exclude body1="link22" body2="link44"/>
+		<exclude body1="link23" body2="link44"/>
+		<exclude body1="link24" body2="link44"/>
+		<exclude body1="link25" body2="link44"/>
+		<exclude body1="link26" body2="link44"/>
+		<exclude body1="link27" body2="link44"/>
+		<exclude body1="link28" body2="link44"/>
+		<exclude body1="link29" body2="link44"/>
+		<exclude body1="link30" body2="link44"/>
+		<exclude body1="link31" body2="link44"/>
+		<exclude body1="link32" body2="link44"/>
+		<exclude body1="link33" body2="link44"/>
+		<exclude body1="link34" body2="link44"/>
+		<exclude body1="link35" body2="link44"/>
+		<exclude body1="link36" body2="link44"/>
+		<exclude body1="link37" body2="link44"/>
+		<exclude body1="link38" body2="link44"/>
+		<exclude body1="link39" body2="link44"/>
+		<exclude body1="link40" body2="link44"/>
+		<exclude body1="link41" body2="link44"/>
+		<exclude body1="link42" body2="link44"/>
+		<exclude body1="link43" body2="link44"/>
+		<exclude body1="link1" body2="link45"/>
+		<exclude body1="link2" body2="link45"/>
+		<exclude body1="link3" body2="link45"/>
+		<exclude body1="link4" body2="link45"/>
+		<exclude body1="link5" body2="link45"/>
+		<exclude body1="link6" body2="link45"/>
+		<exclude body1="link7" body2="link45"/>
+		<exclude body1="link8" body2="link45"/>
+		<exclude body1="link9" body2="link45"/>
+		<exclude body1="link10" body2="link45"/>
+		<exclude body1="link11" body2="link45"/>
+		<exclude body1="link12" body2="link45"/>
+		<exclude body1="link13" body2="link45"/>
+		<exclude body1="link14" body2="link45"/>
+		<exclude body1="link15" body2="link45"/>
+		<exclude body1="link16" body2="link45"/>
+		<exclude body1="link17" body2="link45"/>
+		<exclude body1="link18" body2="link45"/>
+		<exclude body1="link19" body2="link45"/>
+		<exclude body1="link20" body2="link45"/>
+		<exclude body1="link21" body2="link45"/>
+		<exclude body1="link22" body2="link45"/>
+		<exclude body1="link23" body2="link45"/>
+		<exclude body1="link24" body2="link45"/>
+		<exclude body1="link25" body2="link45"/>
+		<exclude body1="link26" body2="link45"/>
+		<exclude body1="link27" body2="link45"/>
+		<exclude body1="link28" body2="link45"/>
+		<exclude body1="link29" body2="link45"/>
+		<exclude body1="link30" body2="link45"/>
+		<exclude body1="link31" body2="link45"/>
+		<exclude body1="link32" body2="link45"/>
+		<exclude body1="link33" body2="link45"/>
+		<exclude body1="link34" body2="link45"/>
+		<exclude body1="link35" body2="link45"/>
+		<exclude body1="link36" body2="link45"/>
+		<exclude body1="link37" body2="link45"/>
+		<exclude body1="link38" body2="link45"/>
+		<exclude body1="link39" body2="link45"/>
+		<exclude body1="link40" body2="link45"/>
+		<exclude body1="link41" body2="link45"/>
+		<exclude body1="link42" body2="link45"/>
+		<exclude body1="link43" body2="link45"/>
+		<exclude body1="link44" body2="link45"/>
+		<exclude body1="link1" body2="link46"/>
+		<exclude body1="link2" body2="link46"/>
+		<exclude body1="link3" body2="link46"/>
+		<exclude body1="link4" body2="link46"/>
+		<exclude body1="link5" body2="link46"/>
+		<exclude body1="link6" body2="link46"/>
+		<exclude body1="link7" body2="link46"/>
+		<exclude body1="link8" body2="link46"/>
+		<exclude body1="link9" body2="link46"/>
+		<exclude body1="link10" body2="link46"/>
+		<exclude body1="link11" body2="link46"/>
+		<exclude body1="link12" body2="link46"/>
+		<exclude body1="link13" body2="link46"/>
+		<exclude body1="link14" body2="link46"/>
+		<exclude body1="link15" body2="link46"/>
+		<exclude body1="link16" body2="link46"/>
+		<exclude body1="link17" body2="link46"/>
+		<exclude body1="link18" body2="link46"/>
+		<exclude body1="link19" body2="link46"/>
+		<exclude body1="link20" body2="link46"/>
+		<exclude body1="link21" body2="link46"/>
+		<exclude body1="link22" body2="link46"/>
+		<exclude body1="link23" body2="link46"/>
+		<exclude body1="link24" body2="link46"/>
+		<exclude body1="link25" body2="link46"/>
+		<exclude body1="link26" body2="link46"/>
+		<exclude body1="link27" body2="link46"/>
+		<exclude body1="link28" body2="link46"/>
+		<exclude body1="link29" body2="link46"/>
+		<exclude body1="link30" body2="link46"/>
+		<exclude body1="link31" body2="link46"/>
+		<exclude body1="link32" body2="link46"/>
+		<exclude body1="link33" body2="link46"/>
+		<exclude body1="link34" body2="link46"/>
+		<exclude body1="link35" body2="link46"/>
+		<exclude body1="link36" body2="link46"/>
+		<exclude body1="link37" body2="link46"/>
+		<exclude body1="link38" body2="link46"/>
+		<exclude body1="link39" body2="link46"/>
+		<exclude body1="link40" body2="link46"/>
+		<exclude body1="link41" body2="link46"/>
+		<exclude body1="link42" body2="link46"/>
+		<exclude body1="link43" body2="link46"/>
+		<exclude body1="link44" body2="link46"/>
+		<exclude body1="link45" body2="link46"/>
+		<exclude body1="link1" body2="link47"/>
+		<exclude body1="link2" body2="link47"/>
+		<exclude body1="link3" body2="link47"/>
+		<exclude body1="link4" body2="link47"/>
+		<exclude body1="link5" body2="link47"/>
+		<exclude body1="link6" body2="link47"/>
+		<exclude body1="link7" body2="link47"/>
+		<exclude body1="link8" body2="link47"/>
+		<exclude body1="link9" body2="link47"/>
+		<exclude body1="link10" body2="link47"/>
+		<exclude body1="link11" body2="link47"/>
+		<exclude body1="link12" body2="link47"/>
+		<exclude body1="link13" body2="link47"/>
+		<exclude body1="link14" body2="link47"/>
+		<exclude body1="link15" body2="link47"/>
+		<exclude body1="link16" body2="link47"/>
+		<exclude body1="link17" body2="link47"/>
+		<exclude body1="link18" body2="link47"/>
+		<exclude body1="link19" body2="link47"/>
+		<exclude body1="link20" body2="link47"/>
+		<exclude body1="link21" body2="link47"/>
+		<exclude body1="link22" body2="link47"/>
+		<exclude body1="link23" body2="link47"/>
+		<exclude body1="link24" body2="link47"/>
+		<exclude body1="link25" body2="link47"/>
+		<exclude body1="link26" body2="link47"/>
+		<exclude body1="link27" body2="link47"/>
+		<exclude body1="link28" body2="link47"/>
+		<exclude body1="link29" body2="link47"/>
+		<exclude body1="link30" body2="link47"/>
+		<exclude body1="link31" body2="link47"/>
+		<exclude body1="link32" body2="link47"/>
+		<exclude body1="link33" body2="link47"/>
+		<exclude body1="link34" body2="link47"/>
+		<exclude body1="link35" body2="link47"/>
+		<exclude body1="link36" body2="link47"/>
+		<exclude body1="link37" body2="link47"/>
+		<exclude body1="link38" body2="link47"/>
+		<exclude body1="link39" body2="link47"/>
+		<exclude body1="link40" body2="link47"/>
+		<exclude body1="link41" body2="link47"/>
+		<exclude body1="link42" body2="link47"/>
+		<exclude body1="link43" body2="link47"/>
+		<exclude body1="link44" body2="link47"/>
+		<exclude body1="link45" body2="link47"/>
+		<exclude body1="link46" body2="link47"/>
+		<exclude body1="link1" body2="link48"/>
+		<exclude body1="link2" body2="link48"/>
+		<exclude body1="link3" body2="link48"/>
+		<exclude body1="link4" body2="link48"/>
+		<exclude body1="link5" body2="link48"/>
+		<exclude body1="link6" body2="link48"/>
+		<exclude body1="link7" body2="link48"/>
+		<exclude body1="link8" body2="link48"/>
+		<exclude body1="link9" body2="link48"/>
+		<exclude body1="link10" body2="link48"/>
+		<exclude body1="link11" body2="link48"/>
+		<exclude body1="link12" body2="link48"/>
+		<exclude body1="link13" body2="link48"/>
+		<exclude body1="link14" body2="link48"/>
+		<exclude body1="link15" body2="link48"/>
+		<exclude body1="link16" body2="link48"/>
+		<exclude body1="link17" body2="link48"/>
+		<exclude body1="link18" body2="link48"/>
+		<exclude body1="link19" body2="link48"/>
+		<exclude body1="link20" body2="link48"/>
+		<exclude body1="link21" body2="link48"/>
+		<exclude body1="link22" body2="link48"/>
+		<exclude body1="link23" body2="link48"/>
+		<exclude body1="link24" body2="link48"/>
+		<exclude body1="link25" body2="link48"/>
+		<exclude body1="link26" body2="link48"/>
+		<exclude body1="link27" body2="link48"/>
+		<exclude body1="link28" body2="link48"/>
+		<exclude body1="link29" body2="link48"/>
+		<exclude body1="link30" body2="link48"/>
+		<exclude body1="link31" body2="link48"/>
+		<exclude body1="link32" body2="link48"/>
+		<exclude body1="link33" body2="link48"/>
+		<exclude body1="link34" body2="link48"/>
+		<exclude body1="link35" body2="link48"/>
+		<exclude body1="link36" body2="link48"/>
+		<exclude body1="link37" body2="link48"/>
+		<exclude body1="link38" body2="link48"/>
+		<exclude body1="link39" body2="link48"/>
+		<exclude body1="link40" body2="link48"/>
+		<exclude body1="link41" body2="link48"/>
+		<exclude body1="link42" body2="link48"/>
+		<exclude body1="link43" body2="link48"/>
+		<exclude body1="link44" body2="link48"/>
+		<exclude body1="link45" body2="link48"/>
+		<exclude body1="link46" body2="link48"/>
+		<exclude body1="link47" body2="link48"/>
+		<exclude body1="link1" body2="link49"/>
+		<exclude body1="link2" body2="link49"/>
+		<exclude body1="link3" body2="link49"/>
+		<exclude body1="link4" body2="link49"/>
+		<exclude body1="link5" body2="link49"/>
+		<exclude body1="link6" body2="link49"/>
+		<exclude body1="link7" body2="link49"/>
+		<exclude body1="link8" body2="link49"/>
+		<exclude body1="link9" body2="link49"/>
+		<exclude body1="link10" body2="link49"/>
+		<exclude body1="link11" body2="link49"/>
+		<exclude body1="link12" body2="link49"/>
+		<exclude body1="link13" body2="link49"/>
+		<exclude body1="link14" body2="link49"/>
+		<exclude body1="link15" body2="link49"/>
+		<exclude body1="link16" body2="link49"/>
+		<exclude body1="link17" body2="link49"/>
+		<exclude body1="link18" body2="link49"/>
+		<exclude body1="link19" body2="link49"/>
+		<exclude body1="link20" body2="link49"/>
+		<exclude body1="link21" body2="link49"/>
+		<exclude body1="link22" body2="link49"/>
+		<exclude body1="link23" body2="link49"/>
+		<exclude body1="link24" body2="link49"/>
+		<exclude body1="link25" body2="link49"/>
+		<exclude body1="link26" body2="link49"/>
+		<exclude body1="link27" body2="link49"/>
+		<exclude body1="link28" body2="link49"/>
+		<exclude body1="link29" body2="link49"/>
+		<exclude body1="link30" body2="link49"/>
+		<exclude body1="link31" body2="link49"/>
+		<exclude body1="link32" body2="link49"/>
+		<exclude body1="link33" body2="link49"/>
+		<exclude body1="link34" body2="link49"/>
+		<exclude body1="link35" body2="link49"/>
+		<exclude body1="link36" body2="link49"/>
+		<exclude body1="link37" body2="link49"/>
+		<exclude body1="link38" body2="link49"/>
+		<exclude body1="link39" body2="link49"/>
+		<exclude body1="link40" body2="link49"/>
+		<exclude body1="link41" body2="link49"/>
+		<exclude body1="link42" body2="link49"/>
+		<exclude body1="link43" body2="link49"/>
+		<exclude body1="link44" body2="link49"/>
+		<exclude body1="link45" body2="link49"/>
+		<exclude body1="link46" body2="link49"/>
+		<exclude body1="link47" body2="link49"/>
+		<exclude body1="link48" body2="link49"/>
+		<exclude body1="link1" body2="link50"/>
+		<exclude body1="link2" body2="link50"/>
+		<exclude body1="link3" body2="link50"/>
+		<exclude body1="link4" body2="link50"/>
+		<exclude body1="link5" body2="link50"/>
+		<exclude body1="link6" body2="link50"/>
+		<exclude body1="link7" body2="link50"/>
+		<exclude body1="link8" body2="link50"/>
+		<exclude body1="link9" body2="link50"/>
+		<exclude body1="link10" body2="link50"/>
+		<exclude body1="link11" body2="link50"/>
+		<exclude body1="link12" body2="link50"/>
+		<exclude body1="link13" body2="link50"/>
+		<exclude body1="link14" body2="link50"/>
+		<exclude body1="link15" body2="link50"/>
+		<exclude body1="link16" body2="link50"/>
+		<exclude body1="link17" body2="link50"/>
+		<exclude body1="link18" body2="link50"/>
+		<exclude body1="link19" body2="link50"/>
+		<exclude body1="link20" body2="link50"/>
+		<exclude body1="link21" body2="link50"/>
+		<exclude body1="link22" body2="link50"/>
+		<exclude body1="link23" body2="link50"/>
+		<exclude body1="link24" body2="link50"/>
+		<exclude body1="link25" body2="link50"/>
+		<exclude body1="link26" body2="link50"/>
+		<exclude body1="link27" body2="link50"/>
+		<exclude body1="link28" body2="link50"/>
+		<exclude body1="link29" body2="link50"/>
+		<exclude body1="link30" body2="link50"/>
+		<exclude body1="link31" body2="link50"/>
+		<exclude body1="link32" body2="link50"/>
+		<exclude body1="link33" body2="link50"/>
+		<exclude body1="link34" body2="link50"/>
+		<exclude body1="link35" body2="link50"/>
+		<exclude body1="link36" body2="link50"/>
+		<exclude body1="link37" body2="link50"/>
+		<exclude body1="link38" body2="link50"/>
+		<exclude body1="link39" body2="link50"/>
+		<exclude body1="link40" body2="link50"/>
+		<exclude body1="link41" body2="link50"/>
+		<exclude body1="link42" body2="link50"/>
+		<exclude body1="link43" body2="link50"/>
+		<exclude body1="link44" body2="link50"/>
+		<exclude body1="link45" body2="link50"/>
+		<exclude body1="link46" body2="link50"/>
+		<exclude body1="link47" body2="link50"/>
+		<exclude body1="link48" body2="link50"/>
+		<exclude body1="link49" body2="link50"/> -->
+	</contact>
+</mujoco>
