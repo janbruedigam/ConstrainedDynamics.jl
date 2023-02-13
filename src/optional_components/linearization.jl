@@ -31,18 +31,18 @@ function linearsystem(mechanism::Mechanism{T,Nn,Ne,Nb}, xθd, vωd, Fτd, contro
     ωd = [szeros(T,3) for i=1:Nb]
 
     # store old state and set new initial state
-    for (id,body) in pairs(mechanism.bodies)
-        statesold[id] = deepcopy(body.state)
+    for (i,body) in enumerate(mechanism.bodies)
+        statesold[i] = deepcopy(body.state)
     end
     for (i,id) in enumerate(controlledids)
         setPosition!(mechanism, geteqconstraint(mechanism, id), [xθd[i]])
     end
-    for (id,body) in pairs(mechanism.bodies)
+    for (i,body) in enumerate(mechanism.bodies)
         state = body.state
-        xd[id] = state.xc
-        vd[id] = state.vc
-        qd[id] = state.qc
-        ωd[id] = state.ωc
+        xd[i] = state.xc
+        vd[i] = state.vc
+        qd[i] = state.qc
+        ωd[i] = state.ωc
     end
     for (i,id) in enumerate(controlids)
         setForce!(mechanism, geteqconstraint(mechanism, id), [Fτd[i]])
@@ -51,8 +51,8 @@ function linearsystem(mechanism::Mechanism{T,Nn,Ne,Nb}, xθd, vωd, Fτd, contro
     A, Bu, Bλ, G = lineardynamics(mechanism, controlids)
 
     # restore old state
-    for (id,body) in pairs(mechanism.bodies)
-        body.state = statesold[id]
+    for (i,body) in enumerate(mechanism.bodies)
+        body.state = statesold[i]
     end
 
     return A, Bu, Bλ, G, xd, vd, qd, ωd

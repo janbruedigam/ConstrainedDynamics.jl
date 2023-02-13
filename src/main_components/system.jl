@@ -3,7 +3,7 @@ function create_system(origin::Origin{T}, eqconstraints::Vector{<:EqualityConstr
     ) where T
 
     adjacency, dims = adjacencyMatrix(eqconstraints, bodies, frictions, ineqconstraints)
-    system = System{T}(adjacency, dims)
+    system = System{T}(adjacency, dims, force_static = true)
 
     for eqc in eqconstraints
         eqc.parentid == origin.id && (eqc.parentid = nothing)
